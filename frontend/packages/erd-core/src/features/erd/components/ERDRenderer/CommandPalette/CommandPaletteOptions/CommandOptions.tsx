@@ -58,7 +58,8 @@ export const CommandPaletteCommandOptions: FC = () => {
         }}
         className={styles.item}
       >
-        <TidyUpIcon className={styles.itemIcon} />
+        {/* The option has explicit text description, so that the icon does not have to have an aria-label */}
+        <TidyUpIcon className={styles.itemIcon} aria-label={undefined} />
         <span className={styles.itemText}>Tidy Up</span>
         <span className={styles.keyIcon}>⇧</span>
         <span className={styles.keyIcon}>T</span>
@@ -73,7 +74,7 @@ export const CommandPaletteCommandOptions: FC = () => {
       >
         <PanelTop className={styles.itemIcon} />
         <span className={styles.itemText}>Show All Fields</span>
-        <span className={styles.keyIcon}>⌘</span>
+        <span className={styles.keyIcon}>⇧</span>
         <span className={styles.keyIcon}>2</span>
       </Command.Item>
       <Command.Item
@@ -86,7 +87,7 @@ export const CommandPaletteCommandOptions: FC = () => {
       >
         <RectangleHorizontal className={styles.itemIcon} />
         <span className={styles.itemText}>Show Table Name</span>
-        <span className={styles.keyIcon}>⌘</span>
+        <span className={styles.keyIcon}>⇧</span>
         <span className={styles.keyIcon}>3</span>
       </Command.Item>
       <Command.Item
@@ -99,7 +100,7 @@ export const CommandPaletteCommandOptions: FC = () => {
       >
         <KeyRound className={styles.itemIcon} />
         <span className={styles.itemText}>Show Key Only</span>
-        <span className={styles.keyIcon}>⌘</span>
+        <span className={styles.keyIcon}>⇧</span>
         <span className={styles.keyIcon}>4</span>
       </Command.Item>
     </Command.Group>

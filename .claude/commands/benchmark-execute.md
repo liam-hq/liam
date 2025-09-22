@@ -28,10 +28,11 @@ First, I'll clean up any existing workspace and set up a fresh benchmark environ
 rm -rf benchmark-workspace && pnpm --filter @liam-hq/schema-bench setupWorkspace
 ```
 
-This will set up three benchmark datasets:
+This will set up four benchmark datasets:
 - **default**: Standard schema generation benchmark (3 complex cases)
 - **entity-extraction**: Tests if specified table/column names appear in output (5 cases)
 - **ambiguous-recall**: Measures recall of core tables from an ambiguous prompt. Uses the same input across 3 cases with different expected schemas (3/5/10 tables) to evaluate robustness.
+- **logical-deletion**: Evaluates account deletion design without naive `is_deleted`. Focuses on PII separation, referential integrity for orders, legal retention/holds, closure reasons, and auditability.
 
 The system features:
 - **Parallel Processing**: Datasets are processed simultaneously for faster execution
@@ -51,8 +52,11 @@ pnpm --filter @liam-hq/schema-bench executeLiamDB -entity-extraction
 # Run LiamDB on the ambiguous-recall dataset only
 pnpm --filter @liam-hq/schema-bench executeLiamDB -ambiguous-recall
 
+# Run LiamDB on the logical-deletion dataset only
+pnpm --filter @liam-hq/schema-bench executeLiamDB -logical-deletion
+
 # Run LiamDB on multiple datasets
-pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction -ambiguous-recall
+pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction -ambiguous-recall -logical-deletion
 ```
 {{else if (eq (lower model) "openai")}}
 ```bash
@@ -89,6 +93,7 @@ The evaluation will display comprehensive metrics for each dataset:
 - **Default dataset**: ~60-80% overall accuracy for complex schemas
 - **Entity-extraction dataset**: ~100% recall for mentioned entities
 - **Ambiguous-recall dataset**: Focuses on table recall from a vague prompt; primary metric is how many core tables are retrieved across 3/5/10-table references.
+- **Logical-deletion dataset**: Focus is on correct separation of PII from business entities, appropriate FK delete policies, and inclusion of closure/audit workflows; metrics reflect structural accuracy rather than text guidance.
 
 ### Execution Time:
 - Setup: ~5 seconds

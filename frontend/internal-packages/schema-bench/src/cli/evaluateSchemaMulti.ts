@@ -38,7 +38,7 @@ async function main() {
   const requestedDatasets =
     args.length > 0
       ? args
-      : ['default', 'entity-extraction', 'ambiguous-recall']
+      : ['default', 'entity-extraction', 'ambiguous-recall', 'logical-deletion']
 
   // Define all available datasets
   const allDatasets = [
@@ -48,6 +48,7 @@ async function main() {
       path: join(workspacePath, 'entity-extraction'),
     },
     { name: 'ambiguous-recall', path: join(workspacePath, 'ambiguous-recall') },
+    { name: 'logical-deletion', path: join(workspacePath, 'logical-deletion') },
   ]
 
   // Filter to requested datasets

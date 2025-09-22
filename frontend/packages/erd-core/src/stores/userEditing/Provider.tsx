@@ -49,9 +49,17 @@ export const UserEditingProvider: FC<Props> = ({
   showDiff: initialShowDiff = false,
   defaultShowMode = 'TABLE_NAME',
 }) => {
-  const [activeTableName, setActiveTableName] = useQueryState(
+  const [activeTableName, _setActiveTableName] = useQueryState(
     'active',
     parseAsString.withDefault('').withOptions({ history: 'push' }),
+  )
+
+  const setActiveTableName: typeof _setActiveTableName = useCallback(
+    (...args) => {
+      location.hash = ''
+      return _setActiveTableName(...args)
+    },
+    [_setActiveTableName],
   )
 
   const [showMode, setShowMode] = useQueryState(

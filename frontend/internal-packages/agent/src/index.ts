@@ -1,6 +1,7 @@
 export { invokeDbAgentStream } from './db-agent/invokeDbAgentStream'
 export { deepModeling } from './deepModeling'
 export { deepModelingStream } from './deepModelingStream'
+export { getCheckpointErrors } from './getCheckpointErrors'
 export { getMessages } from './getMessages'
 export { createSupabaseRepositories, InMemoryRepository } from './repositories'
-export type { AgentWorkflowParams } from './types'
+export type { AgentWorkflowParams, ToolName } from './types'

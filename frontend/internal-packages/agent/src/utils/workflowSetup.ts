@@ -66,79 +66,64 @@ export const setupWorkflowState = (
     (error) => new Error(String(error)),
   )
 
-  const createWorkflowRun = ResultAsync.fromPromise(
-    repositories.schema.createWorkflowRun({
-      designSessionId,
+  return getUserInfo.andThen((userInfo) => {
+    const userName = userInfo?.userName
+
+    const userMessage = new HumanMessage({
+      content: userInput,
+      additional_kwargs: {
+        userName,
+      },
+    })
+    const allMessages = [userMessage]
+
+    const runCollector = new RunCollectorCallbackHandler()
+
+    // Enhanced tracing with environment and developer context
+    const traceEnhancement = createEnhancedTraceData(
       workflowRunId,
-    }),
-    (error) => new Error(String(error)),
-  ).andThen((createWorkflowRun) => {
-    if (!createWorkflowRun.success) {
-      return err(new Error(createWorkflowRun.error))
-    }
-    return ok(createWorkflowRun)
+      'agent-workflow',
+      [`organization:${organizationId}`, `session:${designSessionId}`],
+      {
+        workflow: {
+          building_schema_id: buildingSchemaId,
+          design_session_id: designSessionId,
+          user_id: userId,
+          organization_id: organizationId,
+          version_number: latestVersionNumber,
+        },
+      },
+    )
+
+    return ok({
+      workflowState: {
+        messages: allMessages,
+        schemaData,
+        analyzedRequirements: {
+          businessRequirement: '',
+          functionalRequirements: {},
+          nonFunctionalRequirements: {},
+        },
+        testcases: [],
+        schemaIssues: [],
+        organizationId,
+        buildingSchemaId,
+        latestVersionNumber,
+        designSessionId,
+        userId,
+        next: END,
+      },
+      workflowRunId,
+      runCollector,
+      configurable: {
+        repositories,
+        thread_id,
+        buildingSchemaId,
+        latestVersionNumber,
+      },
+      traceEnhancement,
+    })
   })
-
-  return ResultAsync.combine([getUserInfo, createWorkflowRun]).andThen(
-    ([userInfo]) => {
-      const userName = userInfo?.userName
-
-      const userMessage = new HumanMessage({
-        content: userInput,
-        additional_kwargs: {
-          userName,
-        },
-      })
-      const allMessages = [userMessage]
-
-      const runCollector = new RunCollectorCallbackHandler()
-
-      // Enhanced tracing with environment and developer context
-      const traceEnhancement = createEnhancedTraceData(
-        workflowRunId,
-        'agent-workflow',
-        [`organization:${organizationId}`, `session:${designSessionId}`],
-        {
-          workflow: {
-            building_schema_id: buildingSchemaId,
-            design_session_id: designSessionId,
-            user_id: userId,
-            organization_id: organizationId,
-            version_number: latestVersionNumber,
-          },
-        },
-      )
-
-      return ok({
-        workflowState: {
-          messages: allMessages,
-          schemaData,
-          analyzedRequirements: {
-            businessRequirement: '',
-            functionalRequirements: {},
-            nonFunctionalRequirements: {},
-          },
-          testcases: [],
-          schemaIssues: [],
-          organizationId,
-          buildingSchemaId,
-          latestVersionNumber,
-          designSessionId,
-          userId,
-          next: END,
-        },
-        workflowRunId,
-        runCollector,
-        configurable: {
-          repositories,
-          thread_id,
-          buildingSchemaId,
-          latestVersionNumber,
-        },
-        traceEnhancement,
-      })
-    },
-  )
 }
 
 /**
@@ -189,20 +174,6 @@ export const executeWorkflowWithTracking = <
     },
   )
 
-  // 2. Update workflow status
-  const updateWorkflowStatus = (status: 'success' | 'error') =>
-    ResultAsync.fromPromise(
-      repositories.schema.updateWorkflowRunStatus({
-        workflowRunId,
-        status,
-      }),
-      (error) => new Error(String(error)),
-    )
-
-  // 3. Update status to success and validate result
-  const updateSuccessStatus = (result: unknown) =>
-    updateWorkflowStatus('success').map(() => result)
-
   const validateAndReturnResult = (result: unknown) =>
     isWorkflowState(result)
       ? okAsync(result)
@@ -221,22 +192,15 @@ export const executeWorkflowWithTracking = <
 
   const handleWorkflowTermination = (
     error: WorkflowTerminationError,
-  ): AgentWorkflowResult =>
-    ResultAsync.combine([
-      saveTimelineItem(error),
-      updateWorkflowStatus('error'),
-    ]).map(() => workflowState)
+  ): AgentWorkflowResult => saveTimelineItem(error).map(() => workflowState)
 
   // 5. Chain everything together
-  return executeWorkflow
-    .andThen(updateSuccessStatus)
-    .andThen(validateAndReturnResult)
-    .orElse((error) => {
-      // Handle WorkflowTerminationError - these are expected errors
-      if (error instanceof WorkflowTerminationError) {
-        return handleWorkflowTermination(error)
-      }
-      // All other errors are unexpected
-      return err(error)
-    })
+  return executeWorkflow.andThen(validateAndReturnResult).orElse((error) => {
+    // Handle WorkflowTerminationError - these are expected errors
+    if (error instanceof WorkflowTerminationError) {
+      return handleWorkflowTermination(error)
+    }
+    // All other errors are unexpected
+    return err(error)
+  })
 }

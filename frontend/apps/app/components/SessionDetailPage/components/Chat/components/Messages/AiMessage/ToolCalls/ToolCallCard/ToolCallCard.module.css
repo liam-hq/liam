@@ -1,0 +1,459 @@
+.container {
+  border: 1px solid var(--color-gray-800);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-gray-900);
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.container:hover {
+  border-color: var(--color-gray-700);
+}
+
+.container[data-status='pending'],
+.container[data-status='running'] {
+  border-color: var(--color-gray-100);
+  box-shadow: 0 0 0 1px var(--color-gray-alpha-20, rgba(255, 255, 255, 0.1));
+}
+
+.container[data-status='error'] {
+  border-color: var(--color-vermilion-900, #d55235);
+  background-color: var(--color-vermilion-alpha-10, rgba(213, 82, 53, 0.1));
+}
+
+.header {
+  width: 100%;
+  padding: var(--spacing-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.header:focus {
+  outline: none;
+}
+
+.header:focus-visible {
+  outline: 2px solid var(--color-blue-500, #3b82f6);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-base);
+}
+
+.header:hover .toolName,
+.header:hover .statusText,
+.header:hover .chevron,
+.header:hover .icon {
+  color: var(--color-gray-50);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1-5, 6px);
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--color-gray-100);
+  position: absolute;
+  transition:
+    opacity 0.3s ease,
+    transform 0.2s ease;
+}
+
+.chevronHidden {
+  opacity: 0;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-gray-100);
+  position: absolute;
+  transition: opacity 0.3s ease;
+}
+
+.iconHidden {
+  opacity: 0;
+}
+
+.iconAnimated {
+  animation: spinPause 2s ease-in-out infinite;
+}
+
+@keyframes spinPause {
+  0% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.toolName {
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  color: var(--color-gray-100);
+  transition: color 0.15s ease;
+}
+
+/* Apply pulse animation to tool name when running */
+.container[data-status='pending'] .toolName,
+.container[data-status='running'] .toolName {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.statusText {
+  font-size: var(--font-size-3);
+  color: var(--color-gray-300);
+  transition: color 0.15s ease;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    color: var(--color-gray-100);
+  }
+  50% {
+    color: var(--color-white, #ffffff);
+  }
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.badgeError {
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-vermilion-alpha-20, rgba(213, 82, 53, 0.2));
+  color: var(--color-vermilion-900, #d55235);
+  font-size: var(--font-size-2);
+  font-weight: 500;
+}
+
+.contentWrapper {
+  position: relative;
+}
+
+.content {
+  overflow: hidden;
+  transition:
+    max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.4s ease-out,
+    padding 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    margin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Gradient overlays for scroll indication */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.arguments {
+  margin-top: var(--spacing-3);
+}
+
+.argumentsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-2);
+  height: 22px; /* Fixed height to prevent layout shift */
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-2);
+}
+
+.resultTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.resultErrorIcon,
+.resultSuccessIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.resultErrorIcon {
+  color: var(--danger-high-contrast-text);
+}
+
+.resultSuccessIcon {
+  color: var(--primary-color);
+}
+
+.argumentsExpandButton,
+.resultExpandButton {
+  background: transparent;
+  border: none;
+  padding: var(--spacing-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-400);
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+  border-radius: var(--border-radius-sm);
+}
+
+.argumentsExpandButton:hover,
+.resultExpandButton:hover {
+  color: var(--color-gray-100);
+  transform: scale(1.1);
+}
+
+.argumentsExpandButton:focus,
+.resultExpandButton:focus {
+  outline: none;
+}
+
+.argumentsExpandButton:focus-visible,
+.resultExpandButton:focus-visible {
+  outline: 2px solid var(--color-blue-500);
+  outline-offset: 2px;
+}
+
+.result,
+.error {
+  margin-top: var(--spacing-4);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.argumentsTitle,
+.resultTitle,
+.errorTitle {
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gray-300);
+}
+
+.argumentsTitle,
+.resultTitle {
+  display: block;
+  /* No margin-bottom to align with expand button */
+}
+
+.errorTitle {
+  display: block;
+  margin-bottom: var(--spacing-2);
+}
+
+.resultContentWrapper {
+  position: relative;
+}
+
+.resultContent {
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius-base);
+  background-color: var(--color-gray-1000);
+  font-size: var(--font-size-3);
+  line-height: 1.5;
+  color: var(--color-gray-100);
+  max-height: 100px;
+  overflow-y: auto;
+  /* Smoother expand/collapse animation matching ArgumentsDisplay */
+  transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.resultContent[data-expanded='true'] {
+  max-height: 400px; /* Defined max-height for smooth animation */
+}
+
+/* Gradient overlays for result scroll indication */
+.resultGradientTop,
+.resultGradientBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 20px;
+  pointer-events: none;
+  z-index: 10;
+  border-radius: var(--border-radius-base);
+}
+
+.resultGradientTop {
+  top: 0;
+  background: linear-gradient(
+    180deg,
+    var(--color-gray-1000) 0%,
+    var(--color-gray-1000-alpha-80, rgba(20, 22, 22, 0.8)) 30%,
+    var(--color-gray-1000-alpha-40, rgba(20, 22, 22, 0.4)) 60%,
+    transparent 100%
+  );
+}
+
+.resultGradientBottom {
+  bottom: 0;
+  background: linear-gradient(
+    0deg,
+    var(--color-gray-1000) 0%,
+    var(--color-gray-1000-alpha-80, rgba(20, 22, 22, 0.8)) 30%,
+    var(--color-gray-1000-alpha-40, rgba(20, 22, 22, 0.4)) 60%,
+    transparent 100%
+  );
+}
+
+.resultMessage {
+  padding: 0;
+}
+
+.errorContent {
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius-base);
+  background-color: var(--color-vermilion-alpha-10, rgba(213, 82, 53, 0.1));
+  font-size: var(--font-size-3);
+  color: var(--color-vermilion-900, #d55235);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Result action button container */
+.resultAction {
+  margin-top: var(--spacing-3);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 開いている時のスタイル */
+.container[data-collapsed='false'] .content {
+  position: relative;
+  max-height: none; /* Remove height limit when expanded */
+  opacity: 1;
+  padding: 0 var(--spacing-3) var(--spacing-3);
+  margin: 0;
+  overflow-y: visible;
+  overflow-x: hidden;
+  /* Ensure smooth scrolling stays at bottom during animation */
+  overflow-anchor: none;
+  scroll-behavior: smooth;
+}
+
+/* 折りたたみ時のスタイル */
+.container[data-collapsed='true'] .content {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 var(--spacing-3) 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .container {
+    transition: none;
+  }
+
+  .header {
+    transition: none;
+  }
+
+  .chevron {
+    transition: none;
+  }
+
+  .icon {
+    transition: none;
+  }
+
+  .iconAnimated {
+    animation: none;
+  }
+
+  .toolName {
+    transition: none;
+  }
+
+  .container[data-status='pending'] .toolName,
+  .container[data-status='running'] .toolName {
+    animation: none;
+  }
+
+  .statusText {
+    transition: none;
+  }
+
+  .content {
+    transition: none;
+  }
+
+  .argumentsExpandButton,
+  .resultExpandButton {
+    transition: none;
+  }
+
+  .result,
+  .error {
+    animation: none;
+  }
+
+  .resultContent {
+    transition: none;
+  }
+}

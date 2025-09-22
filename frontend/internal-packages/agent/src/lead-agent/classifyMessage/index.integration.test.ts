@@ -19,7 +19,7 @@ const createTestStateAndConfig = async (
   messages?: BaseMessage[],
   schemaData?: Schema,
 ) => {
-  const { config, context } = await getTestConfig()
+  const { config, context, checkpointer } = await getTestConfig()
 
   const state: WorkflowState = {
     messages: messages || [new HumanMessage(userInput)],
@@ -39,20 +39,20 @@ const createTestStateAndConfig = async (
     next: END,
   }
 
-  return { state, config }
+  return { state, config, checkpointer }
 }
 
 describe('classifyMessage Integration', () => {
   it('should route database design requests to pmAgent', async () => {
+    const userInput =
+      'Create a user management system with users, roles, and permissions tables'
+    const { state, config, checkpointer } =
+      await createTestStateAndConfig(userInput)
     const graph = new StateGraph(workflowAnnotation)
       .addNode('classifyMessage', classifyMessage)
       .addEdge(START, 'classifyMessage')
       .addEdge('classifyMessage', END)
-      .compile()
-
-    const userInput =
-      'Create a user management system with users, roles, and permissions tables'
-    const { state, config } = await createTestStateAndConfig(userInput)
+      .compile({ checkpointer })
 
     const streamEvents = graph.streamEvents(state, {
       ...config,
@@ -63,14 +63,14 @@ describe('classifyMessage Integration', () => {
   })
 
   it('should handle unsupported tasks without routing', async () => {
+    const userInput = 'Generate Python code for a REST API'
+    const { state, config, checkpointer } =
+      await createTestStateAndConfig(userInput)
     const graph = new StateGraph(workflowAnnotation)
       .addNode('classifyMessage', classifyMessage)
       .addEdge(START, 'classifyMessage')
       .addEdge('classifyMessage', END)
-      .compile()
-
-    const userInput = 'Generate Python code for a REST API'
-    const { state, config } = await createTestStateAndConfig(userInput)
+      .compile({ checkpointer })
 
     const streamEvents = graph.streamEvents(state, {
       ...config,
@@ -81,12 +81,6 @@ describe('classifyMessage Integration', () => {
   })
 
   it('should route to summarizeWorkflow when QA is completed', async () => {
-    const graph = new StateGraph(workflowAnnotation)
-      .addNode('classifyMessage', classifyMessage)
-      .addEdge(START, 'classifyMessage')
-      .addEdge('classifyMessage', END)
-      .compile()
-
     const userInput = 'Create a user management system'
     const messages = [
       new HumanMessage('Create a user management system'),
@@ -120,11 +114,16 @@ describe('classifyMessage Integration', () => {
       },
     })
 
-    const { state, config } = await createTestStateAndConfig(
+    const { state, config, checkpointer } = await createTestStateAndConfig(
       userInput,
       messages,
       schemaData,
     )
+    const graph = new StateGraph(workflowAnnotation)
+      .addNode('classifyMessage', classifyMessage)
+      .addEdge(START, 'classifyMessage')
+      .addEdge('classifyMessage', END)
+      .compile({ checkpointer })
 
     const streamEvents = graph.streamEvents(state, {
       ...config,

@@ -14,6 +14,7 @@ export const pmAgentStateAnnotation = Annotation.Root({
 
   // PM Agent private state
   analyzedRequirementsRetryCount: Annotation<number>,
+  artifactSaveSuccessful: Annotation<boolean>,
 })
 
 /**

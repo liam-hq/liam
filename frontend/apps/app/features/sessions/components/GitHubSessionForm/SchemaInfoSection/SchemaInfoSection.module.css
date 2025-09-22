@@ -96,7 +96,11 @@
   border: 1px solid var(--overlay-5);
   border-radius: var(--border-radius-base);
   padding: var(--spacing-1half);
-  padding-right: calc(var(--spacing-1half) + 14px + var(--spacing-1half)); /* RemoveButton幅 + gap */
+  padding-right: calc(
+    var(--spacing-1half) +
+    14px +
+    var(--spacing-1half)
+  ); /* RemoveButton width + gap */
   position: relative;
 }
 

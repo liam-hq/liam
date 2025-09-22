@@ -19,18 +19,17 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   schema: Schema
   tabValue: OutputTabValue
   artifactDoc?: string
-  hasArtifact?: boolean
   designSessionId: string
   initialIsPublic: boolean
 }
 
 const generateCumulativeOperations = (
-  versions: Version[],
+  versions: Version[] | undefined,
   selectedVersion: Version | null,
 ): Operation[] => {
   if (!selectedVersion) return []
 
-  const versionsUpToSelected = versions
+  const versionsUpToSelected = (versions ?? [])
     .filter((v) => v.number <= selectedVersion.number)
     .sort((a, b) => a.number - b.number)
 
@@ -50,14 +49,12 @@ export const Header: FC<Props> = ({
   schema,
   tabValue,
   artifactDoc,
-  hasArtifact,
   designSessionId,
   initialIsPublic,
   ...propsForVersionDropdown
 }) => {
   const { versions, selectedVersion } = propsForVersionDropdown
-
-  // Generate cumulative operations
+  const disabled = !versions || versions.length === 0 || !selectedVersion
   const cumulativeOperations = generateCumulativeOperations(
     versions,
     selectedVersion,
@@ -68,6 +65,7 @@ export const Header: FC<Props> = ({
       <TabsList className={styles.tabsList}>
         <div
           className={clsx(styles.tab, styles.erdSchemaTabsGroup)}
+          aria-disabled={disabled}
           data-state={
             ERD_SCHEMA_TABS_LIST.some((tab) => tab.value === tabValue)
               ? 'active'
@@ -77,6 +75,7 @@ export const Header: FC<Props> = ({
           <div className={styles.erdSchemaTabs}>
             {ERD_SCHEMA_TABS_LIST.map((tab) => (
               <TabsTrigger
+                disabled={disabled}
                 key={tab.value}
                 value={tab.value}
                 className={styles.erdSchemaTrigger}
@@ -88,17 +87,17 @@ export const Header: FC<Props> = ({
           <div className={styles.divider} />
           <VersionDropdown {...propsForVersionDropdown} />
         </div>
-        {hasArtifact && (
-          <TabsTrigger
-            value={ARTIFACT_TAB.value}
-            className={clsx(styles.tab, styles.artifactTrigger)}
-          >
-            {ARTIFACT_TAB.label}
-          </TabsTrigger>
-        )}
+        <TabsTrigger
+          disabled={!artifactDoc}
+          value={ARTIFACT_TAB.value}
+          className={clsx(styles.tab, styles.artifactTrigger)}
+        >
+          {ARTIFACT_TAB.label}
+        </TabsTrigger>
       </TabsList>
       <div className={styles.tail}>
         <ExportDropdown
+          disabled={disabled}
           schema={schema}
           artifactDoc={artifactDoc}
           cumulativeOperations={cumulativeOperations}

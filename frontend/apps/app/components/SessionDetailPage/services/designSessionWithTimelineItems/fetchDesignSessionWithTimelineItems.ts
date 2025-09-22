@@ -21,7 +21,6 @@ export const fetchDesignSessionWithTimelineItems = (
           organization_id,
           design_session_id,
           building_schema_version_id,
-          query_result_id,
           assistant_role,
           users (
             id,
@@ -32,7 +31,7 @@ export const fetchDesignSessionWithTimelineItems = (
             id,
             number,
             patch
-          ),
+          )
         )
       `)
       .eq('id', designSessionId)

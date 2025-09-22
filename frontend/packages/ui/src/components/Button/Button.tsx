@@ -67,9 +67,7 @@ export const Button = ({
         styles.wrapper,
         sizeClassName,
         className,
-        !disabled && variantClassName,
-        disabled && styles.disabled,
-        disabled && variant === 'outline-overlay' && styles.outlineOverlay,
+        variantClassName,
       )}
       disabled={disabled}
       {...props}

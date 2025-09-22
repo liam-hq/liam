@@ -20,7 +20,6 @@ export async function execute(
       designSessions: {
         'demo-design-session': {},
       },
-      workflowRuns: {},
     }),
   }
 

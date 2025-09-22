@@ -106,6 +106,7 @@ describe('createPmAgentGraph Integration', () => {
       },
       designSessionId: context.designSessionId,
       analyzedRequirementsRetryCount: 0,
+      artifactSaveSuccessful: false,
     }
 
     // Act

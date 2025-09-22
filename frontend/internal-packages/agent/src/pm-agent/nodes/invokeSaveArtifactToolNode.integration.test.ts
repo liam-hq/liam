@@ -14,12 +14,12 @@ import { invokeSaveArtifactToolNode } from './invokeSaveArtifactToolNode'
 
 describe('invokeSaveArtifactToolNode Integration', () => {
   it('should execute save artifact tool with real APIs', async () => {
+    const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(pmAgentStateAnnotation)
       .addNode('invokeSaveArtifactTool', invokeSaveArtifactToolNode)
       .addEdge(START, 'invokeSaveArtifactTool')
       .addEdge('invokeSaveArtifactTool', END)
-      .compile()
-    const { config, context } = await getTestConfig()
+      .compile({ checkpointer })
 
     const toolCallMessage = new AIMessage({
       content: '',
@@ -88,6 +88,7 @@ describe('invokeSaveArtifactToolNode Integration', () => {
         },
       }),
       analyzedRequirementsRetryCount: 0,
+      artifactSaveSuccessful: false,
     }
 
     const streamEvents = graph.streamEvents(state, {

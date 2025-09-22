@@ -1,5 +1,9 @@
 import type { BaseMessage, StoredMessage } from '@langchain/core/messages'
-import { createSupabaseRepositories, getMessages } from '@liam-hq/agent'
+import {
+  createSupabaseRepositories,
+  getCheckpointErrors,
+  getMessages,
+} from '@liam-hq/agent'
 import type { Schema } from '@liam-hq/schema'
 import { schemaSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
@@ -13,7 +17,6 @@ import { getBuildingSchema } from './services/buildingSchema/server/getBuildingS
 import { buildPrevSchema } from './services/buildPrevSchema/server/buildPrevSchema'
 import { getDesignSessionWithTimelineItems } from './services/designSessionWithTimelineItems/server/getDesignSessionWithTimelineItems'
 import { getVersions } from './services/getVersions'
-import { getWorkflowRunStatus } from './services/workflowRuns/server/getWorkflowRunStatus'
 import type { DesignSessionWithTimelineItems, Version } from './types'
 
 type Props = {
@@ -34,6 +37,7 @@ async function loadSessionData(designSessionId: string): Promise<
       messages: StoredMessage[]
       buildingSchema: NonNullable<Awaited<ReturnType<typeof getBuildingSchema>>>
       initialSchema: Schema
+      workflowError: string | null
     },
     Error
   >
@@ -56,6 +60,13 @@ async function loadSessionData(designSessionId: string): Promise<
   const baseMessages = await getMessages(config)
   const messages = serializeMessages(baseMessages)
 
+  // Fetch checkpoint error from LangGraph memory
+  const checkpointErrors = await getCheckpointErrors(
+    repositories.schema.checkpointer,
+    designSessionId,
+  )
+  const workflowError = checkpointErrors[0] || null
+
   const buildingSchema = await getBuildingSchema(designSessionId)
   if (!buildingSchema) {
     return err(new Error('Building schema not found for design session'))
@@ -73,6 +84,7 @@ async function loadSessionData(designSessionId: string): Promise<
     messages,
     buildingSchema,
     initialSchema,
+    workflowError,
   })
 }
 
@@ -91,6 +103,7 @@ export const SessionDetailPage: FC<Props> = async ({
     messages,
     buildingSchema,
     initialSchema,
+    workflowError,
   } = result.value
 
   const versions = await getVersions(buildingSchema.id)
@@ -101,8 +114,6 @@ export const SessionDetailPage: FC<Props> = async ({
         currentVersionId: latestVersion.id,
       })) ?? initialSchema)
     : initialSchema
-
-  const initialWorkflowRunStatus = await getWorkflowRunStatus(designSessionId)
 
   // Fetch initial public share status
   const { isPublic: initialIsPublic } =
@@ -117,9 +128,9 @@ export const SessionDetailPage: FC<Props> = async ({
         initialDisplayedSchema={initialSchema}
         initialPrevSchema={initialPrevSchema}
         initialVersions={versions}
-        initialWorkflowRunStatus={initialWorkflowRunStatus}
         isDeepModelingEnabled={isDeepModelingEnabled}
         initialIsPublic={initialIsPublic}
+        initialWorkflowError={workflowError}
       />
     </ViewModeProvider>
   )

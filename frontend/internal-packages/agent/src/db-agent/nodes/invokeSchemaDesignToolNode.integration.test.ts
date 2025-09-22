@@ -13,12 +13,12 @@ import { invokeSchemaDesignToolNode } from './invokeSchemaDesignToolNode'
 describe('invokeSchemaDesignToolNode Integration', () => {
   it('should execute schema design tool with real APIs', async () => {
     // Arrange
+    const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(dbAgentAnnotation)
       .addNode('invokeSchemaDesignTool', invokeSchemaDesignToolNode)
       .addEdge(START, 'invokeSchemaDesignTool')
       .addEdge('invokeSchemaDesignTool', END)
-      .compile()
-    const { config, context } = await getTestConfig()
+      .compile({ checkpointer })
 
     const toolCallMessage = new AIMessage({
       content: '',
@@ -98,12 +98,12 @@ describe('invokeSchemaDesignToolNode Integration', () => {
 
   it('should handle tool execution errors gracefully', async () => {
     // Arrange
+    const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(dbAgentAnnotation)
       .addNode('invokeSchemaDesignTool', invokeSchemaDesignToolNode)
       .addEdge(START, 'invokeSchemaDesignTool')
       .addEdge('invokeSchemaDesignTool', END)
-      .compile()
-    const { config, context } = await getTestConfig()
+      .compile({ checkpointer })
 
     const invalidToolCallMessage = new AIMessage({
       content: '',

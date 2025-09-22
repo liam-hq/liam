@@ -2,45 +2,11 @@
 
 import clsx from 'clsx'
 import { type FC, useEffect, useState } from 'react'
-import { generateHeadingId } from '../utils'
 import styles from './TableOfContents.module.css'
-
-type TocItem = {
-  id: string
-  text: string
-  level: number
-}
+import { extractTocItems, type TocItem } from './utils'
 
 type Props = {
   content: string
-}
-
-const parseHeading = (line: string): TocItem | null => {
-  const headingMatch = line.match(/^(#{1,5})\s+(.+)$/)
-  if (!headingMatch) return null
-
-  const levelMatch = headingMatch[1]
-  const text = headingMatch[2]
-  if (!levelMatch || !text) return null
-
-  const level = levelMatch.length
-  const id = generateHeadingId(text)
-
-  return { id, text, level }
-}
-
-const extractTocItems = (content: string): TocItem[] => {
-  const items: TocItem[] = []
-  const lines = content.split('\n')
-
-  for (const line of lines) {
-    const heading = parseHeading(line)
-    if (heading) {
-      items.push(heading)
-    }
-  }
-
-  return items
 }
 
 export const TableOfContents: FC<Props> = ({ content }) => {
@@ -101,7 +67,7 @@ export const TableOfContents: FC<Props> = ({ content }) => {
       <ul className={styles.list}>
         {toc.map((item) => (
           <li
-            key={item.id}
+            key={`toc-${item.id}`}
             className={clsx(
               styles.item,
               item.level === 1 && styles.level1,

@@ -1,5 +1,5 @@
 import type { Table } from '@liam-hq/schema'
-import { type FC, useCallback } from 'react'
+import { type FC, useCallback, useEffect, useRef } from 'react'
 import { useVersionOrThrow } from '../../../../../../../providers'
 import {
   useSchemaOrThrow,
@@ -23,6 +23,7 @@ type Props = {
 }
 
 export const TableDetail: FC<Props> = ({ table }) => {
+  const ref = useRef<HTMLElement>(null)
   const { setActiveTableName, setHiddenNodeIds } = useUserEditingOrThrow()
 
   const { current } = useSchemaOrThrow()
@@ -78,8 +79,20 @@ export const TableDetail: FC<Props> = ({ table }) => {
     fitView,
   ])
 
+  // scroll to the element when the TableDetail component is rendered if element id is provided as location.hash
+  useEffect(() => {
+    if (!location.hash) return
+    // location.hash starts with '#'; decode to match actual DOM id
+    const elementId = decodeURIComponent(location.hash.slice(1))
+    const element = document.getElementById(elementId)
+
+    // the element should be contained within the TableDetail component
+    if (!element || !ref.current?.contains(element)) return
+
+    element.scrollIntoView({ block: 'start' })
+  }, [])
   return (
-    <section className={styles.wrapper}>
+    <section className={styles.wrapper} ref={ref}>
       <Head table={table} />
       <div className={styles.body}>
         {table.comment && <Comment table={table} />}

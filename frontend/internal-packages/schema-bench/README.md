@@ -10,9 +10,11 @@ Schema-Bench benchmarks database schema generation and evaluation across models 
 ```bash
 rm -rf benchmark-workspace && pnpm --filter @liam-hq/schema-bench setupWorkspace
 ```
-This creates a benchmark workspace with two datasets:
+This creates a benchmark workspace with multiple datasets:
 - default: Standard schema generation (3 complex cases)
 - entity-extraction: Checks whether specified table/column names appear (5 cases)
+- ambiguous-recall: Stress test for ambiguous inputs and recall
+- logical-deletion: Evaluates designs that avoid naive is_deleted and separate PII from business references
 
 System features:
 - Parallel dataset processing for faster execution
@@ -30,7 +32,7 @@ pnpm --filter @liam-hq/schema-bench executeLiamDB -all
 pnpm --filter @liam-hq/schema-bench executeLiamDB -entity-extraction
 
 # Run on multiple datasets
-pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction
+pnpm --filter @liam-hq/schema-bench executeLiamDB -default -entity-extraction -logical-deletion
 ```
 
 OpenAI:

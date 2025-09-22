@@ -15,12 +15,12 @@ import { analyzeRequirementsNode } from './analyzeRequirementsNode'
 describe('analyzeRequirementsNode Integration', () => {
   it('should execute analyzeRequirementsNode with real APIs', async () => {
     // Arrange
+    const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(pmAgentStateAnnotation)
       .addNode('analyzeRequirementsNode', analyzeRequirementsNode)
       .addEdge(START, 'analyzeRequirementsNode')
       .addEdge('analyzeRequirementsNode', END)
-      .compile()
-    const { config, context } = await getTestConfig()
+      .compile({ checkpointer })
 
     const userInput =
       'Create a task management system where users can create projects, assign tasks, and track progress'
@@ -53,6 +53,7 @@ describe('analyzeRequirementsNode Integration', () => {
         },
       }),
       analyzedRequirementsRetryCount: 0,
+      artifactSaveSuccessful: false,
     }
 
     // Act

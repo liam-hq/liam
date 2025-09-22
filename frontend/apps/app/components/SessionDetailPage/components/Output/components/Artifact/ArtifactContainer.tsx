@@ -3,7 +3,7 @@
 import type { Artifact as ArtifactType } from '@liam-hq/artifact'
 import type { FC } from 'react'
 import { Artifact } from './Artifact'
-import { formatArtifactToMarkdown } from './utils/formatArtifactToMarkdown'
+import { formatArtifactToMarkdown } from './utils'
 
 type Props = {
   artifact: ArtifactType | null

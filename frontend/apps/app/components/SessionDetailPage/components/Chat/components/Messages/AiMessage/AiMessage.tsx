@@ -4,11 +4,11 @@ import {
   extractToolCallsFromMessage,
 } from '@liam-hq/agent/client'
 import type { FC } from 'react'
+import { useMemo } from 'react'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import { MarkdownContent } from '../../../../../../MarkdownContent'
 import { CopyButton } from '../../../../CopyButton'
-import markdownStyles from '../Markdown.module.css'
 import { DBAgent, LeadAgent, PMAgent, QAAgent } from './AgentAvatar'
 import styles from './AiMessage.module.css'
 import { ReasoningMessage } from './ReasoningMessage'
@@ -36,13 +36,28 @@ const getAgentInfo = (name: string | undefined) => {
 type Props = {
   message: AIMessage
   toolMessages: ToolMessage[]
+  onNavigate: (tab: 'erd' | 'artifact') => void
+  isWorkflowRunning: boolean
 }
 
-export const AiMessage: FC<Props> = ({ message, toolMessages }) => {
+export const AiMessage: FC<Props> = ({
+  message,
+  toolMessages,
+  onNavigate,
+  isWorkflowRunning,
+}) => {
   const { avatar, name } = getAgentInfo(message.name)
   const messageContentString = message.text
   const reasoningText = extractReasoningFromMessage(message)
   const toolCalls = extractToolCallsFromMessage(message)
+
+  // Combine toolCalls with their corresponding toolMessages
+  const toolCallsWithMessages = useMemo(() => {
+    return toolCalls.map((toolCall, index) => ({
+      toolCall,
+      toolMessage: toolMessages[index],
+    }))
+  }, [toolCalls, toolMessages])
 
   return (
     <div className={styles.wrapper}>
@@ -55,7 +70,7 @@ export const AiMessage: FC<Props> = ({ message, toolMessages }) => {
           {reasoningText && <ReasoningMessage content={reasoningText} />}
           {messageContentString !== '' && (
             <div className={styles.responseMessageWrapper}>
-              <div className={markdownStyles.markdownWrapper}>
+              <div className={styles.markdownWrapper}>
                 <MarkdownContent content={messageContentString} />
               </div>
               <div className={styles.copyButtonWrapper}>
@@ -67,7 +82,11 @@ export const AiMessage: FC<Props> = ({ message, toolMessages }) => {
               </div>
             </div>
           )}
-          <ToolCalls toolCalls={toolCalls} toolMessages={toolMessages} />
+          <ToolCalls
+            toolCallsWithMessages={toolCallsWithMessages}
+            onNavigate={onNavigate}
+            isStreaming={isWorkflowRunning}
+          />
         </div>
       </div>
     </div>

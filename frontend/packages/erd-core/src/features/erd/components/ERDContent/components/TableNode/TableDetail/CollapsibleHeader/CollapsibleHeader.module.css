@@ -49,4 +49,8 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.1s var(--default-timing-function);
+
+  /* enable to scroll to the top children element, */
+  padding-top: 40px;
+  margin-top: -40px;
 }

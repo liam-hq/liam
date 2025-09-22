@@ -14,7 +14,10 @@ const artifactDataSchema = v.object({
   updated_at: v.string(),
 })
 
-export function useRealtimeArtifact(designSessionId: string) {
+export function useRealtimeArtifact(
+  designSessionId: string,
+  onChangeArtifact?: (artifact: Artifact) => void,
+) {
   const { isPublic } = useViewMode()
   const [artifact, setArtifact] = useState<Artifact | null>(null)
   const [loading, setLoading] = useState(true)
@@ -99,6 +102,7 @@ export function useRealtimeArtifact(designSessionId: string) {
 
             const validatedData = v.parse(artifactDataSchema, payload.new)
             setArtifact(validatedData.artifact)
+            onChangeArtifact?.(validatedData.artifact)
           } catch (error) {
             handleError(error)
           }
@@ -113,7 +117,7 @@ export function useRealtimeArtifact(designSessionId: string) {
     return () => {
       channel.unsubscribe()
     }
-  }, [designSessionId, handleError, isPublic])
+  }, [designSessionId, handleError, isPublic, onChangeArtifact])
 
   return {
     artifact,

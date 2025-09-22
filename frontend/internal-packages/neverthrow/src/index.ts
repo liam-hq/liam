@@ -1,7 +1,5 @@
-import { Result, ResultAsync } from 'neverthrow'
-
-const defaultErrorFn = (error: unknown): Error =>
-  error instanceof Error ? error : new Error(String(error))
+import { Result } from 'neverthrow'
+import { defaultErrorFn } from './defaultErrorFn'
 
 export function fromThrowable<A extends readonly unknown[], T>(
   fn: (...args: A) => T,
@@ -17,35 +15,6 @@ export function fromThrowable<A extends readonly unknown[], T, E extends Error>(
   return Result.fromThrowable(fn, errorFn ?? defaultErrorFn)
 }
 
-export function fromAsyncThrowable<A extends readonly unknown[], T>(
-  fn: (...args: A) => Promise<T>,
-): (...args: A) => ResultAsync<T, Error>
-export function fromAsyncThrowable<
-  A extends readonly unknown[],
-  T,
-  E extends Error,
->(
-  fn: (...args: A) => Promise<T>,
-  errorFn: (error: unknown) => E,
-): (...args: A) => ResultAsync<T, E>
-export function fromAsyncThrowable<
-  A extends readonly unknown[],
-  T,
-  E extends Error,
->(fn: (...args: A) => Promise<T>, errorFn?: (error: unknown) => E) {
-  return ResultAsync.fromThrowable(fn, errorFn ?? defaultErrorFn)
-}
-
-export function fromPromise<T>(promise: Promise<T>): ResultAsync<T, Error>
-export function fromPromise<T, E extends Error>(
-  promise: Promise<T>,
-  errorFn: (error: unknown) => E,
-): ResultAsync<T, E>
-export function fromPromise<T, E extends Error>(
-  promise: Promise<T>,
-  errorFn?: (error: unknown) => E,
-) {
-  return ResultAsync.fromPromise(promise, errorFn ?? defaultErrorFn)
-}
-
+export { fromAsyncThrowable } from './fromAsyncThrowable'
+export { fromPromise } from './fromPromise'
 export { fromValibotSafeParse } from './fromValibotSafeParse'

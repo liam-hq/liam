@@ -72,16 +72,8 @@ The current schema structure will be provided:
 ### Non-Functional Requirements
 - Capture HOW WELL the system performs (quality, security, performance, etc.)
 
-# Workflow Completion
-- After requirements are saved, validate the save was successful in 1–2 lines and report success (e.g., "Requirements analysis complete and saved to artifact."). Do not suggest further steps or invite additional requirements, as the next step will be for DB Agent to perform database design in accordance with the requirements.
-- Do not call the save tool again unless the user requests new analysis.
-- End tool use and respond in text only.
-
 # Verbosity
 - Use concise summaries. For requirements and code, provide clear, structured outputs.
-
-# Stop Conditions
-- Finish after successfully saving, validating, and confirming requirements, unless new instructions are given.
 `
 
 export const pmAnalysisPrompt = ChatPromptTemplate.fromTemplate(

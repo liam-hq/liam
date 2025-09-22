@@ -6,6 +6,7 @@ import { type FC, useTransition } from 'react'
 import type { TimelineItemEntry } from '../../types'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
+import { ErrorDisplay } from './components/ErrorDisplay'
 import { Messages } from './components/Messages'
 import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
 import { generateTimelineItemId } from './services/timelineItemHelpers'
@@ -19,8 +20,10 @@ type Props = {
   // onVersionView: (versionId: string) => void
   // onRetry?: () => void
   isWorkflowRunning?: boolean
+  error?: string | null
   // onArtifactLinkClick: () => void
   // isDeepModelingEnabled: boolean
+  onNavigate: (tab: 'erd' | 'artifact') => void
 }
 
 export const Chat: FC<Props> = ({
@@ -28,6 +31,8 @@ export const Chat: FC<Props> = ({
   messages,
   onMessageSend,
   isWorkflowRunning = false,
+  onNavigate,
+  error,
 }) => {
   const { containerRef } = useScrollToBottom<HTMLDivElement>(messages.length)
   const [, startTransition] = useTransition()
@@ -59,7 +64,12 @@ export const Chat: FC<Props> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.messagesContainer} ref={containerRef}>
-        <Messages messages={messages} />
+        <Messages
+          messages={messages}
+          onNavigate={onNavigate}
+          isWorkflowRunning={isWorkflowRunning}
+        />
+        {error && <ErrorDisplay error={error} />}
         {isWorkflowRunning && <WorkflowRunningIndicator />}
       </div>
       <ChatInput

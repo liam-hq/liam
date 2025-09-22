@@ -64,6 +64,17 @@
   background-color: var(--pane-background-active);
 }
 
+.tab:disabled,
+.tab:disabled:hover,
+.tab:disabled::before,
+.tab:disabled::after,
+.tab[aria-disabled='true'],
+.tab[aria-disabled='true']:hover,
+.tab[aria-disabled='true']::before,
+.tab[aria-disabled='true']::after {
+  background-color: transparent;
+}
+
 .erdSchemaTabsGroup {
   display: flex;
   align-items: center;
@@ -71,7 +82,7 @@
   padding: var(--spacing-1half);
 }
 
-.erdSchemaTabsGroup[data-state='active'] {
+.erdSchemaTabsGroup:not([aria-disabled='true'])[data-state='active'] {
   background-color: var(--pane-background-active);
 }
 
@@ -97,6 +108,11 @@
   background-color: var(--button-background-hover);
 }
 
+.erdSchemaTrigger:disabled {
+  color: var(--button-disabled-foreground);
+  background-color: transparent;
+}
+
 .divider {
   width: 1px;
   height: 1rem;
@@ -108,6 +124,10 @@
   font-size: var(--font-size-4);
   line-height: 1;
   color: var(--global-foreground);
+}
+
+.artifactTrigger:disabled {
+  color: var(--button-disabled-foreground);
 }
 
 .tail {

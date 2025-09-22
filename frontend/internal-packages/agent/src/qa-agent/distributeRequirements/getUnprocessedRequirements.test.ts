@@ -37,6 +37,7 @@ const createMockTestcase = (requirementId: string): Testcase => ({
   dmlOperation: {
     operation_type: 'SELECT',
     sql: 'SELECT * FROM users',
+    description: 'Test DML operation',
     dml_execution_logs: [],
   },
 })

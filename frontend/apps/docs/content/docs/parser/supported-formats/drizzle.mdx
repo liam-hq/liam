@@ -2,4 +2,37 @@
 title: Drizzle
 ---
 
-TBD
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs'; // For package-install code blocks
+
+If you're using [Drizzle ORM](https://orm.drizzle.team/), you can automatically generate an ER diagram from your schema files. This page provides instructions and tips for generating an ER diagram in a Drizzle project.
+
+## Drizzle and Schema Files
+
+Drizzle ORM defines database schemas using TypeScript files, typically located in files like `src/db/schema.ts`. The schema files use Drizzle's type-safe API to define tables, columns, relations, and constraints.
+
+When using Liam CLI, specify `--format drizzle` and `--input path/to/schema.ts` as follows:
+
+```npm
+npx @liam-hq/cli erd build --format drizzle --input src/db/schema.ts
+```
+
+If the above command runs without issue, you should see an ER diagram generated.
+
+## Database Type Support
+
+Drizzle support in Liam ERD automatically detects whether you're using PostgreSQL or MySQL based on your imports:
+
+- **PostgreSQL**: Uses imports from `drizzle-orm/pg-core` (e.g., `pgTable`, `pgEnum`)
+- **MySQL**: Uses imports from `drizzle-orm/mysql-core` (e.g., `mysqlTable`, `mysqlEnum`)
+
+The parser supports common Drizzle features including tables, columns, relationships, indexes, and constraints. However, some advanced features like multiple database schemas may not be fully supported yet.
+
+## Under the Hood
+
+Liam CLI analyzes your TypeScript schema files using a custom parser that:
+- Automatically detects the database type (PostgreSQL or MySQL) from your imports
+- Extracts table definitions, column types, and relationships
+- Supports Drizzle-specific features like enums, indexes, and constraints
+- Handles complex type definitions and default values
+
+Note: Drizzle support is currently marked as experimental. While it works reliably for most use cases, please [report any issues](https://github.com/liam-hq/liam/issues) you encounter to help us improve the parser.

@@ -15,6 +15,7 @@ type Params = {
   initialVersions: Version[]
   initialDisplayedSchema: Schema
   initialPrevSchema: Schema
+  onChangeSelectedVersion: (version: Version) => void
 }
 
 export function useRealtimeVersionsWithSchema({
@@ -22,6 +23,7 @@ export function useRealtimeVersionsWithSchema({
   initialVersions,
   initialDisplayedSchema,
   initialPrevSchema,
+  onChangeSelectedVersion,
 }: Params) {
   const { isPublic } = useViewMode()
   const [isPending, startTransition] = useTransition()
@@ -87,8 +89,12 @@ export function useRealtimeVersionsWithSchema({
   }, [])
 
   useEffect(() => {
-    setSelectedVersion(versions[0] ?? null)
-  }, [versions])
+    const targetVersion = versions[0] ?? null
+    setSelectedVersion(targetVersion)
+    if (targetVersion !== null) {
+      onChangeSelectedVersion(targetVersion)
+    }
+  }, [versions, onChangeSelectedVersion])
 
   useEffect(() => {
     handleBuildCurrentAndPrevSchema(selectedVersion)

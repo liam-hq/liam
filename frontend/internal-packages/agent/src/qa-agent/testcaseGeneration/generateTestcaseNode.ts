@@ -5,6 +5,7 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
+import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 import { saveTestcaseTool } from '../tools/saveTestcaseTool'
@@ -20,6 +21,7 @@ const model = new ChatOpenAI({
   verbosity: 'low',
   useResponsesApi: true,
 }).bindTools([saveTestcaseTool], {
+  strict: true,
   parallel_tool_calls: false,
   tool_choice: 'auto',
 })
@@ -32,7 +34,9 @@ const model = new ChatOpenAI({
 export async function generateTestcaseNode(
   state: typeof testcaseAnnotation.State,
 ): Promise<{ messages: BaseMessage[] }> {
-  const { currentRequirement, schemaContext, messages } = state
+  const { currentRequirement, schemaData, messages } = state
+
+  const schemaContext = convertSchemaToText(schemaData)
 
   const contextMessage = await humanPromptTemplateForTestcaseGeneration.format({
     schemaContext,

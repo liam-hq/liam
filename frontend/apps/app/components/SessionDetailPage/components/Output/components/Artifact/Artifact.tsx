@@ -8,15 +8,15 @@ import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import { CopyButton } from '../../../CopyButton'
 import styles from './Artifact.module.css'
-import { TableOfContents } from './TableOfContents/TableOfContents'
 import {
   EXECUTION_SECTION_TITLE,
   FAILURE_ICON,
   FAILURE_STATUS,
-  generateHeadingId,
   SUCCESS_ICON,
   SUCCESS_STATUS,
-} from './utils'
+} from './constants'
+import { TableOfContents } from './TableOfContents/TableOfContents'
+import { generateHeadingId } from './utils'
 
 type CodeProps = {
   className?: string

@@ -129,7 +129,9 @@ export async function POST(request: Request) {
         }
         controller.enqueue(enc.encode(line(SSE_EVENTS.END, null)))
       } catch (err) {
-        Sentry.captureException(err)
+        Sentry.captureException(err, {
+          tags: { designSchemaId: designSessionId },
+        })
 
         const message = err instanceof Error ? err.message : String(err)
         controller.enqueue(enc.encode(line(SSE_EVENTS.ERROR, { message })))

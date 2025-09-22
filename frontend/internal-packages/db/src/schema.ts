@@ -24,17 +24,6 @@ export const buildingSchemaVersionsSchema: v.GenericSchema<
   reverse_patch: v.nullable(jsonSchema),
 })
 
-export const workflowRunsSchema: v.GenericSchema<Tables<'workflow_runs'>> =
-  v.object({
-    id: v.pipe(v.string(), v.uuid()),
-    workflow_run_id: v.pipe(v.string(), v.uuid()),
-    design_session_id: v.pipe(v.string(), v.uuid()),
-    organization_id: v.pipe(v.string(), v.uuid()),
-    status: v.picklist(['pending', 'success', 'error']),
-    created_at: v.string(),
-    updated_at: v.string(),
-  })
-
 export const timelineItemsSchema: v.GenericSchema<Tables<'timeline_items'>> =
   v.object({
     id: v.string(),
@@ -54,5 +43,4 @@ export const timelineItemsSchema: v.GenericSchema<Tables<'timeline_items'>> =
     updated_at: v.string(),
     organization_id: v.pipe(v.string(), v.uuid()),
     building_schema_version_id: v.nullable(v.pipe(v.string(), v.uuid())),
-    query_result_id: v.nullable(v.pipe(v.string(), v.uuid())),
   })

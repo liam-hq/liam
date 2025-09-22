@@ -28,7 +28,7 @@ const HeaderDemo: FC<ComponentProps<typeof Header>> = (props) => {
   return (
     <TabsRoot
       value={tabValue}
-      style={{ minWidth: '400px', width: '100%' }}
+      style={{ minWidth: '700px', width: '100%' }}
       onValueChange={handleChangeValue}
     >
       <Header {...props} tabValue={tabValue} />
@@ -63,3 +63,33 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
+
+export const WithArtifactDoc: Story = {
+  args: {
+    tabValue: OUTPUT_TABS.ARTIFACT,
+    artifactDoc: `# Database Schema Documentation
+
+## Overview
+This is the database schema documentation generated from the current design session.
+
+## Tables
+
+### users
+The users table stores user account information.
+
+**Columns:**
+- id: Primary key
+- email: User email address
+- created_at: Account creation timestamp
+
+### posts
+The posts table stores user-generated content.
+
+**Columns:**
+- id: Primary key
+- user_id: Foreign key to users table
+- title: Post title
+- content: Post content
+- published_at: Publication timestamp`,
+  },
+}

@@ -145,7 +145,6 @@ export const PublicSessionDetailPage = async ({
               patch: v.patch ?? {},
               reverse_patch: v.reverse_patch ?? {},
             }))}
-          initialWorkflowRunStatus={null}
           isDeepModelingEnabled={false}
           initialIsPublic={true}
         />

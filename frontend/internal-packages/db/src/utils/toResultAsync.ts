@@ -1,27 +1,53 @@
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 /**
+ * Options for toResultAsync function
+ */
+type ToResultAsyncOptions = {
+  allowNull?: boolean
+}
+
+/**
  * Convert Supabase query result to ResultAsync for error handling with neverthrow
  *
  * @param queryBuilder - The Supabase query builder
+ * @param options - Options for handling the result
  * @returns ResultAsync with the data or error
  *
  * @example
  * ```ts
- * // For single result
+ * // For select result - null data is an error
  * return toResultAsync(
  *   client.from('table').select().single()
  * )
  *
- * // For array result
+ * // For upsert/delete operation - null data is allowed
  * return toResultAsync(
- *   client.from('table').select()
+ *   client.from('table').upsert(data),
+ *   { allowNull: true }
  * )
  * ```
  */
-export const toResultAsync = <T>(
+export function toResultAsync<T>(
   queryBuilder: PromiseLike<{ data: T | null; error: unknown }>,
-): ResultAsync<T, Error> => {
+): ResultAsync<T, Error>
+
+export function toResultAsync<T>(
+  queryBuilder: PromiseLike<{ data: T | null; error: unknown }>,
+  options: { allowNull: true },
+): ResultAsync<T | null, Error>
+
+export function toResultAsync<T>(
+  queryBuilder: PromiseLike<{ data: T | null; error: unknown }>,
+  options: { allowNull: false },
+): ResultAsync<T, Error>
+
+export function toResultAsync<T>(
+  queryBuilder: PromiseLike<{ data: T | null; error: unknown }>,
+  options?: ToResultAsyncOptions,
+): ResultAsync<T | null, Error> | ResultAsync<T, Error> {
+  const allowNull = options?.allowNull ?? false
+
   return ResultAsync.fromPromise(
     queryBuilder,
     (error) =>
@@ -37,7 +63,7 @@ export const toResultAsync = <T>(
       return errAsync(new Error(errorMessage))
     }
 
-    if (data === null) {
+    if (data === null && !allowNull) {
       return errAsync(new Error('No data returned'))
     }
 

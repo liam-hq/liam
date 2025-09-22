@@ -129,12 +129,6 @@ export const useMigrationsViewer = ({
   useEffect(() => {
     if (!container) return
 
-    // Clean up existing view
-    if (view) {
-      view.destroy()
-      setView(undefined)
-    }
-
     const extensions = buildExtensions(
       showComments,
       onQuickFix,
@@ -145,6 +139,11 @@ export const useMigrationsViewer = ({
     setView(viewCurrent)
 
     applyComments(viewCurrent, showComments, comments)
+
+    // Cleanup function
+    return () => {
+      viewCurrent.destroy()
+    }
   }, [
     doc,
     prevDoc,
@@ -156,7 +155,6 @@ export const useMigrationsViewer = ({
     buildExtensions,
     createEditorView,
     onQuickFix,
-    view,
   ])
 
   useEffect(() => {
@@ -165,14 +163,6 @@ export const useMigrationsViewer = ({
     const effect = setCommentsEffect.of(comments)
     view.dispatch({ effects: [effect] })
   }, [comments, view, showComments])
-
-  useEffect(() => {
-    return () => {
-      if (view) {
-        view.destroy()
-      }
-    }
-  }, [view])
 
   return {
     ref,

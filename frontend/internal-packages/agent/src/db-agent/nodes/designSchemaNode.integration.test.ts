@@ -14,12 +14,12 @@ import { designSchemaNode } from './designSchemaNode'
 describe('designSchemaNode Integration', () => {
   it('should execute designSchemaNode with real APIs', async () => {
     // Arrange
+    const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(dbAgentAnnotation)
       .addNode('designSchemaNode', designSchemaNode)
       .addEdge(START, 'designSchemaNode')
       .addEdge('designSchemaNode', END)
-      .compile()
-    const { config, context } = await getTestConfig()
+      .compile({ checkpointer })
 
     const userInput =
       'Create a user management system with users, roles, and permissions tables'

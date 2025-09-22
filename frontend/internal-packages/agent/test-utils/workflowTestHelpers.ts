@@ -3,6 +3,7 @@ import {
   isBaseMessage,
 } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
+import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import {
   createLogger,
   getLogLevel,
@@ -62,6 +63,7 @@ export const getTestConfig = async (options?: {
     userId: string
     organizationId: string
   }
+  checkpointer: BaseCheckpointSaver
 }> => {
   // Store original API key value to restore later
   const originalApiKey = process.env['OPENAI_API_KEY']
@@ -111,6 +113,7 @@ export const getTestConfig = async (options?: {
       userId: user.id,
       organizationId: organization.id,
     },
+    checkpointer: repositories.schema.checkpointer,
   }
 }
 

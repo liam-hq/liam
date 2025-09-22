@@ -185,6 +185,7 @@ export const saveRequirementsToArtifactTool: StructuredTool = tool(
       update: {
         analyzedRequirements,
         messages: [toolMessage],
+        artifactSaveSuccessful: true,
       },
     })
   },

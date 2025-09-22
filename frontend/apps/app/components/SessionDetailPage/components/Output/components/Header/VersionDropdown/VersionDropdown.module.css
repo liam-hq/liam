@@ -6,6 +6,6 @@
     var(--default-timing-function);
 }
 
-.button:hover {
+.button:not(:disabled):hover {
   background-color: var(--button-background-hover);
 }

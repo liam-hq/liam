@@ -11,9 +11,10 @@ graph TD;
 	invokeSaveArtifactTool(invokeSaveArtifactTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> analyzeRequirements;
-	invokeSaveArtifactTool --> analyzeRequirements;
 	analyzeRequirements -.-> invokeSaveArtifactTool;
 	analyzeRequirements -. &nbsp;END&nbsp; .-> __end__;
+	invokeSaveArtifactTool -. &nbsp;END&nbsp; .-> __end__;
+	invokeSaveArtifactTool -.-> analyzeRequirements;
 	analyzeRequirements -.-> analyzeRequirements;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;

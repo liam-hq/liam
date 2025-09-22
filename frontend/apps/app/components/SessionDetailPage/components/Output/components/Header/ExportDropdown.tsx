@@ -15,11 +15,12 @@ import {
   useToast,
 } from '@liam-hq/ui'
 import { fromPromise } from 'neverthrow'
-import type { FC } from 'react'
+import { type FC, useCallback, useState } from 'react'
 import { schemaToDdl } from '../SQL/utils/schemaToDdl'
 import styles from './ExportDropdown.module.css'
 
 type Props = {
+  disabled?: boolean
   schema: Schema
   artifactDoc?: string
   cumulativeOperations: Operation[]
@@ -63,11 +64,25 @@ Please implement according to this design. Use the above requirements analysis a
 }
 
 export const ExportDropdown: FC<Props> = ({
+  disabled,
   schema,
   artifactDoc,
   cumulativeOperations,
 }) => {
   const toast = useToast()
+
+  const [open, setOpen] = useState(false)
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (disabled) {
+        setOpen(false)
+        return
+      }
+
+      setOpen(open)
+    },
+    [disabled],
+  )
 
   const handleCopyAIPrompt = async () => {
     if (!artifactDoc) return
@@ -127,9 +142,10 @@ export const ExportDropdown: FC<Props> = ({
   }
 
   return (
-    <DropdownMenuRoot>
+    <DropdownMenuRoot open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
+          disabled={disabled}
           variant="outline-secondary"
           size="md"
           rightIcon={<ChevronDown size={16} />}

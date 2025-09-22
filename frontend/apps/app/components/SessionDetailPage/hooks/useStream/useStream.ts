@@ -42,6 +42,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
   )
 
   const [isStreaming, setIsStreaming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
   const stop = useCallback(() => {
@@ -49,11 +50,16 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
     abortRef.current = null
   }, [])
 
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
   const start = useCallback(async (params: ChatRequest) => {
     abortRef.current?.abort()
     abortRef.current = new AbortController()
     setIsStreaming(true)
+    setError(null) // Clear error when starting new request
 
     try {
       const res = await fetch('/api/chat/stream', {
@@ -75,6 +81,23 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
         if (ev.event === SSE_EVENTS.END) {
           setIsStreaming(false)
           break
+        }
+
+        if (ev.event === SSE_EVENTS.ERROR) {
+          setIsStreaming(false)
+          const errorData: unknown =
+            typeof ev.data === 'string' ? JSON.parse(ev.data) : {}
+          const message: string =
+            typeof errorData === 'object' &&
+            errorData !== null &&
+            'message' in errorData &&
+            typeof errorData.message === 'string'
+              ? errorData.message
+              : 'An unknown error occurred during streaming.'
+
+          // Set error state
+          setError(message)
+          continue // Continue streaming even with error
         }
 
         if (ev.event !== SSE_EVENTS.MESSAGES) continue
@@ -121,7 +144,9 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
   return {
     messages,
     isStreaming,
+    error,
     stop,
     start,
+    clearError,
   }
 }

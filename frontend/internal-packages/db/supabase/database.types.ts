@@ -1417,51 +1417,6 @@ export type Database = {
         }
         Relationships: []
       }
-      workflow_runs: {
-        Row: {
-          created_at: string
-          design_session_id: string
-          id: string
-          organization_id: string | null
-          status: Database['public']['Enums']['workflow_run_status']
-          updated_at: string
-          workflow_run_id: string
-        }
-        Insert: {
-          created_at?: string
-          design_session_id: string
-          id?: string
-          organization_id?: string | null
-          status?: Database['public']['Enums']['workflow_run_status']
-          updated_at?: string
-          workflow_run_id: string
-        }
-        Update: {
-          created_at?: string
-          design_session_id?: string
-          id?: string
-          organization_id?: string | null
-          status?: Database['public']['Enums']['workflow_run_status']
-          updated_at?: string
-          workflow_run_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'workflow_runs_design_session_id_fkey'
-            columns: ['design_session_id']
-            isOneToOne: false
-            referencedRelation: 'design_sessions'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'workflow_runs_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never

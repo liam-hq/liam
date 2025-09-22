@@ -10,13 +10,14 @@ import { validateInitialSchemaNode } from './validateInitialSchemaNode'
 describe('validateInitialSchemaNode Integration', () => {
   describe('First execution scenarios', () => {
     it('should display fresh database message when schema is empty', async () => {
+      const { config, context, checkpointer } = await getTestConfig({
+        useOpenAI: false,
+      })
       const graph = new StateGraph(workflowAnnotation)
         .addNode('validateInitialSchema', validateInitialSchemaNode)
         .addEdge(START, 'validateInitialSchema')
         .addEdge('validateInitialSchema', END)
-        .compile()
-
-      const { config, context } = await getTestConfig({ useOpenAI: false })
+        .compile({ checkpointer })
 
       const state: WorkflowState = {
         messages: [new HumanMessage('Create a new database schema')],
@@ -48,13 +49,14 @@ describe('validateInitialSchemaNode Integration', () => {
     })
 
     it('should validate existing schema successfully', async () => {
+      const { config, context, checkpointer } = await getTestConfig({
+        useOpenAI: false,
+      })
       const graph = new StateGraph(workflowAnnotation)
         .addNode('validateInitialSchema', validateInitialSchemaNode)
         .addEdge(START, 'validateInitialSchema')
         .addEdge('validateInitialSchema', END)
-        .compile()
-
-      const { config, context } = await getTestConfig({ useOpenAI: false })
+        .compile({ checkpointer })
 
       const state: WorkflowState = {
         messages: [new HumanMessage('Update my existing schema')],
@@ -102,13 +104,14 @@ describe('validateInitialSchemaNode Integration', () => {
 
   describe('Non-first execution scenarios', () => {
     it('should skip validation when AI messages already exist', async () => {
+      const { config, context, checkpointer } = await getTestConfig({
+        useOpenAI: false,
+      })
       const graph = new StateGraph(workflowAnnotation)
         .addNode('validateInitialSchema', validateInitialSchemaNode)
         .addEdge(START, 'validateInitialSchema')
         .addEdge('validateInitialSchema', END)
-        .compile()
-
-      const { config, context } = await getTestConfig({ useOpenAI: false })
+        .compile({ checkpointer })
 
       const state: WorkflowState = {
         messages: [

@@ -4,7 +4,7 @@ import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
 import { useRealtimeArtifact } from './components/Artifact/hooks/useRealtimeArtifact'
-import { formatArtifactToMarkdown } from './components/Artifact/utils/formatArtifactToMarkdown'
+import { formatArtifactToMarkdown } from './components/Artifact/utils'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
 import type { VersionDropdown } from './components/Header/VersionDropdown'
@@ -83,7 +83,6 @@ export const Output: FC<Props> = ({
         schema={schema}
         tabValue={tabValue}
         artifactDoc={artifactDoc}
-        hasArtifact={!!artifact}
         designSessionId={designSessionId}
         initialIsPublic={initialIsPublic}
         {...propsForVersionDropdown}

@@ -18,7 +18,7 @@ const wrapper: FC<PropsWithChildren> = ({ children }) => (
 )
 
 describe('id', () => {
-  it('renders column name as a heading', () => {
+  it('renders column name as a linked heading', () => {
     render(
       <ColumnsItem
         tableId="users"
@@ -31,6 +31,10 @@ describe('id', () => {
     expect(
       screen.getByRole('heading', { name: 'id', level: 3 }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'id' })).toHaveAttribute(
+      'href',
+      '#users__columns__id',
+    )
   })
 })
 

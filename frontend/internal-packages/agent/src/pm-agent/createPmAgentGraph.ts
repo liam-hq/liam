@@ -3,7 +3,7 @@ import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { RETRY_POLICY } from '../utils/errorHandling'
 import { analyzeRequirementsNode } from './nodes/analyzeRequirementsNode'
 import { invokeSaveArtifactToolNode } from './nodes/invokeSaveArtifactToolNode'
-import { pmAgentStateAnnotation } from './pmAgentAnnotations'
+import { type PmAgentState, pmAgentStateAnnotation } from './pmAgentAnnotations'
 import { routeAfterAnalyzeRequirements } from './routing/routeAfterAnalyzeRequirements'
 
 /**
@@ -28,12 +28,21 @@ export const createPmAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     })
 
     .addEdge(START, 'analyzeRequirements')
-    .addEdge('invokeSaveArtifactTool', 'analyzeRequirements')
     .addConditionalEdges('analyzeRequirements', routeAfterAnalyzeRequirements, {
       invokeSaveArtifactTool: 'invokeSaveArtifactTool',
       END: END,
       analyzeRequirements: 'analyzeRequirements',
     })
+    .addConditionalEdges(
+      'invokeSaveArtifactTool',
+      (state: PmAgentState) => {
+        return state.artifactSaveSuccessful ? 'END' : 'analyzeRequirements'
+      },
+      {
+        END: END,
+        analyzeRequirements: 'analyzeRequirements', // Retry on error
+      },
+    )
 
   return checkpointer
     ? pmAgentGraph.compile({ checkpointer })

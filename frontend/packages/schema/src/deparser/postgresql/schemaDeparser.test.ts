@@ -1773,6 +1773,64 @@ describe('postgresqlSchemaDeparser', () => {
         expect(result.value).not.toContain("DEFAULT 'gen_random_uuid()'")
         expect(result.value).not.toContain("DEFAULT 'now()'")
       })
+
+      it('should handle JSONB default values with cast expressions correctly', () => {
+        const schema = aSchema({
+          tables: {
+            users: aTable({
+              name: 'users',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'uuid',
+                  notNull: true,
+                  default: 'gen_random_uuid()',
+                }),
+                metadata: aColumn({
+                  name: 'metadata',
+                  type: 'jsonb',
+                  default: "'{}'::jsonb", // PostgreSQL cast expression
+                  notNull: false,
+                }),
+                settings: aColumn({
+                  name: 'settings',
+                  type: 'jsonb',
+                  default: '\'{"theme": "dark"}\'::jsonb', // Cast expression with JSON content
+                  notNull: false,
+                }),
+                tags: aColumn({
+                  name: 'tags',
+                  type: 'jsonb',
+                  default: "'[]'::jsonb", // Array cast expression
+                  notNull: false,
+                }),
+              },
+              constraints: {
+                users_pkey: aPrimaryKeyConstraint({
+                  name: 'users_pkey',
+                  columnNames: ['id'],
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Verify the exact DDL output
+        const expectedDDL = `CREATE TABLE "users" (
+  "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+  "metadata" jsonb DEFAULT '{}'::jsonb,
+  "settings" jsonb DEFAULT '{"theme": "dark"}'::jsonb,
+  "tags" jsonb DEFAULT '[]'::jsonb
+);
+
+ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
+
+        expect(result.value).toBe(expectedDDL)
+      })
     })
   })
 })

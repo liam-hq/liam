@@ -13,12 +13,13 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.2",
+    "@biomejs/biome": "2.2.3",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.34.0",
-    "supabase": "2.40.1",
+    "eslint": "9.35.0",
+    "supabase": "2.40.6",
     "type-fest": "4.41.0",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
   },
   "scripts": {
     "build": "tsc",
@@ -37,6 +38,7 @@
     "supabase:migration:up": "supabase migration up",
     "supabase:reset": "pnpm supabase db reset",
     "supabase:start": "pnpm supabase start",
-    "supabase:stop": "pnpm supabase stop"
+    "supabase:stop": "pnpm supabase stop",
+    "test": "vitest --watch=false --passWithNoTests"
   }
 }

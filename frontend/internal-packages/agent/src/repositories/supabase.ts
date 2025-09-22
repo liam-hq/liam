@@ -19,17 +19,14 @@ import type {
   CreateArtifactParams,
   CreateTimelineItemParams,
   CreateVersionParams,
-  CreateWorkflowRunParams,
   DesignSessionData,
   SchemaData,
   SchemaRepository,
   TimelineItemResult,
   UpdateArtifactParams,
   UpdateTimelineItemParams,
-  UpdateWorkflowRunStatusParams,
   UserInfo,
   VersionResult,
-  WorkflowRunResult,
 } from './types'
 
 /**
@@ -599,66 +596,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     return {
       success: true,
       artifact: artifactData,
-    }
-  }
-
-  async createWorkflowRun(
-    params: CreateWorkflowRunParams,
-  ): Promise<WorkflowRunResult> {
-    const { designSessionId, workflowRunId } = params
-
-    const { data: workflowRun, error } = await this.client
-      .from('workflow_runs')
-      .insert({
-        design_session_id: designSessionId,
-        workflow_run_id: workflowRunId,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error(
-        'Failed to create workflow run:',
-        JSON.stringify(error, null, 2),
-      )
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    return {
-      success: true,
-      workflowRun,
-    }
-  }
-
-  async updateWorkflowRunStatus(
-    params: UpdateWorkflowRunStatusParams,
-  ): Promise<WorkflowRunResult> {
-    const { workflowRunId, status } = params
-
-    const { data: workflowRun, error } = await this.client
-      .from('workflow_runs')
-      .update({ status })
-      .eq('workflow_run_id', workflowRunId)
-      .select()
-      .single()
-
-    if (error) {
-      console.error(
-        'Failed to update workflow run status:',
-        JSON.stringify(error, null, 2),
-      )
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    return {
-      success: true,
-      workflowRun,
     }
   }
 

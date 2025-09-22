@@ -12,12 +12,12 @@ import { summarizeWorkflow } from './index'
 describe('summarizeWorkflow Integration', () => {
   it('should execute summarizeWorkflow with real APIs', async () => {
     // Arrange
+    const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(workflowAnnotation)
       .addNode('summarizeWorkflow', summarizeWorkflow)
       .addEdge(START, 'summarizeWorkflow')
       .addEdge('summarizeWorkflow', END)
-      .compile()
-    const { config, context } = await getTestConfig()
+      .compile({ checkpointer })
 
     // Explicitly define the state needed for summarization
     const state: WorkflowState = {
