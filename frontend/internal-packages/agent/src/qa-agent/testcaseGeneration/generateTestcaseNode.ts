@@ -20,7 +20,7 @@ const model = new ChatOpenAI({
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
   useResponsesApi: true,
-  // timeout: 40000, // 120 seconds timeout
+  timeout: 120000, // 120 seconds timeout
 }).bindTools([saveTestcaseTool], {
   strict: true,
   parallel_tool_calls: false,
@@ -58,18 +58,7 @@ export async function generateTestcaseNode(
     ])
   })
 
-  // Create timeout promise that rejects after 120 seconds
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(new Error(`Stream model timeout after 120 seconds for ${currentRequirement.category}`))
-    }, 120000) // 120 seconds
-  })
-
-  // Race between stream model and timeout
-  const streamResult = await Promise.race([
-    streamModel(),
-    timeoutPromise,
-  ])
+  const streamResult = await streamModel()
 
   if (streamResult.isErr()) {
     // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
