@@ -20,13 +20,13 @@ const model = new ChatOpenAI({
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
   useResponsesApi: true,
-  // timeout: 50000, // 50 seconds timeout
-  maxRetries: 0,
+  // timeout:,
+  maxRetries: 0, // default to 6
 }).bindTools([saveTestcaseTool], {
   strict: true,
   parallel_tool_calls: false,
-  // timeout: 15000,
   tool_choice: 'auto',
+  // timeout:,
 })
 
 /**
@@ -61,11 +61,10 @@ export async function generateTestcaseNode(
       ],
       {
         options: {
-          timeout: 40000,
-          maxRetries: 10,
+          timeout: 120000,
+          maxRetries: 1,
         },
-        // timeout: 15000,
-        // timeout: 20000, // 20 seconds timeout
+        // timeout:,
       },
     )
   })
