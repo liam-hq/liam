@@ -20,7 +20,7 @@ const model = new ChatOpenAI({
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
   useResponsesApi: true,
-  timeout: 120000, // 120 seconds timeout
+  timeout: 50000, // 50 seconds timeout
 }).bindTools([saveTestcaseTool], {
   strict: true,
   parallel_tool_calls: false,
