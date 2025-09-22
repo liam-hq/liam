@@ -92,9 +92,9 @@ export async function generateTestcaseNode(
     return model.stream(
       [
         new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
-        new HumanMessage(contextMessage),
         // Include all previous messages in this subgraph's scope
         ...cleanedMessages,
+        new HumanMessage(contextMessage),
       ],
       {
         signal: abortController.signal, // Add AbortSignal for timeout
@@ -116,8 +116,6 @@ export async function generateTestcaseNode(
     )
   }
 
-  clearTimeout(timeoutId)
-
   console.info(
     `[generateTestcaseNode] API stream started after ${Date.now() - apiStart}ms`,
   )
@@ -135,10 +133,12 @@ export async function generateTestcaseNode(
       maxStreamTime: 100000, // 100 seconds max for streaming (within 120s total)
     })
     streamCompleted = true
+    clearTimeout(timeoutId)
     console.info(
       `[generateTestcaseNode] Stream processing completed: ${Date.now() - streamStart}ms`,
     )
   } catch (error) {
+    clearTimeout(timeoutId)
     console.error(
       `[generateTestcaseNode] Stream processing error after ${Date.now() - streamStart}ms: ${error}`,
     )
