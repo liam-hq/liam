@@ -20,7 +20,7 @@ const model = new ChatOpenAI({
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
   useResponsesApi: true,
-  timeout: 60000, // 60 seconds timeout
+  timeout: 120000, // 120 seconds timeout
   maxRetries: 0, // Disable OpenAI SDK level retries (controlled by LangGraph)
   maxConcurrency: 1, // Limit concurrent requests
 }).bindTools([saveTestcaseTool], {
@@ -44,11 +44,11 @@ export async function generateTestcaseNode(
   const abortController = new AbortController()
   const timeoutId = setTimeout(() => {
     console.error(
-      '[generateTestcaseNode] Aborting due to timeout after 60s - ' +
+      '[generateTestcaseNode] Aborting due to timeout after 120s - ' +
         `Category: ${currentRequirement.category}`,
     )
     abortController.abort()
-  }, 60000) // 60 second absolute timeout
+  }, 120000) // 120 second absolute timeout
 
   // Log start of processing
   console.info(
@@ -132,7 +132,7 @@ export async function generateTestcaseNode(
     response = await streamLLMResponse(streamResult.value, {
       agentName: 'qa',
       eventType: 'messages',
-      maxStreamTime: 50000, // 50 seconds max for streaming (within 60s total)
+      maxStreamTime: 100000, // 100 seconds max for streaming (within 120s total)
     })
     streamCompleted = true
     console.info(
