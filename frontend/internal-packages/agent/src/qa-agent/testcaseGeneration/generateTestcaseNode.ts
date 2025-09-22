@@ -20,10 +20,12 @@ const model = new ChatOpenAI({
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
   useResponsesApi: true,
-  timeout: 50000, // 50 seconds timeout
+  // timeout: 50000, // 50 seconds timeout
+  maxRetries: 0,
 }).bindTools([saveTestcaseTool], {
   strict: true,
   parallel_tool_calls: false,
+  // timeout: 15000,
   tool_choice: 'auto',
 })
 
@@ -50,12 +52,22 @@ export async function generateTestcaseNode(
   const cleanedMessages = removeReasoningFromMessages(messages)
 
   const streamModel = fromAsyncThrowable(() => {
-    return model.stream([
-      new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
-      new HumanMessage(contextMessage),
-      // Include all previous messages in this subgraph's scope
-      ...cleanedMessages,
-    ])
+    return model.stream(
+      [
+        new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
+        new HumanMessage(contextMessage),
+        // Include all previous messages in this subgraph's scope
+        ...cleanedMessages,
+      ],
+      {
+        options: {
+          timeout: 40000,
+          maxRetries: 10,
+        },
+        // timeout: 15000,
+        // timeout: 20000, // 20 seconds timeout
+      },
+    )
   })
 
   const streamResult = await streamModel()
