@@ -104,10 +104,8 @@ export async function generateTestcaseNode(
 
   const streamResult = await streamModel()
 
-  // Clean up timeout before any early return or error
-  clearTimeout(timeoutId)
-
   if (streamResult.isErr()) {
+    clearTimeout(timeoutId)
     const apiErrorTime = Date.now() - apiStart
     console.error(
       `[generateTestcaseNode] API Error after ${apiErrorTime}ms: ${streamResult.error.message}`,
@@ -118,20 +116,45 @@ export async function generateTestcaseNode(
     )
   }
 
+  clearTimeout(timeoutId)
+
   console.info(
     `[generateTestcaseNode] API stream started after ${Date.now() - apiStart}ms`,
   )
 
   // Log streaming processing with timeout check
   const streamStart = Date.now()
-  const response = await streamLLMResponse(streamResult.value, {
-    agentName: 'qa',
-    eventType: 'messages',
-    maxStreamTime: 50000, // 50 seconds max for streaming (within 60s total)
-  })
-  console.info(
-    `[generateTestcaseNode] Stream processing completed: ${Date.now() - streamStart}ms`,
-  )
+  let streamCompleted = false
+  let response: BaseMessage
+
+  // eslint-disable-next-line no-restricted-syntax -- Try-catch required for stream error handling and abort
+  try {
+    response = await streamLLMResponse(streamResult.value, {
+      agentName: 'qa',
+      eventType: 'messages',
+      maxStreamTime: 50000, // 50 seconds max for streaming (within 60s total)
+    })
+    streamCompleted = true
+    console.info(
+      `[generateTestcaseNode] Stream processing completed: ${Date.now() - streamStart}ms`,
+    )
+  } catch (error) {
+    console.error(
+      `[generateTestcaseNode] Stream processing error after ${Date.now() - streamStart}ms: ${error}`,
+    )
+    abortController.abort()
+
+    throw error
+  }
+
+  // Check if the stream completed before timeout
+  if (!streamCompleted) {
+    console.error(
+      `[generateTestcaseNode] Stream did not complete within timeout - Category: ${currentRequirement.category}`,
+    )
+    // eslint-disable-next-line no-throw-error/no-throw-error -- OpenAI API timeout requires explicit error throwing
+    throw new Error('OpenAI API response stream timeout')
+  }
 
   // Log total time
   const totalTime = Date.now() - startTime
