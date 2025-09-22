@@ -30,7 +30,7 @@ graph
     {
       retryPolicy: {
         ...RETRY_POLICY,
-        maxAttempts: Math.min(RETRY_POLICY.maxAttempts, 2), // Respect test environment settings
+        maxAttempts: 1, // No retries - fail fast after 60s timeout
       },
     },
   )

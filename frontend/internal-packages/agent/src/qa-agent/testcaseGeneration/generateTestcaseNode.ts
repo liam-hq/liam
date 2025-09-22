@@ -116,6 +116,9 @@ export async function generateTestcaseNode(
     )
   }
 
+  // Clear timeout since we got a successful stream
+  clearTimeout(timeoutId)
+
   console.info(
     `[generateTestcaseNode] API stream started after ${Date.now() - apiStart}ms`,
   )
@@ -131,12 +134,10 @@ export async function generateTestcaseNode(
       eventType: 'messages',
       maxStreamTime: 50000, // 50 seconds max for streaming (within 60s total)
     })
-    clearTimeout(timeoutId)
     console.info(
       `[generateTestcaseNode] Stream processing completed: ${Date.now() - streamStart}ms`,
     )
   } catch (error) {
-    clearTimeout(timeoutId)
     console.error(
       `[generateTestcaseNode] Stream processing error after ${Date.now() - streamStart}ms: ${error}`,
     )
