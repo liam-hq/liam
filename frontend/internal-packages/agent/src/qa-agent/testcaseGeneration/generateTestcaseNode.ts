@@ -122,7 +122,6 @@ export async function generateTestcaseNode(
 
   // Log streaming processing with timeout check
   const streamStart = Date.now()
-  let streamCompleted = false
   let response: BaseMessage
 
   // eslint-disable-next-line no-restricted-syntax -- Try-catch required for stream error handling and abort
@@ -132,7 +131,6 @@ export async function generateTestcaseNode(
       eventType: 'messages',
       maxStreamTime: 100000, // 100 seconds max for streaming (within 120s total)
     })
-    streamCompleted = true
     clearTimeout(timeoutId)
     console.info(
       `[generateTestcaseNode] Stream processing completed: ${Date.now() - streamStart}ms`,
@@ -145,15 +143,6 @@ export async function generateTestcaseNode(
     abortController.abort()
 
     throw error
-  }
-
-  // Check if the stream completed before timeout
-  if (!streamCompleted) {
-    console.error(
-      `[generateTestcaseNode] Stream did not complete within timeout - Category: ${currentRequirement.category}`,
-    )
-    // eslint-disable-next-line no-throw-error/no-throw-error -- OpenAI API timeout requires explicit error throwing
-    throw new Error('OpenAI API response stream timeout')
   }
 
   // Log total time
