@@ -14,26 +14,9 @@ graph
     retryPolicy: RETRY_POLICY,
     ends: ['generateTestcase', END],
   })
-  .addNode(
-    'generateTestcase',
-    async (state) => {
-      // Reset messages on retry to prevent accumulation
-      const cleanState = {
-        ...state,
-        messages: [], // Clear previous messages to prevent accumulation
-      }
-      console.info(
-        '[testcaseGeneration] Executing generateTestcase (messages reset)',
-      )
-      return generateTestcaseNode(cleanState)
-    },
-    {
-      retryPolicy: {
-        ...RETRY_POLICY,
-        maxAttempts: 1, // No retries - fail fast after 60s timeout
-      },
-    },
-  )
+  .addNode('generateTestcase', generateTestcaseNode, {
+    retryPolicy: RETRY_POLICY,
+  })
   .addNode('invokeSaveTool', saveToolNode, {
     retryPolicy: RETRY_POLICY,
   })
