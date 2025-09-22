@@ -1866,7 +1866,7 @@ ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
                   name: 'state',
                   type: 'user_status',
                   notNull: false,
-                  default: 'inactive', // Unquoted enum value
+                  default: "'inactive'::user_status", // Cast expression for enum
                 }),
               },
               constraints: {
@@ -1890,7 +1890,7 @@ CREATE TABLE "users" (
   "id" uuid NOT NULL DEFAULT gen_random_uuid(),
   "status" user_status NOT NULL DEFAULT 'invited'::user_status,
   "role" user_status DEFAULT 'active',
-  "state" user_status DEFAULT inactive
+  "state" user_status DEFAULT 'inactive'::user_status
 );
 
 ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
