@@ -11,9 +11,21 @@ export type { RequirementData } from './types'
 export function continueToRequirements(state: QaAgentState) {
   const targetRequirements = getUnprocessedRequirements(state)
 
+  // Batch size for parallel processing
+  // Set to 2000 to allow maximum parallelism
+  const BATCH_SIZE = 2000
+
+  // Only process the first batch of requirements
+  // This prevents too many parallel API calls at once
+  const batchToProcess = targetRequirements.slice(0, BATCH_SIZE)
+
+  console.info(
+    `[distributeRequirements] Processing batch of ${batchToProcess.length} out of ${targetRequirements.length} total requirements`,
+  )
+
   // Use Send API to distribute each requirement for parallel processing
   // Each requirement will be processed by testcaseGeneration with isolated state
-  return targetRequirements.map(
+  return batchToProcess.map(
     (reqData) =>
       new Send('testcaseGeneration', {
         // Each subgraph gets its own isolated state
