@@ -30,7 +30,7 @@ graph
     {
       retryPolicy: {
         ...RETRY_POLICY,
-        maxAttempts: 2, // Reduce from 3 to 2 attempts total
+        maxAttempts: Math.min(RETRY_POLICY.maxAttempts, 2), // Respect test environment settings
       },
     },
   )
