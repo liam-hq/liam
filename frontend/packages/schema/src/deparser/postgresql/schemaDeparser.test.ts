@@ -1897,6 +1897,57 @@ ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
 
         expect(result.value).toBe(expectedDDL)
       })
+
+      it('should handle timestamptz columns with interval expressions', () => {
+        const schema = aSchema({
+          tables: {
+            sessions: aTable({
+              name: 'sessions',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'uuid',
+                  notNull: true,
+                  default: 'gen_random_uuid()',
+                }),
+                created_at: aColumn({
+                  name: 'created_at',
+                  type: 'timestamptz',
+                  notNull: true,
+                  default: 'now()',
+                }),
+                expires_at: aColumn({
+                  name: 'expires_at',
+                  type: 'timestamptz',
+                  notNull: true,
+                  default: "(now() + INTERVAL '30 days')",
+                }),
+              },
+              constraints: {
+                sessions_pkey: aPrimaryKeyConstraint({
+                  name: 'sessions_pkey',
+                  columnNames: ['id'],
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Verify the exact DDL output
+        const expectedDDL = `CREATE TABLE "sessions" (
+  "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+  "created_at" timestamptz NOT NULL DEFAULT now(),
+  "expires_at" timestamptz NOT NULL DEFAULT (now() + INTERVAL '30 days')
+);
+
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_pkey" PRIMARY KEY ("id");`
+
+        expect(result.value).toBe(expectedDDL)
+      })
     })
   })
 })
