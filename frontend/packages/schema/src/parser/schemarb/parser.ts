@@ -321,6 +321,7 @@ function extractColumnOptions(
         column.notNull = value instanceof FalseNode
         break
       case 'default':
+        // TODO: care lambda
         if (
           value instanceof TrueNode ||
           value instanceof FalseNode ||
