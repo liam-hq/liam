@@ -66,7 +66,6 @@ const prepareCommandPalette = async () => {
     name: 'Command Palette',
   })
   const searchCombobox = within(dialog).getByRole('combobox')
-  const preview = within(dialog).getByTestId('CommandPalettePreview')
 
   const activeTableNameDisplay = screen.getByTestId(
     'test-active-table-name-display',
@@ -74,7 +73,7 @@ const prepareCommandPalette = async () => {
 
   return {
     user,
-    elements: { dialog, searchCombobox, preview },
+    elements: { dialog, searchCombobox },
     testElements: { activeTableNameDisplay },
   }
 }
@@ -186,38 +185,5 @@ describe('options and combobox interactions', () => {
 
     expect(within(dialog).queryByRole('option')).not.toBeInTheDocument()
     expect(within(dialog).getByText('No results found.')).toBeInTheDocument()
-  })
-})
-
-describe('preview with option interactions', () => {
-  it('displays a preview of the option hovered', async () => {
-    const {
-      user,
-      elements: { dialog, preview },
-    } = await prepareCommandPalette()
-
-    expect(within(preview).getByText('users')).toBeInTheDocument()
-
-    await user.hover(within(dialog).getByRole('link', { name: 'follows' }))
-
-    expect(within(preview).getByText('follows')).toBeInTheDocument()
-  })
-
-  it('displays a preview of the option selected via arrow key navigation', async () => {
-    const {
-      user,
-      elements: { preview },
-    } = await prepareCommandPalette()
-
-    expect(within(preview).getByText('users')).toBeInTheDocument()
-
-    await user.keyboard('{ArrowDown}')
-    expect(within(preview).getByText('posts')).toBeInTheDocument()
-
-    await user.keyboard('{ArrowDown}')
-    expect(within(preview).getByText('follows')).toBeInTheDocument()
-
-    await user.keyboard('{ArrowUp}')
-    expect(within(preview).getByText('posts')).toBeInTheDocument()
   })
 })

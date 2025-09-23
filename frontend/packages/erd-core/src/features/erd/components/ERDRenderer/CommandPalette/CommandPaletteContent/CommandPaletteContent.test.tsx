@@ -1,6 +1,6 @@
 import { aTable } from '@liam-hq/schema'
 import { Dialog } from '@radix-ui/react-dialog'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ReactFlowProvider } from '@xyflow/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
@@ -82,6 +82,50 @@ describe('input mode', () => {
       ).toBeInTheDocument()
       expect(
         screen.getByRole('option', { name: 'Zoom to Fit ⇧ 1' }),
+      ).toBeInTheDocument()
+    })
+  })
+})
+
+describe('preview', () => {
+  describe('table preview', () => {
+    it('renders a table preview when a table option is selected', async () => {
+      const user = userEvent.setup()
+      render(<CommandPaletteContent />, { wrapper })
+      const previewContainer = screen.getByTestId('CommandPalettePreview')
+
+      // renders the "users" preview when the "users" option is selected
+      await user.hover(screen.getByRole('option', { name: 'users' }))
+      expect(within(previewContainer).getByText('users')).toBeInTheDocument()
+
+      // renders the "posts" preview when the "posts" option is selected
+      await user.hover(screen.getByRole('option', { name: 'posts' }))
+      expect(within(previewContainer).getByText('posts')).toBeInTheDocument()
+    })
+  })
+
+  describe('command preview', () => {
+    it('renders a command preview when a command option is selected', async () => {
+      const user = userEvent.setup()
+      render(<CommandPaletteContent />, { wrapper })
+      const previewContainer = screen.getByTestId('CommandPalettePreview')
+
+      // renders the "Copy Link" preview when the "Copy Link" option is selected
+      await user.hover(screen.getByRole('option', { name: 'Copy Link ⌘ C' }))
+      expect(
+        within(previewContainer).getByLabelText(
+          'Demonstration of the copy link command execution result',
+        ),
+      ).toBeInTheDocument()
+
+      // renders the "Show All Fields" preview when the "Show All Fields" option is selected
+      await user.hover(
+        screen.getByRole('option', { name: 'Show All Fields ⇧ 2' }),
+      )
+      expect(
+        within(previewContainer).getByAltText(
+          'Demonstration of the Show All Fields command execution result',
+        ),
       ).toBeInTheDocument()
     })
   })
