@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:password@0.0.0.0:15432/development"
+}
+
+model default_patterns {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  currency     String    @default("JPY")
+  quantity     Int       @default(0)
+  price        Decimal   @default(123.45) @db.Decimal
+  is_active    Boolean   @default(true)
+  description  String?
+  json_data    Json      @default("{}")
+  tags         String[]  @default([])
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @default(now()) @db.Timestamptz(6)
+  expires_at   DateTime? @default(dbgenerated("(now() + '30 days'::interval)")) @db.Timestamptz(6)
+  random_value Float     @default(dbgenerated("random()"))
+  discount     Decimal   @default(dbgenerated("(100 - 10)")) @db.Decimal
+  special_note String?   @default(dbgenerated("\nCASE\n    WHEN (EXTRACT(dow FROM now()) = (0)::numeric) THEN 'Sunday'::text\n    ELSE 'Not Sunday'::text\nEND"))
+  lower_name   String?   @default(dbgenerated("lower('DEFAULT_NAME'::text)"))
+  record_time  DateTime? @default(dbgenerated("statement_timestamp()")) @db.Timestamptz(6)
+  app_user     String?   @default(dbgenerated("CURRENT_USER"))
+  greeting     String?   @default(dbgenerated("default_greeting()"))
+  expiry_date  DateTime? @default(dbgenerated("default_expiry()")) @db.Timestamptz(6)
+}

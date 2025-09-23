@@ -17,3 +17,5 @@ coverage/
 
 # Lefthook local config
 lefthook-local.yml
+
+/generated/prisma
