@@ -62,7 +62,7 @@ export async function generateTestcaseNode(
       {
         options: {
           timeout: 120000, // 20s for test
-          maxRetries: 1,
+          maxRetries: 0,
         },
       },
     )
