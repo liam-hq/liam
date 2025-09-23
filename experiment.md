@@ -38,4 +38,12 @@ rails
 rails.rb
 rails-result.rb
 
+※ discountあやしいな...
+
+---------
+
+tbls postgres
+
+
+tbls out --format json "postgres://postgres:password@0.0.0.0:15432/${dbname}?sslmode=disable"
 
