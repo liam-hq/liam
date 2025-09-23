@@ -29,4 +29,13 @@ pnpm add -w drizzle-orm pg
 pnpm add -w -D drizzle-kit
 pnpm exec drizzle-kit introspect
 
+※ discountあやしいな...
+
+
+----------
+rails
+
+rails.rb
+rails-result.rb
+
 
