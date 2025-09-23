@@ -14,3 +14,19 @@ docker run --rm --network host ${pg_dump_docker_image} pg_dump --schema-only --n
 
 
 ---------
+prisma
+
+npx prisma init
+npx prisma db pull
+
+
+---------
+drizzle
+
+drizzle.config.ts を書く
+
+pnpm add -w drizzle-orm pg
+pnpm add -w -D drizzle-kit
+pnpm exec drizzle-kit introspect
+
+
