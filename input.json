@@ -1,0 +1,3183 @@
+{
+  "messages": [
+    {
+      "lc": 1,
+      "type": "constructor",
+      "id": [
+        "langchain_core",
+        "messages",
+        "HumanMessage"
+      ],
+      "kwargs": {
+        "content": "Design a simple user management system",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "id": "e197697b-88f6-43bd-95c2-3395f8e03501"
+      }
+    },
+    {
+      "lc": 1,
+      "type": "constructor",
+      "id": [
+        "langchain_core",
+        "messages",
+        "AIMessage"
+      ],
+      "kwargs": {
+        "id": "f0f39754-b0b9-41c9-8c34-bcaa0c77afab",
+        "content": [
+          {
+            "type": "text",
+            "text": "Checklist:\n- Clarify scope and assume industry-standard behaviors for a “simple” user management system.\n- Translate the request into concrete business and functional outcomes.\n- Define user-facing capabilities and administrator controls.\n- Specify data model requirements and key constraints for database design.\n- Capture non-functional qualities: security, privacy, performance, availability, and usability.\n- Provide concise acceptance-style statements suitable for QA verification.\n- Save the finalized requirements artifact for downstream DB and QA work.",
+            "index": 0
+          }
+        ],
+        "additional_kwargs": {
+          "reasoning": {
+            "id": "rs_68d13488223881909815e1f2428cbe2104d13e4d75b631c1",
+            "type": "reasoning",
+            "summary": []
+          },
+          "__openai_function_call_ids__": {
+            "call_KlBqmCbWNx2cHZIGHrtL1FWl": "fc_68d134c1ccd08190a2b415ca08c18a3a04d13e4d75b631c1"
+          }
+        },
+        "name": "pm",
+        "tool_calls": [
+          {
+            "name": "saveRequirementsToArtifactTool",
+            "args": {
+              "businessRequirement": "Deliver a simple user management system that lets end users register, sign in, manage their profile and passwords, and lets administrators manage user accounts, roles, and status, with basic reporting and auditability.",
+              "functionalRequirements": {
+                "Registration & Onboarding": [
+                  "The system shall allow self-registration using a unique email address and password.",
+                  "The system shall require email verification via a time-bound, single-use token before granting full access.",
+                  "The system shall prevent duplicate accounts by enforcing case-insensitive uniqueness of email addresses.",
+                  "The system shall support admin-invite flows that create users and send an activation link.",
+                  "The system shall capture minimal required fields at registration: email, password, and display name (optional)."
+                ],
+                "Authentication & Sessions": [
+                  "The system shall allow users to authenticate with email and password.",
+                  "The system shall provide sign-out that invalidates the current session.",
+                  "The system shall support concurrent sessions on multiple devices and allow users or admins to revoke active sessions.",
+                  "The system shall automatically expire idle sessions after a configurable inactivity period.",
+                  "The system shall track last successful login timestamp and IP address for each user."
+                ],
+                "Authorization & Roles": [
+                  "The system shall implement role-based access control with at least two roles: Member and Admin.",
+                  "The system shall assign the Member role by default to newly verified users.",
+                  "The system shall allow Admins to grant or revoke roles for any user.",
+                  "The system shall restrict administrative functions (user listing, role changes, status changes, exports) to Admins only."
+                ],
+                "Profile Management": [
+                  "The system shall allow users to view and edit their own profile, including first name, last name, display name, phone (optional), locale, and time zone.",
+                  "The system shall allow users to update their email address with confirmation to the new email before change takes effect.",
+                  "The system shall allow users to upload or set a profile avatar (URL) and remove it.",
+                  "The system shall allow users to manage communication preferences (e.g., product updates opt-in)."
+                ],
+                "Password Management & Recovery": [
+                  "The system shall allow users to change their password after re-authentication.",
+                  "The system shall provide a “forgot password” flow sending a time-bound, single-use reset link to the verified email.",
+                  "The system shall enforce a configurable password policy (minimum length, complexity, and reuse rules).",
+                  "The system shall require password re-entry for sensitive account changes (e.g., email change)."
+                ],
+                "Account Lifecycle & Status": [
+                  "The system shall maintain user status values: pending_verification, active, suspended, deactivated, deleted_pending_purge.",
+                  "The system shall allow Admins to suspend or deactivate accounts, immediately revoking access without deleting data.",
+                  "The system shall allow end users to request account deletion, which places the account into deleted_pending_purge for a retention window before permanent purge.",
+                  "The system shall allow Admins to restore deactivated accounts within the retention window.",
+                  "The system shall timestamp and record the actor for all status changes."
+                ],
+                "Administrative User Management": [
+                  "The system shall provide Admins the ability to create, read, update, and deactivate user accounts.",
+                  "The system shall provide search, filter, and sort on user lists by email, name, role, status, created_at, and last_login.",
+                  "The system shall support bulk administrative actions (e.g., deactivate or change role) on up to 100 selected users at a time.",
+                  "The system shall allow Admins to resend verification emails and initiate password resets.",
+                  "The system shall allow CSV export of user lists with selectable columns subject to authorization."
+                ],
+                "Audit & Activity Logging": [
+                  "The system shall record audit events for login success/failure, password changes, email changes, role assignments, status changes, user creation/deletion, and profile updates.",
+                  "The system shall capture in each audit record: actor (user or admin), target user (if applicable), action, timestamp (UTC), source IP, and outcome (success/failure).",
+                  "The system shall prevent modification or deletion of audit records by non-privileged users.",
+                  "The system shall retain audit logs for at least 12 months."
+                ],
+                "Notifications & Emails": [
+                  "The system shall send transactional emails for verification, invitation, password reset, email change confirmation, and account status changes.",
+                  "The system shall provide template-based emails that support localization by user locale.",
+                  "The system shall track delivery attempts and outcomes (sent, bounced) for transactional emails."
+                ],
+                "Reporting & Search": [
+                  "The system shall provide summary metrics for Admins: total users, active users, new registrations by day/week, and verification completion rate.",
+                  "The system shall provide a 30-day login activity summary.",
+                  "The system shall allow Admins to export summary metrics to CSV."
+                ],
+                "Data Model & Constraints": [
+                  "The system shall maintain entities required for operation: User, Role, UserRole (for role assignments), Session, AuditEvent, EmailVerificationToken, PasswordResetToken.",
+                  "The system shall enforce uniqueness on User.email (case-insensitive) and optionally on User.username when used.",
+                  "The system shall include standard audit fields on core entities: id, created_at, updated_at, created_by (nullable), updated_by (nullable).",
+                  "The system shall implement soft delete using deleted_at (nullable) for User, with final purge after the retention window.",
+                  "The system shall index frequently queried fields: email, status, role assignment, created_at, and last_login.",
+                  "The system shall store all timestamps in UTC and capture user-preferred time zone for display."
+                ],
+                "Localization & Internationalization": [
+                  "The system shall store a user’s preferred locale and time zone for notifications and display.",
+                  "The system shall support English by default and allow adding additional locales for email templates without code changes."
+                ],
+                "API Access": [
+                  "The system shall expose authenticated APIs for user self-service (profile read/update, change password) and for Admin user management (CRUD, search, export).",
+                  "The system shall restrict Admin APIs to Admin role and ensure all API calls are attributable to an authenticated actor.",
+                  "The system shall provide idempotent endpoints for invite and verification flows to prevent duplicate accounts."
+                ]
+              },
+              "nonFunctionalRequirements": {
+                "Security": [
+                  "Passwords shall be stored using industry-standard one-way hashing with salt; plaintext passwords shall never be stored or logged.",
+                  "The system shall implement rate limiting and account lockout after a configurable number of failed login attempts.",
+                  "Verification and reset tokens shall be single-use, randomly generated, and expire within 24 hours (verification) and 60 minutes (password reset).",
+                  "Session management shall prevent session fixation and allow server-side revocation of tokens/sessions.",
+                  "Access controls shall follow least-privilege principles and be verified via automated tests.",
+                  "Sensitive personal data (e.g., phone) shall be protected at rest and in transit using industry-standard encryption."
+                ],
+                "Privacy & Compliance": [
+                  "The system shall support user-initiated data export (machine-readable) and deletion within a defined retention window.",
+                  "The system shall collect only necessary personal data for the stated purposes and record consent for optional communications.",
+                  "The system shall comply with applicable privacy laws for the deployment region (e.g., US state privacy laws) including honoring deletion and access requests.",
+                  "Audit logs shall be tamper-evident and accessible to authorized personnel for compliance reviews."
+                ],
+                "Performance": [
+                  "Under a dataset of 100,000 users, user listing with common filters shall return within 800 ms at the 95th percentile.",
+                  "Authentication (login) shall complete within 500 ms at the 95th percentile under 100 requests per second sustained load.",
+                  "Bulk administrative actions on 100 users shall complete within 5 seconds at the 95th percentile."
+                ],
+                "Availability & Reliability": [
+                  "User authentication and password reset functions shall maintain 99.9% monthly availability.",
+                  "The system shall support recovery point objective (RPO) of 24 hours and recovery time objective (RTO) of 4 hours for user and audit data.",
+                  "Critical operations (registration, login, password reset) shall have functional monitoring and alerting on error rates."
+                ],
+                "Scalability": [
+                  "The system shall scale to 1,000,000 total users with linear scaling characteristics for read-heavy operations.",
+                  "Search and listing performance shall degrade gracefully as data grows, with pagination mandatory for listings."
+                ],
+                "Usability & Accessibility": [
+                  "End-user flows (register, login, reset password) shall be simple and require no more than three steps each.",
+                  "The user interface shall meet WCAG 2.1 AA accessibility guidelines for forms, focus management, and color contrast.",
+                  "Error messages shall be clear, actionable, and not disclose sensitive details."
+                ],
+                "Observability & Logging": [
+                  "The system shall emit structured logs for authentication, authorization decisions, and admin actions with correlation identifiers.",
+                  "The system shall provide basic operational metrics (logins per minute, failed logins, email send failures) and alert on thresholds.",
+                  "Time synchronization for logs and audits shall use UTC consistently across services."
+                ],
+                "Maintainability": [
+                  "APIs shall be versioned, and breaking changes shall follow a deprecation policy with at least one minor release of overlap.",
+                  "Configuration for policies (password rules, session timeout, lockout thresholds) shall be externally configurable without code changes."
+                ]
+              }
+            },
+            "id": "call_KlBqmCbWNx2cHZIGHrtL1FWl",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "response_metadata": {}
+      }
+    },
+    {
+      "lc": 1,
+      "type": "constructor",
+      "id": [
+        "langchain_core",
+        "messages",
+        "ToolMessage"
+      ],
+      "kwargs": {
+        "id": "60405ee7-3bad-469f-9d09-1dd5903969e4",
+        "status": "success",
+        "content": "Requirements saved successfully to artifact",
+        "tool_call_id": "call_KlBqmCbWNx2cHZIGHrtL1FWl",
+        "additional_kwargs": {},
+        "response_metadata": {}
+      }
+    },
+    {
+      "lc": 1,
+      "type": "constructor",
+      "id": [
+        "langchain_core",
+        "messages",
+        "AIMessage"
+      ],
+      "kwargs": {
+        "id": "e29609a2-d46f-4319-95eb-a07e7a4d99b1",
+        "content": [],
+        "additional_kwargs": {
+          "reasoning": {
+            "id": "rs_68d134ec43a08190a011a13ba2294d7e0045a02dccb28f5d",
+            "type": "reasoning",
+            "summary": []
+          },
+          "__openai_function_call_ids__": {
+            "call_EooVwcRplwLkxC8DBvgCdwCf": "fc_68d134fee32081909c8406d93972b0c10045a02dccb28f5d"
+          }
+        },
+        "name": "db",
+        "tool_calls": [
+          {
+            "name": "schemaDesignTool",
+            "args": {
+              "operations": [
+                {
+                  "op": "add",
+                  "path": "/enums/user_status",
+                  "value": {
+                    "name": "user_status",
+                    "values": [
+                      "pending_verification",
+                      "active",
+                      "suspended",
+                      "deactivated",
+                      "deleted_pending_purge"
+                    ],
+                    "comment": "Lifecycle status for user accounts controlling access and retention state"
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/enums/actor_type",
+                  "value": {
+                    "name": "actor_type",
+                    "values": [
+                      "user",
+                      "admin",
+                      "system"
+                    ],
+                    "comment": "Type of actor responsible for an action recorded in audit events (end user, administrator, or system)"
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/users",
+                  "value": {
+                    "name": "users",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for the user record"
+                      },
+                      "email": {
+                        "name": "email",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Primary contact email provided by the user; used for login and transactional messages"
+                      },
+                      "email_normalized": {
+                        "name": "email_normalized",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Lowercased, normalized version of email used to enforce case-insensitive uniqueness"
+                      },
+                      "password_hash": {
+                        "name": "password_hash",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "One-way salted hash of the user's password; nullable for invited accounts without passwords"
+                      },
+                      "first_name": {
+                        "name": "first_name",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "User's given name for display and personalization"
+                      },
+                      "last_name": {
+                        "name": "last_name",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "User's family name for display and personalization"
+                      },
+                      "display_name": {
+                        "name": "display_name",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Optional preferred display name shown in UI and communications"
+                      },
+                      "phone": {
+                        "name": "phone",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Optional phone number; treated as sensitive personal data and protected at rest"
+                      },
+                      "locale": {
+                        "name": "locale",
+                        "type": "text",
+                        "default": "'en'",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "User preferred locale for localized templates and UI (default: en)"
+                      },
+                      "time_zone": {
+                        "name": "time_zone",
+                        "type": "text",
+                        "default": "'UTC'",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "User preferred time zone for displaying timestamps (stored in UTC in DB)"
+                      },
+                      "avatar_url": {
+                        "name": "avatar_url",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "URL to the user's profile avatar image; can be removed by the user"
+                      },
+                      "communication_preferences": {
+                        "name": "communication_preferences",
+                        "type": "jsonb",
+                        "default": "'{}'::jsonb",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "JSON object storing opt-ins/out and channel preferences for transactional and marketing messages"
+                      },
+                      "status": {
+                        "name": "status",
+                        "type": "user_status",
+                        "default": "'pending_verification'",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Account lifecycle status controlling access and administrative handling"
+                      },
+                      "last_login_at": {
+                        "name": "last_login_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Timestamp of the most recent successful login (UTC)"
+                      },
+                      "last_login_ip": {
+                        "name": "last_login_ip",
+                        "type": "inet",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Source IP address of the most recent successful login"
+                      },
+                      "password_changed_at": {
+                        "name": "password_changed_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Timestamp when the user's password was last changed"
+                      },
+                      "failed_login_attempts": {
+                        "name": "failed_login_attempts",
+                        "type": "integer",
+                        "default": "0",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Consecutive failed login attempts used for lockout and rate limit enforcement"
+                      },
+                      "lockout_until": {
+                        "name": "lockout_until",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "If set, account is locked until this UTC timestamp as part of brute-force protection"
+                      },
+                      "deleted_at": {
+                        "name": "deleted_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Soft-delete timestamp; account is retained until purge window expires"
+                      },
+                      "created_at": {
+                        "name": "created_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Record creation time (UTC)"
+                      },
+                      "updated_at": {
+                        "name": "updated_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Record last updated time (UTC)"
+                      },
+                      "created_by": {
+                        "name": "created_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor (user id) who created this user record, if applicable"
+                      },
+                      "updated_by": {
+                        "name": "updated_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor (user id) who last updated this user record, if applicable"
+                      },
+                      "password_policy_version": {
+                        "name": "password_policy_version",
+                        "type": "integer",
+                        "default": "1",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Version of password policy applied when the password was set; used to enforce rotation on policy updates"
+                      },
+                      "invite_sent_at": {
+                        "name": "invite_sent_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Timestamp when an admin invite email was sent for accounts created via invite flow"
+                      },
+                      "invite_accepted_at": {
+                        "name": "invite_accepted_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Timestamp when an invited user completed activation"
+                      },
+                      "consent_given_at": {
+                        "name": "consent_given_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "When the user gave consent for optional communications or processing"
+                      },
+                      "terms_accepted_version": {
+                        "name": "terms_accepted_version",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Identifier for the terms/privacy version the user accepted"
+                      },
+                      "note_admin": {
+                        "name": "note_admin",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Optional admin-only free-text note about the user account"
+                      }
+                    },
+                    "comment": "Core user accounts, including profile, authentication, status, and soft-delete metadata",
+                    "indexes": {
+                      "ix_users_email_normalized": {
+                        "name": "ix_users_email_normalized",
+                        "unique": true,
+                        "columns": [
+                          "email_normalized"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_users_status": {
+                        "name": "ix_users_status",
+                        "unique": false,
+                        "columns": [
+                          "status"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_users_created_at": {
+                        "name": "ix_users_created_at",
+                        "unique": false,
+                        "columns": [
+                          "created_at"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_users_last_login_at": {
+                        "name": "ix_users_last_login_at",
+                        "unique": false,
+                        "columns": [
+                          "last_login_at"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_users": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_users",
+                        "columnNames": [
+                          "id"
+                        ]
+                      },
+                      "uq_users_email_normalized": {
+                        "type": "UNIQUE",
+                        "name": "uq_users_email_normalized",
+                        "columnNames": [
+                          "email_normalized"
+                        ]
+                      },
+                      "fk_users_created_by": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_users_created_by",
+                        "columnNames": [
+                          "created_by"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "SET_NULL"
+                      },
+                      "fk_users_updated_by": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_users_updated_by",
+                        "columnNames": [
+                          "updated_by"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "SET_NULL"
+                      }
+                    }
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/roles",
+                  "value": {
+                    "name": "roles",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for the role"
+                      },
+                      "name": {
+                        "name": "name",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Role machine name (e.g., 'member', 'admin') used for authorization checks"
+                      },
+                      "description": {
+                        "name": "description",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Human-friendly description of the role and its intended use"
+                      },
+                      "created_at": {
+                        "name": "created_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Role creation timestamp (UTC)"
+                      },
+                      "updated_at": {
+                        "name": "updated_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Role last updated timestamp (UTC)"
+                      },
+                      "created_by": {
+                        "name": "created_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who created this role"
+                      },
+                      "updated_by": {
+                        "name": "updated_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who last updated this role"
+                      }
+                    },
+                    "comment": "Canonical set of roles used for role-based access control",
+                    "indexes": {
+                      "ix_roles_name": {
+                        "name": "ix_roles_name",
+                        "unique": true,
+                        "columns": [
+                          "name"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_roles": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_roles",
+                        "columnNames": [
+                          "id"
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/user_roles",
+                  "value": {
+                    "name": "user_roles",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for this role assignment"
+                      },
+                      "user_id": {
+                        "name": "user_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Reference to the user receiving the role"
+                      },
+                      "role_id": {
+                        "name": "role_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Reference to the assigned role"
+                      },
+                      "granted_by": {
+                        "name": "granted_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who granted the role (nullable for system-assigned roles)"
+                      },
+                      "granted_at": {
+                        "name": "granted_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "When the role was granted to the user (UTC)"
+                      },
+                      "revoked_by": {
+                        "name": "revoked_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who revoked the role, if applicable"
+                      },
+                      "revoked_at": {
+                        "name": "revoked_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "When the role was revoked (UTC); null when active"
+                      },
+                      "note": {
+                        "name": "note",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Optional admin note about this assignment for audit or context"
+                      }
+                    },
+                    "comment": "Assignments of roles to users with grant and revoke metadata for auditability",
+                    "indexes": {
+                      "ix_user_roles_user_id": {
+                        "name": "ix_user_roles_user_id",
+                        "unique": false,
+                        "columns": [
+                          "user_id"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_user_roles_role_id": {
+                        "name": "ix_user_roles_role_id",
+                        "unique": false,
+                        "columns": [
+                          "role_id"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_user_roles": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_user_roles",
+                        "columnNames": [
+                          "id"
+                        ]
+                      },
+                      "uq_user_roles_user_role": {
+                        "type": "UNIQUE",
+                        "name": "uq_user_roles_user_role",
+                        "columnNames": [
+                          "user_id",
+                          "role_id"
+                        ]
+                      },
+                      "fk_user_roles_user": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_user_roles_user",
+                        "columnNames": [
+                          "user_id"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "CASCADE"
+                      },
+                      "fk_user_roles_role": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_user_roles_role",
+                        "columnNames": [
+                          "role_id"
+                        ],
+                        "targetTableName": "roles",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "CASCADE"
+                      },
+                      "fk_user_roles_granted_by": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_user_roles_granted_by",
+                        "columnNames": [
+                          "granted_by"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "SET_NULL"
+                      },
+                      "fk_user_roles_revoked_by": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_user_roles_revoked_by",
+                        "columnNames": [
+                          "revoked_by"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "SET_NULL"
+                      }
+                    }
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/sessions",
+                  "value": {
+                    "name": "sessions",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for the session or refresh token record"
+                      },
+                      "user_id": {
+                        "name": "user_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Owner of this session (user)"
+                      },
+                      "token_hash": {
+                        "name": "token_hash",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Hashed session or refresh token stored server-side to enable revocation without storing raw token"
+                      },
+                      "created_at": {
+                        "name": "created_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "When the session was created (UTC)"
+                      },
+                      "last_activity_at": {
+                        "name": "last_activity_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Last recorded activity time used to enforce idle expiration"
+                      },
+                      "expires_at": {
+                        "name": "expires_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Absolute expiration time for the session/token"
+                      },
+                      "ip_address": {
+                        "name": "ip_address",
+                        "type": "inet",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Client IP address that initiated the session"
+                      },
+                      "user_agent": {
+                        "name": "user_agent",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Client user-agent string for session identification"
+                      },
+                      "revoked": {
+                        "name": "revoked",
+                        "type": "boolean",
+                        "default": "false",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Flag indicating whether the session has been revoked server-side"
+                      },
+                      "revoked_at": {
+                        "name": "revoked_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "When the session was revoked"
+                      },
+                      "revoked_by": {
+                        "name": "revoked_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who revoked this session (admin or the user)"
+                      },
+                      "device_display_name": {
+                        "name": "device_display_name",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Optional human-friendly name of the device/session"
+                      },
+                      "fingerprint": {
+                        "name": "fingerprint",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Optional device fingerprint to aid session management and revocation"
+                      },
+                      "note": {
+                        "name": "note",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Optional admin note attached to the session record for context"
+                      },
+                      "created_by": {
+                        "name": "created_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who created the session (nullable for system-created sessions)"
+                      },
+                      "updated_at": {
+                        "name": "updated_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Last updated timestamp for the session record (UTC)"
+                      },
+                      "updated_by": {
+                        "name": "updated_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who last updated this session record"
+                      },
+                      "idle_timeout_seconds": {
+                        "name": "idle_timeout_seconds",
+                        "type": "integer",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Configured idle timeout in seconds used to compute inactivity expiry"
+                      }
+                    },
+                    "comment": "Active and historical sessions/refresh tokens enabling concurrent devices, revocation, and idle expiration",
+                    "indexes": {
+                      "ix_sessions_user_id": {
+                        "name": "ix_sessions_user_id",
+                        "unique": false,
+                        "columns": [
+                          "user_id"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_sessions_expires_at": {
+                        "name": "ix_sessions_expires_at",
+                        "unique": false,
+                        "columns": [
+                          "expires_at"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_sessions_last_activity_at": {
+                        "name": "ix_sessions_last_activity_at",
+                        "unique": false,
+                        "columns": [
+                          "last_activity_at"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_sessions": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_sessions",
+                        "columnNames": [
+                          "id"
+                        ]
+                      },
+                      "fk_sessions_user": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_sessions_user",
+                        "columnNames": [
+                          "user_id"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "CASCADE"
+                      },
+                      "fk_sessions_revoked_by": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_sessions_revoked_by",
+                        "columnNames": [
+                          "revoked_by"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "SET_NULL"
+                      }
+                    }
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/audit_events",
+                  "value": {
+                    "name": "audit_events",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for the audit event"
+                      },
+                      "actor_id": {
+                        "name": "actor_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "The acting user (if applicable) responsible for the event; null for system actions"
+                      },
+                      "actor_type": {
+                        "name": "actor_type",
+                        "type": "actor_type",
+                        "default": "'user'",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Type of actor: user, admin, or system"
+                      },
+                      "target_user_id": {
+                        "name": "target_user_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "The user that is target of the action (if applicable)"
+                      },
+                      "action": {
+                        "name": "action",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Machine-readable action label (e.g., 'login.success', 'password.reset.request')"
+                      },
+                      "outcome": {
+                        "name": "outcome",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Outcome of the action, such as 'success' or 'failure'"
+                      },
+                      "ip_address": {
+                        "name": "ip_address",
+                        "type": "inet",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Source IP address associated with the event"
+                      },
+                      "created_at": {
+                        "name": "created_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "UTC timestamp when the audit event was recorded"
+                      },
+                      "metadata": {
+                        "name": "metadata",
+                        "type": "jsonb",
+                        "default": "'{}'::jsonb",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Structured contextual data for the event (user agent, reason codes, email template id, etc.)"
+                      },
+                      "immutable_flag": {
+                        "name": "immutable_flag",
+                        "type": "boolean",
+                        "default": "true",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Flag indicating audit records are immutable for standard users; enforced by application policies"
+                      }
+                    },
+                    "comment": "Tamper-evident audit log of security relevant and administrative actions with actor and outcome metadata",
+                    "indexes": {
+                      "ix_audit_events_created_at": {
+                        "name": "ix_audit_events_created_at",
+                        "unique": false,
+                        "columns": [
+                          "created_at"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_audit_events_actor_id": {
+                        "name": "ix_audit_events_actor_id",
+                        "unique": false,
+                        "columns": [
+                          "actor_id"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_audit_events_target_user_id": {
+                        "name": "ix_audit_events_target_user_id",
+                        "unique": false,
+                        "columns": [
+                          "target_user_id"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_audit_events": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_audit_events",
+                        "columnNames": [
+                          "id"
+                        ]
+                      },
+                      "fk_audit_actor": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_audit_actor",
+                        "columnNames": [
+                          "actor_id"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "SET_NULL"
+                      },
+                      "fk_audit_target_user": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_audit_target_user",
+                        "columnNames": [
+                          "target_user_id"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "SET_NULL"
+                      }
+                    }
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/email_verification_tokens",
+                  "value": {
+                    "name": "email_verification_tokens",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for the verification token record"
+                      },
+                      "user_id": {
+                        "name": "user_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "User account the token is associated with"
+                      },
+                      "token_hash": {
+                        "name": "token_hash",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "One-way hash of the verification token sent via email (tokens are single-use)"
+                      },
+                      "created_at": {
+                        "name": "created_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "When the token was generated (UTC)"
+                      },
+                      "expires_at": {
+                        "name": "expires_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Expiration timestamp for the token (e.g., 24 hours from creation)"
+                      },
+                      "used_at": {
+                        "name": "used_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "When the token was consumed"
+                      },
+                      "used_by": {
+                        "name": "used_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who consumed the token (usually the user)"
+                      },
+                      "sent_ip": {
+                        "name": "sent_ip",
+                        "type": "inet",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "IP address that requested the verification email be sent"
+                      },
+                      "consumed": {
+                        "name": "consumed",
+                        "type": "boolean",
+                        "default": "false",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Flag indicating if token has been used to prevent reuse"
+                      },
+                      "purpose": {
+                        "name": "purpose",
+                        "type": "text",
+                        "default": " 'email_verification' ",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Purpose of the token for auditing and multi-flow support"
+                      }
+                    },
+                    "comment": "Single-use time-bound tokens for verifying a user's email address prior to granting full access",
+                    "indexes": {
+                      "ix_evt_user_id": {
+                        "name": "ix_evt_user_id",
+                        "unique": false,
+                        "columns": [
+                          "user_id"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_evt_token_hash": {
+                        "name": "ix_evt_token_hash",
+                        "unique": true,
+                        "columns": [
+                          "token_hash"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_email_verification_tokens": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_email_verification_tokens",
+                        "columnNames": [
+                          "id"
+                        ]
+                      },
+                      "fk_evt_user": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_evt_user",
+                        "columnNames": [
+                          "user_id"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "CASCADE"
+                      }
+                    }
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/password_reset_tokens",
+                  "value": {
+                    "name": "password_reset_tokens",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for the password reset token record"
+                      },
+                      "user_id": {
+                        "name": "user_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "User account the reset token is associated with"
+                      },
+                      "token_hash": {
+                        "name": "token_hash",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "One-way hash of the reset token sent via email (single-use)"
+                      },
+                      "created_at": {
+                        "name": "created_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "When the reset token was generated (UTC)"
+                      },
+                      "expires_at": {
+                        "name": "expires_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Expiration timestamp for the token (e.g., 60 minutes from creation)"
+                      },
+                      "used_at": {
+                        "name": "used_at",
+                        "type": "timestamptz",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "When the token was consumed"
+                      },
+                      "used_by": {
+                        "name": "used_by",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "Actor who used the reset token (usually the user)"
+                      },
+                      "consumed": {
+                        "name": "consumed",
+                        "type": "boolean",
+                        "default": "false",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Flag indicating if token has been used"
+                      },
+                      "request_ip": {
+                        "name": "request_ip",
+                        "type": "inet",
+                        "default": null,
+                        "check": null,
+                        "notNull": false,
+                        "comment": "IP address that initiated the reset request"
+                      },
+                      "attempts": {
+                        "name": "attempts",
+                        "type": "integer",
+                        "default": "0",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Number of times the token has been attempted (to help detect abuse)"
+                      }
+                    },
+                    "comment": "Single-use, short-lived tokens for secure password reset flows",
+                    "indexes": {
+                      "ix_prt_user_id": {
+                        "name": "ix_prt_user_id",
+                        "unique": false,
+                        "columns": [
+                          "user_id"
+                        ],
+                        "type": "btree"
+                      },
+                      "ix_prt_token_hash": {
+                        "name": "ix_prt_token_hash",
+                        "unique": true,
+                        "columns": [
+                          "token_hash"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_password_reset_tokens": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_password_reset_tokens",
+                        "columnNames": [
+                          "id"
+                        ]
+                      },
+                      "fk_prt_user": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_prt_user",
+                        "columnNames": [
+                          "user_id"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "CASCADE"
+                      }
+                    }
+                  }
+                },
+                {
+                  "op": "add",
+                  "path": "/tables/password_history",
+                  "value": {
+                    "name": "password_history",
+                    "columns": {
+                      "id": {
+                        "name": "id",
+                        "type": "uuid",
+                        "default": "gen_random_uuid()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Unique identifier for the historical password record"
+                      },
+                      "user_id": {
+                        "name": "user_id",
+                        "type": "uuid",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "Owner of this historical password entry"
+                      },
+                      "password_hash": {
+                        "name": "password_hash",
+                        "type": "text",
+                        "default": null,
+                        "check": null,
+                        "notNull": true,
+                        "comment": "One-way hash of a previously used password to enforce reuse rules"
+                      },
+                      "created_at": {
+                        "name": "created_at",
+                        "type": "timestamptz",
+                        "default": "now()",
+                        "check": null,
+                        "notNull": true,
+                        "comment": "When this password was recorded as in-use (UTC)"
+                      }
+                    },
+                    "comment": "Historical password hashes to enforce password reuse and rotation policies",
+                    "indexes": {
+                      "ix_password_history_user_id": {
+                        "name": "ix_password_history_user_id",
+                        "unique": false,
+                        "columns": [
+                          "user_id"
+                        ],
+                        "type": "btree"
+                      }
+                    },
+                    "constraints": {
+                      "pk_password_history": {
+                        "type": "PRIMARY KEY",
+                        "name": "pk_password_history",
+                        "columnNames": [
+                          "id"
+                        ]
+                      },
+                      "fk_password_history_user": {
+                        "type": "FOREIGN KEY",
+                        "name": "fk_password_history_user",
+                        "columnNames": [
+                          "user_id"
+                        ],
+                        "targetTableName": "users",
+                        "targetColumnNames": [
+                          "id"
+                        ],
+                        "updateConstraint": "NO_ACTION",
+                        "deleteConstraint": "CASCADE"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "type": "tool_call",
+            "id": "call_EooVwcRplwLkxC8DBvgCdwCf"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "response_metadata": {}
+      }
+    },
+    {
+      "lc": 1,
+      "type": "constructor",
+      "id": [
+        "langchain_core",
+        "messages",
+        "ToolMessage"
+      ],
+      "kwargs": {
+        "status": "success",
+        "content": "Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (157/157 statements executed successfully), and new version created.",
+        "tool_call_id": "call_EooVwcRplwLkxC8DBvgCdwCf",
+        "name": "schemaDesignTool",
+        "metadata": {},
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "id": "ae7d20ff-442b-44a1-a1e3-0aceb1ba802f"
+      }
+    }
+  ],
+  "analyzedRequirements": {
+    "businessRequirement": "Deliver a simple user management system that lets end users register, sign in, manage their profile and passwords, and lets administrators manage user accounts, roles, and status, with basic reporting and auditability.",
+    "functionalRequirements": {
+      "Registration & Onboarding": [
+        {
+          "id": "5f3a6aa2-1e70-4eb6-be4c-588f77bbc5a4",
+          "desc": "The system shall allow self-registration using a unique email address and password."
+        },
+        {
+          "id": "1ba2ec18-c825-48c2-8d1c-ae1c3453bfbc",
+          "desc": "The system shall require email verification via a time-bound, single-use token before granting full access."
+        },
+        {
+          "id": "efae22da-1504-4501-a360-70a88d30550a",
+          "desc": "The system shall prevent duplicate accounts by enforcing case-insensitive uniqueness of email addresses."
+        },
+        {
+          "id": "84b247d5-1141-4170-a4fe-30cfbf4f85dc",
+          "desc": "The system shall support admin-invite flows that create users and send an activation link."
+        },
+        {
+          "id": "47ec13f8-60ce-4ca9-829e-71f0f20e818b",
+          "desc": "The system shall capture minimal required fields at registration: email, password, and display name (optional)."
+        }
+      ],
+      "Authentication & Sessions": [
+        {
+          "id": "4cbe36dd-5f33-48e9-82ec-cc9308748b83",
+          "desc": "The system shall allow users to authenticate with email and password."
+        },
+        {
+          "id": "774dc520-21dc-43f6-a77c-fa57f29bb6d2",
+          "desc": "The system shall provide sign-out that invalidates the current session."
+        },
+        {
+          "id": "22c27cc8-7c19-4361-8b0d-b1ec422bf681",
+          "desc": "The system shall support concurrent sessions on multiple devices and allow users or admins to revoke active sessions."
+        },
+        {
+          "id": "b7310f34-ba58-45a4-a339-7fb74c3a9fd4",
+          "desc": "The system shall automatically expire idle sessions after a configurable inactivity period."
+        },
+        {
+          "id": "8a998da5-44cf-4c63-b066-304ede7b1b47",
+          "desc": "The system shall track last successful login timestamp and IP address for each user."
+        }
+      ],
+      "Authorization & Roles": [
+        {
+          "id": "4886d7b9-4414-4f8c-9c57-b70904a81f4c",
+          "desc": "The system shall implement role-based access control with at least two roles: Member and Admin."
+        },
+        {
+          "id": "39707707-425e-4bf9-b11f-178ff76b8668",
+          "desc": "The system shall assign the Member role by default to newly verified users."
+        },
+        {
+          "id": "2d1bb74b-8c5a-4cb1-b55e-49f39b31e1ea",
+          "desc": "The system shall allow Admins to grant or revoke roles for any user."
+        },
+        {
+          "id": "a69d9441-4efc-4043-8716-259fc8f95837",
+          "desc": "The system shall restrict administrative functions (user listing, role changes, status changes, exports) to Admins only."
+        }
+      ],
+      "Profile Management": [
+        {
+          "id": "39ed6fce-bbbd-49a8-bd36-80051059974c",
+          "desc": "The system shall allow users to view and edit their own profile, including first name, last name, display name, phone (optional), locale, and time zone."
+        },
+        {
+          "id": "86e25a91-95b4-440a-b61f-d101867940d4",
+          "desc": "The system shall allow users to update their email address with confirmation to the new email before change takes effect."
+        },
+        {
+          "id": "c7893d31-c50e-479b-a17d-3f336d7e8627",
+          "desc": "The system shall allow users to upload or set a profile avatar (URL) and remove it."
+        },
+        {
+          "id": "49ad15a9-f916-436b-88a9-64a76fabbb30",
+          "desc": "The system shall allow users to manage communication preferences (e.g., product updates opt-in)."
+        }
+      ],
+      "Password Management & Recovery": [
+        {
+          "id": "fffa9e84-e29a-417f-a9e8-5817318df98b",
+          "desc": "The system shall allow users to change their password after re-authentication."
+        },
+        {
+          "id": "85d42d94-ac8e-45fb-a3f1-b2f31ee98bca",
+          "desc": "The system shall provide a “forgot password” flow sending a time-bound, single-use reset link to the verified email."
+        },
+        {
+          "id": "9c87824b-4cfc-440d-ba33-f3ac98969625",
+          "desc": "The system shall enforce a configurable password policy (minimum length, complexity, and reuse rules)."
+        },
+        {
+          "id": "bb536859-a847-4531-908f-4c5807fe486a",
+          "desc": "The system shall require password re-entry for sensitive account changes (e.g., email change)."
+        }
+      ],
+      "Account Lifecycle & Status": [
+        {
+          "id": "7c6618ed-035b-49fc-b844-c0311ecd236c",
+          "desc": "The system shall maintain user status values: pending_verification, active, suspended, deactivated, deleted_pending_purge."
+        },
+        {
+          "id": "f23f2e26-734b-42d9-ab42-09aadedbc1d6",
+          "desc": "The system shall allow Admins to suspend or deactivate accounts, immediately revoking access without deleting data."
+        },
+        {
+          "id": "f55cf116-9712-451d-9364-744b8b0b73a7",
+          "desc": "The system shall allow end users to request account deletion, which places the account into deleted_pending_purge for a retention window before permanent purge."
+        },
+        {
+          "id": "1bb2119a-d9b8-4ed4-b84e-69b2a629caf4",
+          "desc": "The system shall allow Admins to restore deactivated accounts within the retention window."
+        },
+        {
+          "id": "5835f55c-00cc-4bea-8e55-81933562997b",
+          "desc": "The system shall timestamp and record the actor for all status changes."
+        }
+      ],
+      "Administrative User Management": [
+        {
+          "id": "09509741-ee7e-494d-aa43-b3bb56ca4138",
+          "desc": "The system shall provide Admins the ability to create, read, update, and deactivate user accounts."
+        },
+        {
+          "id": "41d3e5cc-a9d2-4e2d-ae9c-778bd422716f",
+          "desc": "The system shall provide search, filter, and sort on user lists by email, name, role, status, created_at, and last_login."
+        },
+        {
+          "id": "dfd3dd19-a549-454f-b523-01176ecbfaf6",
+          "desc": "The system shall support bulk administrative actions (e.g., deactivate or change role) on up to 100 selected users at a time."
+        },
+        {
+          "id": "5511176b-fc17-49db-b2a1-968ab832c9a2",
+          "desc": "The system shall allow Admins to resend verification emails and initiate password resets."
+        },
+        {
+          "id": "110b5798-5595-45ef-9040-a5f610fd07ef",
+          "desc": "The system shall allow CSV export of user lists with selectable columns subject to authorization."
+        }
+      ],
+      "Audit & Activity Logging": [
+        {
+          "id": "8ba1783c-4edc-4759-8b4e-3de13deb2ee9",
+          "desc": "The system shall record audit events for login success/failure, password changes, email changes, role assignments, status changes, user creation/deletion, and profile updates."
+        },
+        {
+          "id": "f6b65e61-1ce4-47dd-b5c0-9693e9007cb4",
+          "desc": "The system shall capture in each audit record: actor (user or admin), target user (if applicable), action, timestamp (UTC), source IP, and outcome (success/failure)."
+        },
+        {
+          "id": "1d4d3539-d67e-4ed4-a44a-dde7f4b1910f",
+          "desc": "The system shall prevent modification or deletion of audit records by non-privileged users."
+        },
+        {
+          "id": "fc2b22d6-c305-4495-9645-905a72abb7c7",
+          "desc": "The system shall retain audit logs for at least 12 months."
+        }
+      ],
+      "Notifications & Emails": [
+        {
+          "id": "b9ef9986-3d98-4caa-9944-a2cc3ba42710",
+          "desc": "The system shall send transactional emails for verification, invitation, password reset, email change confirmation, and account status changes."
+        },
+        {
+          "id": "adddc42e-1f1a-49c8-8441-d1f7cb49206e",
+          "desc": "The system shall provide template-based emails that support localization by user locale."
+        },
+        {
+          "id": "2c71a68e-a440-40fc-896c-40908b5081c4",
+          "desc": "The system shall track delivery attempts and outcomes (sent, bounced) for transactional emails."
+        }
+      ],
+      "Reporting & Search": [
+        {
+          "id": "0431707d-efd1-4865-a3b1-0285a27559ec",
+          "desc": "The system shall provide summary metrics for Admins: total users, active users, new registrations by day/week, and verification completion rate."
+        },
+        {
+          "id": "9bf2d52e-965d-4a20-b932-bed6dfd3aa86",
+          "desc": "The system shall provide a 30-day login activity summary."
+        },
+        {
+          "id": "637acaa2-eafd-4fce-88f0-582928cdc4c8",
+          "desc": "The system shall allow Admins to export summary metrics to CSV."
+        }
+      ],
+      "Data Model & Constraints": [
+        {
+          "id": "2cfd872c-a5d3-4225-ab65-58afc74237a1",
+          "desc": "The system shall maintain entities required for operation: User, Role, UserRole (for role assignments), Session, AuditEvent, EmailVerificationToken, PasswordResetToken."
+        },
+        {
+          "id": "2802399f-ae8b-4247-8f1a-52d85493f818",
+          "desc": "The system shall enforce uniqueness on User.email (case-insensitive) and optionally on User.username when used."
+        },
+        {
+          "id": "44e77fe6-f75e-4667-9785-c561c4665dde",
+          "desc": "The system shall include standard audit fields on core entities: id, created_at, updated_at, created_by (nullable), updated_by (nullable)."
+        },
+        {
+          "id": "67819a38-b77f-4326-a048-ee0195251361",
+          "desc": "The system shall implement soft delete using deleted_at (nullable) for User, with final purge after the retention window."
+        },
+        {
+          "id": "786a13f3-72a9-49b9-95a2-14375a259622",
+          "desc": "The system shall index frequently queried fields: email, status, role assignment, created_at, and last_login."
+        },
+        {
+          "id": "f784952c-0e28-4728-87e1-4c277b6518f2",
+          "desc": "The system shall store all timestamps in UTC and capture user-preferred time zone for display."
+        }
+      ],
+      "Localization & Internationalization": [
+        {
+          "id": "70fd40b1-a859-4883-bd9a-74dda30d9ec3",
+          "desc": "The system shall store a user’s preferred locale and time zone for notifications and display."
+        },
+        {
+          "id": "a9d23a64-5804-4c47-aa82-01bec8b7bc1d",
+          "desc": "The system shall support English by default and allow adding additional locales for email templates without code changes."
+        }
+      ],
+      "API Access": [
+        {
+          "id": "83fd4bea-40be-467b-a344-596bc9ef134b",
+          "desc": "The system shall expose authenticated APIs for user self-service (profile read/update, change password) and for Admin user management (CRUD, search, export)."
+        },
+        {
+          "id": "1c143152-57fd-4444-a3f3-4991d4548d78",
+          "desc": "The system shall restrict Admin APIs to Admin role and ensure all API calls are attributable to an authenticated actor."
+        },
+        {
+          "id": "8245645d-1704-43ba-ad2b-ad9667caf250",
+          "desc": "The system shall provide idempotent endpoints for invite and verification flows to prevent duplicate accounts."
+        }
+      ]
+    },
+    "nonFunctionalRequirements": {
+      "Security": [
+        {
+          "id": "d4134f48-88cb-4b38-8e5c-e74d32459e6c",
+          "desc": "Passwords shall be stored using industry-standard one-way hashing with salt; plaintext passwords shall never be stored or logged."
+        },
+        {
+          "id": "d47ac192-3f93-484f-80d2-c18d057f5996",
+          "desc": "The system shall implement rate limiting and account lockout after a configurable number of failed login attempts."
+        },
+        {
+          "id": "11f34bce-eb4d-40bb-a499-3a63eb3dca24",
+          "desc": "Verification and reset tokens shall be single-use, randomly generated, and expire within 24 hours (verification) and 60 minutes (password reset)."
+        },
+        {
+          "id": "73b4962c-0451-45f2-9282-0a41f670de27",
+          "desc": "Session management shall prevent session fixation and allow server-side revocation of tokens/sessions."
+        },
+        {
+          "id": "5950b06d-671e-4452-b547-0fe4ddfe33c2",
+          "desc": "Access controls shall follow least-privilege principles and be verified via automated tests."
+        },
+        {
+          "id": "9ac960ce-317e-494f-b609-1658bf59cff2",
+          "desc": "Sensitive personal data (e.g., phone) shall be protected at rest and in transit using industry-standard encryption."
+        }
+      ],
+      "Privacy & Compliance": [
+        {
+          "id": "c5c37e5a-1294-40aa-a888-595d10af009d",
+          "desc": "The system shall support user-initiated data export (machine-readable) and deletion within a defined retention window."
+        },
+        {
+          "id": "64e6df47-e350-4ca1-bbbc-1b9f47689f9b",
+          "desc": "The system shall collect only necessary personal data for the stated purposes and record consent for optional communications."
+        },
+        {
+          "id": "6ad3e2e4-152c-45c2-beb6-e9ed2b4477bb",
+          "desc": "The system shall comply with applicable privacy laws for the deployment region (e.g., US state privacy laws) including honoring deletion and access requests."
+        },
+        {
+          "id": "013e7093-d0f2-4507-ab20-f6518949c790",
+          "desc": "Audit logs shall be tamper-evident and accessible to authorized personnel for compliance reviews."
+        }
+      ],
+      "Performance": [
+        {
+          "id": "bafa2561-861b-43d2-908e-1f8fab7897a6",
+          "desc": "Under a dataset of 100,000 users, user listing with common filters shall return within 800 ms at the 95th percentile."
+        },
+        {
+          "id": "01e1521c-ab51-4be8-aaeb-683365336af3",
+          "desc": "Authentication (login) shall complete within 500 ms at the 95th percentile under 100 requests per second sustained load."
+        },
+        {
+          "id": "6a21b9a9-0c4f-46f3-83a0-b85e103383b5",
+          "desc": "Bulk administrative actions on 100 users shall complete within 5 seconds at the 95th percentile."
+        }
+      ],
+      "Availability & Reliability": [
+        {
+          "id": "12b0f8b1-95a6-428f-b2b2-ab53aafbb1f3",
+          "desc": "User authentication and password reset functions shall maintain 99.9% monthly availability."
+        },
+        {
+          "id": "30c09122-115e-4727-bb05-1da92dbe69f0",
+          "desc": "The system shall support recovery point objective (RPO) of 24 hours and recovery time objective (RTO) of 4 hours for user and audit data."
+        },
+        {
+          "id": "22a7a20e-c8ef-4268-924b-d5c19d645936",
+          "desc": "Critical operations (registration, login, password reset) shall have functional monitoring and alerting on error rates."
+        }
+      ],
+      "Scalability": [
+        {
+          "id": "90cc5494-d371-430c-82bf-aab5ed8bd058",
+          "desc": "The system shall scale to 1,000,000 total users with linear scaling characteristics for read-heavy operations."
+        },
+        {
+          "id": "15fa1766-11c6-41bb-bb7c-60a3c5e76cfa",
+          "desc": "Search and listing performance shall degrade gracefully as data grows, with pagination mandatory for listings."
+        }
+      ],
+      "Usability & Accessibility": [
+        {
+          "id": "4f660a06-6f69-49a1-8d37-0a0479b94e99",
+          "desc": "End-user flows (register, login, reset password) shall be simple and require no more than three steps each."
+        },
+        {
+          "id": "6a1980ad-7970-4535-b3d3-ef71e4766ceb",
+          "desc": "The user interface shall meet WCAG 2.1 AA accessibility guidelines for forms, focus management, and color contrast."
+        },
+        {
+          "id": "0fd6e939-332b-4d16-a67e-512dab175c43",
+          "desc": "Error messages shall be clear, actionable, and not disclose sensitive details."
+        }
+      ],
+      "Observability & Logging": [
+        {
+          "id": "281f7b41-7524-4e21-bcf0-f9f073b5f850",
+          "desc": "The system shall emit structured logs for authentication, authorization decisions, and admin actions with correlation identifiers."
+        },
+        {
+          "id": "923e5309-2dd5-414b-bc68-2430af9c9c39",
+          "desc": "The system shall provide basic operational metrics (logins per minute, failed logins, email send failures) and alert on thresholds."
+        },
+        {
+          "id": "27139a81-313a-451e-9abe-9dd65fcba35b",
+          "desc": "Time synchronization for logs and audits shall use UTC consistently across services."
+        }
+      ],
+      "Maintainability": [
+        {
+          "id": "20622557-2a30-473c-9152-ed52c188f9eb",
+          "desc": "APIs shall be versioned, and breaking changes shall follow a deprecation policy with at least one minor release of overlap."
+        },
+        {
+          "id": "8c4d8326-ea6c-4c62-a0b7-b76880d376f0",
+          "desc": "Configuration for policies (password rules, session timeout, lockout thresholds) shall be externally configurable without code changes."
+        }
+      ]
+    }
+  },
+  "testcases": [],
+  "schemaData": {
+    "tables": {
+      "users": {
+        "name": "users",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for the user record"
+          },
+          "email": {
+            "name": "email",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Primary contact email provided by the user; used for login and transactional messages"
+          },
+          "phone": {
+            "name": "phone",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional phone number; treated as sensitive personal data and protected at rest"
+          },
+          "locale": {
+            "name": "locale",
+            "type": "text",
+            "default": "'en'",
+            "check": null,
+            "notNull": true,
+            "comment": "User preferred locale for localized templates and UI (default: en)"
+          },
+          "status": {
+            "name": "status",
+            "type": "user_status",
+            "default": "'pending_verification'",
+            "check": null,
+            "notNull": true,
+            "comment": "Account lifecycle status controlling access and administrative handling"
+          },
+          "last_name": {
+            "name": "last_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User's family name for display and personalization"
+          },
+          "time_zone": {
+            "name": "time_zone",
+            "type": "text",
+            "default": "'UTC'",
+            "check": null,
+            "notNull": true,
+            "comment": "User preferred time zone for displaying timestamps (stored in UTC in DB)"
+          },
+          "avatar_url": {
+            "name": "avatar_url",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "URL to the user's profile avatar image; can be removed by the user"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation time (UTC)"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor (user id) who created this user record, if applicable"
+          },
+          "deleted_at": {
+            "name": "deleted_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Soft-delete timestamp; account is retained until purge window expires"
+          },
+          "first_name": {
+            "name": "first_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User's given name for display and personalization"
+          },
+          "note_admin": {
+            "name": "note_admin",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional admin-only free-text note about the user account"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record last updated time (UTC)"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor (user id) who last updated this user record, if applicable"
+          },
+          "display_name": {
+            "name": "display_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional preferred display name shown in UI and communications"
+          },
+          "last_login_at": {
+            "name": "last_login_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Timestamp of the most recent successful login (UTC)"
+          },
+          "last_login_ip": {
+            "name": "last_login_ip",
+            "type": "inet",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Source IP address of the most recent successful login"
+          },
+          "lockout_until": {
+            "name": "lockout_until",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "If set, account is locked until this UTC timestamp as part of brute-force protection"
+          },
+          "password_hash": {
+            "name": "password_hash",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "One-way salted hash of the user's password; nullable for invited accounts without passwords"
+          },
+          "invite_sent_at": {
+            "name": "invite_sent_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Timestamp when an admin invite email was sent for accounts created via invite flow"
+          },
+          "consent_given_at": {
+            "name": "consent_given_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "When the user gave consent for optional communications or processing"
+          },
+          "email_normalized": {
+            "name": "email_normalized",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Lowercased, normalized version of email used to enforce case-insensitive uniqueness"
+          },
+          "invite_accepted_at": {
+            "name": "invite_accepted_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Timestamp when an invited user completed activation"
+          },
+          "password_changed_at": {
+            "name": "password_changed_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Timestamp when the user's password was last changed"
+          },
+          "failed_login_attempts": {
+            "name": "failed_login_attempts",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Consecutive failed login attempts used for lockout and rate limit enforcement"
+          },
+          "terms_accepted_version": {
+            "name": "terms_accepted_version",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Identifier for the terms/privacy version the user accepted"
+          },
+          "password_policy_version": {
+            "name": "password_policy_version",
+            "type": "integer",
+            "default": "1",
+            "check": null,
+            "notNull": true,
+            "comment": "Version of password policy applied when the password was set; used to enforce rotation on policy updates"
+          },
+          "communication_preferences": {
+            "name": "communication_preferences",
+            "type": "jsonb",
+            "default": "'{}'::jsonb",
+            "check": null,
+            "notNull": true,
+            "comment": "JSON object storing opt-ins/out and channel preferences for transactional and marketing messages"
+          }
+        },
+        "comment": "Core user accounts, including profile, authentication, status, and soft-delete metadata",
+        "indexes": {
+          "ix_users_status": {
+            "name": "ix_users_status",
+            "unique": false,
+            "columns": [
+              "status"
+            ],
+            "type": "btree"
+          },
+          "ix_users_created_at": {
+            "name": "ix_users_created_at",
+            "unique": false,
+            "columns": [
+              "created_at"
+            ],
+            "type": "btree"
+          },
+          "ix_users_last_login_at": {
+            "name": "ix_users_last_login_at",
+            "unique": false,
+            "columns": [
+              "last_login_at"
+            ],
+            "type": "btree"
+          },
+          "ix_users_email_normalized": {
+            "name": "ix_users_email_normalized",
+            "unique": true,
+            "columns": [
+              "email_normalized"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_users": {
+            "type": "PRIMARY KEY",
+            "name": "pk_users",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_users_created_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_users_created_by",
+            "columnNames": [
+              "created_by"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          },
+          "fk_users_updated_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_users_updated_by",
+            "columnNames": [
+              "updated_by"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          },
+          "uq_users_email_normalized": {
+            "type": "UNIQUE",
+            "name": "uq_users_email_normalized",
+            "columnNames": [
+              "email_normalized"
+            ]
+          }
+        }
+      },
+      "roles": {
+        "name": "roles",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for the role"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Role machine name (e.g., 'member', 'admin') used for authorization checks"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Role creation timestamp (UTC)"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who created this role"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Role last updated timestamp (UTC)"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who last updated this role"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Human-friendly description of the role and its intended use"
+          }
+        },
+        "comment": "Canonical set of roles used for role-based access control",
+        "indexes": {
+          "ix_roles_name": {
+            "name": "ix_roles_name",
+            "unique": true,
+            "columns": [
+              "name"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_roles": {
+            "type": "PRIMARY KEY",
+            "name": "pk_roles",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "user_roles": {
+        "name": "user_roles",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for this role assignment"
+          },
+          "note": {
+            "name": "note",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional admin note about this assignment for audit or context"
+          },
+          "role_id": {
+            "name": "role_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Reference to the assigned role"
+          },
+          "user_id": {
+            "name": "user_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Reference to the user receiving the role"
+          },
+          "granted_at": {
+            "name": "granted_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "When the role was granted to the user (UTC)"
+          },
+          "granted_by": {
+            "name": "granted_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who granted the role (nullable for system-assigned roles)"
+          },
+          "revoked_at": {
+            "name": "revoked_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "When the role was revoked (UTC); null when active"
+          },
+          "revoked_by": {
+            "name": "revoked_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who revoked the role, if applicable"
+          }
+        },
+        "comment": "Assignments of roles to users with grant and revoke metadata for auditability",
+        "indexes": {
+          "ix_user_roles_role_id": {
+            "name": "ix_user_roles_role_id",
+            "unique": false,
+            "columns": [
+              "role_id"
+            ],
+            "type": "btree"
+          },
+          "ix_user_roles_user_id": {
+            "name": "ix_user_roles_user_id",
+            "unique": false,
+            "columns": [
+              "user_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_user_roles": {
+            "type": "PRIMARY KEY",
+            "name": "pk_user_roles",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_user_roles_role": {
+            "type": "FOREIGN KEY",
+            "name": "fk_user_roles_role",
+            "columnNames": [
+              "role_id"
+            ],
+            "targetTableName": "roles",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_user_roles_user": {
+            "type": "FOREIGN KEY",
+            "name": "fk_user_roles_user",
+            "columnNames": [
+              "user_id"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "uq_user_roles_user_role": {
+            "type": "UNIQUE",
+            "name": "uq_user_roles_user_role",
+            "columnNames": [
+              "user_id",
+              "role_id"
+            ]
+          },
+          "fk_user_roles_granted_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_user_roles_granted_by",
+            "columnNames": [
+              "granted_by"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          },
+          "fk_user_roles_revoked_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_user_roles_revoked_by",
+            "columnNames": [
+              "revoked_by"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          }
+        }
+      },
+      "sessions": {
+        "name": "sessions",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for the session or refresh token record"
+          },
+          "note": {
+            "name": "note",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional admin note attached to the session record for context"
+          },
+          "revoked": {
+            "name": "revoked",
+            "type": "boolean",
+            "default": "false",
+            "check": null,
+            "notNull": true,
+            "comment": "Flag indicating whether the session has been revoked server-side"
+          },
+          "user_id": {
+            "name": "user_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Owner of this session (user)"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "When the session was created (UTC)"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who created the session (nullable for system-created sessions)"
+          },
+          "expires_at": {
+            "name": "expires_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Absolute expiration time for the session/token"
+          },
+          "ip_address": {
+            "name": "ip_address",
+            "type": "inet",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Client IP address that initiated the session"
+          },
+          "revoked_at": {
+            "name": "revoked_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "When the session was revoked"
+          },
+          "revoked_by": {
+            "name": "revoked_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who revoked this session (admin or the user)"
+          },
+          "token_hash": {
+            "name": "token_hash",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Hashed session or refresh token stored server-side to enable revocation without storing raw token"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Last updated timestamp for the session record (UTC)"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who last updated this session record"
+          },
+          "user_agent": {
+            "name": "user_agent",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Client user-agent string for session identification"
+          },
+          "fingerprint": {
+            "name": "fingerprint",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional device fingerprint to aid session management and revocation"
+          },
+          "last_activity_at": {
+            "name": "last_activity_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Last recorded activity time used to enforce idle expiration"
+          },
+          "device_display_name": {
+            "name": "device_display_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional human-friendly name of the device/session"
+          },
+          "idle_timeout_seconds": {
+            "name": "idle_timeout_seconds",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Configured idle timeout in seconds used to compute inactivity expiry"
+          }
+        },
+        "comment": "Active and historical sessions/refresh tokens enabling concurrent devices, revocation, and idle expiration",
+        "indexes": {
+          "ix_sessions_user_id": {
+            "name": "ix_sessions_user_id",
+            "unique": false,
+            "columns": [
+              "user_id"
+            ],
+            "type": "btree"
+          },
+          "ix_sessions_expires_at": {
+            "name": "ix_sessions_expires_at",
+            "unique": false,
+            "columns": [
+              "expires_at"
+            ],
+            "type": "btree"
+          },
+          "ix_sessions_last_activity_at": {
+            "name": "ix_sessions_last_activity_at",
+            "unique": false,
+            "columns": [
+              "last_activity_at"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_sessions": {
+            "type": "PRIMARY KEY",
+            "name": "pk_sessions",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_sessions_user": {
+            "type": "FOREIGN KEY",
+            "name": "fk_sessions_user",
+            "columnNames": [
+              "user_id"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_sessions_revoked_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_sessions_revoked_by",
+            "columnNames": [
+              "revoked_by"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          }
+        }
+      },
+      "audit_events": {
+        "name": "audit_events",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for the audit event"
+          },
+          "action": {
+            "name": "action",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Machine-readable action label (e.g., 'login.success', 'password.reset.request')"
+          },
+          "outcome": {
+            "name": "outcome",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Outcome of the action, such as 'success' or 'failure'"
+          },
+          "actor_id": {
+            "name": "actor_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "The acting user (if applicable) responsible for the event; null for system actions"
+          },
+          "metadata": {
+            "name": "metadata",
+            "type": "jsonb",
+            "default": "'{}'::jsonb",
+            "check": null,
+            "notNull": true,
+            "comment": "Structured contextual data for the event (user agent, reason codes, email template id, etc.)"
+          },
+          "actor_type": {
+            "name": "actor_type",
+            "type": "actor_type",
+            "default": "'user'",
+            "check": null,
+            "notNull": true,
+            "comment": "Type of actor: user, admin, or system"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "UTC timestamp when the audit event was recorded"
+          },
+          "ip_address": {
+            "name": "ip_address",
+            "type": "inet",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Source IP address associated with the event"
+          },
+          "immutable_flag": {
+            "name": "immutable_flag",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Flag indicating audit records are immutable for standard users; enforced by application policies"
+          },
+          "target_user_id": {
+            "name": "target_user_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "The user that is target of the action (if applicable)"
+          }
+        },
+        "comment": "Tamper-evident audit log of security relevant and administrative actions with actor and outcome metadata",
+        "indexes": {
+          "ix_audit_events_actor_id": {
+            "name": "ix_audit_events_actor_id",
+            "unique": false,
+            "columns": [
+              "actor_id"
+            ],
+            "type": "btree"
+          },
+          "ix_audit_events_created_at": {
+            "name": "ix_audit_events_created_at",
+            "unique": false,
+            "columns": [
+              "created_at"
+            ],
+            "type": "btree"
+          },
+          "ix_audit_events_target_user_id": {
+            "name": "ix_audit_events_target_user_id",
+            "unique": false,
+            "columns": [
+              "target_user_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "fk_audit_actor": {
+            "type": "FOREIGN KEY",
+            "name": "fk_audit_actor",
+            "columnNames": [
+              "actor_id"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          },
+          "pk_audit_events": {
+            "type": "PRIMARY KEY",
+            "name": "pk_audit_events",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_audit_target_user": {
+            "type": "FOREIGN KEY",
+            "name": "fk_audit_target_user",
+            "columnNames": [
+              "target_user_id"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          }
+        }
+      },
+      "email_verification_tokens": {
+        "name": "email_verification_tokens",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for the verification token record"
+          },
+          "purpose": {
+            "name": "purpose",
+            "type": "text",
+            "default": " 'email_verification' ",
+            "check": null,
+            "notNull": true,
+            "comment": "Purpose of the token for auditing and multi-flow support"
+          },
+          "sent_ip": {
+            "name": "sent_ip",
+            "type": "inet",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "IP address that requested the verification email be sent"
+          },
+          "used_at": {
+            "name": "used_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "When the token was consumed"
+          },
+          "used_by": {
+            "name": "used_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who consumed the token (usually the user)"
+          },
+          "user_id": {
+            "name": "user_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "User account the token is associated with"
+          },
+          "consumed": {
+            "name": "consumed",
+            "type": "boolean",
+            "default": "false",
+            "check": null,
+            "notNull": true,
+            "comment": "Flag indicating if token has been used to prevent reuse"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "When the token was generated (UTC)"
+          },
+          "expires_at": {
+            "name": "expires_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Expiration timestamp for the token (e.g., 24 hours from creation)"
+          },
+          "token_hash": {
+            "name": "token_hash",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "One-way hash of the verification token sent via email (tokens are single-use)"
+          }
+        },
+        "comment": "Single-use time-bound tokens for verifying a user's email address prior to granting full access",
+        "indexes": {
+          "ix_evt_user_id": {
+            "name": "ix_evt_user_id",
+            "unique": false,
+            "columns": [
+              "user_id"
+            ],
+            "type": "btree"
+          },
+          "ix_evt_token_hash": {
+            "name": "ix_evt_token_hash",
+            "unique": true,
+            "columns": [
+              "token_hash"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "fk_evt_user": {
+            "type": "FOREIGN KEY",
+            "name": "fk_evt_user",
+            "columnNames": [
+              "user_id"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "pk_email_verification_tokens": {
+            "type": "PRIMARY KEY",
+            "name": "pk_email_verification_tokens",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "password_reset_tokens": {
+        "name": "password_reset_tokens",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for the password reset token record"
+          },
+          "used_at": {
+            "name": "used_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "When the token was consumed"
+          },
+          "used_by": {
+            "name": "used_by",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Actor who used the reset token (usually the user)"
+          },
+          "user_id": {
+            "name": "user_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "User account the reset token is associated with"
+          },
+          "attempts": {
+            "name": "attempts",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Number of times the token has been attempted (to help detect abuse)"
+          },
+          "consumed": {
+            "name": "consumed",
+            "type": "boolean",
+            "default": "false",
+            "check": null,
+            "notNull": true,
+            "comment": "Flag indicating if token has been used"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "When the reset token was generated (UTC)"
+          },
+          "expires_at": {
+            "name": "expires_at",
+            "type": "timestamptz",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Expiration timestamp for the token (e.g., 60 minutes from creation)"
+          },
+          "request_ip": {
+            "name": "request_ip",
+            "type": "inet",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "IP address that initiated the reset request"
+          },
+          "token_hash": {
+            "name": "token_hash",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "One-way hash of the reset token sent via email (single-use)"
+          }
+        },
+        "comment": "Single-use, short-lived tokens for secure password reset flows",
+        "indexes": {
+          "ix_prt_user_id": {
+            "name": "ix_prt_user_id",
+            "unique": false,
+            "columns": [
+              "user_id"
+            ],
+            "type": "btree"
+          },
+          "ix_prt_token_hash": {
+            "name": "ix_prt_token_hash",
+            "unique": true,
+            "columns": [
+              "token_hash"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "fk_prt_user": {
+            "type": "FOREIGN KEY",
+            "name": "fk_prt_user",
+            "columnNames": [
+              "user_id"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "pk_password_reset_tokens": {
+            "type": "PRIMARY KEY",
+            "name": "pk_password_reset_tokens",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "password_history": {
+        "name": "password_history",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for the historical password record"
+          },
+          "user_id": {
+            "name": "user_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Owner of this historical password entry"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "When this password was recorded as in-use (UTC)"
+          },
+          "password_hash": {
+            "name": "password_hash",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "One-way hash of a previously used password to enforce reuse rules"
+          }
+        },
+        "comment": "Historical password hashes to enforce password reuse and rotation policies",
+        "indexes": {
+          "ix_password_history_user_id": {
+            "name": "ix_password_history_user_id",
+            "unique": false,
+            "columns": [
+              "user_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_password_history": {
+            "type": "PRIMARY KEY",
+            "name": "pk_password_history",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_password_history_user": {
+            "type": "FOREIGN KEY",
+            "name": "fk_password_history_user",
+            "columnNames": [
+              "user_id"
+            ],
+            "targetTableName": "users",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      }
+    },
+    "enums": {
+      "user_status": {
+        "name": "user_status",
+        "values": [
+          "pending_verification",
+          "active",
+          "suspended",
+          "deactivated",
+          "deleted_pending_purge"
+        ],
+        "comment": "Lifecycle status for user accounts controlling access and retention state"
+      },
+      "actor_type": {
+        "name": "actor_type",
+        "values": [
+          "user",
+          "admin",
+          "system"
+        ],
+        "comment": "Type of actor responsible for an action recorded in audit events (end user, administrator, or system)"
+      }
+    },
+    "extensions": {}
+  },
+  "buildingSchemaId": "f5aee608-8137-43c6-ac4a-f723695cad85",
+  "latestVersionNumber": 1,
+  "organizationId": "d8d2603b-968d-47c3-b49e-6a38055afe32",
+  "userId": "a8de04d0-426e-4a4e-82b5-304817e4c458",
+  "designSessionId": "b5f3fc2d-4c50-48ee-88f4-311d40e04228",
+  "schemaIssues": [],
+  "next": "pmAgent"
+}
