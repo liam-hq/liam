@@ -1,6 +1,6 @@
 import { DEFAULT_RECURSION_LIMIT } from '../constants'
 import type { AgentWorkflowParams, WorkflowConfigurable } from '../types'
-import { setupWorkflowState } from '../utils/workflowSetup'
+import { setupStreamOptions, setupWorkflowState } from '../utils/workflowSetup'
 import { createDbAgentGraph } from './createDbAgentGraph'
 
 // TODO: Move to invokeDBAgent.ts once the streaming migration is established
@@ -15,18 +15,26 @@ export async function invokeDbAgentStream(
     config.configurable.repositories.schema.checkpointer,
   )
 
-  const setupResult = await setupWorkflowState(params, config)
-  if (setupResult.isErr()) {
-    throw setupResult.error
+  const stateResult = await setupWorkflowState(
+    params,
+    config.configurable.repositories,
+  )
+  if (stateResult.isErr()) {
+    throw stateResult.error
   }
 
-  const {
-    workflowState,
-    workflowRunId,
-    runCollector,
-    configurable,
-    traceEnhancement,
-  } = setupResult.value
+  const workflowState = stateResult.value
+  const streamOptions = setupStreamOptions({
+    organizationId: params.organizationId,
+    buildingSchemaId: params.buildingSchemaId,
+    designSessionId: params.designSessionId,
+    userId: params.userId,
+    latestVersionNumber: params.latestVersionNumber,
+    repositories: config.configurable.repositories,
+    thread_id: config.configurable.thread_id,
+    recursionLimit,
+    signal: params.signal,
+  })
 
   // Convert workflow state to DB agent state format
   const prompt = params.userInput
@@ -37,16 +45,8 @@ export async function invokeDbAgentStream(
   }
 
   const stream = compiled.streamEvents(dbAgentState, {
-    recursionLimit,
-    configurable,
-    runId: workflowRunId,
-    callbacks: [runCollector],
-    tags: traceEnhancement.tags,
-    metadata: traceEnhancement.metadata,
-    streamMode: 'messages',
-    version: 'v2',
+    ...streamOptions,
     subgraphs: true,
-    signal: params.signal,
   })
 
   async function* iter() {

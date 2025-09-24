@@ -1,7 +1,7 @@
 import { DEFAULT_RECURSION_LIMIT } from './constants'
 import { createGraph } from './createGraph'
 import type { AgentWorkflowParams, WorkflowConfigurable } from './types'
-import { setupWorkflowState } from './utils/workflowSetup'
+import { setupStreamOptions, setupWorkflowState } from './utils/workflowSetup'
 
 // TODO: Move to deepModeling.ts once the streaming migration is established
 export async function deepModelingStream(
@@ -15,30 +15,28 @@ export async function deepModelingStream(
     config.configurable.repositories.schema.checkpointer,
   )
 
-  const setupResult = await setupWorkflowState(params, config)
-  if (setupResult.isErr()) {
-    throw setupResult.error
+  const stateResult = await setupWorkflowState(
+    params,
+    config.configurable.repositories,
+  )
+  if (stateResult.isErr()) {
+    throw stateResult.error
   }
 
-  const {
-    workflowState,
-    workflowRunId,
-    runCollector,
-    configurable,
-    traceEnhancement,
-  } = setupResult.value
-
-  const stream = compiled.streamEvents(workflowState, {
+  const workflowState = stateResult.value
+  const streamOptions = setupStreamOptions({
+    organizationId: params.organizationId,
+    buildingSchemaId: params.buildingSchemaId,
+    designSessionId: params.designSessionId,
+    userId: params.userId,
+    latestVersionNumber: params.latestVersionNumber,
+    repositories: config.configurable.repositories,
+    thread_id: config.configurable.thread_id,
     recursionLimit,
-    configurable,
-    runId: workflowRunId,
-    callbacks: [runCollector],
-    tags: traceEnhancement.tags,
-    metadata: traceEnhancement.metadata,
-    streamMode: 'messages',
-    version: 'v2',
     signal: params.signal,
   })
+
+  const stream = compiled.streamEvents(workflowState, streamOptions)
 
   async function* iter() {
     for await (const ev of stream) {

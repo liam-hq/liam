@@ -2,9 +2,9 @@ import { HumanMessage } from '@langchain/core/messages'
 import { RunCollectorCallbackHandler } from '@langchain/core/tracers/run_collector'
 import type { CompiledStateGraph } from '@langchain/langgraph'
 import { END } from '@langchain/langgraph'
+import { fromPromise } from '@liam-hq/neverthrow'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
-import { DEFAULT_RECURSION_LIMIT } from '../constants'
 import type {
   AgentWorkflowParams,
   AgentWorkflowResult,
@@ -15,27 +15,36 @@ import { WorkflowTerminationError } from './errorHandling'
 import { createEnhancedTraceData } from './traceEnhancer'
 
 /**
- * Shared workflow setup configuration
+ * Parameters for setting up stream options
  */
-type WorkflowSetupConfig = {
-  configurable: WorkflowConfigurable
+type SetupStreamOptionsParams = {
+  organizationId: string
+  buildingSchemaId: string
+  designSessionId: string
+  userId: string
+  latestVersionNumber?: number
+  repositories: WorkflowConfigurable['repositories']
+  thread_id: string
+  recursionLimit: number
+  signal: AbortSignal
 }
 
 /**
- * Result of workflow setup, containing the prepared state and run metadata
+ * Stream options for workflow execution - compatible with streamEvents
  */
-type WorkflowSetupResult = {
-  workflowState: WorkflowState
-  workflowRunId: string
-  runCollector: RunCollectorCallbackHandler
+type StreamOptions = {
+  recursionLimit: number
   configurable: WorkflowConfigurable & {
     buildingSchemaId: string
     latestVersionNumber: number
   }
-  traceEnhancement: {
-    tags: string[]
-    metadata: Record<string, unknown>
-  }
+  runId: string
+  callbacks: RunCollectorCallbackHandler[]
+  tags: string[]
+  metadata: Record<string, unknown>
+  streamMode: 'messages'
+  version: 'v2'
+  signal: AbortSignal
 }
 
 /**
@@ -44,8 +53,8 @@ type WorkflowSetupResult = {
  */
 export const setupWorkflowState = (
   params: AgentWorkflowParams,
-  config: WorkflowSetupConfig,
-): ResultAsync<WorkflowSetupResult, Error> => {
+  repositories: WorkflowConfigurable['repositories'],
+): ResultAsync<WorkflowState, Error> => {
   const {
     userInput,
     schemaData,
@@ -56,15 +65,8 @@ export const setupWorkflowState = (
     userId,
   } = params
 
-  const { repositories, thread_id } = config.configurable
-
-  const workflowRunId = uuidv4()
-
   // Fetch user info to get userName
-  const getUserInfo = ResultAsync.fromPromise(
-    repositories.schema.getUserInfo(userId),
-    (error) => new Error(String(error)),
-  )
+  const getUserInfo = fromPromise(repositories.schema.getUserInfo(userId))
 
   return getUserInfo.andThen((userInfo) => {
     const userName = userInfo?.userName
@@ -77,51 +79,22 @@ export const setupWorkflowState = (
     })
     const allMessages = [userMessage]
 
-    const runCollector = new RunCollectorCallbackHandler()
-
-    // Enhanced tracing with environment and developer context
-    const traceEnhancement = createEnhancedTraceData(
-      workflowRunId,
-      'agent-workflow',
-      [`organization:${organizationId}`, `session:${designSessionId}`],
-      {
-        workflow: {
-          building_schema_id: buildingSchemaId,
-          design_session_id: designSessionId,
-          user_id: userId,
-          organization_id: organizationId,
-          version_number: latestVersionNumber,
-        },
-      },
-    )
-
     return ok({
-      workflowState: {
-        messages: allMessages,
-        schemaData,
-        analyzedRequirements: {
-          businessRequirement: '',
-          functionalRequirements: {},
-          nonFunctionalRequirements: {},
-        },
-        testcases: [],
-        schemaIssues: [],
-        organizationId,
-        buildingSchemaId,
-        latestVersionNumber,
-        designSessionId,
-        userId,
-        next: END,
+      messages: allMessages,
+      schemaData,
+      analyzedRequirements: {
+        businessRequirement: '',
+        functionalRequirements: {},
+        nonFunctionalRequirements: {},
       },
-      workflowRunId,
-      runCollector,
-      configurable: {
-        repositories,
-        thread_id,
-        buildingSchemaId,
-        latestVersionNumber,
-      },
-      traceEnhancement,
+      testcases: [],
+      schemaIssues: [],
+      organizationId,
+      buildingSchemaId,
+      latestVersionNumber,
+      designSessionId,
+      userId,
+      next: END,
     })
   })
 }
@@ -131,23 +104,24 @@ export const setupWorkflowState = (
  * This wraps the workflow execution with error handling, status updates, and artifact finalization
  *
  * @param compiled - LangGraph compiled workflow that works with WorkflowState
- * @param setupResult - Workflow setup result containing state and configuration
- * @param recursionLimit - Maximum number of recursive calls allowed
+ * @param workflowState - The prepared workflow state
+ * @param streamOptions - Stream options containing run metadata and configuration
  */
 export const executeWorkflowWithTracking = <
   S extends CompiledStateGraph<unknown, unknown>,
 >(
   compiled: S,
-  setupResult: WorkflowSetupResult,
-  recursionLimit: number = DEFAULT_RECURSION_LIMIT,
+  workflowState: WorkflowState,
+  streamOptions: StreamOptions,
 ): AgentWorkflowResult => {
   const {
-    workflowState,
-    workflowRunId,
-    runCollector,
+    recursionLimit,
     configurable,
-    traceEnhancement,
-  } = setupResult
+    runId: workflowRunId,
+    callbacks,
+    tags,
+    metadata,
+  } = streamOptions
 
   // Type guard for safe type checking
   const isWorkflowState = (obj: unknown): obj is WorkflowState => {
@@ -159,9 +133,9 @@ export const executeWorkflowWithTracking = <
       recursionLimit,
       configurable,
       runId: workflowRunId,
-      callbacks: [runCollector],
-      tags: traceEnhancement.tags,
-      metadata: traceEnhancement.metadata,
+      callbacks,
+      tags,
+      metadata,
     }),
     (error) => {
       // WorkflowTerminationError means the workflow was intentionally terminated
@@ -178,4 +152,56 @@ export const executeWorkflowWithTracking = <
       : errAsync(new Error('Invalid workflow result'))
 
   return executeWorkflow.andThen(validateAndReturnResult)
+}
+
+/**
+ * Setup stream options for workflow execution
+ * This includes run metadata, tracing, and configuration required for streaming
+ */
+export const setupStreamOptions = ({
+  organizationId,
+  buildingSchemaId,
+  designSessionId,
+  userId,
+  latestVersionNumber = 0,
+  repositories,
+  thread_id,
+  recursionLimit,
+  signal,
+}: SetupStreamOptionsParams): StreamOptions => {
+  const workflowRunId = uuidv4()
+  const runCollector = new RunCollectorCallbackHandler()
+
+  // Enhanced tracing with environment and developer context
+  const traceEnhancement = createEnhancedTraceData(
+    workflowRunId,
+    'agent-workflow',
+    [`organization:${organizationId}`, `session:${designSessionId}`],
+    {
+      workflow: {
+        building_schema_id: buildingSchemaId,
+        design_session_id: designSessionId,
+        user_id: userId,
+        organization_id: organizationId,
+        version_number: latestVersionNumber,
+      },
+    },
+  )
+
+  return {
+    recursionLimit,
+    configurable: {
+      repositories,
+      thread_id,
+      buildingSchemaId,
+      latestVersionNumber,
+    },
+    runId: workflowRunId,
+    callbacks: [runCollector],
+    tags: traceEnhancement.tags,
+    metadata: traceEnhancement.metadata,
+    streamMode: 'messages' as const,
+    version: 'v2' as const,
+    signal,
+  }
 }
