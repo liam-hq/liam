@@ -160,13 +160,13 @@ describe('postgresqlSchemaDeparser', () => {
               name: 'enabled',
               type: 'boolean',
               notNull: true,
-              default: true,
+              default: 'TRUE',
             }),
-            count: aColumn({ name: 'count', type: 'integer', default: 0 }),
+            count: aColumn({ name: 'count', type: 'integer', default: '0' }),
             title: aColumn({
               name: 'title',
               type: 'varchar(50)',
-              default: 'Default Title',
+              default: "'Default Title'",
             }),
           },
           constraints: {
@@ -779,7 +779,7 @@ describe('postgresqlSchemaDeparser', () => {
                 name: 'price',
                 type: 'decimal(10,2)',
                 notNull: true,
-                default: 0,
+                default: '0',
               }),
             },
             indexes: {
@@ -817,7 +817,7 @@ describe('postgresqlSchemaDeparser', () => {
                 name: 'quantity',
                 type: 'integer',
                 notNull: true,
-                default: 1,
+                default: '1',
               }),
             },
             indexes: {
@@ -1469,13 +1469,13 @@ describe('postgresqlSchemaDeparser', () => {
                   name: 'status',
                   type: 'varchar',
                   notNull: true,
-                  default: 'active', // This SHOULD be quoted as it's a string literal
+                  default: "'active'", // String literal in PostgreSQL format
                 }),
                 role: aColumn({
                   name: 'role',
                   type: 'varchar',
                   notNull: true,
-                  default: 'user', // This SHOULD be quoted as it's a string literal
+                  default: "'user'", // String literal in PostgreSQL format
                 }),
               },
             }),
@@ -1501,13 +1501,13 @@ describe('postgresqlSchemaDeparser', () => {
                   name: 'enabled',
                   type: 'boolean',
                   notNull: true,
-                  default: false, // Boolean should not be quoted
+                  default: 'FALSE', // Boolean in PostgreSQL format
                 }),
                 count: aColumn({
                   name: 'count',
                   type: 'integer',
                   notNull: true,
-                  default: 0, // Number should not be quoted
+                  default: '0', // Number in PostgreSQL format
                 }),
               },
             }),
@@ -1729,19 +1729,19 @@ describe('postgresqlSchemaDeparser', () => {
                   name: 'status',
                   type: 'varchar',
                   notNull: true,
-                  default: 'pending', // String literal - should be quoted
+                  default: "'pending'", // String literal in PostgreSQL format
                 }),
                 is_active: aColumn({
                   name: 'is_active',
                   type: 'boolean',
                   notNull: true,
-                  default: true, // Boolean - should not be quoted
+                  default: 'TRUE', // Boolean in PostgreSQL format
                 }),
                 count: aColumn({
                   name: 'count',
                   type: 'integer',
                   notNull: true,
-                  default: 0, // Number - should not be quoted
+                  default: '0', // Number in PostgreSQL format
                 }),
                 created_at: aColumn({
                   name: 'created_at',
@@ -1828,6 +1828,123 @@ describe('postgresqlSchemaDeparser', () => {
 );
 
 ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
+
+        expect(result.value).toBe(expectedDDL)
+      })
+
+      it('should handle enum default values with cast expressions correctly', () => {
+        const schema = aSchema({
+          enums: {
+            user_status: anEnum({
+              name: 'user_status',
+              values: ['active', 'inactive', 'invited', 'suspended'],
+            }),
+          },
+          tables: {
+            users: aTable({
+              name: 'users',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'uuid',
+                  notNull: true,
+                  default: 'gen_random_uuid()',
+                }),
+                status: aColumn({
+                  name: 'status',
+                  type: 'user_status',
+                  notNull: true,
+                  default: "'invited'::user_status", // Cast expression for enum
+                }),
+                role: aColumn({
+                  name: 'role',
+                  type: 'user_status',
+                  notNull: false,
+                  default: "'active'", // Pre-quoted enum value
+                }),
+                state: aColumn({
+                  name: 'state',
+                  type: 'user_status',
+                  notNull: false,
+                  default: "'inactive'::user_status", // Cast expression for enum
+                }),
+              },
+              constraints: {
+                users_pkey: aPrimaryKeyConstraint({
+                  name: 'users_pkey',
+                  columnNames: ['id'],
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Verify the exact DDL output
+        const expectedDDL = `CREATE TYPE "user_status" AS ENUM ('active', 'inactive', 'invited', 'suspended');
+
+CREATE TABLE "users" (
+  "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+  "status" user_status NOT NULL DEFAULT 'invited'::user_status,
+  "role" user_status DEFAULT 'active',
+  "state" user_status DEFAULT 'inactive'::user_status
+);
+
+ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
+
+        expect(result.value).toBe(expectedDDL)
+      })
+
+      it('should handle timestamptz columns with interval expressions', () => {
+        const schema = aSchema({
+          tables: {
+            sessions: aTable({
+              name: 'sessions',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'uuid',
+                  notNull: true,
+                  default: 'gen_random_uuid()',
+                }),
+                created_at: aColumn({
+                  name: 'created_at',
+                  type: 'timestamptz',
+                  notNull: true,
+                  default: 'now()',
+                }),
+                expires_at: aColumn({
+                  name: 'expires_at',
+                  type: 'timestamptz',
+                  notNull: true,
+                  default: "(now() + INTERVAL '30 days')",
+                }),
+              },
+              constraints: {
+                sessions_pkey: aPrimaryKeyConstraint({
+                  name: 'sessions_pkey',
+                  columnNames: ['id'],
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+
+        // Verify the exact DDL output
+        const expectedDDL = `CREATE TABLE "sessions" (
+  "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+  "created_at" timestamptz NOT NULL DEFAULT now(),
+  "expires_at" timestamptz NOT NULL DEFAULT (now() + INTERVAL '30 days')
+);
+
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_pkey" PRIMARY KEY ("id");`
 
         expect(result.value).toBe(expectedDDL)
       })

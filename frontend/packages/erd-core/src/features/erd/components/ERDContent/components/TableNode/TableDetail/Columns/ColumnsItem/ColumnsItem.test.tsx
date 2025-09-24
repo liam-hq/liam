@@ -72,7 +72,7 @@ describe('default value', () => {
     render(
       <ColumnsItem
         tableId="users"
-        column={aColumn({ default: 100 })}
+        column={aColumn({ default: '100' })}
         constraints={{}}
       />,
       { wrapper },

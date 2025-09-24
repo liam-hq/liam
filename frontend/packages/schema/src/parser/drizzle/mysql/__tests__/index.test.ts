@@ -76,7 +76,7 @@ describe(processor, () => {
 
       // Test mysqlEnum usage (inline enum definition)
       expect(value.tables['users']?.columns['status']?.type).toBe('enum')
-      expect(value.tables['users']?.columns['status']?.default).toBe('active')
+      expect(value.tables['users']?.columns['status']?.default).toBe("'active'")
 
       // Test autoincrement (MySQL-specific implementation)
       expect(value.tables['users']?.columns['id']?.default).toBe(

@@ -79,7 +79,7 @@ describe('postgresqlOperationDeparser', () => {
               name: 'enabled',
               type: 'boolean',
               notNull: true,
-              default: true,
+              default: 'TRUE',
               check: null,
               comment: null,
             },
@@ -87,7 +87,7 @@ describe('postgresqlOperationDeparser', () => {
               name: 'title',
               type: 'varchar(100)',
               notNull: false,
-              default: 'Default Title',
+              default: "'Default Title'",
               check: null,
               comment: null,
             },
@@ -191,7 +191,7 @@ describe('postgresqlOperationDeparser', () => {
           type: 'decimal(10,2)',
           notNull: true,
           unique: false,
-          default: 0.0,
+          default: '0',
           check: null,
           comment: null,
         },
@@ -657,7 +657,7 @@ describe('postgresqlOperationDeparser', () => {
       const operation: Operation = {
         op: 'replace',
         path: '/tables/users/columns/status/default',
-        value: 'active',
+        value: "'active'",
       }
 
       const result = postgresqlOperationDeparser(operation)

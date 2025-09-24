@@ -118,7 +118,7 @@ describe(processor, () => {
             // TODO: `t.integer` should be converted to int4 for PostgreSQL
             type: 'integer',
             notNull: false,
-            default: 30,
+            default: '30',
           }),
         },
       })
@@ -140,7 +140,7 @@ describe(processor, () => {
             // TODO: `t.boolean` should be converted to bool for PostgreSQL
             type: 'boolean',
             notNull: false,
-            default: true,
+            default: 'TRUE',
           }),
         },
       })
