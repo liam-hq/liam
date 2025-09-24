@@ -183,8 +183,7 @@ export const ToolCallCard: FC<Props> = ({
             <ArgumentsDisplay
               args={parsedArguments}
               isAnimated={
-                !isPreCompleted &&
-                (animationState.animationStarted || isRunning)
+                !isPreCompleted && animationState.animationStarted && !isRunning
               }
               onLineAdded={handleLineAdded}
               onReady={handleArgumentsReady}
