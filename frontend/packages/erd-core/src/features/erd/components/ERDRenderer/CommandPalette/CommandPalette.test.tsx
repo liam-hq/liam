@@ -114,6 +114,17 @@ describe('dialog opening interactions', () => {
 })
 
 describe('dialog closing interaction', () => {
+  it('closes dialog by pressing ESC key', async () => {
+    const {
+      user,
+      elements: { dialog },
+    } = await prepareCommandPalette()
+
+    await user.keyboard('{Escape}')
+
+    expect(dialog).not.toBeInTheDocument()
+  })
+
   it('closes dialog by clicking ESC button', async () => {
     const {
       user,
