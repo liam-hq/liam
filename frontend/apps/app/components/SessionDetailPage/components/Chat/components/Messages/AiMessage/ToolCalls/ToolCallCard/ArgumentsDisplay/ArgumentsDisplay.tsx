@@ -113,16 +113,17 @@ export const ArgumentsDisplay: FC<Props> = ({
     return undefined
   }, [displayLines.length, isAnimated, isReady, onReady])
 
+  // Always sync visibleLines with displayLines when not animated
   useEffect(() => {
-    // For non-animated content, update visible lines when displayLines changes
     if (!isAnimated && displayLines.length > 0) {
       setVisibleLines(displayLines)
       setCurrentIndex(displayLines.length)
-      return
     }
+  }, [displayLines, isAnimated])
 
+  useEffect(() => {
     // Start animation only after ready
-    if (isReady && currentIndex < displayLines.length) {
+    if (isAnimated && isReady && currentIndex < displayLines.length) {
       const timer = setTimeout(() => {
         const nextLine = displayLines[currentIndex]
         if (nextLine) {
@@ -186,10 +187,10 @@ export const ArgumentsDisplay: FC<Props> = ({
 
     return undefined
   }, [
-    currentIndex,
-    displayLines,
     isAnimated,
     isReady,
+    currentIndex,
+    displayLines,
     onLineAdded,
     isExpanded,
     onAnimationComplete,
