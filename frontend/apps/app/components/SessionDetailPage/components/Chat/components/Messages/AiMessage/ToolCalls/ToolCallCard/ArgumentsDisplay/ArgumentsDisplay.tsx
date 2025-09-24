@@ -302,7 +302,9 @@ export const ArgumentsDisplay: FC<Props> = ({
 
   // Don't show anything during preparation phase (only for animated content)
   // For non-animated content, always show
-  if (isAnimated && !isReady && displayLines.length > 0) {
+  // Show immediately for running tools to avoid hiding arguments
+  // Keep empty check to avoid rendering empty content
+  if (isAnimated && !isReady && displayLines.length === 0) {
     return null
   }
 
