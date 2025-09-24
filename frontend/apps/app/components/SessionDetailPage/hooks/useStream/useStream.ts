@@ -5,7 +5,7 @@ import {
   coerceMessageLikeToMessage,
 } from '@langchain/core/messages'
 import { MessageTupleManager, SSE_EVENTS } from '@liam-hq/agent/client'
-import { err, ok } from 'neverthrow'
+import { err, ok, type Result } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
@@ -13,6 +13,12 @@ import { parseSse } from './parseSse'
 import { useSessionStorageOnce } from './useSessionStorageOnce'
 
 const MAX_RETRIES = 2
+
+type StreamError = {
+  type: 'network' | 'abort' | 'unknown'
+  message: string
+  status?: number
+}
 
 type ChatRequest = {
   userInput: string
@@ -62,32 +68,14 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
     abortRef.current?.abort()
   })
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
-  const start = useCallback(async (params: ChatRequest) => {
-    abortRef.current?.abort()
-    abortRef.current = new AbortController()
-    setIsStreaming(true)
-    setError(null) // Clear error when starting new request
-
-    try {
-      const res = await fetch('/api/chat/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-        signal: abortRef.current.signal,
-      })
-
-      if (!res.body) {
-        return err({
-          type: 'network',
-          message: ERROR_MESSAGES.FETCH_FAILED,
-          status: res.status,
-        })
-      }
-
+  const processSSEStream = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
+    async (response: Response): Promise<boolean> => {
       let endEventReceived = false
 
-      for await (const ev of parseSse(res.body)) {
+      if (!response.body) return false
+
+      for await (const ev of parseSse(response.body)) {
         if (ev.event === SSE_EVENTS.END) {
           endEventReceived = true
           setIsStreaming(false)
@@ -106,9 +94,8 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
               ? errorData.message
               : 'An unknown error occurred during streaming.'
 
-          // Set error state
           setError(message)
-          continue // Continue streaming even with error
+          continue
         }
 
         if (ev.event !== SSE_EVENTS.MESSAGES) continue
@@ -136,38 +123,82 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
         })
       }
 
-      // Detect potential forced disconnection
-      if (!endEventReceived) {
-        // Retry logic
-        if (retryCountRef.current < MAX_RETRIES) {
-          retryCountRef.current++
-          return start(params)
+      return endEventReceived
+    },
+    [],
+  )
+
+  const executeStream = useCallback(
+    async (
+      url: string,
+      body: object,
+      shouldCheckEndEvent = false,
+      onRetry?: () => Promise<Result<undefined, StreamError>>,
+    ) => {
+      abortRef.current?.abort()
+      abortRef.current = new AbortController()
+      setIsStreaming(true)
+      setError(null)
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: abortRef.current.signal,
+        })
+
+        if (!res.body) {
+          return err({
+            type: 'network' as const,
+            message: ERROR_MESSAGES.FETCH_FAILED,
+            status: res.status,
+          })
         }
 
-        // Final failure after all retries
-        setError('Connection timed out after multiple attempts')
-      }
+        const endEventReceived = await processSSEStream(res)
 
-      setIsStreaming(false)
-      retryCountRef.current = 0 // Reset retry counter on success
-      return ok(undefined)
-    } catch (error) {
-      setIsStreaming(false)
+        if (shouldCheckEndEvent && !endEventReceived) {
+          if (retryCountRef.current < MAX_RETRIES && onRetry) {
+            retryCountRef.current++
+            return onRetry()
+          }
+          setError('Connection timed out after multiple attempts')
+        }
 
-      if (error instanceof Error && error.name === 'AbortError') {
+        setIsStreaming(false)
+        retryCountRef.current = 0
+        return ok(undefined)
+      } catch (error) {
+        setIsStreaming(false)
+
+        if (error instanceof Error && error.name === 'AbortError') {
+          return err({
+            type: 'abort' as const,
+            message: 'Request was aborted',
+          })
+        }
+
+        retryCountRef.current = 0
         return err({
-          type: 'abort',
-          message: 'Request was aborted',
+          type: 'unknown' as const,
+          message: ERROR_MESSAGES.GENERAL,
         })
       }
+    },
+    [processSSEStream],
+  )
 
-      retryCountRef.current = 0 // Reset retry counter on error
-      return err({
-        type: 'unknown',
-        message: ERROR_MESSAGES.GENERAL,
-      })
-    }
-  }, [])
+  const replay = useCallback(async () => {
+    return executeStream('/api/chat/replay', { designSessionId })
+  }, [designSessionId, executeStream])
+
+  const start = useCallback(
+    async (params: ChatRequest) => {
+      return executeStream('/api/chat/stream', params, true, replay)
+    },
+    [executeStream, replay],
+  )
 
   return {
     messages,

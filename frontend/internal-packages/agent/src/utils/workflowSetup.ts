@@ -17,7 +17,7 @@ import { createEnhancedTraceData } from './traceEnhancer'
 /**
  * Parameters for setting up stream options
  */
-type SetupStreamOptionsParams = {
+export type SetupStreamOptionsParams = {
   organizationId: string
   buildingSchemaId: string
   designSessionId: string
