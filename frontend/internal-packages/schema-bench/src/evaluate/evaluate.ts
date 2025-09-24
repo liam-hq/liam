@@ -39,7 +39,6 @@ type EvaluateResult = {
   columnMappings: Record<string, Mapping>
   tableF1Score: number
   tableRecall: number
-  tableAllCorrectRate: number
   columnF1ScoreAverage: number
   columnRecallAverage: number
   columnAllCorrectRateAverage: number
@@ -47,7 +46,6 @@ type EvaluateResult = {
   constraintAccuracy: number
   foreignKeyF1Score: number
   foreignKeyRecall: number
-  foreignKeyAllCorrectRate: number
   overallSchemaAccuracy: number
 }
 
@@ -297,12 +295,11 @@ export const evaluate = async (
     predict.tables,
   )
 
-  const { foreignKeyF1, foreignKeyRecall, foreignKeyAllCorrect } =
-    calculateForeignKeyMetrics(
-      reference.tables,
-      predict.tables,
-      foreignKeyMapping,
-    )
+  const { foreignKeyF1, foreignKeyRecall } = calculateForeignKeyMetrics(
+    reference.tables,
+    predict.tables,
+    foreignKeyMapping,
+  )
 
   // Calculate averages
   const totalTableCount = referenceTableNames.length
@@ -333,7 +330,6 @@ export const evaluate = async (
     columnMappings: allColumnMappings,
     tableF1Score: tableF1,
     tableRecall,
-    tableAllCorrectRate: tableAllcorrect,
     columnF1ScoreAverage,
     columnRecallAverage,
     columnAllCorrectRateAverage,
@@ -341,7 +337,6 @@ export const evaluate = async (
     constraintAccuracy,
     foreignKeyF1Score: foreignKeyF1,
     foreignKeyRecall,
-    foreignKeyAllCorrectRate: foreignKeyAllCorrect,
     overallSchemaAccuracy,
   }
 }

@@ -18,7 +18,6 @@ export type EvaluationResult = {
   metrics: {
     tableF1Score: number
     tableRecall: number
-    tableAllCorrectRate: number
     columnF1ScoreAverage: number
     columnRecallAverage: number
     columnAllCorrectRateAverage: number
@@ -26,7 +25,6 @@ export type EvaluationResult = {
     constraintAccuracy: number
     foreignKeyF1Score: number
     foreignKeyRecall: number
-    foreignKeyAllCorrectRate: number
     overallSchemaAccuracy: number
   }
   tableMapping: Record<string, string>

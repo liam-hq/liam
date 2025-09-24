@@ -22,6 +22,8 @@ Execute schema benchmark comparison between LiamDB and OpenAI models.
 - Automatic input format standardization
 - Improved error handling and progress reporting
 
+**Critical**: When executing LiamDB benchmarks, use a 30-minute (1800-second) timeout to prevent premature termination. The deep modeling workflow can take 10+ minutes per test case.
+
 First, I'll clean up any existing workspace and set up a fresh benchmark environment with multiple datasets:
 
 ```bash

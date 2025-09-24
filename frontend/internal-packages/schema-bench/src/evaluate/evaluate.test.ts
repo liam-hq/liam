@@ -162,11 +162,9 @@ describe('evaluate', () => {
       const result = await evaluate(reference, predict)
 
       expect(result.tableF1Score).toBe(1)
-      expect(result.tableAllCorrectRate).toBe(1)
       expect(result.columnF1ScoreAverage).toBeCloseTo(1)
       expect(result.primaryKeyAccuracyAverage).toBeCloseTo(1)
       expect(result.foreignKeyF1Score).toBe(0)
-      expect(result.foreignKeyAllCorrectRate).toBe(0)
       expect(result.overallSchemaAccuracy).toBe(1)
     },
     TIMEOUT,
@@ -313,7 +311,6 @@ describe('evaluate', () => {
 
       // Tables should match due to semantic similarity (user_account -> user, blog_post -> post)
       expect(result.tableF1Score).toBeCloseTo(1, 1)
-      expect(result.tableAllCorrectRate).toBe(1)
 
       // Columns should partially match (email -> email_address, title -> post_title)
       expect(result.columnF1ScoreAverage).toBeCloseTo(0.75, 3)
@@ -322,7 +319,6 @@ describe('evaluate', () => {
       // Primary keys should partially match (different column names)
       expect(result.primaryKeyAccuracyAverage).toBeCloseTo(0.5, 3)
       expect(result.foreignKeyF1Score).toBe(0)
-      expect(result.foreignKeyAllCorrectRate).toBe(0)
       expect(result.overallSchemaAccuracy).toBe(0)
     },
     TIMEOUT,
@@ -441,7 +437,6 @@ describe('evaluate', () => {
 
       // Perfect table match
       expect(result.tableF1Score).toBe(1)
-      expect(result.tableAllCorrectRate).toBe(1)
 
       // Partial column matches: first_name (exact), last_name->surname (similar), email->email_address (similar)
       // customer_id->id (partial), so 3/4 should match
@@ -451,7 +446,6 @@ describe('evaluate', () => {
       // Primary key mismatch (customer_id vs id)
       expect(result.primaryKeyAccuracyAverage).toBe(1)
       expect(result.foreignKeyF1Score).toBe(0)
-      expect(result.foreignKeyAllCorrectRate).toBe(0)
       expect(result.overallSchemaAccuracy).toBe(0)
     },
     TIMEOUT,
@@ -599,7 +593,6 @@ describe('evaluate', () => {
       const result = await evaluate(reference, predict)
 
       expect(result.foreignKeyF1Score).toBe(1)
-      expect(result.foreignKeyAllCorrectRate).toBe(1)
     },
     TIMEOUT,
   )
@@ -746,7 +739,6 @@ describe('evaluate', () => {
       const result = await evaluate(reference, predict)
 
       expect(result.foreignKeyF1Score).toBe(1)
-      expect(result.foreignKeyAllCorrectRate).toBe(1)
     },
     TIMEOUT,
   )
@@ -962,7 +954,6 @@ describe('evaluate', () => {
       const result = await evaluate(reference, predict)
 
       expect(result.foreignKeyF1Score).toBeCloseTo(0.6666666666666666)
-      expect(result.foreignKeyAllCorrectRate).toBe(0)
     },
     TIMEOUT,
   )
@@ -1109,7 +1100,6 @@ describe('evaluate', () => {
       const result = await evaluate(reference, predict)
 
       expect(result.foreignKeyF1Score).toBe(0)
-      expect(result.foreignKeyAllCorrectRate).toBe(0)
     },
     TIMEOUT,
   )

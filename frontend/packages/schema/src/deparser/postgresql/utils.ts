@@ -93,12 +93,24 @@ function generateColumnDefinition(
 function formatDefaultValue(value: string | number | boolean): string {
   if (typeof value === 'string') {
     // Check if it's a PostgreSQL function call (e.g., gen_random_uuid(), now(), current_timestamp())
-    if (isPostgreSQLFunction(value)) {
+    if (isPostgreSQLFunctionForDefaultValue(value)) {
       return value // Don't quote function calls
     }
 
-    // Check if value is already quoted (handles enum values that might come pre-quoted)
     const trimmedValue = value.trim()
+
+    // Check if it's a cast expression
+    // Valid cast patterns: 'literal'::type or (expression)::type
+    // Examples: '2024-01-01'::timestamptz, 'invited'::user_status, (now() + interval '30 days')::timestamptz
+    if (trimmedValue.includes('::')) {
+      // Only treat as cast if it starts with a quoted string or parenthesized expression
+      if (trimmedValue.startsWith("'") || trimmedValue.startsWith('(')) {
+        return trimmedValue
+      }
+      // Not a valid cast pattern (e.g., bare "a::b"), continue to normal processing
+    }
+
+    // Check if value is already quoted (handles enum values that might come pre-quoted)
     if (trimmedValue.startsWith("'") && trimmedValue.endsWith("'")) {
       // Value is already quoted, return as-is
       return trimmedValue
@@ -120,7 +132,7 @@ function formatDefaultValue(value: string | number | boolean): string {
 /**
  * Check if a string represents a PostgreSQL function call
  */
-function isPostgreSQLFunction(value: string): boolean {
+function isPostgreSQLFunctionForDefaultValue(value: string): boolean {
   const trimmedValue = value.trim()
 
   // Match PostgreSQL function patterns:
@@ -136,6 +148,16 @@ function isPostgreSQLFunction(value: string): boolean {
 
   // Check if it matches the general function pattern
   if (functionPattern.test(trimmedValue)) {
+    return true
+  }
+
+  // Check if it's an expression that contains parentheses
+  // Examples: (now() + INTERVAL '30 days'), (random() * 100)
+  // NOTE: This is a naive approach that may over-match. Any string containing '('
+  // will be treated as a function expression, which could incorrectly identify
+  // some string literals as functions. However, this conservative approach ensures
+  // that complex PostgreSQL expressions are not incorrectly quoted.
+  if (trimmedValue.includes('(')) {
     return true
   }
 

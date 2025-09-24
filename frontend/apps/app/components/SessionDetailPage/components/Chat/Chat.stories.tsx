@@ -82,7 +82,7 @@ export const Default: Story = {
   args: {
     schemaData: aSchema(),
     messages: MESSAGES,
-    onMessageSend: () => {},
+    onSendMessage: () => {},
     onNavigate: () => {},
   },
 }
@@ -91,7 +91,7 @@ export const AnimatedDemo: Story = {
   args: {
     schemaData: aSchema(),
     messages: MESSAGES,
-    onMessageSend: () => {},
+    onSendMessage: () => {},
     onNavigate: () => {},
   },
   render: (props) => <AnimatedChatDemo {...props} />,
@@ -120,7 +120,7 @@ export const WithComplexMessages: Story = {
           'The database design is complete. Would you like me to add payment processing tables?',
       }),
     ],
-    onMessageSend: () => {},
+    onSendMessage: () => {},
     onNavigate: () => {},
   },
 }

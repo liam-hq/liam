@@ -2,63 +2,35 @@
 
 import type { BaseMessage } from '@langchain/core/messages'
 import type { Schema } from '@liam-hq/schema'
-import { type FC, useTransition } from 'react'
-import type { TimelineItemEntry } from '../../types'
+import type { FC } from 'react'
 import styles from './Chat.module.css'
 import { ChatInput } from './components/ChatInput'
 import { ErrorDisplay } from './components/ErrorDisplay'
 import { Messages } from './components/Messages'
 import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
-import { generateTimelineItemId } from './services/timelineItemHelpers'
 import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
   schemaData: Schema
-  // designSessionId: string
   messages: BaseMessage[]
-  onMessageSend: (message: TimelineItemEntry) => void
-  // onVersionView: (versionId: string) => void
-  // onRetry?: () => void
+  onSendMessage: (content: string) => void
   isWorkflowRunning?: boolean
   error?: string | null
-  // onArtifactLinkClick: () => void
-  // isDeepModelingEnabled: boolean
   onNavigate: (tab: 'erd' | 'artifact') => void
 }
 
 export const Chat: FC<Props> = ({
   schemaData,
   messages,
-  onMessageSend,
+  onSendMessage,
   isWorkflowRunning = false,
   onNavigate,
   error,
 }) => {
   const { containerRef } = useScrollToBottom<HTMLDivElement>(messages.length)
-  const [, startTransition] = useTransition()
-
-  const startAIResponse = async (content: string) => {
-    const optimisticMessage: TimelineItemEntry = {
-      id: generateTimelineItemId('user'),
-      type: 'user',
-      content,
-      timestamp: new Date(),
-    }
-    onMessageSend(optimisticMessage)
-  }
 
   const handleSendMessage = (content: string) => {
-    const userMessage: TimelineItemEntry = {
-      id: generateTimelineItemId('user'),
-      type: 'user',
-      content,
-      timestamp: new Date(),
-    }
-    onMessageSend(userMessage)
-
-    startTransition(() => {
-      startAIResponse(content)
-    })
+    onSendMessage(content)
   }
 
   return (

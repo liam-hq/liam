@@ -49,12 +49,19 @@ export async function generateTestcaseNode(
   const cleanedMessages = removeReasoningFromMessages(messages)
 
   const streamModel = fromAsyncThrowable(() => {
-    return model.stream([
-      new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
-      new HumanMessage(contextMessage),
-      // Include all previous messages in this subgraph's scope
-      ...cleanedMessages,
-    ])
+    return model.stream(
+      [
+        new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
+        new HumanMessage(contextMessage),
+        // Include all previous messages in this subgraph's scope
+        ...cleanedMessages,
+      ],
+      {
+        options: {
+          timeout: 120000, // 120s
+        },
+      },
+    )
   })
 
   const streamResult = await streamModel()

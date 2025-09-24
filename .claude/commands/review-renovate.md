@@ -54,7 +54,7 @@ flowchart TD
     CreatePR --> AddApprovalComment
     
     AddApprovalComment --> ApprovePR[Approve PR with gh pr review --approve]
-    ApprovePR --> AddToMergeQueue[Add to merge queue with gh pr merge --auto]
+    ApprovePR --> AddToMergeQueue[Add to merge queue: gh pr merge --auto]
     
     AddToMergeQueue --> NextPR{Other PRs exist?}
     
@@ -70,6 +70,9 @@ flowchart TD
 - **Patch updates**: LOW risk - quick review
 - **Minor updates**: MEDIUM risk - check for new features
 - **Major updates**: HIGH risk - detailed review required
+
+### Merge Strategy Note
+This repository uses GitHub merge queue. Use `gh pr merge --auto` to add approved PRs to the queue. Direct merge commands (`--squash`, `--merge`) will be rejected.
 
 ### Arguments
 $ARGUMENTS

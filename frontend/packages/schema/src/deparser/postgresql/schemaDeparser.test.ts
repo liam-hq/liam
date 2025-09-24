@@ -1380,6 +1380,96 @@ describe('postgresqlSchemaDeparser', () => {
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
+
+    it('should handle already-quoted enum default values correctly', async () => {
+      // This test simulates what might happen if the value comes pre-quoted
+      const schema = aSchema({
+        enums: {
+          UserRole: anEnum({
+            name: 'UserRole',
+            values: ['admin', 'user', 'guest'],
+          }),
+        },
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'integer',
+                notNull: true,
+              }),
+              role: aColumn({
+                name: 'role',
+                type: 'UserRole',
+                notNull: false,
+                default: "'user'", // Already quoted - this might be the issue!
+              }),
+            },
+          }),
+        },
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      // Verify the exact observable behavior
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "UserRole" AS ENUM ('admin', 'user', 'guest');
+
+        CREATE TABLE "users" (
+          "id" integer NOT NULL,
+          "role" "UserRole" DEFAULT 'user'
+        );"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle enum cast expressions correctly (issue #5684)', async () => {
+      // Issue #5684: 'invited'::user_status was becoming '''invited''::user_status'
+      const schema = aSchema({
+        enums: {
+          user_status: anEnum({
+            name: 'user_status',
+            values: ['active', 'invited', 'inactive'],
+          }),
+        },
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'integer',
+                notNull: true,
+              }),
+              status: aColumn({
+                name: 'status',
+                type: 'user_status',
+                notNull: false,
+                default: "'invited'::user_status", // Cast expression from issue #5684
+              }),
+            },
+          }),
+        },
+      })
+
+      const result = postgresqlSchemaDeparser(schema)
+
+      expect(result.errors).toHaveLength(0)
+      // Should NOT produce '''invited''::user_status' with extra quotes
+      expect(result.value).toMatchInlineSnapshot(`
+        "CREATE TYPE "user_status" AS ENUM ('active', 'invited', 'inactive');
+
+        CREATE TABLE "users" (
+          "id" integer NOT NULL,
+          "status" user_status DEFAULT 'invited'::user_status
+        );"
+      `)
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
   })
 
   describe('error handling', () => {
@@ -1830,6 +1920,74 @@ describe('postgresqlSchemaDeparser', () => {
 ALTER TABLE "users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`
 
         expect(result.value).toBe(expectedDDL)
+      })
+
+      it('should handle timestamptz with cast expressions', () => {
+        const schema = aSchema({
+          tables: {
+            events: aTable({
+              name: 'events',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'integer',
+                  notNull: true,
+                }),
+                created_at: aColumn({
+                  name: 'created_at',
+                  type: 'timestamptz',
+                  notNull: false,
+                  default: "'2024-01-01'::timestamptz", // Cast expression
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+        // Verify the exact observable behavior
+        expect(result.value).toMatchInlineSnapshot(`
+          "CREATE TABLE "events" (
+            "id" integer NOT NULL,
+            "created_at" timestamptz DEFAULT '2024-01-01'::timestamptz
+          );"
+        `)
+      })
+
+      it('should handle INTERVAL expressions correctly (issue #5702)', () => {
+        const schema = aSchema({
+          tables: {
+            subscriptions: aTable({
+              name: 'subscriptions',
+              columns: {
+                id: aColumn({
+                  name: 'id',
+                  type: 'integer',
+                  notNull: true,
+                }),
+                expires_at: aColumn({
+                  name: 'expires_at',
+                  type: 'timestamptz',
+                  notNull: false,
+                  default: "(now() + INTERVAL '30 days')", // INTERVAL expression from issue #5702
+                }),
+              },
+            }),
+          },
+        })
+
+        const result = postgresqlSchemaDeparser(schema)
+
+        expect(result.errors).toHaveLength(0)
+        // Should NOT produce (now() + INTERVAL ''30 days'') with extra quotes
+        expect(result.value).toMatchInlineSnapshot(`
+          "CREATE TABLE "subscriptions" (
+            "id" integer NOT NULL,
+            "expires_at" timestamptz DEFAULT (now() + INTERVAL '30 days')
+          );"
+        `)
       })
     })
   })

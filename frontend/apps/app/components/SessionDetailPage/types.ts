@@ -17,7 +17,7 @@ export type BuildingSchema = Pick<
   'id' | 'schema' | 'initial_schema_snapshot'
 >
 
-export type TimelineItem = Pick<
+type TimelineItem = Pick<
   Tables<'timeline_items'>,
   | 'id'
   | 'content'
@@ -84,11 +84,6 @@ export type SchemaVersionTimelineItemEntry = BaseTimelineItemEntry & {
   onView?: (versionId: string) => void
 }
 
-export type ErrorTimelineItemEntry = BaseTimelineItemEntry & {
-  type: 'error'
-  onRetry?: () => void
-}
-
 export type AssistantLogTimelineItemEntry = BaseTimelineItemEntry & {
   type: 'assistant_log'
   role: AssistantRole
@@ -98,5 +93,4 @@ export type TimelineItemEntry =
   | UserTimelineItemEntry
   | AssistantTimelineItemEntry
   | SchemaVersionTimelineItemEntry
-  | ErrorTimelineItemEntry
   | AssistantLogTimelineItemEntry

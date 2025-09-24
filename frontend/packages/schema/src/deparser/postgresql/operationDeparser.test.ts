@@ -703,6 +703,144 @@ describe('postgresqlOperationDeparser', () => {
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
+
+    it('should handle ALTER COLUMN SET DEFAULT for enum values', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/role/default',
+        value: 'admin', // Unquoted enum value
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "users" ALTER COLUMN "role" SET DEFAULT 'admin';"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle ALTER COLUMN SET DEFAULT for pre-quoted enum values', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/role/default',
+        value: "'admin'", // Already quoted
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "users" ALTER COLUMN "role" SET DEFAULT 'admin';"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle ALTER COLUMN SET DEFAULT for timestamptz functions', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/events/columns/created_at/default',
+        value: 'now()', // Function
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "events" ALTER COLUMN "created_at" SET DEFAULT now();"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle ALTER COLUMN SET DEFAULT for timestamptz literals', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/events/columns/scheduled_at/default',
+        value: '2024-01-01 00:00:00+00', // Literal timestamp
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "events" ALTER COLUMN "scheduled_at" SET DEFAULT '2024-01-01 00:00:00+00';"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle ALTER COLUMN SET DEFAULT for pre-quoted timestamptz', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/events/columns/scheduled_at/default',
+        value: "'2024-01-01 00:00:00+00'", // Already quoted
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "events" ALTER COLUMN "scheduled_at" SET DEFAULT '2024-01-01 00:00:00+00';"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle ALTER COLUMN SET DEFAULT for cast expressions', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/events/columns/created_at/default',
+        value: "'2024-01-01'::timestamptz", // Cast expression
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "events" ALTER COLUMN "created_at" SET DEFAULT '2024-01-01'::timestamptz;"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle ALTER COLUMN SET DEFAULT for enum cast expressions (issue #5684)', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/users/columns/status/default',
+        value: "'invited'::user_status", // Enum cast expression from issue #5684
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      // Should NOT produce '''invited''::user_status' with extra quotes
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "users" ALTER COLUMN "status" SET DEFAULT 'invited'::user_status;"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
+
+    it('should handle ALTER COLUMN SET DEFAULT for INTERVAL expressions (issue #5702)', async () => {
+      const operation: Operation = {
+        op: 'replace',
+        path: '/tables/subscriptions/columns/expires_at/default',
+        value: "(now() + INTERVAL '30 days')", // INTERVAL expression from issue #5702
+      }
+
+      const result = postgresqlOperationDeparser(operation)
+
+      expect(result.errors).toHaveLength(0)
+      // Should NOT produce (now() + INTERVAL ''30 days'') with extra quotes
+      expect(result.value).toMatchInlineSnapshot(
+        `"ALTER TABLE "subscriptions" ALTER COLUMN "expires_at" SET DEFAULT (now() + INTERVAL '30 days');"`,
+      )
+
+      await expectGeneratedSQLToBeParseable(result.value)
+    })
   })
 
   describe('column check operations', () => {
