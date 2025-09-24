@@ -1,8 +1,9 @@
 import {
-  type AgentWorkflowParams,
+  createDbAgentGraph,
+  createGraph,
   createSupabaseRepositories,
-  deepModelingStream,
-  invokeDbAgentStream,
+  dbAgentReplayStream,
+  deepModelingReplayStream,
 } from '@liam-hq/agent'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
 import { NextResponse } from 'next/server'
@@ -17,15 +18,14 @@ import { createClient } from '../../../../libs/db/server'
 // Export maxDuration for Next.js
 export { maxDuration }
 
-const chatRequestSchema = v.object({
-  userInput: v.pipe(v.string(), v.minLength(1, 'Message is required')),
+const replayRequestSchema = v.object({
   designSessionId: v.pipe(v.string(), v.uuid('Invalid design session ID')),
   isDeepModelingEnabled: v.optional(v.boolean(), true),
 })
 
 export async function POST(request: Request) {
   const requestBody = await request.json()
-  const validationResult = v.safeParse(chatRequestSchema, requestBody)
+  const validationResult = v.safeParse(replayRequestSchema, requestBody)
 
   if (!validationResult.success) {
     const errorMessage = validationResult.issues
@@ -77,56 +77,53 @@ export async function POST(request: Request) {
     )
   }
 
-  const { data: latestVersion, error: latestVersionError } = await supabase
-    .from('building_schema_versions')
-    .select('number')
-    .eq('building_schema_id', buildingSchema.id)
-    .order('number', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  if (latestVersionError) {
-    return NextResponse.json(
-      { error: 'Error fetching latest version' },
-      { status: 500 },
-    )
-  }
-  // If no version exists yet (initial state), use 0 as the version number
-  const latestVersionNumber = latestVersion?.number ?? 0
-
   const repositories = createSupabaseRepositories(supabase, organizationId)
-  const result = await repositories.schema.getSchema(designSessionId)
+  const checkpointer = repositories.schema.checkpointer
 
-  if (result.isErr()) {
-    return NextResponse.json({ error: result.error.message }, { status: 500 })
+  const config = {
+    configurable: {
+      thread_id: designSessionId,
+    },
   }
 
   const enc = new TextEncoder()
 
-  const processEvents = async (
+  const findLatestCheckpointId = async () => {
+    const graph = validationResult.output.isDeepModelingEnabled
+      ? createGraph(checkpointer)
+      : createDbAgentGraph(checkpointer)
+
+    const state = await graph.getState(config)
+    return state.config?.configurable?.checkpoint_id ?? null
+  }
+
+  const processReplayEvents = async (
     controller: ReadableStreamDefaultController<Uint8Array>,
     signal: AbortSignal,
   ) => {
-    const params: AgentWorkflowParams = {
-      userInput: validationResult.output.userInput,
-      schemaData: result.value.schema,
-      organizationId,
-      buildingSchemaId: buildingSchema.id,
-      latestVersionNumber,
-      designSessionId,
-      userId,
-      signal,
+    const latestCheckpointId = await findLatestCheckpointId()
+
+    if (!latestCheckpointId) {
+      const message = 'No checkpoint found for replay'
+      controller.enqueue(enc.encode(line(SSE_EVENTS.ERROR, { message })))
+      return
     }
 
-    const config = {
-      configurable: {
-        repositories,
-        thread_id: designSessionId,
-      },
+    const replayParams = {
+      organizationId,
+      buildingSchemaId: buildingSchema.id,
+      designSessionId,
+      userId,
+      repositories,
+      thread_id: designSessionId,
+      recursionLimit: 50,
+      signal,
+      checkpoint_id: latestCheckpointId,
     }
 
     const events = validationResult.output.isDeepModelingEnabled
-      ? await deepModelingStream(params, config)
-      : await invokeDbAgentStream(params, config)
+      ? await deepModelingReplayStream(checkpointer, replayParams)
+      : await dbAgentReplayStream(checkpointer, replayParams)
 
     for await (const ev of events) {
       // Check if request was aborted during iteration
@@ -143,7 +140,7 @@ export async function POST(request: Request) {
     controller.enqueue(enc.encode(line(SSE_EVENTS.END, null)))
   }
 
-  const stream = streamWithTimeout(processEvents, {
+  const stream = streamWithTimeout(processReplayEvents, {
     designSessionId,
     signal: request.signal,
   })
