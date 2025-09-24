@@ -12,6 +12,8 @@ import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import { parseSse } from './parseSse'
 import { useSessionStorageOnce } from './useSessionStorageOnce'
 
+const MAX_RETRIES = 2
+
 type ChatRequest = {
   userInput: string
   designSessionId: string
@@ -45,6 +47,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const retryCountRef = useRef(0)
 
   const stop = useCallback(() => {
     abortRef.current?.abort()
@@ -82,8 +85,11 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
         })
       }
 
+      let endEventReceived = false
+
       for await (const ev of parseSse(res.body)) {
         if (ev.event === SSE_EVENTS.END) {
+          endEventReceived = true
           setIsStreaming(false)
           break
         }
@@ -130,15 +136,32 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
         })
       }
 
+      // Detect potential forced disconnection
+      if (!endEventReceived) {
+        // Retry logic
+        if (retryCountRef.current < MAX_RETRIES) {
+          retryCountRef.current++
+          return start(params)
+        }
+
+        // Final failure after all retries
+        setError('Connection timed out after multiple attempts')
+      }
+
       setIsStreaming(false)
+      retryCountRef.current = 0 // Reset retry counter on success
       return ok(undefined)
     } catch (error) {
+      setIsStreaming(false)
+
       if (error instanceof Error && error.name === 'AbortError') {
         return err({
           type: 'abort',
           message: 'Request was aborted',
         })
       }
+
+      retryCountRef.current = 0 // Reset retry counter on error
       return err({
         type: 'unknown',
         message: ERROR_MESSAGES.GENERAL,
