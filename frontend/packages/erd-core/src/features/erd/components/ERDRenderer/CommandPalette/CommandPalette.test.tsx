@@ -3,14 +3,13 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ReactFlowProvider } from '@xyflow/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
-import { type FC, type ReactNode, useContext } from 'react'
+import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   SchemaProvider,
   type SchemaProviderValue,
   UserEditingProvider,
 } from '../../../../../stores'
-import { UserEditingContext } from '../../../../../stores/userEditing/context'
 import { CommandPalette } from './CommandPalette'
 import { CommandPaletteProvider } from './CommandPaletteProvider'
 import { CommandPaletteTriggerButton } from './CommandPaletteTriggerButton'
@@ -32,22 +31,10 @@ const schema: SchemaProviderValue = {
   },
 }
 
-const ActiveTableNameDisplay: FC = () => {
-  const userEditing = useContext(UserEditingContext)
-
-  return (
-    // The currently active table name is displayed via Context. This component is used in tests for assertions only.
-    <div data-testid="test-active-table-name-display">
-      {userEditing?.activeTableName}
-    </div>
-  )
-}
-
 const wrapper = ({ children }: { children: ReactNode }) => (
   <NuqsTestingAdapter>
     <ReactFlowProvider>
       <UserEditingProvider>
-        <ActiveTableNameDisplay />
         <SchemaProvider {...schema}>
           <CommandPaletteProvider>{children}</CommandPaletteProvider>
         </SchemaProvider>
@@ -65,16 +52,10 @@ const prepareCommandPalette = async () => {
   const dialog = await screen.findByRole('dialog', {
     name: 'Command Palette',
   })
-  const searchCombobox = within(dialog).getByRole('combobox')
-
-  const activeTableNameDisplay = screen.getByTestId(
-    'test-active-table-name-display',
-  )
 
   return {
     user,
-    elements: { dialog, searchCombobox },
-    testElements: { activeTableNameDisplay },
+    elements: { dialog },
   }
 }
 
@@ -142,48 +123,5 @@ describe('dialog closing interaction', () => {
     await user.click(within(dialog).getByRole('button', { name: 'ESC' }))
 
     expect(dialog).not.toBeInTheDocument()
-  })
-})
-
-describe('options and combobox interactions', () => {
-  it('renders options with table name', async () => {
-    const {
-      elements: { dialog },
-    } = await prepareCommandPalette()
-
-    expect(within(dialog).getAllByRole('link')).toHaveLength(4)
-    expect(within(dialog).getByRole('link', { name: 'users' }))
-    expect(within(dialog).getByRole('link', { name: 'posts' }))
-    expect(within(dialog).getByRole('link', { name: 'follows' }))
-    expect(within(dialog).getByRole('link', { name: 'user_settings' }))
-  })
-
-  it('filters options based on user input in the combobox', async () => {
-    const {
-      user,
-      elements: { dialog, searchCombobox },
-    } = await prepareCommandPalette()
-
-    expect(searchCombobox).toHaveFocus()
-
-    await user.keyboard('user')
-
-    expect(within(dialog).getAllByRole('link')).toHaveLength(2)
-    expect(within(dialog).getByRole('link', { name: 'users' }))
-    expect(within(dialog).getByRole('link', { name: 'user_settings' }))
-  })
-
-  it('renders "No results found." if user input does not match any options', async () => {
-    const {
-      user,
-      elements: { dialog, searchCombobox },
-    } = await prepareCommandPalette()
-
-    expect(searchCombobox).toHaveFocus()
-
-    await user.keyboard('HelloWorld')
-
-    expect(within(dialog).queryByRole('option')).not.toBeInTheDocument()
-    expect(within(dialog).getByText('No results found.')).toBeInTheDocument()
   })
 })

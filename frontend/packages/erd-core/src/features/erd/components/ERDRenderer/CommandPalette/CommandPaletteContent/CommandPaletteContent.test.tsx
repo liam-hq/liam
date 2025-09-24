@@ -41,7 +41,7 @@ const wrapper: FC<PropsWithChildren> = ({ children }) => (
   </NuqsTestingAdapter>
 )
 
-describe('input mode', () => {
+describe('input mode and filters', () => {
   describe('default input mode', () => {
     it('renders table options and command options', () => {
       render(<CommandPaletteContent />, { wrapper })
@@ -57,6 +57,39 @@ describe('input mode', () => {
       expect(
         screen.getByRole('option', { name: 'Show All Fields ⇧ 2' }),
       ).toBeInTheDocument()
+    })
+
+    it('filters options based on user input in the combobox', async () => {
+      const user = userEvent.setup()
+      render(<CommandPaletteContent />, { wrapper })
+
+      const searchCombobox = screen.getByRole('combobox')
+      await user.type(searchCombobox, 'p')
+
+      // options with "p"
+      expect(screen.getByRole('option', { name: 'posts' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('option', { name: 'Copy Link ⌘ C' }),
+      ).toBeInTheDocument()
+
+      // options without "p"
+      expect(
+        screen.queryByRole('option', { name: 'users' }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('option', { name: 'Show All Fields ⇧ 2' }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('renders "No results found." if user input does not match any options', async () => {
+      const user = userEvent.setup()
+      render(<CommandPaletteContent />, { wrapper })
+
+      const searchCombobox = screen.getByRole('combobox')
+      await user.type(searchCombobox, 'Hello World')
+
+      expect(screen.queryByRole('option')).not.toBeInTheDocument()
+      expect(screen.getByText('No results found.')).toBeInTheDocument()
     })
   })
 
@@ -83,6 +116,46 @@ describe('input mode', () => {
       expect(
         screen.getByRole('option', { name: 'Zoom to Fit ⇧ 1' }),
       ).toBeInTheDocument()
+    })
+
+    it('filters options based on user input in the combobox', async () => {
+      const user = userEvent.setup()
+      render(<CommandPaletteContent />, { wrapper })
+
+      // switch to "command" input mode
+      await user.keyboard('>')
+
+      const searchCombobox = screen.getByRole('combobox')
+      await user.type(searchCombobox, 'p')
+
+      // options with "p"
+      expect(
+        screen.getByRole('option', { name: 'Copy Link ⌘ C' }),
+      ).toBeInTheDocument()
+
+      // options with "p" but not table options
+      expect(
+        screen.queryByRole('option', { name: 'posts' }),
+      ).not.toBeInTheDocument()
+
+      // options without "p"
+      expect(
+        screen.queryByRole('option', { name: 'Show All Fields ⇧ 2' }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('renders "No results found." if user input does not match any command options', async () => {
+      const user = userEvent.setup()
+      render(<CommandPaletteContent />, { wrapper })
+
+      // switch to "command" input mode
+      await user.keyboard('>')
+
+      const searchCombobox = screen.getByRole('combobox')
+      await user.type(searchCombobox, 'users')
+
+      expect(screen.queryByRole('option')).not.toBeInTheDocument()
+      expect(screen.getByText('No results found.')).toBeInTheDocument()
     })
   })
 })
