@@ -1,5 +1,6 @@
 import { DEFAULT_RECURSION_LIMIT } from '../constants'
 import type { AgentWorkflowParams, WorkflowConfigurable } from '../types'
+import { customEventIterator } from '../utils/customEventIterator'
 import { setupStreamOptions, setupWorkflowState } from '../utils/workflowSetup'
 import { createDbAgentGraph } from './createDbAgentGraph'
 
@@ -49,16 +50,5 @@ export async function invokeDbAgentStream(
     subgraphs: true,
   })
 
-  async function* iter() {
-    for await (const ev of stream) {
-      if (ev.event === 'on_custom_event') {
-        yield {
-          event: ev.name,
-          data: [ev.data, ev.metadata],
-        }
-      }
-    }
-  }
-
-  return iter()
+  return customEventIterator(stream)
 }
