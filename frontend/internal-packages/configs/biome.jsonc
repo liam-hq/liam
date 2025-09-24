@@ -65,7 +65,13 @@
         "noUselessElse": "error",
         "noCommonJs": "error",
         // TODO: Re-enable noDescendingSpecificity after fixing CSS specificity issues
-        "noDescendingSpecificity": "off"
+        "noDescendingSpecificity": "off",
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["export"]
+          }
+        }
       }
     },
     "includes": ["**"]
