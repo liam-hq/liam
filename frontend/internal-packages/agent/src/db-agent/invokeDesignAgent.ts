@@ -5,7 +5,7 @@ import {
   HumanMessage,
   SystemMessage,
 } from '@langchain/core/messages'
-import { ChatOpenAI } from '@langchain/openai'
+import { createChatOpenAI } from '../utils/createChatOpenAI'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { okAsync, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
@@ -23,7 +23,7 @@ import { schemaDesignTool } from './tools/schemaDesignTool'
 
 const AGENT_NAME = 'db' as const
 
-const model = new ChatOpenAI({
+const model = createChatOpenAI({
   model: 'gpt-5-mini',
   reasoning: { effort: 'low', summary: 'detailed' },
   useResponsesApi: true,

@@ -17,3 +17,6 @@ coverage/
 
 # Lefthook local config
 lefthook-local.yml
+
+# OpenAI API recordings (contains API keys and sensitive data)
+tools/recordings/

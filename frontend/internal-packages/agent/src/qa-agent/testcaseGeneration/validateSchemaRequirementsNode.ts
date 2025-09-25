@@ -1,6 +1,6 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { Command, END } from '@langchain/langgraph'
-import { ChatOpenAI } from '@langchain/openai'
+import { createChatOpenAI } from '../../utils/createChatOpenAI'
 import { fromPromise } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
@@ -18,7 +18,7 @@ const validationResultSchema = v.object({
   ),
 })
 
-const model = new ChatOpenAI({
+const model = createChatOpenAI({
   model: 'o4-mini',
 }).withStructuredOutput<v.InferOutput<typeof validationResultSchema>>(
   toJsonSchema(validationResultSchema),

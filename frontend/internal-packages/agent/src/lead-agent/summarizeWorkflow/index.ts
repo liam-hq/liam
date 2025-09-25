@@ -4,7 +4,7 @@ import {
   SystemMessage,
 } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
-import { ChatOpenAI } from '@langchain/openai'
+import { createChatOpenAI } from '../../utils/createChatOpenAI'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import type { ResultAsync } from 'neverthrow'
 import { SSE_EVENTS } from '../../streaming/constants'
@@ -40,7 +40,7 @@ export async function summarizeWorkflow(
 function generateWorkflowSummary(
   state: WorkflowState,
 ): ResultAsync<AIMessage, Error> {
-  const llm = new ChatOpenAI({
+  const llm = createChatOpenAI({
     model: 'gpt-5-nano',
     reasoning: { effort: 'minimal' },
   })

@@ -4,7 +4,7 @@ import {
   type BaseMessage,
   SystemMessage,
 } from '@langchain/core/messages'
-import { ChatOpenAI } from '@langchain/openai'
+import { createChatOpenAI } from '../utils/createChatOpenAI'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { okAsync, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
@@ -41,7 +41,7 @@ export const invokePmAnalysisAgent = (
     pmAnalysisPrompt.format(variables),
   )
 
-  const model = new ChatOpenAI({
+  const model = createChatOpenAI({
     model: 'gpt-5',
     reasoning: { effort: 'medium', summary: 'detailed' },
     useResponsesApi: true,

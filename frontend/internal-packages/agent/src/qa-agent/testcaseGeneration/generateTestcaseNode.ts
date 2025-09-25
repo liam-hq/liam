@@ -3,7 +3,7 @@ import {
   HumanMessage,
   SystemMessage,
 } from '@langchain/core/messages'
-import { ChatOpenAI } from '@langchain/openai'
+import { createChatOpenAI } from '../../utils/createChatOpenAI'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
@@ -15,7 +15,7 @@ import {
 } from './prompts'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
-const model = new ChatOpenAI({
+const model = createChatOpenAI({
   model: 'gpt-5-nano',
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
