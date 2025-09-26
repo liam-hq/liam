@@ -111,8 +111,31 @@ export const isMemberExpression = (
 /**
  * Check if a call expression is a pgTable call
  */
-export const isPgTableCall = (callExpr: CallExpression): boolean => {
+const isPgTableCall = (callExpr: CallExpression): boolean => {
   return isIdentifierWithName(callExpr.callee, 'pgTable')
+}
+/**
+ * Extract the base pgTable call from method chaining patterns
+ * Handles patterns like: pgTable(...).enableRLS(), pgTable(...).comment(...), etc.
+ */
+export const extractPgTableFromChain = (
+  callExpr: CallExpression,
+): CallExpression | null => {
+  // If it's already a direct pgTable call, return it
+  if (isPgTableCall(callExpr)) {
+    return callExpr
+  }
+
+  // If it's a method call on another expression, check the object
+  if (callExpr.callee.type === 'MemberExpression') {
+    const baseCall = callExpr.callee.object
+    if (baseCall.type === 'CallExpression') {
+      // Recursively check if the base call is or contains a pgTable call
+      return extractPgTableFromChain(baseCall)
+    }
+  }
+
+  return null
 }
 
 /**

@@ -4,11 +4,11 @@
 
 import type { CallExpression, Expression } from '@swc/core'
 import {
+  extractPgTableFromChain,
   getArgumentExpression,
   getIdentifierName,
   getStringValue,
   isObjectExpression,
-  isPgTableCall,
   isSchemaTableCall,
   isStringLiteral,
 } from './astUtils.js'
@@ -37,15 +37,19 @@ export const parsePgTableWithComment = (
     }
   }
 
-  // Get the pgTable call from the object of the member expression
+  // Get the pgTable call from the chain - handle complex chaining like pgTable().enableRLS().$comment()
   if (commentCallExpr.callee.type === 'MemberExpression') {
-    const pgTableCall = commentCallExpr.callee.object
-    if (pgTableCall.type === 'CallExpression' && isPgTableCall(pgTableCall)) {
-      const table = parsePgTableCall(pgTableCall)
-      if (table && comment) {
-        table.comment = comment
+    const chainCall = commentCallExpr.callee.object
+    if (chainCall.type === 'CallExpression') {
+      // Use extractPgTableFromChain to handle complex method chaining
+      const pgTableCall = extractPgTableFromChain(chainCall)
+      if (pgTableCall) {
+        const table = parsePgTableCall(pgTableCall)
+        if (table && comment) {
+          table.comment = comment
+        }
+        return table
       }
-      return table
     }
   }
 
