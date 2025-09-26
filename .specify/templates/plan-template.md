@@ -47,7 +47,25 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Agent Architecture Compliance
+- [ ] **Agent-First Design**: Feature designed as specialized agents with clear responsibilities?
+- [ ] **Domain Expertise**: Each agent encapsulates specific domain knowledge (PM/DB/QA)?
+- [ ] **No Generic Agents**: Avoided "do everything" agent patterns?
+
+### LangGraph Implementation Standards
+- [ ] **Subgraph Modularity**: All agent logic in reusable LangGraph subgraphs?
+- [ ] **Independent Testing**: Each subgraph has dedicated test suite?
+- [ ] **Internal Retry Policies**: Subgraphs handle own error recovery (max 3 attempts)?
+- [ ] **State Annotations**: All state transitions explicitly typed?
+
+### Workflow Resilience
+- [ ] **Graceful Fallbacks**: Critical paths have recovery mechanisms?
+- [ ] **Real-time Progress**: User visibility into workflow execution?
+- [ ] **Error Context**: Error states preserve debugging information?
+
+### Integration Patterns
+- [ ] **Legacy Compatibility**: Works with existing ERD visualization pipeline?
+- [ ] **Performance Targets**: Sub-second routing, optimized memory usage?
 
 ## Project Structure
 
