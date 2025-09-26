@@ -18,7 +18,6 @@ const createMockState = (
   messages: [],
   designSessionId: 'test-session',
   buildingSchemaId: 'test-schema',
-  latestVersionNumber: 1,
   schemaIssues: [],
   next: 'END',
 })

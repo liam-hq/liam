@@ -28,7 +28,6 @@ export const qaAgentAnnotation = Annotation.Root({
   }),
   designSessionId: Annotation<string>,
   buildingSchemaId: Annotation<string>,
-  latestVersionNumber: Annotation<number>,
   schemaIssues: schemaIssuesAnnotation,
   next: Annotation<string>({
     reducer: (x, y) => y ?? x ?? END,

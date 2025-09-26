@@ -52,7 +52,6 @@ describe('validateInitialSchemaNode Integration', () => {
         testcases: [],
         schemaIssues: [],
         buildingSchemaId: 'test-building-schema-id',
-        latestVersionNumber: 1,
         next: 'leadAgent',
       }
 
@@ -105,7 +104,6 @@ describe('validateInitialSchemaNode Integration', () => {
         testcases: [],
         schemaIssues: [],
         buildingSchemaId: 'test-building-schema-id',
-        latestVersionNumber: 1,
         next: 'leadAgent',
       }
 
@@ -147,7 +145,6 @@ describe('validateInitialSchemaNode Integration', () => {
         testcases: [],
         schemaIssues: [],
         buildingSchemaId: 'test-building-schema-id',
-        latestVersionNumber: 1,
         next: 'leadAgent',
       }
 

@@ -26,7 +26,6 @@ export async function execute(
     schemaData: aSchema({ tables: {} }),
     organizationId: 'demo-org-id',
     buildingSchemaId: 'demo-design-session',
-    latestVersionNumber: 1,
     designSessionId: 'demo-design-session',
     userId: 'demo-user-id',
     signal: new AbortController().signal,

@@ -35,13 +35,8 @@ const wasSchemaDesignToolSuccessful = (messages: BaseMessage[]): boolean => {
 const fetchUpdatedSchemaWithResult = (
   repositories: Repositories,
   designSessionId: string,
-): ResultAsync<{ schema: Schema; latestVersionNumber: number }, Error> => {
-  return repositories.schema
-    .getSchema(designSessionId)
-    .map(({ schema, latestVersionNumber }) => ({
-      schema,
-      latestVersionNumber,
-    }))
+): ResultAsync<{ schema: Schema }, Error> => {
+  return repositories.schema.getSchema(designSessionId)
 }
 
 export const invokeSchemaDesignToolNode = async (
@@ -64,7 +59,6 @@ export const invokeSchemaDesignToolNode = async (
     configurable: {
       ...config.configurable,
       buildingSchemaId: state.buildingSchemaId,
-      latestVersionNumber: state.latestVersionNumber,
       designSessionId: state.designSessionId,
     },
   })
@@ -101,7 +95,6 @@ export const invokeSchemaDesignToolNode = async (
       updatedResult = {
         ...updatedResult,
         schemaData: schemaResult.value.schema,
-        latestVersionNumber: schemaResult.value.latestVersionNumber,
         designSchemaRetryCount: 0,
         schemaDesignSuccessful: true,
       }

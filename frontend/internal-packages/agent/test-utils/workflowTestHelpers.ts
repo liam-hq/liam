@@ -58,7 +58,6 @@ export const getTestConfig = async (options?: {
   config: RunnableConfig
   context: {
     buildingSchemaId: string
-    latestVersionNumber: number
     designSessionId: string
     userId: string
     organizationId: string
@@ -108,7 +107,6 @@ export const getTestConfig = async (options?: {
     },
     context: {
       buildingSchemaId: buildingSchema.id,
-      latestVersionNumber: buildingSchema.latest_version_number,
       designSessionId: designSession.id,
       userId: user.id,
       organizationId: organization.id,

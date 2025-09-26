@@ -22,13 +22,11 @@ describe('schemaDesignTool', () => {
 
   const createMockConfig = (
     buildingSchemaId: string,
-    latestVersionNumber: number,
     designSessionId: string,
     repositories: Repositories,
   ): RunnableConfig => ({
     configurable: {
       buildingSchemaId,
-      latestVersionNumber,
       designSessionId,
       repositories,
       thread_id: 'test-thread-id',
@@ -69,7 +67,6 @@ describe('schemaDesignTool', () => {
 
     const config = createMockConfig(
       'test-schema-id',
-      1,
       'test-session',
       repositories,
     )
@@ -132,7 +129,6 @@ describe('schemaDesignTool', () => {
 
     const config = createMockConfig(
       'test-schema-id',
-      1,
       'non-existent-session',
       repositories,
     )
@@ -160,7 +156,6 @@ describe('schemaDesignTool', () => {
 
     const config = createMockConfig(
       'test-schema-id',
-      1,
       'test-session',
       repositories,
     )
@@ -190,7 +185,6 @@ describe('schemaDesignTool', () => {
 
     const config = createMockConfig(
       'test-schema-id',
-      1,
       'test-session',
       repositories,
     )
@@ -241,7 +235,6 @@ describe('schemaDesignTool', () => {
 
     const config = createMockConfig(
       'test-schema-id',
-      1,
       'test-session',
       repositories,
     )
@@ -338,7 +331,6 @@ ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_fkey" FOREIGN KEY ("user_id") 
 
     const config = createMockConfig(
       'test-schema-id',
-      1,
       'test-session',
       repositories,
     )

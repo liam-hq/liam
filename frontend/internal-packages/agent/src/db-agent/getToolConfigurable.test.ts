@@ -21,7 +21,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
@@ -55,7 +54,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         logger: mockLogger,
         thread_id: 'test-thread',
@@ -77,7 +75,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
@@ -100,10 +97,30 @@ describe('getToolConfigurable', () => {
       configurable: {
         repositories,
         logger: mockLogger,
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         thread_id: 'test-thread',
         // Missing buildingSchemaId
+      },
+    }
+
+    const result = getToolConfigurable(config)
+
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error.message).toContain(
+        'Invalid configurable object in RunnableConfig',
+      )
+    }
+  })
+
+  it('should return error when designSessionId is missing', () => {
+    const config: RunnableConfig = {
+      configurable: {
+        repositories,
+        logger: mockLogger,
+        buildingSchemaId: 'test-version-id',
+        thread_id: 'test-thread',
+        // Missing designSessionId
       },
     }
 
@@ -121,7 +138,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: 123, // Should be string
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
@@ -143,7 +159,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: '', // Empty string is valid for v.string()
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
@@ -163,7 +178,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         repositories,
         logger: mockLogger,
@@ -187,7 +201,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         repositories: 'not-an-object', // Truthy value passes basic check
         logger: mockLogger,
@@ -207,7 +220,6 @@ describe('getToolConfigurable', () => {
     const config: RunnableConfig = {
       configurable: {
         buildingSchemaId: 'test-version-id',
-        latestVersionNumber: 1,
         designSessionId: 'test-session-id',
         repositories: null, // Falsy value
         logger: mockLogger,

@@ -36,7 +36,6 @@ interface WorkflowState {
   schemaData: Schema;
   error?: Error;
   buildingSchemaId: string;
-  latestVersionNumber: number;
   organizationId: string;
   userId: string;
   designSessionId: string;
@@ -368,7 +367,6 @@ const result = await deepModeling(
     schemaData: mySchemaData,
     organizationId: "my-organization-id",
     buildingSchemaId: "my-building-schema-id",
-    latestVersionNumber: 1,
     userId: "my-user-id",
     designSessionId: "my-design-session-id",
   },

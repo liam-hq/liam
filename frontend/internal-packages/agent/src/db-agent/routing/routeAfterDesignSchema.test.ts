@@ -12,7 +12,6 @@ const createDbAgentState = (
   messages,
   schemaData: { tables: {}, enums: {}, extensions: {} },
   buildingSchemaId: 'test-id',
-  latestVersionNumber: 1,
   organizationId: 'test-org',
   userId: 'test-user',
   designSessionId: 'test-session',

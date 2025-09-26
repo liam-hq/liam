@@ -28,7 +28,6 @@ describe('createGraph Integration', () => {
       schemaIssues: [],
       designSessionId: context.designSessionId,
       buildingSchemaId: context.buildingSchemaId,
-      latestVersionNumber: context.latestVersionNumber,
       organizationId: context.organizationId,
       userId: context.userId,
       next: END,

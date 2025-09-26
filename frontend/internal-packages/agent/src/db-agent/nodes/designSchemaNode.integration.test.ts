@@ -32,7 +32,6 @@ describe('designSchemaNode Integration', () => {
         extensions: {},
       },
       buildingSchemaId: context.buildingSchemaId,
-      latestVersionNumber: context.latestVersionNumber,
       organizationId: context.organizationId,
       userId: context.userId,
       designSessionId: context.designSessionId,

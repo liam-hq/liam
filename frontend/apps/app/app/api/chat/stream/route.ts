@@ -81,22 +81,6 @@ export async function POST(request: Request) {
     )
   }
 
-  const { data: latestVersion, error: latestVersionError } = await supabase
-    .from('building_schema_versions')
-    .select('number')
-    .eq('building_schema_id', buildingSchema.id)
-    .order('number', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  if (latestVersionError) {
-    return NextResponse.json(
-      { error: 'Error fetching latest version' },
-      { status: 500 },
-    )
-  }
-  // If no version exists yet (initial state), use 0 as the version number
-  const latestVersionNumber = latestVersion?.number ?? 0
-
   const repositories = createSupabaseRepositories(supabase, organizationId)
   const result = await repositories.schema.getSchema(designSessionId)
 
@@ -122,7 +106,6 @@ export async function POST(request: Request) {
       schemaData: result.value.schema,
       organizationId,
       buildingSchemaId: buildingSchema.id,
-      latestVersionNumber,
       designSessionId,
       userId,
       signal,

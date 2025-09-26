@@ -19,7 +19,6 @@ export const workflowAnnotation = Annotation.Root({
   }),
   schemaData: Annotation<Schema>,
   buildingSchemaId: Annotation<string>,
-  latestVersionNumber: Annotation<number>,
   organizationId: Annotation<string>,
   userId: Annotation<string>,
   designSessionId: Annotation<string>,

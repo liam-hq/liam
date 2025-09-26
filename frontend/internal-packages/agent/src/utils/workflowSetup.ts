@@ -28,7 +28,6 @@ type WorkflowSetupResult = {
   runCollector: RunCollectorCallbackHandler
   configurable: WorkflowConfigurable & {
     buildingSchemaId: string
-    latestVersionNumber: number
   }
   traceEnhancement: {
     tags: string[]
@@ -49,7 +48,6 @@ export const setupWorkflowState = (
     schemaData,
     organizationId,
     buildingSchemaId,
-    latestVersionNumber = 0,
     designSessionId,
     userId,
   } = params
@@ -85,7 +83,6 @@ export const setupWorkflowState = (
           design_session_id: designSessionId,
           user_id: userId,
           organization_id: organizationId,
-          version_number: latestVersionNumber,
         },
       },
     )
@@ -102,7 +99,6 @@ export const setupWorkflowState = (
         schemaIssues: [],
         organizationId,
         buildingSchemaId,
-        latestVersionNumber,
         designSessionId,
         userId,
         next: END,
@@ -112,7 +108,6 @@ export const setupWorkflowState = (
         repositories,
         thread_id,
         buildingSchemaId,
-        latestVersionNumber,
       },
       traceEnhancement,
     })

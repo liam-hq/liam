@@ -6,7 +6,6 @@ import { getConfigurable } from '../utils/getConfigurable'
 
 const toolConfigurableSchema = v.object({
   buildingSchemaId: v.string(),
-  latestVersionNumber: v.number(),
   designSessionId: v.string(),
 })
 
