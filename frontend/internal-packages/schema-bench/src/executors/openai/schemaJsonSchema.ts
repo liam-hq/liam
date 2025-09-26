@@ -139,5 +139,39 @@ export const schemaJsonSchema = {
         },
       },
     },
+    enums: {
+      type: 'object',
+      additionalProperties: false,
+      patternProperties: {
+        '^[a-zA-Z_][a-zA-Z0-9_]*$': {
+          type: 'object',
+          required: ['name', 'values', 'comment'],
+          additionalProperties: false,
+          properties: {
+            name: { type: 'string' },
+            values: {
+              type: 'array',
+              items: { type: 'string' },
+            },
+            comment: { type: ['string', 'null'] },
+          },
+        },
+      },
+    },
+    extensions: {
+      type: 'object',
+      additionalProperties: false,
+      patternProperties: {
+        '^[a-zA-Z_][a-zA-Z0-9_]*$': {
+          type: 'object',
+          required: ['name'],
+          additionalProperties: false,
+          properties: {
+            name: { type: 'string' },
+          },
+        },
+      },
+    },
   },
+  required: ['tables', 'enums', 'extensions'],
 } as const
