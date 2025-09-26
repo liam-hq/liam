@@ -5,6 +5,7 @@ import { type StructuredTool, tool } from '@langchain/core/tools'
 import { Command } from '@langchain/langgraph'
 import { dmlOperationSchema } from '@liam-hq/artifact'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
+import * as Sentry from '@sentry/node'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../streaming/constants'
@@ -44,11 +45,27 @@ const validateSqlSyntax = async (sql: string): Promise<void> => {
   const parseResult: PgParseResult = await pgParse(sql)
 
   if (parseResult.error) {
-    // LangGraph tool nodes require throwing errors to trigger retry mechanism
-    // eslint-disable-next-line no-throw-error/no-throw-error
-    throw new Error(
+    const error = new Error(
       `SQL syntax error: ${parseResult.error.message}. Fix testcaseWithDml.dmlOperation.sql and retry.`,
     )
+
+    // Capture the SQL syntax error in Sentry for monitoring
+    // This is separate from the withSentryCaptureException wrapper
+    // because we want to track these errors even though they trigger retries
+    Sentry.captureException(error, {
+      tags: {
+        errorType: 'sql_syntax_error',
+        toolName: 'saveTestcase',
+      },
+      extra: {
+        sql,
+        parseError: parseResult.error.message,
+      },
+    })
+
+    // LangGraph tool nodes require throwing errors to trigger retry mechanism
+
+    throw error
   }
 }
 
