@@ -14,6 +14,10 @@ import { notFound } from 'next/navigation'
 import * as v from 'valibot'
 import type { PageProps } from '../../../types'
 import ERDViewer from './erdViewer'
+import {
+  fetchSchemaFromGitHubFolder,
+  isGitHubFolderUrl,
+} from './utils/githubUrlHandler'
 
 const paramsSchema = v.object({
   slug: v.array(v.string()),
@@ -36,6 +40,149 @@ const resolveContentUrl = (url: string): string | undefined => {
   } catch {
     return undefined
   }
+}
+
+// Helper function to handle GitHub folder URL processing
+async function handleGitHubFolderUrl(
+  url: string,
+  weCannotAccess: string,
+  pleaseCheck: string,
+) {
+  const result = await fetchSchemaFromGitHubFolder(url)
+
+  if (result.isOk()) {
+    return {
+      input: result.value.content,
+      detectedFormatFromFiles: result.value.detectedFormat,
+      errors: [],
+    }
+  }
+
+  return {
+    input: null,
+    detectedFormatFromFiles: undefined,
+    errors: [
+      {
+        name: 'NetworkError' as const,
+        message: `${result.error.name}: ${result.error.message}. ${weCannotAccess}`,
+        instruction: pleaseCheck,
+      },
+    ],
+  }
+}
+
+// Helper function to handle single file URL processing
+async function handleSingleFileUrl(
+  url: string,
+  weCannotAccess: string,
+  pleaseCheck: string,
+) {
+  const contentUrl = resolveContentUrl(url)
+  if (!contentUrl) {
+    return {
+      input: null,
+      detectedFormatFromFiles: undefined,
+      errors: [
+        {
+          name: 'NetworkError' as const,
+          message: weCannotAccess,
+          instruction: pleaseCheck,
+        },
+      ],
+    }
+  }
+
+  const networkErrorObjects: Array<{
+    name: 'NetworkError'
+    message: string
+    instruction?: string
+  }> = []
+
+  const res = await fetch(contentUrl, { cache: 'no-store' }).catch((e) => {
+    if (e instanceof Error) {
+      networkErrorObjects.push({
+        name: 'NetworkError',
+        message: `${e.name}: ${e.message}. ${weCannotAccess}`,
+        instruction: pleaseCheck,
+      })
+    } else {
+      networkErrorObjects.push({
+        name: 'NetworkError',
+        message: `Unknown NetworkError. ${weCannotAccess}`,
+        instruction: pleaseCheck,
+      })
+    }
+    return null
+  })
+
+  const input = res ? await res.text() : null
+  return {
+    input,
+    detectedFormatFromFiles: undefined,
+    errors: networkErrorObjects,
+  }
+}
+
+// Helper function to determine schema format
+async function determineSchemaFormat(
+  url: string,
+  detectedFormatFromFiles: string | undefined,
+  searchParams: unknown,
+): Promise<SupportedFormat | undefined> {
+  let format: SupportedFormat | undefined
+
+  // Check search params first
+  if (v.is(searchParamsSchema, searchParams)) {
+    format = searchParams.format
+  }
+
+  // If not specified, try to detect format
+  if (format === undefined) {
+    if (
+      isGitHubFolderUrl(url) &&
+      detectedFormatFromFiles &&
+      v.is(supportedFormatSchema, detectedFormatFromFiles)
+    ) {
+      format = detectedFormatFromFiles
+    } else {
+      const contentUrl = resolveContentUrl(url)
+      if (contentUrl) {
+        format = detectFormat(contentUrl)
+      }
+    }
+  }
+
+  return format
+}
+
+// Helper function to render error view
+function renderErrorView(
+  blankSchema: {
+    tables: Record<string, never>
+    enums: Record<string, never>
+    extensions: Record<string, never>
+  },
+  errors: Array<{ name: string; message: string; instruction?: string }>,
+  fallbackMessage: string,
+  fallbackInstruction: string,
+) {
+  return (
+    <ERDViewer
+      schema={blankSchema}
+      defaultSidebarOpen={false}
+      errorObjects={
+        errors.length > 0
+          ? errors
+          : [
+              {
+                name: 'NetworkError',
+                message: fallbackMessage,
+                instruction: fallbackInstruction,
+              },
+            ]
+      }
+    />
+  )
 }
 
 export async function generateMetadata({
@@ -85,126 +232,65 @@ export default async function Page({
   if (!parsedParams.success) notFound()
 
   const joinedPath = parsedParams.output.slug.join('/')
-
   const url = `https://${joinedPath}`
-
   const blankSchema = { tables: {}, enums: {}, extensions: {} }
-
-  const contentUrl = resolveContentUrl(url)
   const weCannotAccess = `Our signal's lost in the void! No access at this time..`
   const pleaseCheck = `Double-check the transmission link ${url} and initiate contact again.`
-  if (!contentUrl) {
-    return (
-      <ERDViewer
-        schema={blankSchema}
-        defaultSidebarOpen={false}
-        errorObjects={[
-          {
-            name: 'NetworkError',
-            message: weCannotAccess,
-            instruction: pleaseCheck,
-          },
-        ]}
-      />
-    )
-  }
-  const networkErrorObjects: {
-    name: 'NetworkError'
-    message: string
-    instruction?: string
-  }[] = []
-  const res = await fetch(contentUrl, { cache: 'no-store' }).catch((e) => {
-    if (e instanceof Error) {
-      networkErrorObjects.push({
-        name: 'NetworkError',
-        message: `${e.name}: ${e.message}. ${weCannotAccess}`,
-        instruction: pleaseCheck,
-      })
-    } else {
-      networkErrorObjects.push({
-        name: 'NetworkError',
-        message: `Unknown NetworkError. ${weCannotAccess}`,
-        instruction: pleaseCheck,
-      })
-    }
-  })
-  if (!res && networkErrorObjects.length === 0)
-    networkErrorObjects.push({
-      name: 'NetworkError',
-      message: `Unknown error. ${pleaseCheck}.`,
-      instruction: pleaseCheck,
-    })
-  if (!res || networkErrorObjects.length > 0) {
-    return (
-      <ERDViewer
-        schema={blankSchema}
-        defaultSidebarOpen={false}
-        errorObjects={networkErrorObjects}
-      />
-    )
-  }
-  if (!res.ok) {
-    return (
-      <ERDViewer
-        schema={blankSchema}
-        defaultSidebarOpen={false}
-        errorObjects={[
-          {
-            name: 'NetworkError',
-            message: `HTTP status is ${res.status}: ${res.statusText}.`,
-            instruction: pleaseCheck,
-          },
-        ]}
-      />
-    )
-  }
 
-  const input = await res.text()
+  // Process URL to get content
+  const result = isGitHubFolderUrl(url)
+    ? await handleGitHubFolderUrl(url, weCannotAccess, pleaseCheck)
+    : await handleSingleFileUrl(url, weCannotAccess, pleaseCheck)
+
+  // Handle errors or missing input
+  if (!result.input || result.errors.length > 0) {
+    return renderErrorView(
+      blankSchema,
+      result.errors,
+      weCannotAccess,
+      pleaseCheck,
+    )
+  }
 
   setPrismWasmUrl(path.resolve(process.cwd(), 'prism.wasm'))
 
-  let format: SupportedFormat | undefined
+  // Determine schema format
   const searchParams = await _searchParams
-  if (v.is(searchParamsSchema, searchParams)) {
-    format = searchParams.format
-  }
-  if (format === undefined) {
-    format = detectFormat(contentUrl)
-  }
+  const format = await determineSchemaFormat(
+    url,
+    result.detectedFormatFromFiles,
+    searchParams,
+  )
+
   if (format === undefined) {
     // Strictly speaking, this is not always a network error, but the error name is temporarily set as "NetworkError" for display purposes.
     // TODO: Update the error name to something more appropriate.
-    return (
-      <ERDViewer
-        schema={blankSchema}
-        defaultSidebarOpen={false}
-        errorObjects={[
-          {
-            name: 'NetworkError',
-            message: weCannotAccess,
-            instruction:
-              'Please specify the format in the URL query parameter `format`',
-          },
-        ]}
-      />
+    return renderErrorView(
+      blankSchema,
+      [],
+      weCannotAccess,
+      'Please specify the format in the URL query parameter `format`',
     )
   }
 
-  const { value: schema, errors } = await parse(input, format)
+  // Parse schema and prepare for rendering
+
+  const { value: schema, errors } = await parse(result.input, format)
+
   for (const error of errors) {
     Sentry.captureException(error)
   }
+
   const errorObjects = errors.map((error: Error) => ({
     name: error.name,
     message: error.message,
   }))
+
   const cookieStore = await cookies()
   const defaultSidebarOpen = cookieStore.get('sidebar:state')?.value === 'true'
-
   const layoutCookie = cookieStore.get('panels:layout')
   const defaultPanelSizes = (() => {
     if (!layoutCookie) return [20, 80]
-
     try {
       const sizes = JSON.parse(layoutCookie.value)
       if (Array.isArray(sizes) && sizes.length >= 2) {
@@ -213,7 +299,6 @@ export default async function Page({
     } catch {
       // Use default values if JSON.parse fails
     }
-
     return [20, 80]
   })()
 
