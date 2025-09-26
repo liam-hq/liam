@@ -31,7 +31,7 @@ Use the saveTestcase tool with this structure:
     "description": "Comprehensive description covering all test scenarios",
     "dmlOperation": {
       "operation_type": "INSERT",
-      "sql": "ONLY the PostgreSQL DML statements ending with semicolon (;). Do not append explanations, braces, or any extra text.",
+      "sql": "Your complete SQL test statements",
       "description": "What this DML operation tests"
     }
   }
