@@ -1,50 +1,105 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Version change: 1.0.0 → 2.0.0
+Modified principles: Complete rewrite - shifted from ERD-focused to AI Agent development focus
+Added sections: Agent Development Standards, Workflow Architecture Principles
+Removed sections: ERD-specific principles (moved to legacy context)
+Templates requiring updates: ✅ All templates reviewed and aligned with agent development patterns
+Follow-up TODOs: None
+-->
+
+# Liam Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Agent-First Architecture
+Every feature must be designed as a specialized, autonomous agent with clear responsibilities. Agents communicate through structured state and command patterns. Multi-agent collaboration over monolithic implementations. Each agent encapsulates domain expertise (PM, DB, QA) and operates as an independent, testable unit.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+**Rationale**: Database design requires specialized domain knowledge; agent modularity enables expert-level AI systems and independent scaling.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Subgraph Modularity (NON-NEGOTIABLE)
+All agent logic must be implemented as reusable LangGraph subgraphs with internal retry policies, error handling, and state management. No business logic in main workflow - only orchestration. Subgraphs must be independently testable with dedicated test suites.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: LangGraph workflows require isolation for debugging, testing, and reuse across different execution contexts.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. State-Safe Workflow Design
+All state transitions must be type-safe with explicit annotations. No shared mutable state between agents - communicate through immutable state updates only. Conditional routing based on state, not side effects. Error states must be explicitly modeled and recoverable.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Rationale**: AI agent workflows are non-deterministic; explicit state management prevents cascading failures and enables workflow debugging.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Resilient Execution Patterns
+Maximum 3 retry attempts per node with exponential backoff. Graceful fallback mechanisms required for all critical paths. Real-time progress tracking for user visibility. No workflow termination without user notification and recovery options.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: AI agents may fail unpredictably; resilience ensures production reliability for database design workflows.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Domain Expertise Encapsulation
+Each agent must embody deep domain knowledge: PM agents understand requirements analysis, DB agents master schema design patterns, QA agents specialize in validation strategies. No generic "do everything" agents. Expertise depth over breadth.
+
+**Rationale**: Database design requires specialized knowledge that general-purpose agents cannot adequately provide.
+
+## Agent Development Standards
+
+### LangGraph Implementation
+- Use `StateGraphBuilder` with typed annotations for all workflows
+- Implement conditional routing with Command pattern for explicit control flow
+- Subgraph integration via `graph.addNode("agentName", subgraph)`
+- No retry policies on subgraph nodes (handled internally)
+- Map-reduce patterns for parallel processing (testcase generation)
+
+### Error Handling & Recovery
+- Structured error handling with graceful failure paths
+- Automatic fallback to safe termination states
+- Error context preservation across workflow steps
+- User-friendly error reporting with recovery suggestions
+
+### Real-time User Experience
+- Progress streaming during workflow execution
+- No intermediate state storage for AI responses (memory optimization)
+- Instant feedback for validation errors (PostgreSQL + PGLite)
+- Live status updates for long-running operations
+
+## Workflow Architecture Principles
+
+### Agent Specialization
+- **Lead Agent**: Intelligent routing and workflow summarization
+- **PM Agent**: Requirements analysis and artifact management
+- **DB Agent**: Schema design and database operations
+- **QA Agent**: Test generation and validation execution
+- Clear boundaries, no overlapping responsibilities
+
+### Integration Patterns
+- ERD visualization as downstream consumer of agent outputs
+- CLI interface for schema processing workflows
+- API integration for real-time collaboration
+- Database artifact persistence for workflow continuity
+
+### Performance Standards
+- Sub-second agent routing decisions (GPT-5-nano)
+- Parallel execution where possible (testcase generation)
+- Optimized memory usage during long workflows
+- Efficient state serialization for workflow persistence
+
+## Technology Architecture
+
+### Current Stack
+- **Agent Framework**: LangGraph with TypeScript
+- **AI Models**: GPT-5 for complex reasoning, GPT-5-nano for routing
+- **Database**: PostgreSQL with PGLite for validation
+- **Frontend**: React 19, Next.js 15 (ERD visualization)
+- **Build**: Turborepo monorepo with pnpm workspaces
+
+### Legacy Integration
+- **Liam ERD**: Existing diagram generation tool (production)
+- **CLI Package**: Schema processing and visualization
+- **UI Components**: Shared component library for agent interfaces
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+All agent implementations must demonstrate domain expertise and reliable execution patterns. Workflow changes require validation of end-to-end scenarios. No agent modifications without corresponding test updates.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Agent development takes priority over ERD enhancements - ERD is a stable, production tool while agents are pre-release and require focused development effort.
+
+Constitution violations in agent logic block all releases. Multi-agent system reliability is non-negotiable due to the complexity of database design workflows.
+
+Pull requests must include agent integration testing and workflow validation scenarios.
+
+**Version**: 2.0.0 | **Ratified**: 2025-09-26 | **Last Amended**: 2025-09-26
