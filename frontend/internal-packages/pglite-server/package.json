@@ -7,7 +7,7 @@
   },
   "main": "src/index.ts",
   "dependencies": {
-    "@electric-sql/pglite": "0.3.7",
+    "@electric-sql/pglite": "0.3.8",
     "@liam-hq/schema": "workspace:*",
     "@pgsql/types": "15.1.1"
   },
