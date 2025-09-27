@@ -43,6 +43,7 @@ function generateWorkflowSummary(
   const llm = new ChatOpenAI({
     model: 'gpt-5-nano',
     reasoning: { effort: 'minimal' },
+    maxCompletionTokens: 2_000,
   })
 
   const summaryPrompt = `Based on the following workflow conversation about database design, provide a concise summary of what was accomplished:

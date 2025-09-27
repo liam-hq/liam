@@ -18,6 +18,7 @@ import type { testcaseAnnotation } from './testcaseAnnotation'
 const model = new ChatOpenAI({
   model: 'gpt-5-nano',
   reasoning: { effort: 'minimal', summary: 'auto' },
+  maxCompletionTokens: 4_000,
   verbosity: 'low',
   useResponsesApi: true,
 }).bindTools([saveTestcaseTool], {
