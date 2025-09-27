@@ -47,11 +47,11 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.3",
+    "@biomejs/biome": "2.2.4",
     "@liam-hq/configs": "workspace:*",
     "@storybook/nextjs": "9.1.5",
-    "@types/node": "22.18.1",
-    "@types/react": "19.1.12",
+    "@types/node": "22.18.3",
+    "@types/react": "19.1.13",
     "@types/react-dom": "19.1.9",
     "eslint": "9.35.0",
     "msw": "2.11.1",

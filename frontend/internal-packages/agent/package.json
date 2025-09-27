@@ -28,10 +28,10 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.3",
+    "@biomejs/biome": "2.2.4",
     "@langchain/langgraph-checkpoint-validation": "0.1.1",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.18.1",
+    "@types/node": "22.18.3",
     "@types/uuid": "10.0.0",
     "eslint": "9.35.0",
     "msw": "2.11.1",
