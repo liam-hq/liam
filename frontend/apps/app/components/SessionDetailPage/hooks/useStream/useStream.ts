@@ -5,17 +5,50 @@ import {
   coerceMessageLikeToMessage,
 } from '@langchain/core/messages'
 import { MessageTupleManager, SSE_EVENTS } from '@liam-hq/agent/client'
-import { err, ok } from 'neverthrow'
+import { err, ok, type Result } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
+import { object, safeParse, string } from 'valibot'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import { parseSse } from './parseSse'
 import { useSessionStorageOnce } from './useSessionStorageOnce'
 
-type ChatRequest = {
+type StartParams = {
   userInput: string
   designSessionId: string
   isDeepModelingEnabled: boolean
+}
+
+const MAX_RETRIES = 2
+
+type ReplayParams = Pick<
+  StartParams,
+  'designSessionId' | 'isDeepModelingEnabled'
+>
+
+type StreamError =
+  | { type: 'network'; message: string; status: number }
+  | { type: 'abort'; message: string }
+  | { type: 'timeout'; message: string }
+  | { type: 'unknown'; message: string }
+
+type StreamAttemptStatus = 'complete' | 'shouldRetry'
+
+const extractStreamErrorMessage = (rawData: unknown): string => {
+  const parsedData = (() => {
+    if (typeof rawData !== 'string') return rawData
+    try {
+      return JSON.parse(rawData)
+    } catch {
+      return null
+    }
+  })()
+
+  const schema = object({ message: string() })
+  const result = safeParse(schema, parsedData)
+  if (result.success) return result.output.message
+
+  return ERROR_MESSAGES.STREAM_UNKNOWN
 }
 
 /**
@@ -28,16 +61,13 @@ type Props = {
 }
 export const useStream = ({ designSessionId, initialMessages }: Props) => {
   const messageManagerRef = useRef(new MessageTupleManager())
-
   const storedMessage = useSessionStorageOnce(designSessionId)
-
   const processedInitialMessages = useMemo(() => {
     if (storedMessage) {
       return [storedMessage, ...initialMessages]
     }
     return initialMessages
   }, [storedMessage, initialMessages])
-
   const [messages, setMessages] = useState<BaseMessage[]>(
     processedInitialMessages,
   )
@@ -45,6 +75,13 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const retryCountRef = useRef(0)
+
+  const finalizeStream = useCallback(() => {
+    setIsStreaming(false)
+    abortRef.current = null
+    retryCountRef.current = 0
+  }, [])
 
   const stop = useCallback(() => {
     abortRef.current?.abort()
@@ -69,92 +106,177 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
     return true
   })
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
-  const start = useCallback(async (params: ChatRequest) => {
-    abortRef.current?.abort()
-    abortRef.current = new AbortController()
-    setIsStreaming(true)
-    setError(null) // Clear error when starting new request
+  const handleMessageEvent = useCallback((ev: { data: string }) => {
+    const parsedData = JSON.parse(ev.data)
+    const [serialized, metadata] = parsedData
+    const messageId = messageManagerRef.current.add(serialized, metadata)
+    if (!messageId) return
 
-    try {
-      const res = await fetch('/api/chat/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-        signal: abortRef.current.signal,
-      })
+    setMessages((prev) => {
+      const newMessages = [...prev]
+      const result = messageManagerRef.current.get(messageId, prev.length)
+      if (!result?.chunk) return newMessages
 
-      if (!res.body) {
-        return err({
-          type: 'network',
-          message: ERROR_MESSAGES.FETCH_FAILED,
-          status: res.status,
-        })
+      const { chunk, index } = result
+      const message = coerceMessageLikeToMessage(chunk)
+
+      if (index === undefined) {
+        newMessages.push(message)
+      } else {
+        newMessages[index] = message
       }
+
+      return newMessages
+    })
+  }, [])
+
+  const processStreamEvents = useCallback(
+    async (res: Response): Promise<boolean> => {
+      if (!res.body) return false
+
+      let endEventReceived = false
 
       for await (const ev of parseSse(res.body)) {
         if (ev.event === SSE_EVENTS.END) {
+          endEventReceived = true
           setIsStreaming(false)
           break
         }
 
         if (ev.event === SSE_EVENTS.ERROR) {
           setIsStreaming(false)
-          const errorData: unknown =
-            typeof ev.data === 'string' ? JSON.parse(ev.data) : {}
-          const message: string =
-            typeof errorData === 'object' &&
-            errorData !== null &&
-            'message' in errorData &&
-            typeof errorData.message === 'string'
-              ? errorData.message
-              : 'An unknown error occurred during streaming.'
-
-          // Set error state
-          setError(message)
-          continue // Continue streaming even with error
+          setError(extractStreamErrorMessage(ev.data))
+          continue
         }
 
-        if (ev.event !== SSE_EVENTS.MESSAGES) continue
+        if (ev.event === SSE_EVENTS.MESSAGES) {
+          handleMessageEvent(ev)
+        }
+      }
 
-        const parsedData = JSON.parse(ev.data)
-        const [serialized, metadata] = parsedData
-        const messageId = messageManagerRef.current.add(serialized, metadata)
-        if (!messageId) continue
+      return endEventReceived
+    },
+    [handleMessageEvent],
+  )
 
-        setMessages((prev) => {
-          const newMessages = [...prev]
-          const result = messageManagerRef.current.get(messageId, prev.length)
-          if (!result?.chunk) return newMessages
+  const runStreamAttempt = useCallback(
+    async (
+      endpoint: string,
+      payload: unknown,
+    ): Promise<Result<StreamAttemptStatus, StreamError>> => {
+      abortRef.current?.abort()
 
-          const { chunk, index } = result
-          const message = coerceMessageLikeToMessage(chunk)
+      const controller = new AbortController()
+      abortRef.current = controller
+      setIsStreaming(true)
+      setError(null)
 
-          if (index === undefined) {
-            newMessages.push(message)
-          } else {
-            newMessages[index] = message
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        })
+
+        if (!res.body) {
+          finalizeStream()
+          return err({
+            type: 'network',
+            message: ERROR_MESSAGES.FETCH_FAILED,
+            status: res.status,
+          })
+        }
+
+        const endEventReceived = await processStreamEvents(res)
+
+        if (!endEventReceived) {
+          if (controller.signal.aborted) {
+            finalizeStream()
+            return err({
+              type: 'abort',
+              message: 'Request was aborted',
+            })
           }
 
-          return newMessages
+          controller.abort()
+          abortRef.current = null
+          return ok('shouldRetry')
+        }
+
+        finalizeStream()
+        return ok('complete')
+      } catch (unknownError) {
+        finalizeStream()
+
+        if (
+          unknownError instanceof Error &&
+          unknownError.name === 'AbortError'
+        ) {
+          return err({
+            type: 'abort',
+            message: 'Request was aborted',
+          })
+        }
+
+        return err({
+          type: 'unknown',
+          message: ERROR_MESSAGES.GENERAL,
         })
+      }
+    },
+    [finalizeStream, processStreamEvents],
+  )
+
+  const replay = useCallback(
+    async (params: ReplayParams): Promise<Result<void, StreamError>> => {
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
+        retryCountRef.current = attempt
+
+        const result = await runStreamAttempt('/api/chat/replay', params)
+
+        if (result.isErr()) {
+          return err(result.error)
+        }
+
+        if (result.value === 'complete') {
+          return ok(undefined)
+        }
       }
 
-      setIsStreaming(false)
-      return ok(undefined)
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return err({
-          type: 'abort',
-          message: 'Request was aborted',
-        })
-      }
+      const timeoutMessage = ERROR_MESSAGES.CONNECTION_TIMEOUT
+      finalizeStream()
+      setError(timeoutMessage)
       return err({
-        type: 'unknown',
-        message: ERROR_MESSAGES.GENERAL,
+        type: 'timeout',
+        message: timeoutMessage,
       })
-    }
-  }, [])
+    },
+    [finalizeStream, runStreamAttempt],
+  )
+
+  const start = useCallback(
+    async (params: StartParams): Promise<Result<void, StreamError>> => {
+      abortRef.current?.abort()
+      retryCountRef.current = 0
+
+      const result = await runStreamAttempt('/api/chat/stream', params)
+
+      if (result.isErr()) {
+        return err(result.error)
+      }
+
+      if (result.value === 'complete') {
+        return ok(undefined)
+      }
+
+      return replay({
+        designSessionId: params.designSessionId,
+        isDeepModelingEnabled: params.isDeepModelingEnabled,
+      })
+    },
+    [replay, runStreamAttempt],
+  )
 
   return {
     messages,

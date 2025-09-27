@@ -9,13 +9,9 @@ import { SSE_EVENTS } from '@liam-hq/agent/client'
 import * as Sentry from '@sentry/nextjs'
 import { after, NextResponse } from 'next/server'
 import * as v from 'valibot'
+import { line } from '../../../../features/stream/utils/line'
 import { withTimeoutAndAbort } from '../../../../features/stream/utils/withTimeoutAndAbort'
 import { createClient } from '../../../../libs/db/server'
-
-function line(event: string, data: unknown) {
-  const payload = typeof data === 'string' ? data : JSON.stringify(data)
-  return `event:${event}\ndata:${payload}\n\n`
-}
 
 // https://vercel.com/docs/functions/configuring-functions/duration#maximum-duration-for-different-runtimes
 export const maxDuration = 800
