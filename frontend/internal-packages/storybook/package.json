@@ -13,7 +13,7 @@
     "@storybook/nextjs": "9.1.5",
     "@types/react": "19.1.12",
     "@types/react-dom": "19.1.9",
-    "msw": "2.11.1",
+    "msw": "2.11.2",
     "msw-storybook-addon": "2.0.5",
     "storybook": "9.1.5",
     "typescript": "5.9.2"
