@@ -64,6 +64,12 @@
         "noInferrableTypes": "error",
         "noUselessElse": "error",
         "noCommonJs": "error",
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["camelCase", "PascalCase", "export"]
+          }
+        },
         // TODO: Re-enable noDescendingSpecificity after fixing CSS specificity issues
         "noDescendingSpecificity": "off"
       }
