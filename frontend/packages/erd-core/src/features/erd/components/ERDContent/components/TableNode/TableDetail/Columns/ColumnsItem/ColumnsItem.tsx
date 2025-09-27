@@ -7,6 +7,7 @@ import {
   useUserEditingOrThrow,
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
+import { BlinkCircle } from '../../BlinkCircle/BlinkCircle'
 import styles from './ColumnsItem.module.css'
 import { Comment } from './Comment'
 import { Default } from './Default'
@@ -22,9 +23,15 @@ type Props = {
   tableId: string
   column: Column
   constraints: Constraints
+  focusedElementId: string
 }
 
-export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
+export const ColumnsItem: FC<Props> = ({
+  tableId,
+  column,
+  constraints,
+  focusedElementId,
+}) => {
   const elementId = columnElementId(tableId, column.name)
 
   const { operations } = useSchemaOrThrow()
@@ -51,27 +58,42 @@ export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
     [constraints, column.name],
   )
 
+  const isFocused = focusedElementId === elementId
+
   return (
-    <div id={elementId} className={clsx(styles.wrapper, diffStyle)}>
-      <h3 className={styles.heading}>
-        <a className={styles.link} href={`#${elementId}`}>
-          {column.name}
-        </a>
-        <Link className={styles.linkIcon} />
-      </h3>
-      {column.comment && <Comment tableId={tableId} column={column} />}
-      <GridTableRoot>
-        <Type tableId={tableId} column={column} />
-        <Default tableId={tableId} column={column} />
-        {constraint && (
-          <PrimaryKey
-            tableId={tableId}
-            columnName={column.name}
-            constraintName={constraint.name}
-          />
-        )}
-        <NotNull tableId={tableId} column={column} />
-      </GridTableRoot>
-    </div>
+    <>
+      {isFocused && (
+        <div
+          className={styles.blinkCircleWrapper}
+          data-testid="blink-circle-indicator"
+        >
+          <BlinkCircle />
+        </div>
+      )}
+      <div
+        id={elementId}
+        className={clsx(styles.wrapper, diffStyle, isFocused && styles.focused)}
+      >
+        <h3 className={styles.heading}>
+          <a className={styles.link} href={`#${elementId}`}>
+            {column.name}
+          </a>
+          <Link className={styles.linkIcon} />
+        </h3>
+        {column.comment && <Comment tableId={tableId} column={column} />}
+        <GridTableRoot>
+          <Type tableId={tableId} column={column} />
+          <Default tableId={tableId} column={column} />
+          {constraint && (
+            <PrimaryKey
+              tableId={tableId}
+              columnName={column.name}
+              constraintName={constraint.name}
+            />
+          )}
+          <NotNull tableId={tableId} column={column} />
+        </GridTableRoot>
+      </div>
+    </>
   )
 }
