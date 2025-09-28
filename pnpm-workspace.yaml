@@ -4,3 +4,5 @@ packages:
   - "frontend/packages/__mocks__/*"
   - "frontend/internal-packages/*"
 minimumReleaseAge: 20160 # 14 days
+minimumReleaseAgeExclude:
+  - "@sentry/*"
