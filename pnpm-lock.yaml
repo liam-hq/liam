@@ -382,9 +382,6 @@ importers:
       neverthrow:
         specifier: 8.2.0
         version: 8.2.0
-      p-limit:
-        specifier: 3.1.0
-        version: 3.1.0
       uuid:
         specifier: 11.1.0
         version: 11.1.0
@@ -18800,7 +18797,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.12.2)
+      retry-axios: 2.6.0(axios@1.12.2(debug@4.4.3))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -21471,7 +21468,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.12.2):
+  retry-axios@2.6.0(axios@1.12.2(debug@4.4.3)):
     dependencies:
       axios: 1.12.2(debug@4.4.3)
 

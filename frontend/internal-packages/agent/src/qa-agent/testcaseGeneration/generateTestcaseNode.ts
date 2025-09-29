@@ -5,7 +5,6 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
-import pLimit from 'p-limit'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
@@ -27,10 +26,6 @@ const model = new ChatOpenAI({
   tool_choice: 'auto',
 })
 
-// Create a semaphore to limit concurrent executions to 10
-// This helps prevent LangSmith tracing issues with too many parallel processes
-const limit = pLimit(10)
-
 /**
  * Generate Test Case Node for Subgraph
  * Generates test cases and DML operations for a single requirement
@@ -39,55 +34,51 @@ const limit = pLimit(10)
 export async function generateTestcaseNode(
   state: typeof testcaseAnnotation.State,
 ): Promise<{ messages: BaseMessage[] }> {
-  // Use semaphore to limit concurrent executions
-  return limit(async () => {
-    const { currentRequirement, schemaData, messages } = state
+  const { currentRequirement, schemaData, messages } = state
 
-    const schemaContext = convertSchemaToText(schemaData)
+  const schemaContext = convertSchemaToText(schemaData)
 
-    const contextMessage =
-      await humanPromptTemplateForTestcaseGeneration.format({
-        schemaContext,
-        businessContext: currentRequirement.businessContext,
-        requirementType: currentRequirement.type,
-        requirementCategory: currentRequirement.category,
-        requirement: currentRequirement.requirement,
-      })
-
-    const cleanedMessages = removeReasoningFromMessages(messages)
-
-    const streamModel = fromAsyncThrowable(() => {
-      return model.stream(
-        [
-          new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
-          new HumanMessage(contextMessage),
-          // Include all previous messages in this subgraph's scope
-          ...cleanedMessages,
-        ],
-        {
-          options: {
-            timeout: 120000, // 120s
-          },
-        },
-      )
-    })
-
-    const streamResult = await streamModel()
-
-    if (streamResult.isErr()) {
-      // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
-      throw new Error(
-        `Failed to generate test case for ${currentRequirement.category}: ${streamResult.error.message}`,
-      )
-    }
-
-    const response = await streamLLMResponse(streamResult.value, {
-      agentName: 'qa',
-      eventType: 'messages',
-    })
-
-    return {
-      messages: [response],
-    }
+  const contextMessage = await humanPromptTemplateForTestcaseGeneration.format({
+    schemaContext,
+    businessContext: currentRequirement.businessContext,
+    requirementType: currentRequirement.type,
+    requirementCategory: currentRequirement.category,
+    requirement: currentRequirement.requirement,
   })
+
+  const cleanedMessages = removeReasoningFromMessages(messages)
+
+  const streamModel = fromAsyncThrowable(() => {
+    return model.stream(
+      [
+        new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
+        new HumanMessage(contextMessage),
+        // Include all previous messages in this subgraph's scope
+        ...cleanedMessages,
+      ],
+      {
+        options: {
+          timeout: 120000, // 120s
+        },
+      },
+    )
+  })
+
+  const streamResult = await streamModel()
+
+  if (streamResult.isErr()) {
+    // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
+    throw new Error(
+      `Failed to generate test case for ${currentRequirement.category}: ${streamResult.error.message}`,
+    )
+  }
+
+  const response = await streamLLMResponse(streamResult.value, {
+    agentName: 'qa',
+    eventType: 'messages',
+  })
+
+  return {
+    messages: [response],
+  }
 }
