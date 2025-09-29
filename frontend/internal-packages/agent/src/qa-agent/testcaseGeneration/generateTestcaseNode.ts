@@ -5,7 +5,7 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
-import * as pLimit from 'p-limit'
+import pLimit from 'p-limit'
 import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
@@ -29,7 +29,7 @@ const model = new ChatOpenAI({
 
 // Create a semaphore to limit concurrent executions to 10
 // This helps prevent LangSmith tracing issues with too many parallel processes
-const limit = pLimit.default(10)
+const limit = pLimit(10)
 
 /**
  * Generate Test Case Node for Subgraph
