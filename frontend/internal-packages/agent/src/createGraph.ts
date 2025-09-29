@@ -37,18 +37,7 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
   const callQaAgent = async (state: WorkflowState, config: RunnableConfig) => {
     const qaAgentSubgraph = createQaAgentGraph(checkpointer)
     const modifiedState = { ...state, messages: [] }
-
-    // Set max_concurrency to limit parallel execution
-    // This helps prevent LangSmith tracing issues with too many parallel processes
-    const enhancedConfig = {
-      ...config,
-      configurable: {
-        ...config?.configurable,
-        max_concurrency: 10,
-      },
-    }
-
-    const output = await qaAgentSubgraph.invoke(modifiedState, enhancedConfig)
+    const output = await qaAgentSubgraph.invoke(modifiedState, config)
 
     return { ...state, ...output }
   }

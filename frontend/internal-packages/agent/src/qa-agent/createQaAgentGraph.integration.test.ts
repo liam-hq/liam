@@ -118,10 +118,6 @@ describe('createQaAgentGraph Integration', () => {
     // Act
     const streamEvents = graph.streamEvents(state, {
       ...config,
-      configurable: {
-        ...config?.configurable,
-        max_concurrency: 10, // Limit parallel execution to prevent LangSmith tracing issues
-      },
       streamMode: 'messages',
       version: 'v2',
     })
