@@ -11,13 +11,9 @@ export type { RequirementData } from './types'
 export function continueToRequirements(state: QaAgentState) {
   const targetRequirements = getUnprocessedRequirements(state)
 
-  // DEBUG: Limit to first 10 requirements to investigate LangSmith tracing issue
-  // TODO: Remove this limitation after the issue is resolved
-  const limitedRequirements = targetRequirements.slice(0, 10)
-
   // Use Send API to distribute each requirement for parallel processing
   // Each requirement will be processed by testcaseGeneration with isolated state
-  return limitedRequirements.map(
+  return targetRequirements.map(
     (reqData) =>
       new Send('testcaseGeneration', {
         // Each subgraph gets its own isolated state
