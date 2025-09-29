@@ -45,8 +45,25 @@ export class PGliteInstanceManager {
     sql: string,
     requiredExtensions: string[],
   ): Promise<SqlResult[]> {
+    // Log memory usage before creating PGlite instance
+    const memoryBefore = process.memoryUsage()
+    console.info('[PGlite] Before instance creation:', {
+      rss: `${Math.round(memoryBefore.rss / 1024 / 1024)} MB`,
+      heapUsed: `${Math.round(memoryBefore.heapUsed / 1024 / 1024)} MB`,
+      external: `${Math.round(memoryBefore.external / 1024 / 1024)} MB`,
+    })
+
     const { db, supportedExtensions } =
       await this.createInstance(requiredExtensions)
+
+    // Log memory usage after creating PGlite instance
+    const memoryAfter = process.memoryUsage()
+    console.info('[PGlite] After instance creation:', {
+      rss: `${Math.round(memoryAfter.rss / 1024 / 1024)} MB`,
+      heapUsed: `${Math.round(memoryAfter.heapUsed / 1024 / 1024)} MB`,
+      external: `${Math.round(memoryAfter.external / 1024 / 1024)} MB`,
+      rssDelta: `+${Math.round((memoryAfter.rss - memoryBefore.rss) / 1024 / 1024)} MB`,
+    })
 
     // Always filter CREATE EXTENSION statements based on supported extensions
     const filteredSql = filterExtensionDDL(sql, supportedExtensions)
@@ -55,6 +72,12 @@ export class PGliteInstanceManager {
       return await this.executeSql(filteredSql, db)
     } finally {
       db.close?.()
+      // Log memory usage after closing instance
+      const memoryAfterClose = process.memoryUsage()
+      console.info('[PGlite] After instance close:', {
+        rss: `${Math.round(memoryAfterClose.rss / 1024 / 1024)} MB`,
+        rssDelta: `${Math.round((memoryAfterClose.rss - memoryAfter.rss) / 1024 / 1024)} MB from after creation`,
+      })
     }
   }
 
