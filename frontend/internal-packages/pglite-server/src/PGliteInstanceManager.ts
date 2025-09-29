@@ -15,12 +15,18 @@ export class PGliteInstanceManager {
   private async createInstance(
     requiredExtensions: string[],
   ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
+    const startTime = Date.now()
+
     if (requiredExtensions.length === 0) {
+      const db = new PGlite({
+        initialMemory: 256 * 1024 * 1024, // Reduced from 2GB to 256MB
+        extensions: {},
+      })
+      console.info(
+        `[PGlite] Instance creation took: ${Date.now() - startTime}ms`,
+      )
       return {
-        db: new PGlite({
-          initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-          extensions: {},
-        }),
+        db,
         supportedExtensions: [],
       }
     }
@@ -28,11 +34,14 @@ export class PGliteInstanceManager {
     const { extensionModules, supportedExtensionNames } =
       await loadExtensions(requiredExtensions)
 
+    const db = new PGlite({
+      initialMemory: 256 * 1024 * 1024, // Reduced from 2GB to 256MB
+      extensions: extensionModules,
+    })
+    console.info(`[PGlite] Instance creation took: ${Date.now() - startTime}ms`)
+
     return {
-      db: new PGlite({
-        initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-        extensions: extensionModules,
-      }),
+      db,
       supportedExtensions: supportedExtensionNames,
     }
   }
@@ -71,12 +80,25 @@ export class PGliteInstanceManager {
     try {
       return await this.executeSql(filteredSql, db)
     } finally {
-      db.close?.()
+      // Ensure proper cleanup
+      if (db.close) {
+        await db.close()
+      }
+
+      // Force garbage collection if available (V8 only, requires --expose-gc flag)
+      if (global.gc) {
+        global.gc()
+        console.info('[PGlite] Forced garbage collection')
+      }
+
       // Log memory usage after closing instance
       const memoryAfterClose = process.memoryUsage()
       console.info('[PGlite] After instance close:', {
         rss: `${Math.round(memoryAfterClose.rss / 1024 / 1024)} MB`,
+        heapUsed: `${Math.round(memoryAfterClose.heapUsed / 1024 / 1024)} MB`,
+        external: `${Math.round(memoryAfterClose.external / 1024 / 1024)} MB`,
         rssDelta: `${Math.round((memoryAfterClose.rss - memoryAfter.rss) / 1024 / 1024)} MB from after creation`,
+        externalDelta: `${Math.round((memoryAfterClose.external - memoryAfter.external) / 1024 / 1024)} MB from after creation`,
       })
     }
   }
