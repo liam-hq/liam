@@ -30,7 +30,7 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.3",
+    "@biomejs/biome": "2.2.4",
     "@liam-hq/configs": "workspace:*",
     "@liam-hq/schema": "workspace:*",
     "@storybook/nextjs": "9.1.5",
@@ -38,7 +38,7 @@
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
     "@types/pako": "2.0.4",
-    "@types/react": "19.1.12",
+    "@types/react": "19.1.13",
     "@vitejs/plugin-react": "4.6.0",
     "eslint": "9.35.0",
     "happy-dom": "17.6.3",
