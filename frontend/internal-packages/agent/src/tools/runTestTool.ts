@@ -19,17 +19,27 @@ import { transformStateToArtifact } from './transformStateToArtifact'
 /**
  * Execute DML operations by testcase with DDL statements
  * Combines DDL and testcase-specific DML into single execution units
+ * Executes sequentially to avoid memory exhaustion from parallel PGlite instances
  */
 async function executeDmlOperationsByTestcase(
   ddlStatements: string,
   testcases: Testcase[],
   requiredExtensions: string[],
 ): Promise<TestcaseDmlExecutionResult[]> {
-  return Promise.all(
-    testcases.map((testcase) =>
-      executeTestcase(ddlStatements, testcase, requiredExtensions),
-    ),
-  )
+  const results: TestcaseDmlExecutionResult[] = []
+
+  // Execute testcases sequentially instead of in parallel
+  // to avoid creating multiple 2GB PGlite instances simultaneously
+  for (const testcase of testcases) {
+    const result = await executeTestcase(
+      ddlStatements,
+      testcase,
+      requiredExtensions,
+    )
+    results.push(result)
+  }
+
+  return results
 }
 
 const toolSchema = v.object({})
