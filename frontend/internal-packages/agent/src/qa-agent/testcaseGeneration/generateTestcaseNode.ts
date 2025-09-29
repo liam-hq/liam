@@ -16,7 +16,7 @@ import {
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
 const model = new ChatOpenAI({
-  model: 'gpt-5-nano',
+  model: 'gpt-5-codex',
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
   useResponsesApi: true,
