@@ -58,7 +58,7 @@ export async function generateTestcaseNode(
       ],
       {
         options: {
-          timeout: 12000000, // 12000s
+          timeout: 120000, // 120s
         },
       },
     )
