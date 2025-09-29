@@ -54,10 +54,36 @@ const validateSqlSyntax = async (sql: string): Promise<void> => {
         : '[TEST] Simulated SQL error for Sentry testing (10% chance). SQL was valid but error was triggered for testing.',
     )
 
+    // Debug logging to verify error is being triggered
+    console.error('[saveTestcaseTool] SQL validation error occurred:', {
+      isSimulated: shouldSimulateError,
+      errorMessage: error.message,
+      sql: sql.substring(0, 100), // Log first 100 chars of SQL
+    })
+
+    // Try to capture the error in Sentry
+    // Initialize Sentry if not already initialized (for Next.js environment)
+    if (!Sentry.getCurrentScope()) {
+      console.warn(
+        '[saveTestcaseTool] Sentry not initialized, initializing now...',
+      )
+      const dsn =
+        process.env['SENTRY_DSN'] || process.env['NEXT_PUBLIC_SENTRY_DSN']
+      if (dsn) {
+        Sentry.init({
+          dsn,
+          environment: process.env['NEXT_PUBLIC_ENV_NAME'] || 'development',
+          debug: true,
+        })
+      } else {
+        console.warn('[saveTestcaseTool] No SENTRY_DSN found in environment')
+      }
+    }
+
     // Capture the SQL syntax error in Sentry for monitoring
     // This is separate from the withSentryCaptureException wrapper
     // because we want to track these errors even though they trigger retries
-    Sentry.captureException(error, {
+    const eventId = Sentry.captureException(error, {
       tags: {
         errorType: shouldSimulateError
           ? 'simulated_sql_error_test'
@@ -71,6 +97,8 @@ const validateSqlSyntax = async (sql: string): Promise<void> => {
         simulatedForTesting: shouldSimulateError,
       },
     })
+
+    console.error('[saveTestcaseTool] Sent to Sentry with eventId:', eventId)
 
     // LangGraph tool nodes require throwing errors to trigger retry mechanism
 

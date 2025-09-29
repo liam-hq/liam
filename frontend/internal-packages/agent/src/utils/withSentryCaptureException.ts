@@ -7,7 +7,12 @@ export const withSentryCaptureException = async <T>(
   try {
     return await operation()
   } catch (error) {
-    Sentry.captureException(error)
+    console.error('[withSentryCaptureException] Capturing error:', error)
+    const eventId = Sentry.captureException(error)
+    console.error(
+      '[withSentryCaptureException] Sent to Sentry with eventId:',
+      eventId,
+    )
     throw error
   }
 }
