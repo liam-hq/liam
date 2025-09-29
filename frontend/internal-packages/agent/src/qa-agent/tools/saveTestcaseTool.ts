@@ -5,7 +5,6 @@ import { type StructuredTool, tool } from '@langchain/core/tools'
 import { Command } from '@langchain/langgraph'
 import { dmlOperationSchema } from '@liam-hq/artifact'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
-import * as Sentry from '@sentry/node'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../streaming/constants'
@@ -48,60 +47,43 @@ const validateSqlSyntax = async (sql: string): Promise<void> => {
   const shouldSimulateError = Math.random() < 0.1
 
   if (parseResult.error || shouldSimulateError) {
-    const error = new Error(
-      parseResult.error
-        ? `SQL syntax error: ${parseResult.error.message}. Fix testcaseWithDml.dmlOperation.sql and retry.`
-        : '[TEST] Simulated SQL error for Sentry testing (10% chance). SQL was valid but error was triggered for testing.',
-    )
+    const errorMessage = parseResult.error
+      ? `SQL syntax error: ${parseResult.error.message}. Fix testcaseWithDml.dmlOperation.sql and retry.`
+      : '[TEST] Simulated SQL error for Sentry testing (10% chance). SQL was valid but error was triggered for testing.'
+
+    // Create a custom error with additional properties for Sentry
+    const error: Error & {
+      tags?: Record<string, string>
+      extra?: Record<string, unknown>
+    } = new Error(errorMessage)
+
+    // Add Sentry-specific data to the error object
+    // withSentryCaptureException will use these when capturing
+    error.tags = {
+      errorType: shouldSimulateError
+        ? 'simulated_sql_error_test'
+        : 'sql_syntax_error',
+      toolName: 'saveTestcase',
+      isTest: shouldSimulateError ? 'true' : 'false',
+    }
+
+    error.extra = {
+      sql,
+      parseError: parseResult.error?.message || 'Simulated error for testing',
+      simulatedForTesting: shouldSimulateError,
+    }
 
     // Debug logging to verify error is being triggered
     console.error('[saveTestcaseTool] SQL validation error occurred:', {
       isSimulated: shouldSimulateError,
       errorMessage: error.message,
       sql: sql.substring(0, 100), // Log first 100 chars of SQL
+      tags: error.tags,
+      extra: error.extra,
     })
-
-    // Try to capture the error in Sentry
-    // Initialize Sentry if not already initialized (for Next.js environment)
-    if (!Sentry.getCurrentScope()) {
-      console.warn(
-        '[saveTestcaseTool] Sentry not initialized, initializing now...',
-      )
-      const dsn =
-        process.env['SENTRY_DSN'] || process.env['NEXT_PUBLIC_SENTRY_DSN']
-      if (dsn) {
-        Sentry.init({
-          dsn,
-          environment: process.env['NEXT_PUBLIC_ENV_NAME'] || 'development',
-          debug: true,
-        })
-      } else {
-        console.warn('[saveTestcaseTool] No SENTRY_DSN found in environment')
-      }
-    }
-
-    // Capture the SQL syntax error in Sentry for monitoring
-    // This is separate from the withSentryCaptureException wrapper
-    // because we want to track these errors even though they trigger retries
-    const eventId = Sentry.captureException(error, {
-      tags: {
-        errorType: shouldSimulateError
-          ? 'simulated_sql_error_test'
-          : 'sql_syntax_error',
-        toolName: 'saveTestcase',
-        isTest: shouldSimulateError ? 'true' : 'false',
-      },
-      extra: {
-        sql,
-        parseError: parseResult.error?.message || 'Simulated error for testing',
-        simulatedForTesting: shouldSimulateError,
-      },
-    })
-
-    console.error('[saveTestcaseTool] Sent to Sentry with eventId:', eventId)
 
     // LangGraph tool nodes require throwing errors to trigger retry mechanism
-
+    // withSentryCaptureException will capture this error
     throw error
   }
 }
