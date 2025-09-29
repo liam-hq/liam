@@ -44,9 +44,14 @@ const configSchema = v.object({
 const validateSqlSyntax = async (sql: string): Promise<void> => {
   const parseResult: PgParseResult = await pgParse(sql)
 
-  if (parseResult.error) {
+  // Randomly trigger error 10% of the time for testing Sentry integration
+  const shouldSimulateError = Math.random() < 0.1
+
+  if (parseResult.error || shouldSimulateError) {
     const error = new Error(
-      `SQL syntax error: ${parseResult.error.message}. Fix testcaseWithDml.dmlOperation.sql and retry.`,
+      parseResult.error
+        ? `SQL syntax error: ${parseResult.error.message}. Fix testcaseWithDml.dmlOperation.sql and retry.`
+        : '[TEST] Simulated SQL error for Sentry testing (10% chance). SQL was valid but error was triggered for testing.',
     )
 
     // Capture the SQL syntax error in Sentry for monitoring
@@ -54,12 +59,16 @@ const validateSqlSyntax = async (sql: string): Promise<void> => {
     // because we want to track these errors even though they trigger retries
     Sentry.captureException(error, {
       tags: {
-        errorType: 'sql_syntax_error',
+        errorType: shouldSimulateError
+          ? 'simulated_sql_error_test'
+          : 'sql_syntax_error',
         toolName: 'saveTestcase',
+        isTest: shouldSimulateError ? 'true' : 'false',
       },
       extra: {
         sql,
-        parseError: parseResult.error.message,
+        parseError: parseResult.error?.message || 'Simulated error for testing',
+        simulatedForTesting: shouldSimulateError,
       },
     })
 
