@@ -19,15 +19,13 @@ import { transformStateToArtifact } from './transformStateToArtifact'
 /**
  * Execute DML operations by testcase with DDL statements
  * Combines DDL and testcase-specific DML into single execution units
- * Executes sequentially to avoid memory exhaustion from parallel PGlite instances
+ * Executes in parallel using 8-instance pool for improved performance
  */
 async function executeDmlOperationsByTestcase(
   ddlStatements: string,
   testcases: Testcase[],
   requiredExtensions: string[],
 ): Promise<TestcaseDmlExecutionResult[]> {
-  const results: TestcaseDmlExecutionResult[] = []
-
   // Log initial memory usage
   const initialMemory = process.memoryUsage()
   console.info('[runTestTool] Initial memory usage:', {
@@ -38,52 +36,84 @@ async function executeDmlOperationsByTestcase(
     testcaseCount: testcases.length,
   })
 
-  // Execute testcases sequentially instead of in parallel
-  // to avoid creating multiple 2GB PGlite instances simultaneously
-  for (let i = 0; i < testcases.length; i++) {
-    const testcase = testcases[i]
-    if (!testcase) continue // Skip if testcase is undefined
+  console.info('[runTestTool] Starting parallel execution with 8-instance pool')
+  const startTime = Date.now()
 
-    console.info(
-      `[runTestTool] Starting testcase ${i + 1}/${testcases.length}: ${testcase.id}`,
-    )
-    const startTime = Date.now()
+  // Execute testcases in parallel (pool will naturally limit to 8 concurrent)
+  const results = await Promise.all(
+    testcases.map(async (testcase, i) => {
+      if (!testcase) {
+        // Return empty result for undefined testcases
+        const dummyResult: TestcaseDmlExecutionResult = {
+          testCaseId: '',
+          testCaseTitle: 'Undefined',
+          success: false,
+          executedAt: new Date(),
+          failedOperation: {
+            sql: '',
+            error: 'Testcase is undefined',
+          },
+        }
+        return dummyResult
+      }
 
-    const result = await executeTestcase(
-      ddlStatements,
-      testcase,
-      requiredExtensions,
-    )
-
-    const executionTime = Date.now() - startTime
-    console.info(
-      `[runTestTool] Completed testcase ${i + 1} in ${executionTime}ms`,
-    )
-
-    // Log warning if execution took too long
-    if (executionTime > 10000) {
-      console.warn(
-        `[runTestTool] SLOW: Testcase ${testcase.id} took ${executionTime}ms`,
+      console.info(
+        `[runTestTool] Starting testcase ${i + 1}/${testcases.length}: ${testcase.id}`,
       )
-    }
+      const testStartTime = Date.now()
 
-    results.push(result)
+      const result = await executeTestcase(
+        ddlStatements,
+        testcase,
+        requiredExtensions,
+      )
 
-    // Log memory usage after every testcase
-    const currentMemory = process.memoryUsage()
-    console.info(
-      `[runTestTool] After ${i + 1}/${testcases.length} testcases:`,
-      {
-        rss: `${Math.round(currentMemory.rss / 1024 / 1024)} MB`,
-        heapUsed: `${Math.round(currentMemory.heapUsed / 1024 / 1024)} MB`,
-        heapTotal: `${Math.round(currentMemory.heapTotal / 1024 / 1024)} MB`,
-        external: `${Math.round(currentMemory.external / 1024 / 1024)} MB`,
-        rssDelta: `+${Math.round((currentMemory.rss - initialMemory.rss) / 1024 / 1024)} MB`,
-      },
-    )
-  }
+      const executionTime = Date.now() - testStartTime
+      console.info(
+        `[runTestTool] Completed testcase ${i + 1} in ${executionTime}ms`,
+      )
 
-  return results
+      // Log warning if execution took too long
+      if (executionTime > 10000) {
+        console.warn(
+          `[runTestTool] SLOW: Testcase ${testcase.id} took ${executionTime}ms`,
+        )
+      }
+
+      // Log memory usage periodically (every 5 testcases)
+      if ((i + 1) % 5 === 0) {
+        const currentMemory = process.memoryUsage()
+        console.info(
+          `[runTestTool] Memory after ${i + 1}/${testcases.length} testcases:`,
+          {
+            rss: `${Math.round(currentMemory.rss / 1024 / 1024)} MB`,
+            heapUsed: `${Math.round(currentMemory.heapUsed / 1024 / 1024)} MB`,
+            external: `${Math.round(currentMemory.external / 1024 / 1024)} MB`,
+            rssDelta: `+${Math.round((currentMemory.rss - initialMemory.rss) / 1024 / 1024)} MB`,
+          },
+        )
+      }
+
+      return result
+    }),
+  )
+
+  const totalTime = Date.now() - startTime
+  console.info(
+    `[runTestTool] Completed all ${testcases.length} testcases in ${totalTime}ms (${Math.round(totalTime / 1000)}s)`,
+  )
+
+  // Log final memory usage
+  const finalMemory = process.memoryUsage()
+  console.info('[runTestTool] Final memory usage:', {
+    rss: `${Math.round(finalMemory.rss / 1024 / 1024)} MB`,
+    heapUsed: `${Math.round(finalMemory.heapUsed / 1024 / 1024)} MB`,
+    external: `${Math.round(finalMemory.external / 1024 / 1024)} MB`,
+    totalRssDelta: `+${Math.round((finalMemory.rss - initialMemory.rss) / 1024 / 1024)} MB`,
+  })
+
+  // Filter out dummy results from undefined testcases
+  return results.filter((r) => r.testCaseId !== '')
 }
 
 const toolSchema = v.object({})
