@@ -337,8 +337,11 @@ export class PGliteInstanceManager {
       )
       return await this.executeSql(filteredSql, db)
     } catch (error) {
-      // On error, try to rollback to savepoint
-      if (PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)) {
+      // Only attempt savepoint rollback for test SQL with active transactions
+      if (
+        isTestSql &&
+        PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)
+      ) {
         try {
           await db.query('ROLLBACK TO SAVEPOINT clean_state')
           console.info(
