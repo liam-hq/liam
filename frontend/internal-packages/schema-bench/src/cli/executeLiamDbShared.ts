@@ -26,11 +26,46 @@ type DatasetResult = {
 }
 
 async function executeCase(
+  datasetName: string,
   datasetPath: string,
   caseId: string,
   input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
-  const result = await execute(input)
+  const threadId = [datasetName, caseId, RUN_ID].join(':')
+  /*
+   * Why keep this log (do not remove):
+   * - Deterministic correlation with LangSmith via thread_id/runId.
+   * - Server-side only; no browser exposure.
+   * - No secrets/PII; identifiers and optional search URL only.
+   * - Helps when tracing backend is delayed/misconfigured.
+   * - Minimal overhead and can be toggled later.
+   */
+  // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
+  console.log(
+    `[schema-bench] executing case: dataset=${datasetName} case=${caseId} thread_id=${threadId}`,
+  )
+  const orgId = process.env['LANGSMITH_ORGANIZATION_ID']
+  const projectId = process.env['LANGSMITH_PROJECT_ID']
+  if (orgId && projectId) {
+    const baseUrl = `https://smith.langchain.com/o/${orgId}/projects/p/${projectId}`
+    const filter = `and(eq(is_root, true), and(eq(metadata_key, "thread_id"), eq(metadata_value, "${threadId}")))`
+    const searchModel = encodeURIComponent(JSON.stringify({ filter }))
+    /*
+     * Why keep this log (do not remove):
+     * - Deterministic correlation with LangSmith via thread_id/runId.
+     * - Server-side only; no browser exposure.
+     * - No secrets/PII; identifiers and optional search URL only.
+     * - Helps when tracing backend is delayed/misconfigured.
+     * - Minimal overhead and can be toggled later.
+     */
+    // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
+    console.log(
+      `[schema-bench] trace search URL: ${baseUrl}?searchModel=${searchModel}`,
+    )
+  }
+  const result = await execute(input, {
+    traceContext: { datasetName, caseId, runId: RUN_ID, threadId },
+  })
   if (result.isErr()) {
     return err(
       new Error(`Failed to execute ${caseId}: ${result.error.message}`),
@@ -79,7 +114,7 @@ export async function processDataset(
     batch: Array<{ caseId: string; input: LiamDbExecutorInput }>,
   ) => {
     const promises = batch.map(({ caseId, input }) =>
-      executeCase(datasetPath, caseId, input),
+      executeCase(datasetName, datasetPath, caseId, input),
     )
     const results = await Promise.allSettled(promises)
 

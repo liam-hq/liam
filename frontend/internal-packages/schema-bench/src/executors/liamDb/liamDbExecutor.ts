@@ -1,11 +1,13 @@
 import { deepModeling, InMemoryRepository } from '@liam-hq/agent'
 import { aSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
+import type { TraceContext } from '../../tracing/types'
 import { handleExecutionResult, logInputProcessing } from '../utils.ts'
 import type { LiamDbExecutorInput, LiamDbExecutorOutput } from './types.ts'
 
 export async function execute(
   input: LiamDbExecutorInput,
+  options?: { traceContext?: TraceContext },
 ): Promise<Result<LiamDbExecutorOutput, Error>> {
   logInputProcessing(input.input)
 
@@ -31,10 +33,20 @@ export async function execute(
     signal: new AbortController().signal,
   }
 
+  const computeThreadId = (): string => {
+    if (options?.traceContext?.threadId) return options.traceContext.threadId
+    const parts = [
+      options?.traceContext?.datasetName,
+      options?.traceContext?.caseId,
+      options?.traceContext?.runId,
+    ].filter(Boolean)
+    return parts.length > 0 ? parts.join(':') : 'demo-design-session'
+  }
+
   const config = {
     configurable: {
       repositories,
-      thread_id: 'demo-design-session',
+      thread_id: computeThreadId(),
     },
   }
 

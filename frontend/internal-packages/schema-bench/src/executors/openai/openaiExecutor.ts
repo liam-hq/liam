@@ -1,5 +1,7 @@
 import { err, fromPromise, type Result } from 'neverthrow'
 import OpenAI from 'openai'
+import { getTracer } from '../../tracing/tracer'
+import type { TraceContext } from '../../tracing/types'
 import {
   handleExecutionResult,
   logInputProcessing,
@@ -24,8 +26,18 @@ export class OpenAIExecutor {
 
   async execute(
     input: OpenAIExecutorInput,
+    options?: { traceContext?: TraceContext },
   ): Promise<Result<OpenAIExecutorOutput, Error>> {
     logInputProcessing(input.input)
+    const tracer = getTracer()
+    const runHandle = await tracer.startRun({
+      name: 'openai-executor',
+      inputs: { prompt: input.input },
+      runType: 'llm',
+      tags: ['executor:openai'],
+      metadata: { model: 'gpt-5' },
+      ...(options?.traceContext ? { traceContext: options.traceContext } : {}),
+    })
     const apiResult = await fromPromise(
       this.client.chat.completions.create({
         model: 'gpt-5',
@@ -58,17 +70,40 @@ export class OpenAIExecutor {
       'OpenAI API call failed',
     )
     if (handledApiResult.isErr()) {
+      await tracer.endRunError(runHandle, handledApiResult.error)
       return err(handledApiResult.error)
     }
 
     const content = handledApiResult.value.choices[0]?.message?.content
     if (!content) {
-      return err(new Error('No response content from OpenAI'))
+      const e = new Error('No response content from OpenAI')
+      await tracer.endRunError(runHandle, e)
+      return err(e)
     }
 
-    return safeJsonParse<OpenAIExecutorOutput>(
+    const parsed = safeJsonParse<OpenAIExecutorOutput>(
       content,
       'Failed to parse OpenAI JSON response',
     )
+    if (parsed.isErr()) {
+      await tracer.endRunError(runHandle, parsed.error)
+      return parsed
+    }
+
+    await tracer.endRunSuccess(
+      runHandle,
+      { raw: content, json: parsed.value },
+       
+      'usage' in handledApiResult.value && handledApiResult.value.usage
+        ? {
+            usage: handledApiResult.value.usage as unknown as Record<
+              string,
+              unknown
+            >,
+          }
+        : undefined,
+    )
+
+    return parsed
   }
 }

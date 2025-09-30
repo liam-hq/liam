@@ -175,6 +175,26 @@ For OpenAI executor, set your API key:
 export OPENAI_API_KEY="your-api-key"
 ```
 
+### Optional: Enable LangSmith tracing
+
+Schema-Bench can emit LangSmith traces for both executors:
+
+- Required: `LANGSMITH_API_KEY`
+- Recommended: `LANGSMITH_PROJECT=schema-bench`
+- Toggle: one of `SCHEMA_BENCH_TRACE=1`, `LANGSMITH_TRACING=true`, or `LANGCHAIN_TRACING_V2=true`
+
+Example:
+```bash
+export LANGSMITH_API_KEY="your-langsmith-api-key"
+export LANGSMITH_PROJECT="schema-bench"
+export SCHEMA_BENCH_TRACE=1
+```
+
+Notes:
+- LiamDB executor uses LangChain/LangGraph. Supplying the env above is sufficient; a per-case `thread_id` is set as `<dataset>:<case>:<runId>` for easier correlation.
+- OpenAI executor uses a lightweight tracer wrapper and records inputs, parsed outputs, and usage when available.
+- If `LANGSMITH_ORGANIZATION_ID` and `LANGSMITH_PROJECT_ID` are set, traces can be searched by `thread_id` in LangSmith UI.
+
 ## Example Workflow
 
 1) Clean and setup: `rm -rf benchmark-workspace && pnpm --filter @liam-hq/schema-bench setupWorkspace`
