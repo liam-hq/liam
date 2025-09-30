@@ -56,10 +56,6 @@ async function executeDmlOperationsByTestcase(
           testCaseTitle: 'Undefined',
           success: false,
           executedAt: new Date(),
-          failedOperation: {
-            sql: '',
-            error: 'Testcase is undefined',
-          },
         }
         return Promise.resolve(dummyResult)
       }
