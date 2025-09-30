@@ -90,18 +90,19 @@ export class OpenAIExecutor {
       return parsed
     }
 
+    const u = handledApiResult.value.usage
+    const usageMetrics = u
+      ? {
+          prompt_tokens: u.prompt_tokens,
+          completion_tokens: u.completion_tokens,
+          total_tokens: u.total_tokens,
+        }
+      : undefined
+
     await tracer.endRunSuccess(
       runHandle,
       { raw: content, json: parsed.value },
-       
-      'usage' in handledApiResult.value && handledApiResult.value.usage
-        ? {
-            usage: handledApiResult.value.usage as unknown as Record<
-              string,
-              unknown
-            >,
-          }
-        : undefined,
+      usageMetrics ? { usage: usageMetrics } : undefined,
     )
 
     return parsed
