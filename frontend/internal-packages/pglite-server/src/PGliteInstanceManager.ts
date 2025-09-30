@@ -18,6 +18,10 @@ export class PGliteInstanceManager {
     process.env['PGLITE_POOL_SIZE'] || '24',
   )
 
+  // DDL and transaction state tracking for each instance
+  private static instanceDDLHash: Map<number, string> = new Map()
+  private static instanceHasTransaction: Map<number, boolean> = new Map()
+
   /**
    * Creates a new PGlite instance for query execution
    * Returns both the instance and the list of supported extensions
@@ -113,6 +117,9 @@ export class PGliteInstanceManager {
     PGliteInstanceManager.supportedExtensionsPool = []
     PGliteInstanceManager.loadedExtensionsPool = []
     PGliteInstanceManager.currentIndex = 0
+    // Clear state tracking maps
+    PGliteInstanceManager.instanceDDLHash.clear()
+    PGliteInstanceManager.instanceHasTransaction.clear()
 
     // Reinitialize with new extensions
     await this.initializePool(requiredExtensions)
@@ -164,19 +171,53 @@ export class PGliteInstanceManager {
   }
 
   /**
-   * Check if a SQL statement is DDL
+   * Split SQL into DDL and DML parts based on comment markers
    */
-  private isDDLStatement(sql: string): boolean {
-    const ddlKeywords = ['CREATE', 'ALTER', 'DROP', 'TRUNCATE']
-    const upperSql = sql.trim().toUpperCase()
-    return ddlKeywords.some((keyword) => upperSql.startsWith(keyword))
+  private splitDDLandDML(sql: string): { ddl: string; dml: string } {
+    // Look for the "-- DDL Statements" marker to identify DDL section
+    const ddlMarker = '-- DDL Statements'
+    const testCaseMarker = '-- Test Case:'
+
+    const ddlStart = sql.indexOf(ddlMarker)
+    const testCaseStart = sql.indexOf(testCaseMarker)
+
+    if (ddlStart !== -1 && testCaseStart !== -1) {
+      // We have both DDL and test case sections
+      const ddl = sql
+        .substring(ddlStart + ddlMarker.length, testCaseStart)
+        .trim()
+      const dml = sql.substring(testCaseStart).trim()
+      return { ddl, dml }
+    }
+    if (ddlStart !== -1) {
+      // Only DDL section
+      const ddl = sql.substring(ddlStart + ddlMarker.length).trim()
+      return { ddl, dml: '' }
+    }
+    // No clear DDL marker, treat entire SQL as regular query (not DDL/DML)
+    return { ddl: '', dml: '' }
   }
 
   /**
-   * Execute SQL query with singleton instance and transaction isolation
-   * DDL statements are executed without transactions
-   * DML statements are wrapped in BEGIN/ROLLBACK for isolation
+   * Generate hash for DDL statements to detect changes
    */
+  private generateDDLHash(ddl: string): string {
+    // Simple hash using string content
+    let hash = 0
+    for (let i = 0; i < ddl.length; i++) {
+      const char = ddl.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
+    }
+    return hash.toString(16)
+  }
+
+  /**
+   * Execute SQL query with savepoint-based transaction isolation
+   * DDL statements are executed once per instance
+   * DML statements use savepoints for efficient rollback
+   */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Savepoint transaction management requires coordinated state checks
   async executeQuery(
     sql: string,
     requiredExtensions: string[],
@@ -192,6 +233,13 @@ export class PGliteInstanceManager {
     const { db, supportedExtensions } =
       await this.getOrCreateInstance(requiredExtensions)
 
+    // Get instance index for state tracking
+    const instanceIndex =
+      (PGliteInstanceManager.currentIndex -
+        1 +
+        PGliteInstanceManager.POOL_SIZE) %
+      PGliteInstanceManager.POOL_SIZE
+
     // Log memory usage after getting instance
     const memoryAfter = process.memoryUsage()
     console.info('[PGlite] After getting instance:', {
@@ -204,38 +252,110 @@ export class PGliteInstanceManager {
     // Always filter CREATE EXTENSION statements based on supported extensions
     const filteredSql = filterExtensionDDL(sql, supportedExtensions)
 
-    // Check if this is a DDL statement
-    const isDDL = this.isDDLStatement(filteredSql)
+    // Check if this is test SQL (has DDL/DML structure)
+    const isTestSql =
+      filteredSql.includes('-- DDL Statements') ||
+      filteredSql.includes('-- Test Case:')
 
     try {
-      if (isDDL) {
-        // DDL statements cannot be in transactions in PostgreSQL
-        console.info('[PGlite] Executing DDL without transaction')
-        return await this.executeSql(filteredSql, db)
+      if (isTestSql) {
+        // Split DDL and DML for test SQL
+        const { ddl, dml } = this.splitDDLandDML(filteredSql)
+        const ddlHash = ddl ? this.generateDDLHash(ddl) : ''
+
+        // Check if DDL needs to be executed for this instance
+        const currentDDLHash =
+          PGliteInstanceManager.instanceDDLHash.get(instanceIndex)
+        if (ddl && currentDDLHash !== ddlHash) {
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Executing new DDL (hash: ${ddlHash})`,
+          )
+
+          // If there's an existing transaction, rollback first
+          if (PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)) {
+            await db.query('ROLLBACK')
+            PGliteInstanceManager.instanceHasTransaction.set(
+              instanceIndex,
+              false,
+            )
+          }
+
+          // Execute DDL
+          await this.executeSql(ddl, db)
+          PGliteInstanceManager.instanceDDLHash.set(instanceIndex, ddlHash)
+
+          // Start new transaction with savepoint after DDL
+          await db.query('BEGIN')
+          await db.query('SAVEPOINT clean_state')
+          PGliteInstanceManager.instanceHasTransaction.set(instanceIndex, true)
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Transaction started with savepoint`,
+          )
+        } else if (ddl && currentDDLHash === ddlHash) {
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Skipping DDL (already executed)`,
+          )
+        }
+
+        // Execute DML if present
+        if (dml) {
+          // Ensure transaction exists for DML execution
+          if (
+            !PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)
+          ) {
+            await db.query('BEGIN')
+            await db.query('SAVEPOINT clean_state')
+            PGliteInstanceManager.instanceHasTransaction.set(
+              instanceIndex,
+              true,
+            )
+            console.info(
+              `[PGlite] Instance ${instanceIndex}: Transaction started with savepoint for DML`,
+            )
+          }
+
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Executing DML with savepoint`,
+          )
+          const results = await this.executeSql(dml, db)
+
+          // Rollback to savepoint to keep clean state
+          await db.query('ROLLBACK TO SAVEPOINT clean_state')
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Rolled back to savepoint`,
+          )
+
+          return results
+        }
+
+        // If only DDL (no DML), return empty results
+        return []
       }
-      // DML statements wrapped in transaction for isolation
-      console.info('[PGlite] Executing DML with transaction isolation')
-
-      // Start transaction
-      await db.query('BEGIN')
-
-      try {
-        const results = await this.executeSql(filteredSql, db)
-
-        // Always rollback to keep clean state for next test
-        await db.query('ROLLBACK')
-        console.info('[PGlite] Transaction rolled back')
-
-        return results
-      } catch (error) {
-        // Rollback on error
-        await db.query('ROLLBACK')
-        console.info('[PGlite] Transaction rolled back due to error')
-        throw error
+      // For regular SQL (non-test), execute directly without transaction management
+      console.info(
+        `[PGlite] Instance ${instanceIndex}: Executing regular SQL (non-test)`,
+      )
+      return await this.executeSql(filteredSql, db)
+    } catch (error) {
+      // On error, try to rollback to savepoint
+      if (PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)) {
+        try {
+          await db.query('ROLLBACK TO SAVEPOINT clean_state')
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Rolled back to savepoint due to error`,
+          )
+        } catch {
+          // If savepoint rollback fails, rollback entire transaction
+          await db.query('ROLLBACK')
+          PGliteInstanceManager.instanceHasTransaction.set(instanceIndex, false)
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Full transaction rollback`,
+          )
+        }
       }
+      throw error
     } finally {
-      // No longer close the instance - keep it for reuse
-      // Only log current memory state
+      // Log current memory state
       const memoryFinal = process.memoryUsage()
       console.info('[PGlite] After execution:', {
         rss: `${Math.round(memoryFinal.rss / 1024 / 1024)} MB`,
