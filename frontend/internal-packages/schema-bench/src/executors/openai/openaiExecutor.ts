@@ -28,6 +28,10 @@ export class OpenAIExecutor {
     input: OpenAIExecutorInput,
     options?: { traceContext?: TraceContext },
   ): Promise<Result<OpenAIExecutorOutput, Error>> {
+    // TODO: Migrate to @langchain/openai ChatOpenAI and remove the custom tracer.
+    // Currently we call the OpenAI SDK directly and rely on a bespoke tracing helper.
+    // Switching to ChatOpenAI enables first-class LangSmith tracing via env only.
+    // We'll address this in the next PR.
     logInputProcessing(input.input)
     const tracer = getTracer()
     const runHandle = await tracer.startRun({

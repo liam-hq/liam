@@ -1,3 +1,8 @@
+// TODO: Replace this bespoke tracer by migrating the OpenAI executor to
+// @langchain/openai's ChatOpenAI, then remove this file entirely. We currently
+// call the OpenAI SDK directly, hence this helper exists; switching to ChatOpenAI
+// will provide first-class LangSmith tracing via environment variables only.
+// Planned to address in the next PR.
 import { randomUUID } from 'node:crypto'
 import { Client } from 'langsmith'
 import type { TraceContext } from './types'
