@@ -44,11 +44,29 @@ async function executeDmlOperationsByTestcase(
     const testcase = testcases[i]
     if (!testcase) continue // Skip if testcase is undefined
 
+    console.info(
+      `[runTestTool] Starting testcase ${i + 1}/${testcases.length}: ${testcase.id}`,
+    )
+    const startTime = Date.now()
+
     const result = await executeTestcase(
       ddlStatements,
       testcase,
       requiredExtensions,
     )
+
+    const executionTime = Date.now() - startTime
+    console.info(
+      `[runTestTool] Completed testcase ${i + 1} in ${executionTime}ms`,
+    )
+
+    // Log warning if execution took too long
+    if (executionTime > 10000) {
+      console.warn(
+        `[runTestTool] SLOW: Testcase ${testcase.id} took ${executionTime}ms`,
+      )
+    }
+
     results.push(result)
 
     // Log memory usage every 5 testcases
