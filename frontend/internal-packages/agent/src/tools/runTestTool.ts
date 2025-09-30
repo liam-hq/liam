@@ -69,20 +69,18 @@ async function executeDmlOperationsByTestcase(
 
     results.push(result)
 
-    // Log memory usage every 5 testcases
-    if ((i + 1) % 5 === 0 || i === testcases.length - 1) {
-      const currentMemory = process.memoryUsage()
-      console.info(
-        `[runTestTool] After ${i + 1}/${testcases.length} testcases:`,
-        {
-          rss: `${Math.round(currentMemory.rss / 1024 / 1024)} MB`,
-          heapUsed: `${Math.round(currentMemory.heapUsed / 1024 / 1024)} MB`,
-          heapTotal: `${Math.round(currentMemory.heapTotal / 1024 / 1024)} MB`,
-          external: `${Math.round(currentMemory.external / 1024 / 1024)} MB`,
-          rssDelta: `+${Math.round((currentMemory.rss - initialMemory.rss) / 1024 / 1024)} MB`,
-        },
-      )
-    }
+    // Log memory usage after every testcase
+    const currentMemory = process.memoryUsage()
+    console.info(
+      `[runTestTool] After ${i + 1}/${testcases.length} testcases:`,
+      {
+        rss: `${Math.round(currentMemory.rss / 1024 / 1024)} MB`,
+        heapUsed: `${Math.round(currentMemory.heapUsed / 1024 / 1024)} MB`,
+        heapTotal: `${Math.round(currentMemory.heapTotal / 1024 / 1024)} MB`,
+        external: `${Math.round(currentMemory.external / 1024 / 1024)} MB`,
+        rssDelta: `+${Math.round((currentMemory.rss - initialMemory.rss) / 1024 / 1024)} MB`,
+      },
+    )
   }
 
   return results
