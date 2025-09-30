@@ -5,9 +5,13 @@ import { filterExtensionDDL, loadExtensions } from './extensionUtils'
 import type { SqlResult } from './types'
 
 /**
- * Manages PGlite database instances with immediate cleanup after query execution
+ * Manages PGlite database instances with singleton pattern for memory efficiency
  */
 export class PGliteInstanceManager {
+  // Singleton instance shared across all executions
+  private static sharedInstance: PGlite | null = null
+  private static supportedExtensions: string[] = []
+
   /**
    * Creates a new PGlite instance for query execution
    * Returns both the instance and the list of supported extensions
@@ -47,27 +51,62 @@ export class PGliteInstanceManager {
   }
 
   /**
-   * Execute SQL query with immediate instance cleanup
-   * Only executes DDL for supported extensions
+   * Get or create a singleton PGlite instance
+   */
+  private async getOrCreateInstance(
+    requiredExtensions: string[],
+  ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
+    // If we already have an instance, return it
+    if (PGliteInstanceManager.sharedInstance) {
+      console.info('[PGlite] Reusing existing instance')
+      return {
+        db: PGliteInstanceManager.sharedInstance,
+        supportedExtensions: PGliteInstanceManager.supportedExtensions,
+      }
+    }
+
+    // Create new instance for first time
+    console.info('[PGlite] Creating singleton instance')
+    const { db, supportedExtensions } =
+      await this.createInstance(requiredExtensions)
+    PGliteInstanceManager.sharedInstance = db
+    PGliteInstanceManager.supportedExtensions = supportedExtensions
+
+    return { db, supportedExtensions }
+  }
+
+  /**
+   * Check if a SQL statement is DDL
+   */
+  private isDDLStatement(sql: string): boolean {
+    const ddlKeywords = ['CREATE', 'ALTER', 'DROP', 'TRUNCATE']
+    const upperSql = sql.trim().toUpperCase()
+    return ddlKeywords.some((keyword) => upperSql.startsWith(keyword))
+  }
+
+  /**
+   * Execute SQL query with singleton instance and transaction isolation
+   * DDL statements are executed without transactions
+   * DML statements are wrapped in BEGIN/ROLLBACK for isolation
    */
   async executeQuery(
     sql: string,
     requiredExtensions: string[],
   ): Promise<SqlResult[]> {
-    // Log memory usage before creating PGlite instance
+    // Log memory usage before getting instance
     const memoryBefore = process.memoryUsage()
-    console.info('[PGlite] Before instance creation:', {
+    console.info('[PGlite] Before getting instance:', {
       rss: `${Math.round(memoryBefore.rss / 1024 / 1024)} MB`,
       heapUsed: `${Math.round(memoryBefore.heapUsed / 1024 / 1024)} MB`,
       external: `${Math.round(memoryBefore.external / 1024 / 1024)} MB`,
     })
 
     const { db, supportedExtensions } =
-      await this.createInstance(requiredExtensions)
+      await this.getOrCreateInstance(requiredExtensions)
 
-    // Log memory usage after creating PGlite instance
+    // Log memory usage after getting instance
     const memoryAfter = process.memoryUsage()
-    console.info('[PGlite] After instance creation:', {
+    console.info('[PGlite] After getting instance:', {
       rss: `${Math.round(memoryAfter.rss / 1024 / 1024)} MB`,
       heapUsed: `${Math.round(memoryAfter.heapUsed / 1024 / 1024)} MB`,
       external: `${Math.round(memoryAfter.external / 1024 / 1024)} MB`,
@@ -77,28 +116,44 @@ export class PGliteInstanceManager {
     // Always filter CREATE EXTENSION statements based on supported extensions
     const filteredSql = filterExtensionDDL(sql, supportedExtensions)
 
+    // Check if this is a DDL statement
+    const isDDL = this.isDDLStatement(filteredSql)
+
     try {
-      return await this.executeSql(filteredSql, db)
+      if (isDDL) {
+        // DDL statements cannot be in transactions in PostgreSQL
+        console.info('[PGlite] Executing DDL without transaction')
+        return await this.executeSql(filteredSql, db)
+      }
+      // DML statements wrapped in transaction for isolation
+      console.info('[PGlite] Executing DML with transaction isolation')
+
+      // Start transaction
+      await db.query('BEGIN')
+
+      try {
+        const results = await this.executeSql(filteredSql, db)
+
+        // Always rollback to keep clean state for next test
+        await db.query('ROLLBACK')
+        console.info('[PGlite] Transaction rolled back')
+
+        return results
+      } catch (error) {
+        // Rollback on error
+        await db.query('ROLLBACK')
+        console.info('[PGlite] Transaction rolled back due to error')
+        throw error
+      }
     } finally {
-      // Ensure proper cleanup
-      if (db.close) {
-        await db.close()
-      }
-
-      // Force garbage collection if available (V8 only, requires --expose-gc flag)
-      if (global.gc) {
-        global.gc()
-        console.info('[PGlite] Forced garbage collection')
-      }
-
-      // Log memory usage after closing instance
-      const memoryAfterClose = process.memoryUsage()
-      console.info('[PGlite] After instance close:', {
-        rss: `${Math.round(memoryAfterClose.rss / 1024 / 1024)} MB`,
-        heapUsed: `${Math.round(memoryAfterClose.heapUsed / 1024 / 1024)} MB`,
-        external: `${Math.round(memoryAfterClose.external / 1024 / 1024)} MB`,
-        rssDelta: `${Math.round((memoryAfterClose.rss - memoryAfter.rss) / 1024 / 1024)} MB from after creation`,
-        externalDelta: `${Math.round((memoryAfterClose.external - memoryAfter.external) / 1024 / 1024)} MB from after creation`,
+      // No longer close the instance - keep it for reuse
+      // Only log current memory state
+      const memoryFinal = process.memoryUsage()
+      console.info('[PGlite] After execution:', {
+        rss: `${Math.round(memoryFinal.rss / 1024 / 1024)} MB`,
+        heapUsed: `${Math.round(memoryFinal.heapUsed / 1024 / 1024)} MB`,
+        external: `${Math.round(memoryFinal.external / 1024 / 1024)} MB`,
+        rssDelta: `${Math.round((memoryFinal.rss - memoryAfter.rss) / 1024 / 1024)} MB from after getting instance`,
       })
     }
   }
