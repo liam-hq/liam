@@ -73,7 +73,7 @@ async function executeDmlOperationsByTestcase(
 
       const executionTime = Date.now() - testStartTime
       console.info(
-        `[runTestTool] Completed testcase ${i + 1} in ${executionTime}ms`,
+        `[runTestTool] Completed testcase ${i + 1}/${testcases.length}: ${testcase.id} - ${result.success ? '✓ PASSED' : '✗ FAILED'} (${executionTime}ms)`,
       )
 
       // Log warning if execution took too long
