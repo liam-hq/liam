@@ -21,7 +21,6 @@
     "vitest": "3.2.4"
   },
   "scripts": {
-    "evaluateSchema": "tsx src/cli/evaluateSchema.ts",
     "evaluateSchemaMulti": "tsx src/cli/evaluateSchemaMulti.ts",
     "executeLiamDB": "tsx src/cli/executeLiamDbUnified.ts",
     "executeLiamDB:default": "tsx src/cli/executeLiamDbDefault.ts",
