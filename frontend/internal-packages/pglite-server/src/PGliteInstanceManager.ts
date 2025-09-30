@@ -13,9 +13,9 @@ export class PGliteInstanceManager {
   private static supportedExtensionsPool: string[][] = []
   private static loadedExtensionsPool: string[][] = []
   private static currentIndex = 0
-  // Pool size configurable via environment variable (default: 3 for CI, 8 for production)
+  // Pool size configurable via environment variable (default: 24 for maximum parallelism)
   private static readonly POOL_SIZE = Number(
-    process.env['PGLITE_POOL_SIZE'] || '3',
+    process.env['PGLITE_POOL_SIZE'] || '24',
   )
 
   /**

@@ -36,7 +36,7 @@ async function executeDmlOperationsByTestcase(
     testcaseCount: testcases.length,
   })
 
-  const poolSize = Number(process.env['PGLITE_POOL_SIZE'] || '3')
+  const poolSize = Number(process.env['PGLITE_POOL_SIZE'] || '24')
   console.info(
     `[runTestTool] Starting parallel execution with ${poolSize}-instance pool`,
   )
