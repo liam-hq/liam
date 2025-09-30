@@ -19,7 +19,7 @@ import { transformStateToArtifact } from './transformStateToArtifact'
 /**
  * Execute DML operations by testcase with DDL statements
  * Combines DDL and testcase-specific DML into single execution units
- * Executes in parallel using 8-instance pool for improved performance
+ * Executes in parallel using configurable instance pool (default: 3, production: 8)
  */
 async function executeDmlOperationsByTestcase(
   ddlStatements: string,
@@ -36,10 +36,13 @@ async function executeDmlOperationsByTestcase(
     testcaseCount: testcases.length,
   })
 
-  console.info('[runTestTool] Starting parallel execution with 8-instance pool')
+  const poolSize = Number(process.env['PGLITE_POOL_SIZE'] || '3')
+  console.info(
+    `[runTestTool] Starting parallel execution with ${poolSize}-instance pool`,
+  )
   const startTime = Date.now()
 
-  // Execute testcases in parallel (pool will naturally limit to 8 concurrent)
+  // Execute testcases in parallel (pool will naturally limit concurrent executions)
   const results = await Promise.all(
     testcases.map(async (testcase, i) => {
       if (!testcase) {

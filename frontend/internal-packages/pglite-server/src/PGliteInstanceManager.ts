@@ -13,7 +13,10 @@ export class PGliteInstanceManager {
   private static supportedExtensionsPool: string[][] = []
   private static loadedExtensionsPool: string[][] = []
   private static currentIndex = 0
-  private static readonly POOL_SIZE = 8
+  // Pool size configurable via environment variable (default: 3 for CI, 8 for production)
+  private static readonly POOL_SIZE = Number(
+    process.env['PGLITE_POOL_SIZE'] || '3',
+  )
 
   /**
    * Creates a new PGlite instance for query execution
