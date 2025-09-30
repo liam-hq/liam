@@ -5,13 +5,15 @@ import { filterExtensionDDL, loadExtensions } from './extensionUtils'
 import type { SqlResult } from './types'
 
 /**
- * Manages PGlite database instances with singleton pattern for memory efficiency
+ * Manages PGlite database instances with pooling for concurrent execution
  */
 export class PGliteInstanceManager {
-  // Singleton instance shared across all executions
-  private static sharedInstance: PGlite | null = null
-  private static supportedExtensions: string[] = []
-  private static loadedExtensions: string[] = []
+  // Instance pool for round-robin distribution
+  private static instancePool: PGlite[] = []
+  private static supportedExtensionsPool: string[][] = []
+  private static loadedExtensionsPool: string[][] = []
+  private static currentIndex: number = 0
+  private static readonly POOL_SIZE = 3
 
   /**
    * Creates a new PGlite instance for query execution
@@ -68,41 +70,79 @@ export class PGliteInstanceManager {
   }
 
   /**
-   * Get or create a singleton PGlite instance
+   * Initialize the instance pool with required extensions
+   */
+  private async initializePool(
+    requiredExtensions: string[],
+  ): Promise<void> {
+    console.info(`[PGlite] Initializing pool with ${PGliteInstanceManager.POOL_SIZE} instances`)
+    
+    for (let i = 0; i < PGliteInstanceManager.POOL_SIZE; i++) {
+      console.info(`[PGlite] Creating instance ${i + 1}/${PGliteInstanceManager.POOL_SIZE}`)
+      const { db, supportedExtensions } =
+        await this.createInstance(requiredExtensions)
+      
+      PGliteInstanceManager.instancePool.push(db)
+      PGliteInstanceManager.supportedExtensionsPool.push(supportedExtensions)
+      PGliteInstanceManager.loadedExtensionsPool.push(requiredExtensions)
+    }
+    
+    console.info('[PGlite] Pool initialization complete')
+  }
+
+  /**
+   * Recreate the entire pool with new extensions
+   */
+  private async recreatePool(
+    requiredExtensions: string[],
+  ): Promise<void> {
+    console.info('[PGlite] Extensions changed, recreating pool')
+    
+    // Close all existing instances
+    for (const instance of PGliteInstanceManager.instancePool) {
+      await instance.close()
+    }
+    
+    // Clear the pools
+    PGliteInstanceManager.instancePool = []
+    PGliteInstanceManager.supportedExtensionsPool = []
+    PGliteInstanceManager.loadedExtensionsPool = []
+    PGliteInstanceManager.currentIndex = 0
+    
+    // Reinitialize with new extensions
+    await this.initializePool(requiredExtensions)
+  }
+
+  /**
+   * Get or create an instance from the pool using round-robin
    */
   private async getOrCreateInstance(
     requiredExtensions: string[],
   ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
-    // Check if we need to recreate the instance due to extension changes
+    // Initialize pool if empty
+    if (PGliteInstanceManager.instancePool.length === 0) {
+      await this.initializePool(requiredExtensions)
+    }
+    
+    // Check if extensions have changed (compare with first instance's extensions)
     if (
-      PGliteInstanceManager.sharedInstance &&
-      this.extensionsMatch(requiredExtensions, PGliteInstanceManager.loadedExtensions)
+      PGliteInstanceManager.loadedExtensionsPool.length > 0 &&
+      !this.extensionsMatch(requiredExtensions, PGliteInstanceManager.loadedExtensionsPool[0])
     ) {
-      console.info('[PGlite] Reusing existing instance with matching extensions')
-      return {
-        db: PGliteInstanceManager.sharedInstance,
-        supportedExtensions: PGliteInstanceManager.supportedExtensions,
-      }
+      await this.recreatePool(requiredExtensions)
     }
-
-    // Close existing instance if extensions don't match
-    if (PGliteInstanceManager.sharedInstance) {
-      console.info('[PGlite] Extensions changed, closing existing instance')
-      await PGliteInstanceManager.sharedInstance.close()
-      PGliteInstanceManager.sharedInstance = null
-      PGliteInstanceManager.supportedExtensions = []
-      PGliteInstanceManager.loadedExtensions = []
+    
+    // Get the next instance in round-robin fashion
+    const index = PGliteInstanceManager.currentIndex
+    PGliteInstanceManager.currentIndex = 
+      (PGliteInstanceManager.currentIndex + 1) % PGliteInstanceManager.POOL_SIZE
+    
+    console.info(`[PGlite] Using instance ${index + 1}/${PGliteInstanceManager.POOL_SIZE} from pool`)
+    
+    return {
+      db: PGliteInstanceManager.instancePool[index],
+      supportedExtensions: PGliteInstanceManager.supportedExtensionsPool[index],
     }
-
-    // Create new instance with required extensions
-    console.info('[PGlite] Creating singleton instance with extensions:', requiredExtensions)
-    const { db, supportedExtensions } =
-      await this.createInstance(requiredExtensions)
-    PGliteInstanceManager.sharedInstance = db
-    PGliteInstanceManager.supportedExtensions = supportedExtensions
-    PGliteInstanceManager.loadedExtensions = requiredExtensions
-
-    return { db, supportedExtensions }
   }
 
   /**
