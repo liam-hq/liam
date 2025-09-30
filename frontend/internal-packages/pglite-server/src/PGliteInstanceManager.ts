@@ -13,7 +13,7 @@ export class PGliteInstanceManager {
   private static supportedExtensionsPool: string[][] = []
   private static loadedExtensionsPool: string[][] = []
   private static currentIndex = 0
-  private static readonly POOL_SIZE = 3
+  private static readonly POOL_SIZE = 8
 
   /**
    * Creates a new PGlite instance for query execution
