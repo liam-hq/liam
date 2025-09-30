@@ -11,6 +11,7 @@ export class PGliteInstanceManager {
   // Singleton instance shared across all executions
   private static sharedInstance: PGlite | null = null
   private static supportedExtensions: string[] = []
+  private static loadedExtensions: string[] = []
 
   /**
    * Creates a new PGlite instance for query execution
@@ -51,26 +52,55 @@ export class PGliteInstanceManager {
   }
 
   /**
+   * Check if required extensions match loaded extensions
+   */
+  private extensionsMatch(required: string[], loaded: string[]): boolean {
+    // Normalize and sort both arrays for comparison
+    const normalizedRequired = [...required].sort()
+    const normalizedLoaded = [...loaded].sort()
+    
+    // Check if arrays have same length and same elements
+    if (normalizedRequired.length !== normalizedLoaded.length) {
+      return false
+    }
+    
+    return normalizedRequired.every((ext, index) => ext === normalizedLoaded[index])
+  }
+
+  /**
    * Get or create a singleton PGlite instance
    */
   private async getOrCreateInstance(
     requiredExtensions: string[],
   ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
-    // If we already have an instance, return it
-    if (PGliteInstanceManager.sharedInstance) {
-      console.info('[PGlite] Reusing existing instance')
+    // Check if we need to recreate the instance due to extension changes
+    if (
+      PGliteInstanceManager.sharedInstance &&
+      this.extensionsMatch(requiredExtensions, PGliteInstanceManager.loadedExtensions)
+    ) {
+      console.info('[PGlite] Reusing existing instance with matching extensions')
       return {
         db: PGliteInstanceManager.sharedInstance,
         supportedExtensions: PGliteInstanceManager.supportedExtensions,
       }
     }
 
-    // Create new instance for first time
-    console.info('[PGlite] Creating singleton instance')
+    // Close existing instance if extensions don't match
+    if (PGliteInstanceManager.sharedInstance) {
+      console.info('[PGlite] Extensions changed, closing existing instance')
+      await PGliteInstanceManager.sharedInstance.close()
+      PGliteInstanceManager.sharedInstance = null
+      PGliteInstanceManager.supportedExtensions = []
+      PGliteInstanceManager.loadedExtensions = []
+    }
+
+    // Create new instance with required extensions
+    console.info('[PGlite] Creating singleton instance with extensions:', requiredExtensions)
     const { db, supportedExtensions } =
       await this.createInstance(requiredExtensions)
     PGliteInstanceManager.sharedInstance = db
     PGliteInstanceManager.supportedExtensions = supportedExtensions
+    PGliteInstanceManager.loadedExtensions = requiredExtensions
 
     return { db, supportedExtensions }
   }
