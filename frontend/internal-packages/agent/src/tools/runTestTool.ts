@@ -40,8 +40,10 @@ async function executeDmlOperationsByTestcase(
   // Create semaphore limiter with max 3 concurrent executions
   // This matches the PGlite instance pool size
   const limit = pLimit(3)
-  
-  console.info('[runTestTool] Starting parallel execution with max 3 concurrent testcases')
+
+  console.info(
+    '[runTestTool] Starting parallel execution with max 3 concurrent testcases',
+  )
   const startTime = Date.now()
 
   // Execute testcases in parallel with semaphore limiting
@@ -49,12 +51,13 @@ async function executeDmlOperationsByTestcase(
     testcases.map((testcase, i) => {
       if (!testcase) {
         // Return a dummy result for undefined testcases
-        return Promise.resolve({
+        const dummyResult: TestcaseDmlExecutionResult = {
           testCaseId: '',
           testCaseTitle: 'Undefined',
           success: false,
           executedAt: new Date(),
-        } as TestcaseDmlExecutionResult)
+        }
+        return Promise.resolve(dummyResult)
       }
 
       return limit(async () => {
@@ -97,7 +100,7 @@ async function executeDmlOperationsByTestcase(
 
         return result
       })
-    })
+    }),
   )
 
   const totalTime = Date.now() - startTime
@@ -115,7 +118,7 @@ async function executeDmlOperationsByTestcase(
   })
 
   // Filter out dummy results from undefined testcases
-  return results.filter(r => r.testCaseId !== '')
+  return results.filter((r) => r.testCaseId !== '')
 }
 
 const toolSchema = v.object({})
