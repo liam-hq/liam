@@ -12,7 +12,7 @@ export class PGliteInstanceManager {
   private static instancePool: PGlite[] = []
   private static supportedExtensionsPool: string[][] = []
   private static loadedExtensionsPool: string[][] = []
-  private static currentIndex = 0
+  private static currentIndex: number = 0
   private static readonly POOL_SIZE = 3
 
   /**
@@ -60,57 +60,55 @@ export class PGliteInstanceManager {
     // Normalize and sort both arrays for comparison
     const normalizedRequired = [...required].sort()
     const normalizedLoaded = [...loaded].sort()
-
+    
     // Check if arrays have same length and same elements
     if (normalizedRequired.length !== normalizedLoaded.length) {
       return false
     }
-
-    return normalizedRequired.every(
-      (ext, index) => ext === normalizedLoaded[index],
-    )
+    
+    return normalizedRequired.every((ext, index) => ext === normalizedLoaded[index])
   }
 
   /**
    * Initialize the instance pool with required extensions
    */
-  private async initializePool(requiredExtensions: string[]): Promise<void> {
-    console.info(
-      `[PGlite] Initializing pool with ${PGliteInstanceManager.POOL_SIZE} instances`,
-    )
-
+  private async initializePool(
+    requiredExtensions: string[],
+  ): Promise<void> {
+    console.info(`[PGlite] Initializing pool with ${PGliteInstanceManager.POOL_SIZE} instances`)
+    
     for (let i = 0; i < PGliteInstanceManager.POOL_SIZE; i++) {
-      console.info(
-        `[PGlite] Creating instance ${i + 1}/${PGliteInstanceManager.POOL_SIZE}`,
-      )
+      console.info(`[PGlite] Creating instance ${i + 1}/${PGliteInstanceManager.POOL_SIZE}`)
       const { db, supportedExtensions } =
         await this.createInstance(requiredExtensions)
-
+      
       PGliteInstanceManager.instancePool.push(db)
       PGliteInstanceManager.supportedExtensionsPool.push(supportedExtensions)
       PGliteInstanceManager.loadedExtensionsPool.push(requiredExtensions)
     }
-
+    
     console.info('[PGlite] Pool initialization complete')
   }
 
   /**
    * Recreate the entire pool with new extensions
    */
-  private async recreatePool(requiredExtensions: string[]): Promise<void> {
+  private async recreatePool(
+    requiredExtensions: string[],
+  ): Promise<void> {
     console.info('[PGlite] Extensions changed, recreating pool')
-
+    
     // Close all existing instances
     for (const instance of PGliteInstanceManager.instancePool) {
       await instance.close()
     }
-
+    
     // Clear the pools
     PGliteInstanceManager.instancePool = []
     PGliteInstanceManager.supportedExtensionsPool = []
     PGliteInstanceManager.loadedExtensionsPool = []
     PGliteInstanceManager.currentIndex = 0
-
+    
     // Reinitialize with new extensions
     await this.initializePool(requiredExtensions)
   }
@@ -125,38 +123,25 @@ export class PGliteInstanceManager {
     if (PGliteInstanceManager.instancePool.length === 0) {
       await this.initializePool(requiredExtensions)
     }
-
+    
     // Check if extensions have changed (compare with first instance's extensions)
-    const firstLoadedExtensions = PGliteInstanceManager.loadedExtensionsPool[0]
     if (
-      firstLoadedExtensions &&
-      !this.extensionsMatch(requiredExtensions, firstLoadedExtensions)
+      PGliteInstanceManager.loadedExtensionsPool.length > 0 &&
+      !this.extensionsMatch(requiredExtensions, PGliteInstanceManager.loadedExtensionsPool[0])
     ) {
       await this.recreatePool(requiredExtensions)
     }
-
+    
     // Get the next instance in round-robin fashion
     const index = PGliteInstanceManager.currentIndex
-    PGliteInstanceManager.currentIndex =
+    PGliteInstanceManager.currentIndex = 
       (PGliteInstanceManager.currentIndex + 1) % PGliteInstanceManager.POOL_SIZE
-
-    console.info(
-      `[PGlite] Using instance ${index + 1}/${PGliteInstanceManager.POOL_SIZE} from pool`,
-    )
-
-    const instance = PGliteInstanceManager.instancePool[index]
-    const supportedExtensions =
-      PGliteInstanceManager.supportedExtensionsPool[index]
-
-    if (!instance || !supportedExtensions) {
-      // This should never happen if pool is properly initialized
-      // eslint-disable-next-line no-throw-error/no-throw-error
-      throw new Error(`Instance ${index} not found in pool`)
-    }
-
+    
+    console.info(`[PGlite] Using instance ${index + 1}/${PGliteInstanceManager.POOL_SIZE} from pool`)
+    
     return {
-      db: instance,
-      supportedExtensions,
+      db: PGliteInstanceManager.instancePool[index],
+      supportedExtensions: PGliteInstanceManager.supportedExtensionsPool[index],
     }
   }
 
