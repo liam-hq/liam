@@ -8,14 +8,14 @@
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/schema": "workspace:*",
     "dotenv": "16.5.0",
-    "langsmith": "0.3.67",
+    "langsmith": "0.3.68",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "tsx": "4.20.5",
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.3",
+    "@biomejs/biome": "2.2.4",
     "@liam-hq/configs": "workspace:*",
     "eslint": "9.35.0",
     "vitest": "3.2.4"
