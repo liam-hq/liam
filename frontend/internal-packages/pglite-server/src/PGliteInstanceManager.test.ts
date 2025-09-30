@@ -5,10 +5,11 @@ describe('PGliteInstanceManager', () => {
   const manager = new PGliteInstanceManager()
 
   // Warm up the pg-query-emscripten module before tests
+  // Increased timeout to 60s to handle 8-instance pool initialization
   beforeAll(async () => {
     // Execute a simple query to initialize the parser
     await manager.executeQuery('SELECT 1', [])
-  }, 30000)
+  }, 60000)
 
   it('should handle single statement', async () => {
     const sql = 'SELECT 1;'
