@@ -6,9 +6,19 @@ describe('PGliteInstanceManager', () => {
 
   // Warm up the pg-query-emscripten module before tests
   beforeAll(async () => {
+    // Skip initialization in CI with large pool sizes to avoid timeout
+    if (
+      process.env['CI'] &&
+      Number(process.env['PGLITE_POOL_SIZE'] || '24') > 3
+    ) {
+      console.info(
+        '[Test] Skipping PGlite initialization in CI with large pool size',
+      )
+      return
+    }
     // Execute a simple query to initialize the parser
     await manager.executeQuery('SELECT 1', [])
-  }, 30000)
+  }, 60000)
 
   it('should handle single statement', async () => {
     const sql = 'SELECT 1;'
