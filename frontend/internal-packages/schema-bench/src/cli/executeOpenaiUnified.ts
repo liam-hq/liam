@@ -35,12 +35,7 @@ async function executeCase(
 ): Promise<Result<void, Error>> {
   const threadId = [datasetName, caseId, RUN_ID].join(':')
   /*
-   * Why keep this log (do not remove):
-   * - Deterministic correlation with LangSmith via thread_id/runId.
-   * - Server-side only; no browser exposure.
-   * - No secrets/PII; identifiers and optional search URL only.
-   * - Aids debugging when tracing backend is unavailable.
-   * - Minimal overhead and can be toggled later.
+   * Retain this server-only log to deterministically correlate runs with LangSmith (thread_id/runId), surface an optional trace search URL, and aid troubleshooting with no secrets/PII and minimal overhead even if tracing is delayed or unavailable.
    */
   // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
   console.log(
