@@ -24,6 +24,18 @@ describe('getSuggestionText', () => {
 
     expect(result).toBe('command|show tables')
   })
+
+  it('should return "column|users|id" when suggestion is "id" column in "users" table', () => {
+    const suggestion: CommandPaletteSuggestion = {
+      type: 'column',
+      tableName: 'users',
+      columnName: 'id',
+    }
+
+    const result = getSuggestionText(suggestion)
+
+    expect(result).toBe('column|users|id')
+  })
 })
 
 describe('textToSuggestion', () => {
@@ -43,6 +55,18 @@ describe('textToSuggestion', () => {
     expect(result).toEqual({ type: 'command', name: 'hide tables' })
   })
 
+  it('should return the "id" column in "users" table suggestion when suggestion text is "column|posts|created_at"', () => {
+    const suggestionText = 'column|posts|created_at'
+
+    const result = textToSuggestion(suggestionText)
+
+    expect(result).toEqual({
+      type: 'column',
+      tableName: 'posts',
+      columnName: 'created_at',
+    })
+  })
+
   describe('with unexpected formats', () => {
     it('should return null when an unknown suggested type is given', () => {
       const suggestionText = 'fruits|lemon'
@@ -59,6 +83,14 @@ describe('textToSuggestion', () => {
 
       expect(result).toBeNull()
     })
+
+    it('should return null when a column name is empty', () => {
+      const suggestionText = 'column|users|'
+
+      const result = textToSuggestion(suggestionText)
+
+      expect(result).toBeNull()
+    })
   })
 })
 
@@ -67,6 +99,7 @@ describe('integration test, (value) => textToSuggestion(getSuggestionText(value)
     it.each<CommandPaletteSuggestion>([
       { type: 'table', name: 'user_posts' },
       { type: 'command', name: 'export as CSV' },
+      { type: 'column', tableName: 'users', columnName: 'email' },
     ])('in case: %p', (suggestion) => {
       const result = textToSuggestion(getSuggestionText(suggestion))
 

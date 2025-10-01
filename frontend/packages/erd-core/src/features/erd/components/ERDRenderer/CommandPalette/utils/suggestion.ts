@@ -2,19 +2,31 @@ import type { CommandPaletteSuggestion } from '../types'
 
 const SEPARATOR = '|'
 
-export const getSuggestionText = (suggestion: CommandPaletteSuggestion) =>
-  `${suggestion.type}${SEPARATOR}${suggestion.name}`
+export const getSuggestionText = (suggestion: CommandPaletteSuggestion) => {
+  if (suggestion.type === 'column') {
+    return `${suggestion.type}${SEPARATOR}${suggestion.tableName}${SEPARATOR}${suggestion.columnName}`
+  }
+
+  return `${suggestion.type}${SEPARATOR}${suggestion.name}`
+}
 
 export const textToSuggestion = (
   text: string,
 ): CommandPaletteSuggestion | null => {
   const words = text.split(SEPARATOR)
 
-  const [suggestionType, name] = words
-  if (!suggestionType || !name) return null
+  const [suggestionType, name1, name2] = words
+  if (!suggestionType) return null
 
-  if (suggestionType === 'table' || suggestionType === 'command')
-    return { type: suggestionType, name }
+  if (suggestionType === 'table' || suggestionType === 'command') {
+    if (!name1) return null
+    return { type: suggestionType, name: name1 }
+  }
+
+  if (suggestionType === 'column') {
+    if (!name1 || !name2) return null
+    return { type: 'column', tableName: name1, columnName: name2 }
+  }
 
   return null
 }
