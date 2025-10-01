@@ -14,6 +14,37 @@ const getTableLinkHref = (activeTableName: string) => {
   return `?${searchParams.toString()}`
 }
 
+type TableOptionProps = {
+  tableName: string
+  goToERD: (tableName: string) => void
+}
+
+const TableOption: FC<TableOptionProps> = ({ tableName, goToERD }) => {
+  return (
+    <Command.Item
+      key={tableName}
+      value={getSuggestionText({ type: 'table', name: tableName })}
+    >
+      <a
+        className={styles.item}
+        href={getTableLinkHref(tableName)}
+        onClick={(event) => {
+          // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+          if (event.ctrlKey || event.metaKey) {
+            return
+          }
+
+          event.preventDefault()
+          goToERD(tableName)
+        }}
+      >
+        <Table2 className={styles.itemIcon} />
+        <span className={styles.itemText}>{tableName}</span>
+      </a>
+    </Command.Item>
+  )
+}
+
 type Props = {
   suggestion: CommandPaletteSuggestion | null
 }
@@ -58,27 +89,11 @@ export const TableOptions: FC<Props> = ({ suggestion }) => {
   return (
     <Command.Group heading="Tables">
       {Object.values(schema.current.tables).map((table) => (
-        <Command.Item
+        <TableOption
           key={table.name}
-          value={getSuggestionText({ type: 'table', name: table.name })}
-        >
-          <a
-            className={styles.item}
-            href={getTableLinkHref(table.name)}
-            onClick={(event) => {
-              // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
-              if (event.ctrlKey || event.metaKey) {
-                return
-              }
-
-              event.preventDefault()
-              goToERD(table.name)
-            }}
-          >
-            <Table2 className={styles.itemIcon} />
-            <span className={styles.itemText}>{table.name}</span>
-          </a>
-        </Command.Item>
+          tableName={table.name}
+          goToERD={goToERD}
+        />
       ))}
     </Command.Group>
   )
