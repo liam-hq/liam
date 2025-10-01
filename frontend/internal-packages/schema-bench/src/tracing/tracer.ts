@@ -82,16 +82,14 @@ export class SchemaBenchTracer {
       const orgId = process.env['LANGSMITH_ORGANIZATION_ID']
       const projectId = process.env['LANGSMITH_PROJECT_ID']
       const threadId = derivedThreadId
-      // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
-      console.log(
+      console.info(
         `[schema-bench] LangSmith run created: runId=${runId}` +
           (threadId ? ` thread_id=${threadId}` : '') +
           ` project=${opts.projectName ?? this.projectName}`,
       )
       if (orgId && projectId) {
         const base = `https://smith.langchain.com/o/${orgId}/projects/p/${projectId}`
-        // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
-        console.log(`[schema-bench] LangSmith project: ${base}`)
+        console.info(`[schema-bench] LangSmith project: ${base}`)
       }
 
       return { id: runId }
