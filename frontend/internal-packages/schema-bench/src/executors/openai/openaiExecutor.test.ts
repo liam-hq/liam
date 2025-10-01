@@ -55,6 +55,8 @@ describe('OpenAIExecutor', () => {
                   },
                 },
               },
+              enums: {},
+              extensions: {},
             }),
           },
         },
@@ -71,6 +73,8 @@ describe('OpenAIExecutor', () => {
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
       expect(result.value).toHaveProperty('tables')
+      expect(result.value).toHaveProperty('enums')
+      expect(result.value).toHaveProperty('extensions')
       expect(result.value.tables).toHaveProperty('users')
     }
 
