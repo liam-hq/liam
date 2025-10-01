@@ -6,6 +6,8 @@ import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { OpenAIExecutor } from '../executors/openai/openaiExecutor'
 import type { OpenAIExecutorInput } from '../executors/openai/types'
+import { generateLangSmithUrl } from '../tracing/generateLangSmithUrl'
+import { ensureLangSmithTracing } from '../tracing/validate'
 import {
   filterAndResolveDatasets,
   getWorkspacePath,
@@ -37,20 +39,12 @@ async function executeCase(
   /*
    * Retain this server-only log to deterministically correlate runs with LangSmith (thread_id/runId), surface an optional trace search URL, and aid troubleshooting with no secrets/PII and minimal overhead even if tracing is delayed or unavailable.
    */
-  // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
-  console.log(
+  console.info(
     `[schema-bench] executing case: dataset=${datasetName} case=${caseId} thread_id=${threadId}`,
   )
-  const orgId = process.env['LANGSMITH_ORGANIZATION_ID']
-  const projectId = process.env['LANGSMITH_PROJECT_ID']
-  if (orgId && projectId) {
-    const baseUrl = `https://smith.langchain.com/o/${orgId}/projects/p/${projectId}`
-    const filter = `and(eq(is_root, true), and(eq(metadata_key, "thread_id"), eq(metadata_value, "${threadId}")))`
-    const searchModel = encodeURIComponent(JSON.stringify({ filter }))
-    // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
-    console.log(
-      `[schema-bench] trace search URL: ${baseUrl}?searchModel=${searchModel}`,
-    )
+  const url = generateLangSmithUrl(threadId)
+  if (url) {
+    console.info(`[schema-bench] trace search URL: ${url}`)
   }
   const result = await executor.execute(input, {
     traceContext: { datasetName, caseId, runId: RUN_ID, threadId },
@@ -119,6 +113,11 @@ async function processDataset(
 async function main() {
   // Load env from repo root for convenience (align with LiamDB executor)
   loadEnv({ path: resolve(__dirname, '../../../../../.env') })
+  // Enforce LangSmith tracing as required
+  const tracingCheck = ensureLangSmithTracing('OpenAI executor (schema-bench)')
+  if (tracingCheck.isErr()) {
+    handleCliError(tracingCheck.error.message)
+  }
   // Check API key
   const apiKey =
     process.env['OPENAI_API_KEY'] ??

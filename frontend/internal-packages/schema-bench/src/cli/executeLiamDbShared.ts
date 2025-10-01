@@ -5,7 +5,9 @@ import { config } from 'dotenv'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { execute, type LiamDbExecutorInput } from '../executors/liamDb/index.ts'
-import { loadInputFiles, saveOutputFile } from './utils'
+import { generateLangSmithUrl } from '../tracing/generateLangSmithUrl'
+import { ensureLangSmithTracing } from '../tracing/validate'
+import { handleCliError, loadInputFiles, saveOutputFile } from './utils'
 
 config({ path: resolve(__dirname, '../../../../../.env') })
 
@@ -31,27 +33,22 @@ async function executeCase(
   caseId: string,
   input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
+  // Ensure LangSmith tracing is enabled (required)
+  const tracingCheck = ensureLangSmithTracing('LiamDB executor (schema-bench)')
+  if (tracingCheck.isErr()) handleCliError(tracingCheck.error.message)
   const threadId = [datasetName, caseId, RUN_ID].join(':')
   /*
    * Retain this server-only log to deterministically correlate runs with LangSmith (thread_id/runId), surface an optional trace search URL, and aid troubleshooting with no secrets/PII and minimal overhead even if tracing is delayed or misconfigured.
    */
-  // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
-  console.log(
+  console.info(
     `[schema-bench] executing case: dataset=${datasetName} case=${caseId} thread_id=${threadId}`,
   )
-  const orgId = process.env['LANGSMITH_ORGANIZATION_ID']
-  const projectId = process.env['LANGSMITH_PROJECT_ID']
-  if (orgId && projectId) {
-    const baseUrl = `https://smith.langchain.com/o/${orgId}/projects/p/${projectId}`
-    const filter = `and(eq(is_root, true), and(eq(metadata_key, "thread_id"), eq(metadata_value, "${threadId}")))`
-    const searchModel = encodeURIComponent(JSON.stringify({ filter }))
+  const url = generateLangSmithUrl(threadId)
+  if (url) {
     /*
      * Retain this server-only log to deterministically correlate runs with LangSmith (thread_id/runId), surface an optional trace search URL, and aid troubleshooting with no secrets/PII and minimal overhead even if tracing is delayed or misconfigured.
      */
-    // biome-ignore lint/suspicious/noConsole: Allow server-side console output for LangSmith trace correlation
-    console.log(
-      `[schema-bench] trace search URL: ${baseUrl}?searchModel=${searchModel}`,
-    )
+    console.info(`[schema-bench] trace search URL: ${url}`)
   }
   const result = await execute(input, {
     traceContext: { datasetName, caseId, runId: RUN_ID, threadId },
