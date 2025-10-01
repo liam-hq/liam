@@ -54,9 +54,24 @@ export const AiMessage: FC<Props> = ({
 
   // Combine toolCalls with their corresponding toolMessages
   const toolCallsWithMessages = useMemo(() => {
-    return toolCalls.map((toolCall, index) => ({
+    const toolMessageMap = new Map(
+      toolMessages
+        .map((tm) => {
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          const msgWithToolCall = tm as ToolMessage & {
+            tool_call_id?: string
+            toolCallId?: string
+          }
+          const toolCallId =
+            msgWithToolCall.tool_call_id || msgWithToolCall.toolCallId
+          return [toolCallId, tm] as const
+        })
+        .filter(([id]) => id),
+    )
+
+    return toolCalls.map((toolCall) => ({
       toolCall,
-      toolMessage: toolMessages[index],
+      toolMessage: toolMessageMap.get(toolCall.id),
     }))
   }, [toolCalls, toolMessages])
 
