@@ -5,9 +5,23 @@ import { filterExtensionDDL, loadExtensions } from './extensionUtils'
 import type { SqlResult } from './types'
 
 /**
- * Manages PGlite database instances with immediate cleanup after query execution
+ * Manages PGlite database instances with pooling for concurrent execution
  */
 export class PGliteInstanceManager {
+  // Instance pool for round-robin distribution
+  private static instancePool: PGlite[] = []
+  private static supportedExtensionsPool: string[][] = []
+  private static loadedExtensionsPool: string[][] = []
+  private static currentIndex = 0
+  // Pool size configurable via environment variable (default: 24 for maximum parallelism)
+  private static readonly POOL_SIZE = Number(
+    process.env['PGLITE_POOL_SIZE'] || '24',
+  )
+
+  // DDL and transaction state tracking for each instance
+  private static instanceDDLHash: Map<number, string> = new Map()
+  private static instanceHasTransaction: Map<number, boolean> = new Map()
+
   /**
    * Creates a new PGlite instance for query execution
    * Returns both the instance and the list of supported extensions
@@ -15,12 +29,18 @@ export class PGliteInstanceManager {
   private async createInstance(
     requiredExtensions: string[],
   ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
+    const startTime = Date.now()
+
     if (requiredExtensions.length === 0) {
+      const db = new PGlite({
+        initialMemory: 256 * 1024 * 1024, // Reduced from 2GB to 256MB
+        extensions: {},
+      })
+      console.info(
+        `[PGlite] Instance creation took: ${Date.now() - startTime}ms`,
+      )
       return {
-        db: new PGlite({
-          initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-          extensions: {},
-        }),
+        db,
         supportedExtensions: [],
       }
     }
@@ -28,33 +48,324 @@ export class PGliteInstanceManager {
     const { extensionModules, supportedExtensionNames } =
       await loadExtensions(requiredExtensions)
 
+    const db = new PGlite({
+      initialMemory: 256 * 1024 * 1024, // Reduced from 2GB to 256MB
+      extensions: extensionModules,
+    })
+    console.info(`[PGlite] Instance creation took: ${Date.now() - startTime}ms`)
+
     return {
-      db: new PGlite({
-        initialMemory: 2 * 1024 * 1024 * 1024, // 2GB initial memory allocation
-        extensions: extensionModules,
-      }),
+      db,
       supportedExtensions: supportedExtensionNames,
     }
   }
 
   /**
-   * Execute SQL query with immediate instance cleanup
-   * Only executes DDL for supported extensions
+   * Check if required extensions match loaded extensions
    */
+  private extensionsMatch(required: string[], loaded: string[]): boolean {
+    // Normalize and sort both arrays for comparison
+    const normalizedRequired = [...required].sort()
+    const normalizedLoaded = [...loaded].sort()
+
+    // Check if arrays have same length and same elements
+    if (normalizedRequired.length !== normalizedLoaded.length) {
+      return false
+    }
+
+    return normalizedRequired.every(
+      (ext, index) => ext === normalizedLoaded[index],
+    )
+  }
+
+  /**
+   * Initialize the instance pool with required extensions
+   */
+  private async initializePool(requiredExtensions: string[]): Promise<void> {
+    console.info(
+      `[PGlite] Initializing pool with ${PGliteInstanceManager.POOL_SIZE} instances`,
+    )
+
+    for (let i = 0; i < PGliteInstanceManager.POOL_SIZE; i++) {
+      console.info(
+        `[PGlite] Creating instance ${i + 1}/${PGliteInstanceManager.POOL_SIZE}`,
+      )
+      const { db, supportedExtensions } =
+        await this.createInstance(requiredExtensions)
+
+      PGliteInstanceManager.instancePool.push(db)
+      PGliteInstanceManager.supportedExtensionsPool.push(supportedExtensions)
+      PGliteInstanceManager.loadedExtensionsPool.push(requiredExtensions)
+    }
+
+    console.info('[PGlite] Pool initialization complete')
+  }
+
+  /**
+   * Recreate the entire pool with new extensions
+   */
+  private async recreatePool(requiredExtensions: string[]): Promise<void> {
+    console.info('[PGlite] Extensions changed, recreating pool')
+
+    // Close all existing instances
+    for (const instance of PGliteInstanceManager.instancePool) {
+      await instance.close()
+    }
+
+    // Clear the pools
+    PGliteInstanceManager.instancePool = []
+    PGliteInstanceManager.supportedExtensionsPool = []
+    PGliteInstanceManager.loadedExtensionsPool = []
+    PGliteInstanceManager.currentIndex = 0
+    // Clear state tracking maps
+    PGliteInstanceManager.instanceDDLHash.clear()
+    PGliteInstanceManager.instanceHasTransaction.clear()
+
+    // Reinitialize with new extensions
+    await this.initializePool(requiredExtensions)
+  }
+
+  /**
+   * Get or create an instance from the pool using round-robin
+   */
+  private async getOrCreateInstance(
+    requiredExtensions: string[],
+  ): Promise<{ db: PGlite; supportedExtensions: string[] }> {
+    // Initialize pool if empty
+    if (PGliteInstanceManager.instancePool.length === 0) {
+      await this.initializePool(requiredExtensions)
+    }
+
+    // Check if extensions have changed (compare with first instance's extensions)
+    const firstLoadedExtensions = PGliteInstanceManager.loadedExtensionsPool[0]
+    if (
+      firstLoadedExtensions &&
+      !this.extensionsMatch(requiredExtensions, firstLoadedExtensions)
+    ) {
+      await this.recreatePool(requiredExtensions)
+    }
+
+    // Get the next instance in round-robin fashion
+    const index = PGliteInstanceManager.currentIndex
+    PGliteInstanceManager.currentIndex =
+      (PGliteInstanceManager.currentIndex + 1) % PGliteInstanceManager.POOL_SIZE
+
+    console.info(
+      `[PGlite] Using instance ${index + 1}/${PGliteInstanceManager.POOL_SIZE} from pool`,
+    )
+
+    const instance = PGliteInstanceManager.instancePool[index]
+    const supportedExtensions =
+      PGliteInstanceManager.supportedExtensionsPool[index]
+
+    if (!instance || !supportedExtensions) {
+      // This should never happen if pool is properly initialized
+      // eslint-disable-next-line no-throw-error/no-throw-error
+      throw new Error(`Instance ${index} not found in pool`)
+    }
+
+    return {
+      db: instance,
+      supportedExtensions,
+    }
+  }
+
+  /**
+   * Split SQL into DDL and DML parts based on comment markers
+   */
+  private splitDDLandDML(sql: string): { ddl: string; dml: string } {
+    // Look for the "-- DDL Statements" marker to identify DDL section
+    const ddlMarker = '-- DDL Statements'
+    const testCaseMarker = '-- Test Case:'
+
+    const ddlStart = sql.indexOf(ddlMarker)
+    const testCaseStart = sql.indexOf(testCaseMarker)
+
+    if (ddlStart !== -1 && testCaseStart !== -1) {
+      // We have both DDL and test case sections
+      const ddl = sql
+        .substring(ddlStart + ddlMarker.length, testCaseStart)
+        .trim()
+      const dml = sql.substring(testCaseStart).trim()
+      return { ddl, dml }
+    }
+    if (ddlStart !== -1) {
+      // Only DDL section
+      const ddl = sql.substring(ddlStart + ddlMarker.length).trim()
+      return { ddl, dml: '' }
+    }
+    // No clear DDL marker, treat entire SQL as regular query (not DDL/DML)
+    return { ddl: '', dml: '' }
+  }
+
+  /**
+   * Generate hash for DDL statements to detect changes
+   */
+  private generateDDLHash(ddl: string): string {
+    // Simple hash using string content
+    let hash = 0
+    for (let i = 0; i < ddl.length; i++) {
+      const char = ddl.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
+    }
+    return hash.toString(16)
+  }
+
+  /**
+   * Execute SQL query with savepoint-based transaction isolation
+   * DDL statements are executed once per instance
+   * DML statements use savepoints for efficient rollback
+   */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Savepoint transaction management requires coordinated state checks
   async executeQuery(
     sql: string,
     requiredExtensions: string[],
   ): Promise<SqlResult[]> {
+    // Log memory usage before getting instance
+    const memoryBefore = process.memoryUsage()
+    console.info('[PGlite] Before getting instance:', {
+      rss: `${Math.round(memoryBefore.rss / 1024 / 1024)} MB`,
+      heapUsed: `${Math.round(memoryBefore.heapUsed / 1024 / 1024)} MB`,
+      external: `${Math.round(memoryBefore.external / 1024 / 1024)} MB`,
+    })
+
     const { db, supportedExtensions } =
-      await this.createInstance(requiredExtensions)
+      await this.getOrCreateInstance(requiredExtensions)
+
+    // Get instance index for state tracking
+    const instanceIndex =
+      (PGliteInstanceManager.currentIndex -
+        1 +
+        PGliteInstanceManager.POOL_SIZE) %
+      PGliteInstanceManager.POOL_SIZE
+
+    // Log memory usage after getting instance
+    const memoryAfter = process.memoryUsage()
+    console.info('[PGlite] After getting instance:', {
+      rss: `${Math.round(memoryAfter.rss / 1024 / 1024)} MB`,
+      heapUsed: `${Math.round(memoryAfter.heapUsed / 1024 / 1024)} MB`,
+      external: `${Math.round(memoryAfter.external / 1024 / 1024)} MB`,
+      rssDelta: `+${Math.round((memoryAfter.rss - memoryBefore.rss) / 1024 / 1024)} MB`,
+    })
 
     // Always filter CREATE EXTENSION statements based on supported extensions
     const filteredSql = filterExtensionDDL(sql, supportedExtensions)
 
+    // Check if this is test SQL (has DDL/DML structure)
+    const isTestSql =
+      filteredSql.includes('-- DDL Statements') ||
+      filteredSql.includes('-- Test Case:')
+
     try {
+      if (isTestSql) {
+        // Split DDL and DML for test SQL
+        const { ddl, dml } = this.splitDDLandDML(filteredSql)
+        const ddlHash = ddl ? this.generateDDLHash(ddl) : ''
+
+        // Check if DDL needs to be executed for this instance
+        const currentDDLHash =
+          PGliteInstanceManager.instanceDDLHash.get(instanceIndex)
+        if (ddl && currentDDLHash !== ddlHash) {
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Executing new DDL (hash: ${ddlHash})`,
+          )
+
+          // If there's an existing transaction, rollback first
+          if (PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)) {
+            await db.query('ROLLBACK')
+            PGliteInstanceManager.instanceHasTransaction.set(
+              instanceIndex,
+              false,
+            )
+          }
+
+          // Execute DDL
+          await this.executeSql(ddl, db)
+          PGliteInstanceManager.instanceDDLHash.set(instanceIndex, ddlHash)
+
+          // Start new transaction with savepoint after DDL
+          await db.query('BEGIN')
+          await db.query('SAVEPOINT clean_state')
+          PGliteInstanceManager.instanceHasTransaction.set(instanceIndex, true)
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Transaction started with savepoint`,
+          )
+        } else if (ddl && currentDDLHash === ddlHash) {
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Skipping DDL (already executed)`,
+          )
+        }
+
+        // Execute DML if present
+        if (dml) {
+          // Ensure transaction exists for DML execution
+          if (
+            !PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)
+          ) {
+            await db.query('BEGIN')
+            await db.query('SAVEPOINT clean_state')
+            PGliteInstanceManager.instanceHasTransaction.set(
+              instanceIndex,
+              true,
+            )
+            console.info(
+              `[PGlite] Instance ${instanceIndex}: Transaction started with savepoint for DML`,
+            )
+          }
+
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Executing DML with savepoint`,
+          )
+          const results = await this.executeSql(dml, db)
+
+          // Rollback to savepoint to keep clean state
+          await db.query('ROLLBACK TO SAVEPOINT clean_state')
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Rolled back to savepoint`,
+          )
+
+          return results
+        }
+
+        // If only DDL (no DML), return empty results
+        return []
+      }
+      // For regular SQL (non-test), execute directly without transaction management
+      console.info(
+        `[PGlite] Instance ${instanceIndex}: Executing regular SQL (non-test)`,
+      )
       return await this.executeSql(filteredSql, db)
+    } catch (error) {
+      // Only attempt savepoint rollback for test SQL with active transactions
+      if (
+        isTestSql &&
+        PGliteInstanceManager.instanceHasTransaction.get(instanceIndex)
+      ) {
+        try {
+          await db.query('ROLLBACK TO SAVEPOINT clean_state')
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Rolled back to savepoint due to error`,
+          )
+        } catch {
+          // If savepoint rollback fails, rollback entire transaction
+          await db.query('ROLLBACK')
+          PGliteInstanceManager.instanceHasTransaction.set(instanceIndex, false)
+          console.info(
+            `[PGlite] Instance ${instanceIndex}: Full transaction rollback`,
+          )
+        }
+      }
+      throw error
     } finally {
-      db.close?.()
+      // Log current memory state
+      const memoryFinal = process.memoryUsage()
+      console.info('[PGlite] After execution:', {
+        rss: `${Math.round(memoryFinal.rss / 1024 / 1024)} MB`,
+        heapUsed: `${Math.round(memoryFinal.heapUsed / 1024 / 1024)} MB`,
+        external: `${Math.round(memoryFinal.external / 1024 / 1024)} MB`,
+        rssDelta: `${Math.round((memoryFinal.rss - memoryAfter.rss) / 1024 / 1024)} MB from after getting instance`,
+      })
     }
   }
 
