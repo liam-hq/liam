@@ -42,7 +42,7 @@ export async function execute(
   const config = {
     configurable: {
       repositories,
-      thread_id: options.traceContext.threadId!,
+      thread_id: options.traceContext.threadId,
     },
   }
 

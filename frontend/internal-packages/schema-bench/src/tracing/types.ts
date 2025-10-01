@@ -1,6 +1,6 @@
 export type TraceContext = {
-  datasetName?: string
-  caseId?: string
-  runId?: string
-  threadId?: string
+  datasetName: string
+  caseId: string
+  runId: string
+  threadId: string
 }
