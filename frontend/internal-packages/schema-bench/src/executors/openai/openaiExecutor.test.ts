@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { OpenAIExecutor } from './openaiExecutor.ts'
 
 // Mock OpenAI constructor
@@ -25,6 +25,17 @@ const setupMockOpenAI = (mockCreate: ReturnType<typeof vi.fn>) => {
 }
 
 describe('OpenAIExecutor', () => {
+  const traceContext = {
+    datasetName: 'test-dataset',
+    caseId: 'case-1',
+    runId: 'test-run',
+    threadId: 'test-dataset:case-1:test-run',
+  }
+
+  beforeAll(() => {
+    process.env['LANGSMITH_API_KEY'] = 'dummy'
+    process.env['SCHEMA_BENCH_TRACE'] = '1'
+  })
   it('should execute and return schema', async () => {
     const mockResponse = {
       choices: [
@@ -66,7 +77,10 @@ describe('OpenAIExecutor', () => {
 
     const executor = new OpenAIExecutor({ apiKey: 'test-key' })
 
-    const result = await executor.execute({ input: 'Create a users table' })
+    const result = await executor.execute(
+      { input: 'Create a users table' },
+      { traceContext },
+    )
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
@@ -91,7 +105,10 @@ describe('OpenAIExecutor', () => {
 
     const executor = new OpenAIExecutor({ apiKey: 'test-key' })
 
-    const result = await executor.execute({ input: 'Create a users table' })
+    const result = await executor.execute(
+      { input: 'Create a users table' },
+      { traceContext },
+    )
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
@@ -109,7 +126,10 @@ describe('OpenAIExecutor', () => {
 
     const executor = new OpenAIExecutor({ apiKey: 'test-key' })
 
-    const result = await executor.execute({ input: 'Create a users table' })
+    const result = await executor.execute(
+      { input: 'Create a users table' },
+      { traceContext },
+    )
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
