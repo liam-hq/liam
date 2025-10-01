@@ -175,25 +175,28 @@ For OpenAI executor, set your API key:
 export OPENAI_API_KEY="your-api-key"
 ```
 
-### Optional: Enable LangSmith tracing
+### Required: Enable LangSmith tracing
 
-Schema-Bench can emit LangSmith traces for both executors:
+Schema-Bench requires LangSmith tracing for both executors. Runs will fail fast if tracing is not enabled.
 
-- Required: `LANGSMITH_API_KEY`
-- Recommended: `LANGSMITH_PROJECT=schema-bench`
-- Toggle: one of `SCHEMA_BENCH_TRACE=1`, `LANGSMITH_TRACING=true`, or `LANGCHAIN_TRACING_V2=true`
+Set the following environment variables:
+
+- `LANGSMITH_API_KEY` (required)
+- One of `LANGCHAIN_TRACING_V2=true`, `LANGSMITH_TRACING=true`, or `SCHEMA_BENCH_TRACE=1` (required)
+- `LANGSMITH_PROJECT=schema-bench` (optional, recommended)
+- `LANGSMITH_ORGANIZATION_ID` and `LANGSMITH_PROJECT_ID` (optional, for UI search URLs)
 
 Example:
 ```bash
 export LANGSMITH_API_KEY="your-langsmith-api-key"
 export LANGSMITH_PROJECT="schema-bench"
-export SCHEMA_BENCH_TRACE=1
+export LANGCHAIN_TRACING_V2=true
 ```
 
 Notes:
-- LiamDB executor uses LangChain/LangGraph. Supplying the env above is sufficient; a per-case `thread_id` is set as `<dataset>:<case>:<runId>` for easier correlation.
-- OpenAI executor uses a lightweight tracer wrapper and records inputs, parsed outputs, and usage when available.
-- If `LANGSMITH_ORGANIZATION_ID` and `LANGSMITH_PROJECT_ID` are set, traces can be searched by `thread_id` in LangSmith UI.
+- LiamDB executor uses LangChain/LangGraph and propagates a per-case `thread_id` as `<dataset>:<case>:<runId>` for easy correlation in LangSmith.
+- OpenAI executor records inputs, parsed outputs, and usage where available via the tracer.
+- If `LANGSMITH_ORGANIZATION_ID` and `LANGSMITH_PROJECT_ID` are set, the CLI prints a search URL to jump directly to the traces for a given `thread_id`.
 
 ## Example Workflow
 
