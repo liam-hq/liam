@@ -4,7 +4,10 @@ import { type FC, useCallback, useEffect } from 'react'
 import { useSchemaOrThrow } from '../../../../../../stores'
 import { useTableSelection } from '../../../../hooks'
 import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
-import type { CommandPaletteSuggestion } from '../types'
+import type {
+  CommandPaletteInputMode,
+  CommandPaletteSuggestion,
+} from '../types'
 import { getSuggestionText } from '../utils'
 import styles from './CommandPaletteOptions.module.css'
 
@@ -47,9 +50,10 @@ const TableOption: FC<TableOptionProps> = ({ tableName, goToERD }) => {
 
 type Props = {
   suggestion: CommandPaletteSuggestion | null
+  inputMode: CommandPaletteInputMode
 }
 
-export const TableOptions: FC<Props> = ({ suggestion }) => {
+export const TableOptions: FC<Props> = ({ suggestion, inputMode }) => {
   const { setOpen } = useCommandPaletteOrThrow()
 
   const schema = useSchemaOrThrow()
@@ -88,13 +92,24 @@ export const TableOptions: FC<Props> = ({ suggestion }) => {
 
   return (
     <Command.Group heading="Tables">
-      {Object.values(schema.current.tables).map((table) => (
-        <TableOption
-          key={table.name}
-          tableName={table.name}
-          goToERD={goToERD}
-        />
-      ))}
+      {inputMode.type === 'table' ? (
+        <>
+          <TableOption tableName={inputMode.tableName} goToERD={goToERD} />
+          {Object.values(
+            schema.current.tables[inputMode.tableName]?.columns ?? {},
+          ).map((column) => (
+            <div key={column.name}>{column.name}</div>
+          ))}
+        </>
+      ) : (
+        Object.values(schema.current.tables).map((table) => (
+          <TableOption
+            key={table.name}
+            tableName={table.name}
+            goToERD={goToERD}
+          />
+        ))
+      )}
     </Command.Group>
   )
 }

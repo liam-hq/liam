@@ -45,6 +45,7 @@ export const CommandPaletteContent: FC = () => {
           suggestion={suggestion}
           setMode={setInputMode}
           onBlur={(event) => event.target.focus()}
+          isTableModeActivatable
         />
         <DialogClose asChild>
           <Button
@@ -59,8 +60,8 @@ export const CommandPaletteContent: FC = () => {
       <div className={styles.main}>
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {inputMode.type === 'default' && (
-            <TableOptions suggestion={suggestion} />
+          {(inputMode.type === 'default' || inputMode.type === 'table') && (
+            <TableOptions suggestion={suggestion} inputMode={inputMode} />
           )}
           {(inputMode.type === 'default' || inputMode.type === 'command') && (
             <CommandPaletteCommandOptions />
