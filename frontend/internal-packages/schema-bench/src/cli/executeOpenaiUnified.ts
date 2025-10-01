@@ -36,9 +36,6 @@ async function executeCase(
   input: OpenAIExecutorInput,
 ): Promise<Result<void, Error>> {
   const threadId = [datasetName, caseId, RUN_ID].join(':')
-  /*
-   * Retain this server-only log to deterministically correlate runs with LangSmith (thread_id/runId), surface an optional trace search URL, and aid troubleshooting with no secrets/PII and minimal overhead even if tracing is delayed or unavailable.
-   */
   console.info(
     `[schema-bench] executing case: dataset=${datasetName} case=${caseId} thread_id=${threadId}`,
   )

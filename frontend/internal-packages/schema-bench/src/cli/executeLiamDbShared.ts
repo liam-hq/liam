@@ -37,17 +37,11 @@ async function executeCase(
   const tracingCheck = ensureLangSmithTracing('LiamDB executor (schema-bench)')
   if (tracingCheck.isErr()) handleCliError(tracingCheck.error.message)
   const threadId = [datasetName, caseId, RUN_ID].join(':')
-  /*
-   * Retain this server-only log to deterministically correlate runs with LangSmith (thread_id/runId), surface an optional trace search URL, and aid troubleshooting with no secrets/PII and minimal overhead even if tracing is delayed or misconfigured.
-   */
   console.info(
     `[schema-bench] executing case: dataset=${datasetName} case=${caseId} thread_id=${threadId}`,
   )
   const url = generateLangSmithUrl(threadId)
   if (url) {
-    /*
-     * Retain this server-only log to deterministically correlate runs with LangSmith (thread_id/runId), surface an optional trace search URL, and aid troubleshooting with no secrets/PII and minimal overhead even if tracing is delayed or misconfigured.
-     */
     console.info(`[schema-bench] trace search URL: ${url}`)
   }
   const result = await execute(input, {
