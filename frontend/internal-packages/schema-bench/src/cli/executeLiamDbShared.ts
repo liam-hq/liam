@@ -5,7 +5,9 @@ import { config } from 'dotenv'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { execute, type LiamDbExecutorInput } from '../executors/liamDb/index.ts'
-import { loadInputFiles, saveOutputFile } from './utils'
+import { generateLangSmithUrl } from '../tracing/generateLangSmithUrl'
+import { ensureLangSmithTracing } from '../tracing/validate'
+import { handleCliError, loadInputFiles, saveOutputFile } from './utils'
 
 config({ path: resolve(__dirname, '../../../../../.env') })
 
@@ -26,11 +28,25 @@ type DatasetResult = {
 }
 
 async function executeCase(
+  datasetName: string,
   datasetPath: string,
   caseId: string,
   input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
-  const result = await execute(input)
+  // Ensure LangSmith tracing is enabled (required)
+  const tracingCheck = ensureLangSmithTracing('LiamDB executor (schema-bench)')
+  if (tracingCheck.isErr()) handleCliError(tracingCheck.error.message)
+  const threadId = [datasetName, caseId, RUN_ID].join(':')
+  console.info(
+    `[schema-bench] executing case: dataset=${datasetName} case=${caseId} thread_id=${threadId}`,
+  )
+  const url = generateLangSmithUrl(threadId)
+  if (url) {
+    console.info(`[schema-bench] trace search URL: ${url}`)
+  }
+  const result = await execute(input, {
+    traceContext: { datasetName, caseId, runId: RUN_ID, threadId },
+  })
   if (result.isErr()) {
     return err(
       new Error(`Failed to execute ${caseId}: ${result.error.message}`),
@@ -79,7 +95,7 @@ export async function processDataset(
     batch: Array<{ caseId: string; input: LiamDbExecutorInput }>,
   ) => {
     const promises = batch.map(({ caseId, input }) =>
-      executeCase(datasetPath, caseId, input),
+      executeCase(datasetName, datasetPath, caseId, input),
     )
     const results = await Promise.allSettled(promises)
 

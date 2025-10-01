@@ -1,5 +1,8 @@
 import { err, fromPromise, type Result } from 'neverthrow'
 import OpenAI from 'openai'
+import { getTracer } from '../../tracing/tracer'
+import type { TraceContext } from '../../tracing/types'
+import { ensureLangSmithTracing } from '../../tracing/validate'
 import {
   handleExecutionResult,
   logInputProcessing,
@@ -24,8 +27,29 @@ export class OpenAIExecutor {
 
   async execute(
     input: OpenAIExecutorInput,
+    options: { traceContext: TraceContext },
   ): Promise<Result<OpenAIExecutorOutput, Error>> {
+    // Enforce LangSmith tracing as required when using the OpenAI executor
+    const tracingCheck = ensureLangSmithTracing(
+      'OpenAI executor (schema-bench)',
+    )
+    if (tracingCheck.isErr()) {
+      return err(tracingCheck.error)
+    }
+    // TODO: Migrate to @langchain/openai ChatOpenAI and remove the custom tracer.
+    // Currently we call the OpenAI SDK directly and rely on a bespoke tracing helper.
+    // Switching to ChatOpenAI enables first-class LangSmith tracing via env only.
+    // We'll address this in the next PR.
     logInputProcessing(input.input)
+    const tracer = getTracer()
+    const runHandle = await tracer.startRun({
+      name: 'openai-executor',
+      inputs: { prompt: input.input },
+      runType: 'llm',
+      tags: ['executor:openai'],
+      metadata: { model: 'gpt-5' },
+      traceContext: options.traceContext,
+    })
     const apiResult = await fromPromise(
       this.client.chat.completions.create({
         model: 'gpt-5',
@@ -58,17 +82,41 @@ export class OpenAIExecutor {
       'OpenAI API call failed',
     )
     if (handledApiResult.isErr()) {
+      await tracer.endRunError(runHandle, handledApiResult.error)
       return err(handledApiResult.error)
     }
 
     const content = handledApiResult.value.choices[0]?.message?.content
     if (!content) {
-      return err(new Error('No response content from OpenAI'))
+      const e = new Error('No response content from OpenAI')
+      await tracer.endRunError(runHandle, e)
+      return err(e)
     }
 
-    return safeJsonParse<OpenAIExecutorOutput>(
+    const parsed = safeJsonParse<OpenAIExecutorOutput>(
       content,
       'Failed to parse OpenAI JSON response',
     )
+    if (parsed.isErr()) {
+      await tracer.endRunError(runHandle, parsed.error)
+      return parsed
+    }
+
+    const u = handledApiResult.value.usage
+    const usageMetrics = u
+      ? {
+          prompt_tokens: u.prompt_tokens,
+          completion_tokens: u.completion_tokens,
+          total_tokens: u.total_tokens,
+        }
+      : undefined
+
+    await tracer.endRunSuccess(
+      runHandle,
+      { raw: content, json: parsed.value },
+      usageMetrics ? { usage: usageMetrics } : undefined,
+    )
+
+    return parsed
   }
 }
