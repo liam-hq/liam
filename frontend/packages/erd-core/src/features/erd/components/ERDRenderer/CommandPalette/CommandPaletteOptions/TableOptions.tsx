@@ -138,7 +138,7 @@ export const TableOptions: FC<Props> = ({ suggestion, inputMode }) => {
     [selectTable, setOpen],
   )
 
-  // Select option by pressing [Enter] key (with/without ⌘ key)
+  // Select table option by pressing [Enter] key (with/without ⌘ key)
   useEffect(() => {
     // It doesn't subscribe a keydown event listener if the suggestion type is not "table"
     if (suggestion?.type !== 'table') return
@@ -153,6 +153,33 @@ export const TableOptions: FC<Props> = ({ suggestion, inputMode }) => {
           window.open(getTableLinkHref(suggestedTableName))
         } else {
           goToERD(suggestedTableName)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [suggestion, goToERD])
+
+  // Select column option by pressing [Enter] key (with/without ⌘ key)
+  useEffect(() => {
+    // It doesn't subscribe a keydown event listener if the suggestion type is not "column"
+    if (suggestion?.type !== 'column') return
+
+    const down = (event: KeyboardEvent) => {
+      const suggestedTableName = suggestion.tableName
+      const suggestedColumnName = suggestion.columnName
+
+      if (event.key === 'Enter') {
+        event.preventDefault()
+
+        if (event.metaKey || event.ctrlKey) {
+          window.open(
+            getTableColumnLinkHref(suggestedTableName, suggestedColumnName),
+          )
+        } else {
+          goToERD(suggestedTableName)
+          location.hash = `${suggestedTableName}__columns__${suggestedColumnName}`
         }
       }
     }
