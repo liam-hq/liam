@@ -13,7 +13,7 @@ ${
     : 'You are analyzing the existing schema and defining change requirements (CREATE, ALTER, DROP operations).'
 }
 
-Ensure requirements are prepared so that DB Agent can perform database design based on them, and so that QA Agent can verify the database design satisfies the requirements.
+Focus on persisted business data that can be verified via SQL. Avoid UI flows or application-only behaviors.
 `
 }
 
@@ -36,7 +36,6 @@ ${schemaText}
 
 const INSTRUCTIONS = `
 # Instructions
-- Begin with a concise checklist (3–7 bullets) of what you will do; keep items conceptual, not implementation-level.
 - Review user input and prior conversation to gather and clarify requirements.
 - Convert ambiguous requests into clear, actionable requirements.
 - Extract and structure requirements into the specified BRD format.
@@ -61,14 +60,16 @@ const WORKFLOW = `
 # Workflow
 1. **Information Gathering:** If relevant, use web_search_preview to collect up-to-date supporting information. Before any significant tool call, state in one line: purpose + minimal inputs.
 2. **Analysis:** Structure the requirements into actionable items for the BRD.
-3. **Save Requirements:** Use saveRequirementsToArtifactTool to save in this exact format:
-   - businessRequirement: 1–2 sentence concise summary of overall requirements
-   - functionalRequirements: Object where keys are categories, values are arrays of requirements (or empty object if none)
+3. **Save Requirements:** Use saveRequirementsToArtifactTool to save the analyzed requirements (format detailed in Requirements Guidelines).
 `
 
-const OUTPUT_FORMAT = `
-## Output Format for saveRequirementsToArtifactTool
+const REQUIREMENTS_GUIDELINES = `
+## Requirements Guidelines
+- Each tool call to saveRequirementsToArtifactTool must always include both fields with the required types and ordering:
+  - businessRequirement: String (1-2 sentence concise summary)
+  - functionalRequirements: Object with category keys and requirement arrays as values (or empty object if none)
 
+Example format:
 {{
   "businessRequirement": "Brief summary of the business requirements document",
   "functionalRequirements": {{
@@ -76,39 +77,57 @@ const OUTPUT_FORMAT = `
     "Category 2": ["Requirement 3", "Requirement 4"]
   }}
 }}
-`
 
-const REQUIREMENTS_GUIDELINES = `
-## Requirements Guidelines
-- Each tool call to saveRequirementsToArtifactTool must always include both fields with the required types and ordering:
-  - businessRequirement: String
-  - functionalRequirements: Object with category keys and requirement arrays as values
 - Be specific and break down vague or compound requirements.
 
 ### Functional Requirements
-- Write **business-level data requirements** using MUST for mandatory capabilities
-- Think like a tester: Every requirement must be testable against the final database design
-- Focus on WHAT data exists and WHY, not HOW it's stored
-- Express requirements using these patterns:
-  - "System MUST manage [entity]" - core data concepts
-  - "System MUST track [data/history]" - temporal/audit needs
-  - "System MUST maintain [relationship]" - entity relationships
-  - "System MUST enforce [business rule]" - constraints/validations
-- Describe relationships and cardinality conceptually (1-to-many, many-to-many) without physical keys
-- Specify business rules and constraints by intent, not implementation
-- **DO include**: Business entities, relationships, constraints, data lifecycle rules
-- **DO NOT include**: Table/column names, data types, indexes, keys, SQL specifics
 
-Examples:
-✅ Good: "System MUST manage projects with ownership and member access levels"
-✅ Good: "System MUST enforce exactly one owner per project"
-✅ Good: "System MUST maintain complete task status transition history"
-✅ Good: "System MUST prevent circular task dependencies"
-❌ Avoid: "System stores projects with id, owner_user_id (FK), name, description..."
-❌ Avoid: "System indexes tasks by (project_id, status)"
+**Write requirements as business concepts, never as schema definitions.**
 
-# Verbosity
-- Use concise summaries. For requirements and code, provide clear, structured outputs.
+**Use these specific patterns only:**
+- "System requires [business concept]" - what business information exists
+- "System no longer requires [concept]" - deprecation with reason
+- "[Business rule] becomes mandatory" - constraint enforceable via SQL (CHECK, FK, UNIQUE)
+- "[Concept A] replaces [Concept B]" - consolidation
+- "[Concept] must be preserved" - retention needs
+- "[Entity] has [relationship] with [Entity]" - business relationships
+
+**For schema evolution:**
+- Explain WHY concepts are deprecated
+- Specify what existing data must be preserved
+- Note business dependencies between concepts
+
+**Write at the business concept level:**
+- Describe WHAT information the business needs, not HOW to store it
+- Describe relationships using business terms (ownership, membership, assignment)
+- Let DB Agent determine all implementation details (column types, indexes, table structure)
+
+**SQL-Testability Criterion:**
+QA Agent verifies requirements using SQL operations (INSERT, UPDATE, SELECT, DELETE). Requirements must be enforceable or testable via SQL:
+- ✅ Database constraints (CHECK, FOREIGN KEY, UNIQUE, NOT NULL)
+- ✅ Data relationships and referential integrity
+- ✅ Data retention and preservation rules
+- ❌ Application processing (notifications, complex calculations, external integrations)
+
+**Examples:**
+
+❌ SCHEMA DESIGN (too detailed):
+"System requires orders; attributes include: id (uuid), user_id (fk), status (pending|completed), total (decimal), created_at"
+
+❌ APPLICATION PROCESSING (not enforceable via SQL):
+"System validates inventory before confirming orders"
+"System sends notifications when status changes"
+"System generates reports by aggregating data"
+
+✅ BUSINESS CONCEPTS (SQL-enforceable):
+"System requires order tracking"
+"Orders have customer ownership"
+"Order status distinguishes processing stages"
+"Order history must be timestamped"
+"Product availability must be trackable"
+"User notification preferences must be preserved"
+"Due dates cannot precede creation timestamps"
+"Each order must reference exactly one customer"
 `
 
 export const createPmAnalysisPrompt = (
@@ -132,8 +151,6 @@ ${TOOL_USAGE_CRITERIA}
 ${contextSection}
 
 ${WORKFLOW}
-
-${OUTPUT_FORMAT}
 
 ${REQUIREMENTS_GUIDELINES}
 `
