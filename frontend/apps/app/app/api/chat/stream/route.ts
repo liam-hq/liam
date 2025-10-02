@@ -15,7 +15,7 @@ import { createClient } from '../../../../libs/db/server'
 
 // https://vercel.com/docs/functions/configuring-functions/duration#maximum-duration-for-different-runtimes
 export const maxDuration = 800
-const TIMEOUT_MS = 700000
+const TIMEOUT_MS = 100000
 
 const chatRequestSchema = v.object({
   userInput: v.pipe(v.string(), v.minLength(1, 'Message is required')),
