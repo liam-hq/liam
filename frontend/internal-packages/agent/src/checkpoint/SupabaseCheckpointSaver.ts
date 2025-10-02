@@ -332,6 +332,7 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       checkpoint_ns,
       checkpoint.channel_values,
       newVersions,
+      serializedCheckpoint.channel_versions,
     )
 
     // Call RPC function to insert checkpoint and blobs atomically
@@ -718,6 +719,26 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
     )
     const versionsSeen = this._copyVersionsSeen(checkpoint.versions_seen)
 
+    if (
+      checkpoint.channel_values[TASKS] !== undefined &&
+      channelVersions[TASKS] === undefined
+    ) {
+      const versionValues = Object.values(channelVersions)
+      if (versionValues.length === 0) {
+        channelVersions[TASKS] = this.getNextVersion(undefined)
+      } else {
+        const maxVersion = maxChannelVersion(...versionValues)
+        if (typeof maxVersion === 'number') {
+          channelVersions[TASKS] = maxVersion
+        } else {
+          const parsedVersion = Number.parseInt(maxVersion, 10)
+          channelVersions[TASKS] = Number.isFinite(parsedVersion)
+            ? parsedVersion
+            : this.getNextVersion(undefined)
+        }
+      }
+    }
+
     const serialized: SerializedCheckpoint = {
       v: checkpoint.v || 1,
       id: checkpoint.id,
@@ -777,18 +798,34 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
     checkpointNs: string,
     values: Record<string, unknown>,
     versions: ChannelVersions,
+    checkpointChannelVersions: Record<string, number | string>,
   ): Promise<Database['public']['Tables']['checkpoint_blobs']['Insert'][]> {
-    if (!values || Object.keys(versions).length === 0) {
+    if (!values) {
+      return []
+    }
+
+    const versionEntries = new Map(Object.entries(versions))
+
+    if (values[TASKS] !== undefined && !versionEntries.has(TASKS)) {
+      const existingVersion = checkpointChannelVersions[TASKS]
+      const resolvedVersion =
+        existingVersion !== undefined
+          ? existingVersion
+          : this.getNextVersion(undefined)
+      versionEntries.set(TASKS, resolvedVersion)
+    }
+
+    if (versionEntries.size === 0) {
       return []
     }
 
     const blobs: Database['public']['Tables']['checkpoint_blobs']['Insert'][] =
       []
 
-    for (const [channel, version] of Object.entries(versions)) {
+    for (const [channel, version] of versionEntries) {
       const value = values[channel]
 
-      if (value === undefined || value === null) {
+      if (value === undefined) {
         blobs.push({
           thread_id: threadId,
           checkpoint_ns: checkpointNs,
