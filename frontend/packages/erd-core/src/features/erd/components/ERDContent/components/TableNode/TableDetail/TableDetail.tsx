@@ -82,14 +82,22 @@ export const TableDetail: FC<Props> = ({ table }) => {
   // scroll to the element when the TableDetail component is rendered if element id is provided as location.hash
   useEffect(() => {
     if (!location.hash) return
-    // location.hash starts with '#'; decode to match actual DOM id
-    const elementId = decodeURIComponent(location.hash.slice(1))
-    const element = document.getElementById(elementId)
 
-    // the element should be contained within the TableDetail component
-    if (!element || !ref.current?.contains(element)) return
+    const scrollToElement = () => {
+      // location.hash starts with '#'; decode to match actual DOM id
+      const elementId = decodeURIComponent(location.hash.slice(1))
+      const element = document.getElementById(elementId)
 
-    element.scrollIntoView({ block: 'start' })
+      // the element should be contained within the TableDetail component
+      if (!element || !ref.current?.contains(element)) return
+
+      element.scrollIntoView({ block: 'start' })
+    }
+
+    scrollToElement()
+
+    window.addEventListener('hashchange', scrollToElement)
+    return () => window.removeEventListener('hashchange', scrollToElement)
   }, [])
   return (
     <section className={styles.wrapper} ref={ref}>

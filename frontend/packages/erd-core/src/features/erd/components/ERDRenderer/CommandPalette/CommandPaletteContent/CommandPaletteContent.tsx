@@ -19,6 +19,10 @@ const commandPaletteFilter: typeof defaultFilter = (value, ...rest) => {
   // https://github.com/pacocoursey/cmdk/blob/d6fde235386414196bf80d9b9fa91e2cf89a72ea/cmdk/src/index.tsx#L91-L95
   if (!suggestion) return 0
 
+  if (suggestion.type === 'column') {
+    return defaultFilter(suggestion.columnName, ...rest)
+  }
+
   return defaultFilter(suggestion.name, ...rest)
 }
 
@@ -73,6 +77,9 @@ export const CommandPaletteContent: FC = () => {
         >
           {suggestion?.type === 'table' && (
             <TablePreview tableName={suggestion.name} />
+          )}
+          {suggestion?.type === 'column' && (
+            <TablePreview tableName={suggestion.tableName} />
           )}
           {suggestion?.type === 'command' && (
             <CommandPreview commandName={suggestion.name} />
