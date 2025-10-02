@@ -2,7 +2,6 @@ import { err, fromPromise, type Result } from 'neverthrow'
 import OpenAI from 'openai'
 import { getTracer } from '../../tracing/tracer'
 import type { TraceContext } from '../../tracing/types'
-import { ensureLangSmithTracing } from '../../tracing/validate'
 import {
   handleExecutionResult,
   logInputProcessing,
@@ -29,13 +28,6 @@ export class OpenAIExecutor {
     input: OpenAIExecutorInput,
     options: { traceContext: TraceContext },
   ): Promise<Result<OpenAIExecutorOutput, Error>> {
-    // Enforce LangSmith tracing as required when using the OpenAI executor
-    const tracingCheck = ensureLangSmithTracing(
-      'OpenAI executor (schema-bench)',
-    )
-    if (tracingCheck.isErr()) {
-      return err(tracingCheck.error)
-    }
     // TODO: Migrate to @langchain/openai ChatOpenAI and remove the custom tracer.
     // Currently we call the OpenAI SDK directly and rely on a bespoke tracing helper.
     // Switching to ChatOpenAI enables first-class LangSmith tracing via env only.

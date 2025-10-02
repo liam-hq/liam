@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
 import { resolve } from 'node:path'
+import { generateLangSmithUrl } from '@liam-hq/agent'
 import { config } from 'dotenv'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { execute, type LiamDbExecutorInput } from '../executors/liamDb/index.ts'
-import { generateLangSmithUrl } from '../tracing/generateLangSmithUrl'
-import { ensureLangSmithTracing } from '../tracing/validate'
-import { handleCliError, loadInputFiles, saveOutputFile } from './utils'
+import { loadInputFiles, saveOutputFile } from './utils'
 
 config({ path: resolve(__dirname, '../../../../../.env') })
 
@@ -33,9 +32,6 @@ async function executeCase(
   caseId: string,
   input: LiamDbExecutorInput,
 ): Promise<Result<void, Error>> {
-  // Ensure LangSmith tracing is enabled (required)
-  const tracingCheck = ensureLangSmithTracing('LiamDB executor (schema-bench)')
-  if (tracingCheck.isErr()) handleCliError(tracingCheck.error.message)
   const threadId = [datasetName, caseId, RUN_ID].join(':')
   console.info(
     `[schema-bench] executing case: dataset=${datasetName} case=${caseId} thread_id=${threadId}`,

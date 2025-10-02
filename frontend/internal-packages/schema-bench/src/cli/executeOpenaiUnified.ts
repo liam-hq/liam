@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
 import { resolve } from 'node:path'
+import { generateLangSmithUrl } from '@liam-hq/agent'
 import { config as loadEnv } from 'dotenv'
 import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { OpenAIExecutor } from '../executors/openai/openaiExecutor'
 import type { OpenAIExecutorInput } from '../executors/openai/types'
-import { generateLangSmithUrl } from '../tracing/generateLangSmithUrl'
-import { ensureLangSmithTracing } from '../tracing/validate'
 import {
   filterAndResolveDatasets,
   getWorkspacePath,
@@ -110,11 +109,6 @@ async function processDataset(
 async function main() {
   // Load env from repo root for convenience (align with LiamDB executor)
   loadEnv({ path: resolve(__dirname, '../../../../../.env') })
-  // Enforce LangSmith tracing as required
-  const tracingCheck = ensureLangSmithTracing('OpenAI executor (schema-bench)')
-  if (tracingCheck.isErr()) {
-    handleCliError(tracingCheck.error.message)
-  }
   // Check API key
   const apiKey =
     process.env['OPENAI_API_KEY'] ??
