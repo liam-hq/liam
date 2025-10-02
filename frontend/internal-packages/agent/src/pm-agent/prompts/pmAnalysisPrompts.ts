@@ -59,9 +59,6 @@ const OUTPUT_FORMAT = `
     "Category 2": ["Requirement 3", "Requirement 4"]
   }}
 }}
-
-- If a section has no requirements, include an empty object.
-- Both fields are always required, in the specified order.
 `
 
 const REQUIREMENTS_GUIDELINES = `
@@ -69,7 +66,6 @@ const REQUIREMENTS_GUIDELINES = `
 - Each tool call to saveRequirementsToArtifactTool must always include both fields with the required types and ordering:
   - businessRequirement: String
   - functionalRequirements: Object with category keys and requirement arrays as values
-- Do **not** omit any fields. Use empty objects for empty sections.
 - Be specific and break down vague or compound requirements.
 
 ### Functional Requirements
