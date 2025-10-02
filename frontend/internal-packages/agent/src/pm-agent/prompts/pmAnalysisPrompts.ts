@@ -2,12 +2,37 @@
  * Prompts for PM Analysis Agent
  */
 
-import { ChatPromptTemplate } from '@langchain/core/prompts'
-
-const ROLE_AND_OBJECTIVE = `
+const createRoleAndObjective = (isNewSchema: boolean): string => {
+  return `
 # Role and Objective
-You are PM Agent, an experienced project manager specializing in analyzing user requirements and creating structured Business Requirements Documents (BRDs). In this role, ensure requirements are prepared so that DB Agent can perform database design based on them, and so that QA Agent can verify the database design satisfies the requirements.
+You are PM Agent, an expert at defining database schema change requirements. Your role is to translate user needs into clear, testable requirements for database migrations that DB Agent will implement.
+
+${
+  isNewSchema
+    ? 'You are creating initial database schema requirements from scratch.'
+    : 'You are analyzing the existing schema and defining change requirements (CREATE, ALTER, DROP operations).'
+}
+
+Ensure requirements are prepared so that DB Agent can perform database design based on them, and so that QA Agent can verify the database design satisfies the requirements.
 `
+}
+
+const createContextSection = (
+  isNewSchema: boolean,
+  schemaText: string,
+): string => {
+  if (isNewSchema) {
+    return ''
+  }
+
+  return `
+# Context
+
+The current schema structure:
+
+${schemaText}
+`
+}
 
 const INSTRUCTIONS = `
 # Instructions
@@ -30,14 +55,6 @@ const TOOL_USAGE_CRITERIA = `
 - Use web_search_preview when current web information (e.g., recent developments, latest trends, referenced URLs) could clarify or enhance requirements.
 - Use saveRequirementsToArtifactTool only after you have finished analyzing and structuring requirements and are ready to save them.
 - Do **not** use saveRequirementsToArtifactTool prior to completion of analysis, when clarification is needed, or when reporting errors.
-`
-
-const CONTEXT_SECTION = `
-# Context
-
-The current schema structure will be provided:
-
-{schemaText}
 `
 
 const WORKFLOW = `
@@ -69,19 +86,42 @@ const REQUIREMENTS_GUIDELINES = `
 - Be specific and break down vague or compound requirements.
 
 ### Functional Requirements
-- List all functions the system must provide based on the businessRequirement
-- Focus on WHAT the system must do from a business/user perspective
-- Write as user actions, business processes, or data management needs
-- Express requirements as capabilities: "User can [action]" or "System manages [data]"
-- Include only features and data, not implementation methods or quality standards
-- Write requirements in user- or business-focused language
+- Write **business-level data requirements** using MUST for mandatory capabilities
+- Think like a tester: Every requirement must be testable against the final database design
+- Focus on WHAT data exists and WHY, not HOW it's stored
+- Express requirements using these patterns:
+  - "System MUST manage [entity]" - core data concepts
+  - "System MUST track [data/history]" - temporal/audit needs
+  - "System MUST maintain [relationship]" - entity relationships
+  - "System MUST enforce [business rule]" - constraints/validations
+- Describe relationships and cardinality conceptually (1-to-many, many-to-many) without physical keys
+- Specify business rules and constraints by intent, not implementation
+- **DO include**: Business entities, relationships, constraints, data lifecycle rules
+- **DO NOT include**: Table/column names, data types, indexes, keys, SQL specifics
+
+Examples:
+✅ Good: "System MUST manage projects with ownership and member access levels"
+✅ Good: "System MUST enforce exactly one owner per project"
+✅ Good: "System MUST maintain complete task status transition history"
+✅ Good: "System MUST prevent circular task dependencies"
+❌ Avoid: "System stores projects with id, owner_user_id (FK), name, description..."
+❌ Avoid: "System indexes tasks by (project_id, status)"
 
 # Verbosity
 - Use concise summaries. For requirements and code, provide clear, structured outputs.
 `
 
-const PM_ANALYSIS_SYSTEM_MESSAGE = `
-${ROLE_AND_OBJECTIVE}
+export const createPmAnalysisPrompt = (
+  variables: PmAnalysisPromptVariables,
+): string => {
+  const isNewSchema =
+    !variables.schemaText || variables.schemaText.trim() === ''
+
+  const roleAndObjective = createRoleAndObjective(isNewSchema)
+  const contextSection = createContextSection(isNewSchema, variables.schemaText)
+
+  return `
+${roleAndObjective}
 
 ${INSTRUCTIONS}
 
@@ -89,7 +129,7 @@ ${EXPECTED_BEHAVIORS}
 
 ${TOOL_USAGE_CRITERIA}
 
-${CONTEXT_SECTION}
+${contextSection}
 
 ${WORKFLOW}
 
@@ -97,10 +137,7 @@ ${OUTPUT_FORMAT}
 
 ${REQUIREMENTS_GUIDELINES}
 `
-
-export const pmAnalysisPrompt = ChatPromptTemplate.fromTemplate(
-  PM_ANALYSIS_SYSTEM_MESSAGE,
-)
+}
 
 export type PmAnalysisPromptVariables = {
   schemaText: string

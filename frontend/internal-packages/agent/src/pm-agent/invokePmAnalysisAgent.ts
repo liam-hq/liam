@@ -6,7 +6,7 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { okAsync, type ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../streaming/constants'
 import type { Reasoning, WorkflowConfigurable } from '../types'
@@ -14,8 +14,8 @@ import { removeReasoningFromMessages } from '../utils/messageCleanup'
 import { streamLLMResponse } from '../utils/streamingLlmUtils'
 import { reasoningSchema } from '../utils/validationSchema'
 import {
+  createPmAnalysisPrompt,
   type PmAnalysisPromptVariables,
-  pmAnalysisPrompt,
 } from './prompts/pmAnalysisPrompts'
 import { saveRequirementsToArtifactTool } from './tools/saveRequirementsToArtifactTool'
 
@@ -37,9 +37,7 @@ export const invokePmAnalysisAgent = (
 ): ResultAsync<AnalysisWithReasoning, Error> => {
   const cleanedMessages = removeReasoningFromMessages(messages)
 
-  const formatPrompt = ResultAsync.fromSafePromise(
-    pmAnalysisPrompt.format(variables),
-  )
+  const systemPrompt = createPmAnalysisPrompt(variables)
 
   const model = new ChatOpenAI({
     model: 'gpt-5',
@@ -55,7 +53,7 @@ export const invokePmAnalysisAgent = (
     },
   )
 
-  const stream = fromAsyncThrowable((systemPrompt: string) =>
+  const stream = fromAsyncThrowable(() =>
     model.stream([new SystemMessage(systemPrompt), ...cleanedMessages], {
       configurable,
     }),
@@ -68,8 +66,7 @@ export const invokePmAnalysisAgent = (
     }),
   )
 
-  return formatPrompt
-    .andThen(stream)
+  return stream()
     .andThen(response)
     .andThen((response) => {
       const parsed = v.safeParse(
