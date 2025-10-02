@@ -1,4 +1,11 @@
-import { Table2 } from '@liam-hq/ui'
+import {
+  DiamondFillIcon,
+  DiamondIcon,
+  KeyRound,
+  Link,
+  Table2,
+} from '@liam-hq/ui'
+import clsx from 'clsx'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect } from 'react'
 import { useSchemaOrThrow } from '../../../../../../stores'
@@ -15,6 +22,16 @@ const getTableLinkHref = (activeTableName: string) => {
   const searchParams = new URLSearchParams(window.location.search)
   searchParams.set('active', activeTableName)
   return `?${searchParams.toString()}`
+}
+
+const getTableColumnLinkHref = (
+  activeTableName: string,
+  columnName: string,
+) => {
+  const searchParams = new URLSearchParams(window.location.search)
+  searchParams.set('active', activeTableName)
+  const hash = `${activeTableName}__columns__${columnName}`
+  return `?${searchParams.toString()}#${hash}`
 }
 
 type TableOptionProps = {
@@ -43,6 +60,60 @@ const TableOption: FC<TableOptionProps> = ({ tableName, goToERD }) => {
       >
         <Table2 className={styles.itemIcon} />
         <span className={styles.itemText}>{tableName}</span>
+      </a>
+    </Command.Item>
+  )
+}
+
+type ColumnType = 'PrimaryKey' | 'ForeignKey' | 'NonNull' | 'Default'
+
+const ColumnTypeIcons: Record<ColumnType, FC<{ className?: string }>> = {
+  PrimaryKey: KeyRound,
+  ForeignKey: Link,
+  NonNull: DiamondFillIcon,
+  Default: DiamondIcon,
+}
+
+type ColumnOptionProps = {
+  tableName: string
+  columnName: string
+  columnType: ColumnType
+  goToERD: (tableName: string) => void
+}
+
+const ColumnOption: FC<ColumnOptionProps> = ({
+  tableName,
+  columnName,
+  columnType,
+  goToERD,
+}) => {
+  const ColumnTypeIcon = ColumnTypeIcons[columnType]
+
+  return (
+    <Command.Item
+      key={tableName}
+      value={getSuggestionText({
+        type: 'column',
+        tableName,
+        columnName,
+      })}
+    >
+      <a
+        href={getTableColumnLinkHref(tableName, columnName)}
+        className={clsx(styles.item, styles.indent)}
+        onClick={(event) => {
+          // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
+          if (event.ctrlKey || event.metaKey) {
+            return
+          }
+
+          event.preventDefault()
+          goToERD(tableName)
+          location.hash = `${tableName}__columns__${columnName}`
+        }}
+      >
+        <ColumnTypeIcon className={styles.itemIcon} />
+        <span className={styles.itemText}>{columnName}</span>
       </a>
     </Command.Item>
   )
@@ -90,15 +161,40 @@ export const TableOptions: FC<Props> = ({ suggestion, inputMode }) => {
     return () => document.removeEventListener('keydown', down)
   }, [suggestion, goToERD])
 
+  const targetTable =
+    inputMode.type === 'table'
+      ? schema.current.tables[inputMode.tableName]
+      : null
+
   return (
     <Command.Group heading="Tables">
-      {inputMode.type === 'table' ? (
+      {targetTable ? (
         <>
-          <TableOption tableName={inputMode.tableName} goToERD={goToERD} />
-          {Object.values(
-            schema.current.tables[inputMode.tableName]?.columns ?? {},
-          ).map((column) => (
-            <div key={column.name}>{column.name}</div>
+          <TableOption tableName={targetTable.name} goToERD={goToERD} />
+          {Object.values(targetTable.columns).map((column) => (
+            <ColumnOption
+              key={column.name}
+              tableName={targetTable.name}
+              columnName={column.name}
+              columnType={
+                Object.values(targetTable.constraints).find(
+                  (c) =>
+                    c.type === 'PRIMARY KEY' &&
+                    c.columnNames.includes(column.name),
+                )
+                  ? 'PrimaryKey'
+                  : Object.values(targetTable.constraints).find(
+                        (c) =>
+                          c.type === 'FOREIGN KEY' &&
+                          c.columnNames.includes(column.name),
+                      )
+                    ? 'ForeignKey'
+                    : column.notNull
+                      ? 'NonNull'
+                      : 'Default'
+              }
+              goToERD={goToERD}
+            />
           ))}
         </>
       ) : (

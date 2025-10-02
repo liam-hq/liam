@@ -6,6 +6,21 @@
   border-radius: var(--border-radius-base);
 }
 
+.item.indent {
+  padding-left: var(--spacing-6);
+  position: relative;
+}
+
+.item.indent:before {
+  content: '';
+  position: absolute;
+  top: calc(var(--spacing-1)/2);
+  left: var(--spacing-4);
+  width: 1px;
+  height: calc(100% - var(--spacing-1));
+  background-color: var(--overlay-10);
+}
+
 .item .itemText {
   flex-grow: 1;
   font-size: var(--font-size-5);
