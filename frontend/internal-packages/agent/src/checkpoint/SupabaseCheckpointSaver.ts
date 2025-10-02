@@ -815,10 +815,6 @@ export class SupabaseCheckpointSaver extends BaseCheckpointSaver<number> {
       versionEntries.set(TASKS, resolvedVersion)
     }
 
-    if (versionEntries.size === 0) {
-      return []
-    }
-
     const blobs: Database['public']['Tables']['checkpoint_blobs']['Insert'][] =
       []
 
