@@ -10,6 +10,10 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
+import {
+  clearWorkflowInProgress,
+  setWorkflowInProgress,
+} from '../../utils/workflowStorage'
 import { parseSse } from './parseSse'
 import { useSessionStorageOnce } from './useSessionStorageOnce'
 
@@ -83,11 +87,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
     retryCountRef.current = 0
 
     // Clear workflow in progress flag
-    import('../../utils/workflowStorage').then(
-      ({ clearWorkflowInProgress }) => {
-        clearWorkflowInProgress(sessionId)
-      },
-    )
+    clearWorkflowInProgress(sessionId)
   }, [])
 
   const stop = useCallback(() => {
@@ -273,11 +273,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
       retryCountRef.current = 0
 
       // Set workflow in progress flag
-      import('../../utils/workflowStorage').then(
-        ({ setWorkflowInProgress }) => {
-          setWorkflowInProgress(params.designSessionId)
-        },
-      )
+      setWorkflowInProgress(params.designSessionId)
 
       const result = await runStreamAttempt(
         '/api/chat/stream',
