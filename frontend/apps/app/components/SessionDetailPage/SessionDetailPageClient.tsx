@@ -17,6 +17,8 @@ import { useStream } from './hooks/useStream'
 import { SQL_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPage.module.css'
 import type { Version } from './types'
+import { determineWorkflowAction } from './utils/determineWorkflowAction'
+import { getWorkflowInProgress } from './utils/workflowStorage'
 
 type Props = {
   buildingSchemaId: string
@@ -126,11 +128,6 @@ export const SessionDetailPageClient: FC<Props> = ({
   // Auto-trigger workflow on page load if there's an unanswered user message
   useEffect(() => {
     const triggerInitialWorkflow = async () => {
-      const { determineWorkflowAction } = await import(
-        './utils/determineWorkflowAction'
-      )
-      const { getWorkflowInProgress } = await import('./utils/workflowStorage')
-
       const isWorkflowInProgress = getWorkflowInProgress(designSessionId)
 
       const action = determineWorkflowAction(
