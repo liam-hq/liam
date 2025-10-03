@@ -10,40 +10,40 @@ export const convertRequirementsToPrompt = (
       schemaIssues.map((issue) => issue.requirementId),
     )
 
-    // Filter functional requirements
-    const filteredFunctionalRequirements: Record<
+    // Filter test cases by matching title against requirementId
+    const filteredTestcases: Record<
       string,
-      Array<{ id: string; desc: string }>
+      Array<{ title: string; type: string }>
     > = {}
-    for (const [category, reqs] of Object.entries(
-      requirements.functionalRequirements,
-    )) {
-      const filteredReqs = reqs.filter((req) => issueRequirementIds.has(req.id))
-      if (filteredReqs.length > 0) {
-        filteredFunctionalRequirements[category] = filteredReqs
+    for (const [category, cases] of Object.entries(requirements.testcases)) {
+      const filteredCases = cases.filter((tc) =>
+        issueRequirementIds.has(tc.title),
+      )
+      if (filteredCases.length > 0) {
+        filteredTestcases[category] = filteredCases
       }
     }
 
     // Return filtered requirements without schema issues information
-    return `Business Requirement: ${requirements.businessRequirement}
+    return `Goal: ${requirements.goal}
 
-Functional Requirements:
-${Object.entries(filteredFunctionalRequirements)
+Test Cases:
+${Object.entries(filteredTestcases)
   .map(
-    ([category, requirements]) =>
-      `- ${category}: ${requirements.map((req) => req.desc).join(', ')}`,
+    ([category, testcases]) =>
+      `- ${category}: ${testcases.map((tc) => `${tc.title} (${tc.type})`).join(', ')}`,
   )
   .join('\n')}`.trim()
   }
 
   // Default behavior - process all requirements
-  return `Business Requirement: ${requirements.businessRequirement}
+  return `Goal: ${requirements.goal}
 
-Functional Requirements:
-${Object.entries(requirements.functionalRequirements)
+Test Cases:
+${Object.entries(requirements.testcases)
   .map(
-    ([category, requirements]) =>
-      `- ${category}: ${requirements.map((req) => req.desc).join(', ')}`,
+    ([category, testcases]) =>
+      `- ${category}: ${testcases.map((tc) => `${tc.title} (${tc.type})`).join(', ')}`,
   )
   .join('\n')}`.trim()
 }

@@ -9,16 +9,16 @@ const meta = {
   },
   decorators: [
     (Story) => {
-      const businessRequirementId = useId()
+      const goalId = useId()
       const requirementsId = useId()
-      const functionalRequirementsId = useId()
+      const testCasesId = useId()
       const orderProcessingId = useId()
       const inventoryManagementId = useId()
 
       return (
         <div style={{ display: 'flex', gap: '32px', height: '800px' }}>
           <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
-            <h1 id={businessRequirementId}>Business Requirement</h1>
+            <h1 id={goalId}>Goal</h1>
             <p>
               Build an e-commerce order management system and optimize order
               processing flow
@@ -26,7 +26,7 @@ const meta = {
 
             <h2 id={requirementsId}>Requirements</h2>
 
-            <h3 id={functionalRequirementsId}>Functional Requirements</h3>
+            <h3 id={testCasesId}>Test Cases</h3>
 
             <h4 id={orderProcessingId}>1. Order Processing</h4>
             <p>
@@ -67,13 +67,13 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const sampleContent = `# Business Requirement
+const sampleContent = `# Goal
 
 Build an e-commerce order management system and optimize order processing flow
 
 ## Requirements
 
-### Functional Requirements
+### Test Cases
 
 #### 1. Order Processing
 

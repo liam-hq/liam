@@ -1,7 +1,6 @@
 import { HumanMessage } from '@langchain/core/messages'
 import { END } from '@langchain/langgraph'
 import { aColumn, aSchema, aTable } from '@liam-hq/schema'
-import { v4 as uuidv4 } from 'uuid'
 import { describe, it } from 'vitest'
 import {
   getTestConfig,
@@ -75,40 +74,53 @@ describe('createQaAgentGraph Integration', () => {
       messages: [new HumanMessage(userInput)],
       schemaData,
       analyzedRequirements: {
-        businessRequirement:
-          'Implement secure user authentication and role-based access control system',
-        functionalRequirements: {
+        goal: 'Implement secure user authentication and role-based access control system',
+        testcases: {
           Authentication: [
             {
-              id: uuidv4(),
-              desc: 'Users should be able to register with valid email and password',
+              title:
+                'Users should be able to register with valid email and password',
+              type: 'INSERT',
+              sql: '',
+              testResults: [],
             },
             {
-              id: uuidv4(),
-              desc: 'Users should be able to login with correct credentials',
+              title: 'Users should be able to login with correct credentials',
+              type: 'SELECT',
+              sql: '',
+              testResults: [],
             },
             {
-              id: uuidv4(),
-              desc: 'System should validate email format and password strength',
+              title:
+                'System should validate email format and password strength',
+              type: 'SELECT',
+              sql: '',
+              testResults: [],
             },
           ],
           Authorization: [
             {
-              id: uuidv4(),
-              desc: 'Only admin users should be able to create new roles',
+              title: 'Only admin users should be able to create new roles',
+              type: 'INSERT',
+              sql: '',
+              testResults: [],
             },
             {
-              id: uuidv4(),
-              desc: 'Users should only access resources allowed by their role',
+              title: 'Users should only access resources allowed by their role',
+              type: 'SELECT',
+              sql: '',
+              testResults: [],
             },
             {
-              id: uuidv4(),
-              desc: 'System should enforce role-based permissions on all endpoints',
+              title:
+                'System should enforce role-based permissions on all endpoints',
+              type: 'SELECT',
+              sql: '',
+              testResults: [],
             },
           ],
         },
       },
-      testcases: [],
       designSessionId: context.designSessionId,
       buildingSchemaId: context.buildingSchemaId,
       schemaIssues: [],

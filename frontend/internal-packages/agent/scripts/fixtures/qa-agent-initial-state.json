@@ -1,74 +1,309 @@
 {
   "userInput": "Design a business management system database with the following core requirements:\n\n1. **Organization Structure**:\n   - Hierarchical organizations with self-referencing parent-child relationships\n   - Each organization has a unique code and name\n\n2. **Position & Employee Management**:\n   - Position master table with unique position codes and names\n   - Employee master table with employee codes and names\n   - Employee affiliations linking employees to organizations and positions\n   - Support for reporting relationships (employees reporting to other employees)\n\n3. **Business Partner System**:\n   - Unified business partner table for both clients and suppliers\n   - Business partner categories with CHECK constraints (CLIENT/SUPPLIER)\n   - Client-specific data with order amounts from last year\n   - Supplier-specific data with procurement amounts from last year\n\n4. **Product Management**:\n   - Brand master table with unique brand names\n   - Item categories for product classification\n   - Items with manufacturer part numbers as primary keys\n   - Items linked to brands and categories\n   - Supplier-brand handling relationships\n\nPlease design a normalized database schema with proper primary keys, foreign key relationships, and constraints to support these business operations effectively.",
   "analyzedRequirements": {
-    "businessRequirement": "Design a normalized relational database for a business management system that manages organizational hierarchy, positions and employees (with affiliations and reporting lines), unified business partners (categorized as CLIENT or SUPPLIER with last-year amounts), and product masters (brands, categories, items keyed by MPN) with clear primary keys, foreign keys, and constraints to ensure data integrity and auditability.",
-    "functionalRequirements": {
+    "goal": "Design a normalized relational database for a business management system that manages organizational hierarchy, positions and employees (with affiliations and reporting lines), unified business partners (categorized as CLIENT or SUPPLIER with last-year amounts), and product masters (brands, categories, items keyed by MPN) with clear primary keys, foreign keys, and constraints to ensure data integrity and auditability.",
+    "testcases": {
       "Organization Structure": [
-        "Maintain Organization master with unique, immutable organization_code and unique organization_name.",
-        "Support hierarchical organizations via self-referencing parent-child relationship; allow a single root (parent null).",
-        "Prevent cyclic hierarchies (no organization may be an ancestor of itself).",
-        "Capture effectivity (start_date, end_date) for organizations; only one active record per organization_code at a time.",
-        "If an organization has child organizations or active employee affiliations, deletion must be prevented; use end-dating to deactivate.",
-        "Optional org_type reference data (e.g., COMPANY, DIVISION, DEPARTMENT, TEAM) stored in a lookup table and enforced via FK or CHECK."
+        {
+          "title": "Maintain Organization master with unique, immutable organization_code and unique organization_name.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Support hierarchical organizations via self-referencing parent-child relationship; allow a single root (parent null).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Prevent cyclic hierarchies (no organization may be an ancestor of itself).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Capture effectivity (start_date, end_date) for organizations; only one active record per organization_code at a time.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "If an organization has child organizations or active employee affiliations, deletion must be prevented; use end-dating to deactivate.",
+          "type": "DELETE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Optional org_type reference data (e.g., COMPANY, DIVISION, DEPARTMENT, TEAM) stored in a lookup table and enforced via FK or CHECK.",
+          "type": "UPDATE",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Positions & Employees": [
-        "Maintain Position master with unique, immutable position_code and unique position_name.",
-        "Positions are global (not tied to a specific organization); effectivity (start_date, end_date) and active flag required.",
-        "Maintain Employee master with unique, immutable employee_code and employee_name; capture employment_status (ACTIVE, INACTIVE) via CHECK or lookup.",
-        "Employee records must exist before affiliations or reporting lines can reference them; deletion of employees with related records is prohibited (end-date instead)."
+        {
+          "title": "Maintain Position master with unique, immutable position_code and unique position_name.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Positions are global (not tied to a specific organization); effectivity (start_date, end_date) and active flag required.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Maintain Employee master with unique, immutable employee_code and employee_name; capture employment_status (ACTIVE, INACTIVE) via CHECK or lookup.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Employee records must exist before affiliations or reporting lines can reference them; deletion of employees with related records is prohibited (end-date instead).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Employee Affiliations & Reporting": [
-        "Link employees to organizations and positions through an EmployeeAffiliation entity with effectivity (start_date, end_date).",
-        "For a given employee, enforce at most one primary active affiliation at any point in time; additional non-overlapping historical affiliations are allowed.",
-        "For a given employee + organization + position, date ranges must not overlap.",
-        "Affiliations require that referenced employee, organization, and position are active on the affiliation start_date.",
-        "Support employee reporting relationships via a self-referencing EmployeeReporting entity (employee -> manager) with effectivity dates.",
-        "Prevent circular reporting (no employee can ultimately report to themselves); allow cross-organization reporting.",
-        "If an employee\u2019s primary affiliation ends, the reporting relationship must also end or be re-established (consistency rule)."
+        {
+          "title": "Link employees to organizations and positions through an EmployeeAffiliation entity with effectivity (start_date, end_date).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "For a given employee, enforce at most one primary active affiliation at any point in time; additional non-overlapping historical affiliations are allowed.",
+          "type": "INSERT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "For a given employee + organization + position, date ranges must not overlap.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Affiliations require that referenced employee, organization, and position are active on the affiliation start_date.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Support employee reporting relationships via a self-referencing EmployeeReporting entity (employee -> manager) with effectivity dates.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Prevent circular reporting (no employee can ultimately report to themselves); allow cross-organization reporting.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "If an employee\u2019s primary affiliation ends, the reporting relationship must also end or be re-established (consistency rule).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Business Partners": [
-        "Maintain a unified BusinessPartner entity with unique, immutable partner_code and unique partner_name.",
-        "Enforce partner_category via CHECK IN ('CLIENT','SUPPLIER'); category is required and immutable after creation.",
-        "ClientProfile exists only for partners where partner_category='CLIENT' and must store last_year_order_amount (>= 0).",
-        "SupplierProfile exists only for partners where partner_category='SUPPLIER' and must store last_year_procurement_amount (>= 0).",
-        "Enforce mutual exclusivity: a CLIENT must not have SupplierProfile; a SUPPLIER must not have ClientProfile.",
-        "Amounts labeled \u201clast year\u201d are defined as the previous calendar year relative to the as_of_date stored with each profile record.",
-        "Prevent deletion of a BusinessPartner if role-specific profile or brand-handling relationships exist; use end-dating/active flag."
+        {
+          "title": "Maintain a unified BusinessPartner entity with unique, immutable partner_code and unique partner_name.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Enforce partner_category via CHECK IN ('CLIENT','SUPPLIER'); category is required and immutable after creation.",
+          "type": "UPDATE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "ClientProfile exists only for partners where partner_category='CLIENT' and must store last_year_order_amount (>= 0).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "SupplierProfile exists only for partners where partner_category='SUPPLIER' and must store last_year_procurement_amount (>= 0).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Enforce mutual exclusivity: a CLIENT must not have SupplierProfile; a SUPPLIER must not have ClientProfile.",
+          "type": "UPDATE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Amounts labeled \u201clast year\u201d are defined as the previous calendar year relative to the as_of_date stored with each profile record.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Prevent deletion of a BusinessPartner if role-specific profile or brand-handling relationships exist; use end-dating/active flag.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Product Management": [
-        "Maintain Brand master with unique brand_name; brand_name is immutable once created.",
-        "Maintain ItemCategory master with unique category_code and unique category_name; optional self-referencing parent_category to support hierarchical classification.",
-        "Items are identified by manufacturer_part_number (MPN) as the primary key (natural key); MPN must be unique and not null.",
-        "Each Item must reference exactly one Brand and one ItemCategory via foreign keys; both must exist and be active.",
-        "Maintain SupplierBrandHandling relationship that maps SUPPLIER partners to Brands with effectivity dates (start_date, end_date).",
-        "Enforce that SupplierBrandHandling can only reference partners where partner_category='SUPPLIER'.",
-        "Disallow deletion of Brand or Category when Items or SupplierBrandHandling rows reference them; use end-dating."
+        {
+          "title": "Maintain Brand master with unique brand_name; brand_name is immutable once created.",
+          "type": "INSERT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Maintain ItemCategory master with unique category_code and unique category_name; optional self-referencing parent_category to support hierarchical classification.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Items are identified by manufacturer_part_number (MPN) as the primary key (natural key); MPN must be unique and not null.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Each Item must reference exactly one Brand and one ItemCategory via foreign keys; both must exist and be active.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Maintain SupplierBrandHandling relationship that maps SUPPLIER partners to Brands with effectivity dates (start_date, end_date).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Enforce that SupplierBrandHandling can only reference partners where partner_category='SUPPLIER'.",
+          "type": "UPDATE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Disallow deletion of Brand or Category when Items or SupplierBrandHandling rows reference them; use end-dating.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Data Integrity & Constraints": [
-        "All entities must define primary keys; all relationships must be enforced via foreign keys with referential integrity.",
-        "Use NOT NULL on mandatory business attributes (codes, names, categories, effectivity dates).",
-        "Define CHECK constraints for enumerations (e.g., partner_category, employment_status) and for non-negative monetary amounts.",
-        "Define uniqueness constraints exactly as specified: organization_code, organization_name; position_code, position_name; partner_code, partner_name; brand_name; category_code, category_name; item MPN.",
-        "Restrict cascading deletes; prefer logical deletion through end_date or active flags.",
-        "Disallow overlapping effectivity where business rules require single-active records (e.g., affiliations, reporting lines per employee)."
+        {
+          "title": "All entities must define primary keys; all relationships must be enforced via foreign keys with referential integrity.",
+          "type": "UPDATE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Use NOT NULL on mandatory business attributes (codes, names, categories, effectivity dates).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Define CHECK constraints for enumerations (e.g., partner_category, employment_status) and for non-negative monetary amounts.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Define uniqueness constraints exactly as specified: organization_code, organization_name; position_code, position_name; partner_code, partner_name; brand_name; category_code, category_name; item MPN.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Restrict cascading deletes; prefer logical deletion through end_date or active flags.",
+          "type": "DELETE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Disallow overlapping effectivity where business rules require single-active records (e.g., affiliations, reporting lines per employee).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Audit & History": [
-        "Record created_at/created_by and updated_at/updated_by on all master and relationship tables.",
-        "Capture change reason on end-dating deactivations for auditability.",
-        "Maintain history for effectivity-based tables by inserting new rows rather than updating historical rows (immutable history)."
+        {
+          "title": "Record created_at/created_by and updated_at/updated_by on all master and relationship tables.",
+          "type": "INSERT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Capture change reason on end-dating deactivations for auditability.",
+          "type": "UPDATE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Maintain history for effectivity-based tables by inserting new rows rather than updating historical rows (immutable history).",
+          "type": "INSERT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Security & Access": [
-        "Role-based access control (RBAC) for CRUD on masters and relationships (e.g., HR, Vendor Mgmt, Product Mgmt roles).",
-        "Restrict access to employee PII to authorized roles; partner financial amounts visible to Finance and authorized users only."
+        {
+          "title": "Role-based access control (RBAC) for CRUD on masters and relationships (e.g., HR, Vendor Mgmt, Product Mgmt roles).",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Restrict access to employee PII to authorized roles; partner financial amounts visible to Finance and authorized users only.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Reporting & Analytics": [
-        "Provide database views or query support to report: (a) organization tree with roll-ups, (b) active headcount per org, (c) client last_year_order_amount by partner, (d) supplier last_year_procurement_amount by partner, and (e) suppliers per brand.",
-        "Enable traversal of reporting lines (employee-to-manager chain) for current and historical dates."
+        {
+          "title": "Provide database views or query support to report: (a) organization tree with roll-ups, (b) active headcount per org, (c) client last_year_order_amount by partner, (d) supplier last_year_procurement_amount by partner, and (e) suppliers per brand.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Enable traversal of reporting lines (employee-to-manager chain) for current and historical dates.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        }
       ],
       "Data Quality & Governance": [
-        "Codes are immutable after creation; names changeable but must remain unique where required.",
-        "Validate that dates are valid (start_date <= end_date) and monetary amounts are numeric and >= 0.",
-        "Deduplication rule: prevent insertion of records with codes/names that would violate uniqueness ignoring leading/trailing whitespace."
+        {
+          "title": "Codes are immutable after creation; names changeable but must remain unique where required.",
+          "type": "UPDATE",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Validate that dates are valid (start_date <= end_date) and monetary amounts are numeric and >= 0.",
+          "type": "SELECT",
+          "sql": "",
+          "testResults": []
+        },
+        {
+          "title": "Deduplication rule: prevent insertion of records with codes/names that would violate uniqueness ignoring leading/trailing whitespace.",
+          "type": "INSERT",
+          "sql": "",
+          "testResults": []
+        }
       ]
     }
   },

@@ -1,8 +1,16 @@
 import * as v from 'valibot'
 
-const requirementItemSchema = v.object({
-  id: v.string(),
-  desc: v.string(),
+const testResultSchema = v.object({
+  executedAt: v.pipe(v.string(), v.isoDateTime()),
+  success: v.boolean(),
+  resultSummary: v.string(),
+})
+
+const testCaseSchema = v.object({
+  title: v.string(),
+  type: v.picklist(['INSERT', 'UPDATE', 'DELETE', 'SELECT']),
+  sql: v.string(),
+  testResults: v.array(testResultSchema),
 })
 
 /**
@@ -10,11 +18,11 @@ const requirementItemSchema = v.object({
  * Used across PM Agent, QA Agent, and workflow systems
  */
 export const analyzedRequirementsSchema = v.object({
-  businessRequirement: v.string(),
-  functionalRequirements: v.record(v.string(), v.array(requirementItemSchema)),
+  goal: v.string(),
+  testcases: v.record(v.string(), v.array(testCaseSchema)),
 })
 
-export type RequirementItem = v.InferOutput<typeof requirementItemSchema>
+export type TestCase = v.InferOutput<typeof testCaseSchema>
 export type AnalyzedRequirements = v.InferOutput<
   typeof analyzedRequirementsSchema
 >

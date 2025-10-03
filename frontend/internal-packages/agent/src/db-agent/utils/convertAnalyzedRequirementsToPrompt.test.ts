@@ -4,17 +4,47 @@ import { convertRequirementsToPrompt } from './convertAnalyzedRequirementsToProm
 
 describe('convertAnalyzedRequirementsToPrompt', () => {
   const sampleAnalyzedRequirements: AnalyzedRequirements = {
-    businessRequirement: 'Build a user management system',
-    functionalRequirements: {
+    goal: 'Build a user management system',
+    testcases: {
       authentication: [
-        { id: '1', desc: 'Login' },
-        { id: '2', desc: 'Logout' },
-        { id: '3', desc: 'Password reset' },
+        {
+          title: 'Login',
+          type: 'SELECT',
+          sql: 'SELECT * FROM users',
+          testResults: [],
+        },
+        {
+          title: 'Logout',
+          type: 'UPDATE',
+          sql: 'UPDATE sessions',
+          testResults: [],
+        },
+        {
+          title: 'Password reset',
+          type: 'UPDATE',
+          sql: 'UPDATE users',
+          testResults: [],
+        },
       ],
       userManagement: [
-        { id: '4', desc: 'Create user' },
-        { id: '5', desc: 'Update user' },
-        { id: '6', desc: 'Delete user' },
+        {
+          title: 'Create user',
+          type: 'INSERT',
+          sql: 'INSERT INTO users',
+          testResults: [],
+        },
+        {
+          title: 'Update user',
+          type: 'UPDATE',
+          sql: 'UPDATE users',
+          testResults: [],
+        },
+        {
+          title: 'Delete user',
+          type: 'DELETE',
+          sql: 'DELETE FROM users',
+          testResults: [],
+        },
       ],
     },
   }
@@ -23,44 +53,51 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
     const result = convertRequirementsToPrompt(sampleAnalyzedRequirements)
 
     expect(result).toMatchInlineSnapshot(`
-      "Business Requirement: Build a user management system
+      "Goal: Build a user management system
 
-      Functional Requirements:
-      - authentication: Login, Logout, Password reset
-      - userManagement: Create user, Update user, Delete user"
+      Test Cases:
+      - authentication: Login (SELECT), Logout (UPDATE), Password reset (UPDATE)
+      - userManagement: Create user (INSERT), Update user (UPDATE), Delete user (DELETE)"
     `)
   })
 
   it('should handle empty requirements objects', () => {
     const analyzedRequirements: AnalyzedRequirements = {
-      businessRequirement: 'Simple system',
-      functionalRequirements: {},
+      goal: 'Simple system',
+      testcases: {},
     }
 
     const result = convertRequirementsToPrompt(analyzedRequirements)
 
     expect(result).toMatchInlineSnapshot(`
-      "Business Requirement: Simple system
+      "Goal: Simple system
 
-      Functional Requirements:"
+      Test Cases:"
     `)
   })
 
   it('should handle empty business requirement', () => {
     const analyzedRequirements: AnalyzedRequirements = {
-      businessRequirement: '',
-      functionalRequirements: {
-        basic: [{ id: '1', desc: 'feature1' }],
+      goal: '',
+      testcases: {
+        basic: [
+          {
+            title: 'feature1',
+            type: 'SELECT',
+            sql: 'SELECT *',
+            testResults: [],
+          },
+        ],
       },
     }
 
     const result = convertRequirementsToPrompt(analyzedRequirements)
 
     expect(result).toMatchInlineSnapshot(`
-      "Business Requirement: 
+      "Goal: 
 
-      Functional Requirements:
-      - basic: feature1"
+      Test Cases:
+      - basic: feature1 (SELECT)"
     `)
   })
 
@@ -76,10 +113,10 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
       )
 
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Goal: Build a user management system
 
-        Functional Requirements:
-        - authentication: Logout"
+        Test Cases:
+        - authentication: Logout (UPDATE)"
       `)
     })
 
@@ -96,11 +133,11 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
 
       // Should behave like no schemaIssues parameter
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Goal: Build a user management system
 
-        Functional Requirements:
-        - authentication: Login, Logout, Password reset
-        - userManagement: Create user, Update user, Delete user"
+        Test Cases:
+        - authentication: Login (SELECT), Logout (UPDATE), Password reset (UPDATE)
+        - userManagement: Create user (INSERT), Update user (UPDATE), Delete user (DELETE)"
       `)
     })
 
@@ -115,10 +152,10 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
       )
 
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Goal: Build a user management system
 
-        Functional Requirements:
-        - authentication: Login"
+        Test Cases:
+        - authentication: Login (SELECT)"
       `)
     })
 
@@ -136,9 +173,9 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
       )
 
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Goal: Build a user management system
 
-        Functional Requirements:"
+        Test Cases:"
       `)
     })
 

@@ -6,8 +6,11 @@ export async function validateSchemaNode(
   state: QaAgentState,
 ): Promise<{ messages: BaseMessage[] }> {
   const toolCallId = uuidv4()
+  const testcaseCount = Object.values(
+    state.analyzedRequirements.testcases,
+  ).flat().length
   const aiMessage = new AIMessage({
-    content: `Running ${state.testcases.length} test cases to validate the database schema.`,
+    content: `Running ${testcaseCount} test cases to validate the database schema.`,
     name: 'qa',
     tool_calls: [
       {

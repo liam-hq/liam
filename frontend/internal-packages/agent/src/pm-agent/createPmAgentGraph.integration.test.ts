@@ -100,8 +100,8 @@ describe('createPmAgentGraph Integration', () => {
       messages: [new HumanMessage(userInput)],
       schemaData,
       analyzedRequirements: {
-        businessRequirement: '',
-        functionalRequirements: {},
+        goal: '',
+        testcases: {},
       },
       designSessionId: context.designSessionId,
       analyzedRequirementsRetryCount: 0,

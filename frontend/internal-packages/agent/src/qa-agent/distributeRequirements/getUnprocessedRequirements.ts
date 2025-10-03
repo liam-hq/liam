@@ -1,32 +1,29 @@
 import { err, ok, type Result } from 'neverthrow'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
-import type { RequirementItem } from '../../utils/schema/analyzedRequirements'
+import type { TestCase } from '../../utils/schema/analyzedRequirements'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
-import type { Testcase } from '../types'
 import type { RequirementData } from './types'
 
 /**
- * Process requirements of a specific type
+ * Process test cases from a specific category
  */
-function processRequirementsByType(
+function processTestCasesByCategory(
   requirements: RequirementData[],
-  requirementsData: Record<string, RequirementItem[]> | undefined,
-  type: 'functional' | 'non_functional',
+  category: string,
+  testCases: TestCase[] | undefined,
   businessContext: string,
 ): void {
-  if (!requirementsData) return
+  if (!testCases || testCases.length === 0) return
 
-  for (const [category, reqList] of Object.entries(requirementsData)) {
-    if (reqList?.length > 0) {
-      for (const requirementItem of reqList) {
-        requirements.push({
-          type,
-          category,
-          requirement: requirementItem.desc,
-          businessContext,
-          requirementId: requirementItem.id,
-        })
-      }
+  for (const testCase of testCases) {
+    if (!testCase.sql || testCase.sql.trim() === '') {
+      requirements.push({
+        type: 'functional',
+        category,
+        requirement: testCase.title,
+        businessContext,
+        requirementId: testCase.title, // Use title as ID for now
+      })
     }
   }
 }
@@ -39,15 +36,19 @@ function prepareRequirements(
 ): Result<RequirementData[], WorkflowTerminationError> {
   const { analyzedRequirements } = state
   const allRequirements: RequirementData[] = []
-  const businessContext = analyzedRequirements.businessRequirement || ''
+  const businessContext = analyzedRequirements.goal || ''
 
-  // Process functional requirements
-  processRequirementsByType(
-    allRequirements,
-    analyzedRequirements.functionalRequirements,
-    'functional',
-    businessContext,
-  )
+  // Process test cases from all categories
+  for (const [category, testCases] of Object.entries(
+    analyzedRequirements.testcases,
+  )) {
+    processTestCasesByCategory(
+      allRequirements,
+      category,
+      testCases,
+      businessContext,
+    )
+  }
 
   // If no requirements found, return error
   if (allRequirements.length === 0) {
@@ -63,27 +64,7 @@ function prepareRequirements(
 }
 
 /**
- * Filter out requirements that already have corresponding testcases
- */
-function filterByExistingTestcases(
-  requirements: RequirementData[],
-  existingTestcases: Testcase[],
-): RequirementData[] {
-  if (existingTestcases.length === 0) {
-    return requirements
-  }
-
-  const processedRequirementIds = new Set(
-    existingTestcases.map((testcase) => testcase.requirementId),
-  )
-
-  return requirements.filter(
-    (requirement) => !processedRequirementIds.has(requirement.requirementId),
-  )
-}
-
-/**
- * Get unprocessed requirements by filtering out those that already have testcases
+ * Get unprocessed requirements (test cases without SQL)
  */
 export function getUnprocessedRequirements(
   state: QaAgentState,
@@ -95,5 +76,5 @@ export function getUnprocessedRequirements(
     return []
   }
 
-  return filterByExistingTestcases(requirementsResult.value, state.testcases)
+  return requirementsResult.value
 }
