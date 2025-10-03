@@ -1,4 +1,3 @@
-import { getInstallations } from '@liam-hq/github'
 import { redirect } from 'next/navigation'
 import { ProjectNewPage } from '../../../components/ProjectNewPage'
 import { getOrganizationId } from '../../../features/organizations/services/getOrganizationId'
@@ -26,17 +25,9 @@ export default async function NewProjectPage() {
   }
 
   const { data } = await supabase.auth.getSession()
-
   if (data.session === null) {
     redirect(urlgen('login'))
   }
 
-  const { installations } = await getInstallations(data.session)
-
-  return (
-    <ProjectNewPage
-      installations={installations}
-      organizationId={organizationId}
-    />
-  )
+  return <ProjectNewPage organizationId={organizationId} />
 }
