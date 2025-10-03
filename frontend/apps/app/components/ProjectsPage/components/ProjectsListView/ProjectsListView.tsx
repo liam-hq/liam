@@ -94,7 +94,14 @@ export function ProjectsListView({
       </div>
 
       {projects === null || projects.length === 0 ? (
-        <EmptyProjectsState projects={projects} />
+        <EmptyProjectsState
+          projects={projects}
+          createProjectHref={
+            organizationId
+              ? urlgen('projects/new')
+              : urlgen('organizations/new')
+          }
+        />
       ) : (
         <div className={styles.projectsGrid}>
           {projects.map((project) => (

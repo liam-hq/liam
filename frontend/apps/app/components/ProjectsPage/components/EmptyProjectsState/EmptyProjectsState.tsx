@@ -40,6 +40,10 @@ export const EmptyProjectsState: FC<EmptyProjectsStateProps> = ({
             <br />
             Try using different keywords.
           </p>
+
+          <Link href={createProjectHref} className={styles.createButton}>
+            Add New Project
+          </Link>
         </div>
       )}
     </div>
