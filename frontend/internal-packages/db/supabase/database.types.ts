@@ -1293,6 +1293,36 @@ export type Database = {
           },
         ]
       }
+      user_provider_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          provider: string
+          refresh_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          provider: string
+          refresh_token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          provider?: string
+          refresh_token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           avatar_url: string | null
@@ -1400,7 +1430,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { '': string } | { '': unknown } | { '': unknown }
-        Returns: string
+        Returns: unknown
       }
       put_checkpoint: {
         Args: { p_blobs: Json; p_checkpoint: Json }

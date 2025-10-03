@@ -913,6 +913,19 @@ $$;
 ALTER FUNCTION "public"."set_schema_file_paths_organization_id"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."set_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."set_updated_at"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."sync_existing_users"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -1499,6 +1512,20 @@ CREATE TABLE IF NOT EXISTS "public"."schema_file_paths" (
 ALTER TABLE "public"."schema_file_paths" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."user_provider_tokens" (
+    "user_id" "uuid" NOT NULL,
+    "provider" "text" NOT NULL,
+    "access_token" "text" NOT NULL,
+    "refresh_token" "text" NOT NULL,
+    "expires_at" timestamp with time zone,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."user_provider_tokens" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
@@ -1710,6 +1737,11 @@ ALTER TABLE ONLY "public"."users"
 
 
 
+ALTER TABLE ONLY "public"."user_provider_tokens"
+    ADD CONSTRAINT "user_provider_tokens_pkey" PRIMARY KEY ("user_id", "provider");
+
+
+
 CREATE INDEX "building_schema_versions_building_schema_id_idx" ON "public"."building_schema_versions" USING "btree" ("building_schema_id");
 
 
@@ -1903,6 +1935,10 @@ CREATE OR REPLACE TRIGGER "set_review_suggestion_snippets_organization_id_trigge
 
 
 CREATE OR REPLACE TRIGGER "set_schema_file_paths_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."schema_file_paths" FOR EACH ROW EXECUTE FUNCTION "public"."set_schema_file_paths_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_user_provider_tokens_updated_at" BEFORE UPDATE ON "public"."user_provider_tokens" FOR EACH ROW EXECUTE FUNCTION "public"."set_updated_at"();
 
 
 
@@ -2191,6 +2227,11 @@ ALTER TABLE ONLY "public"."schema_file_paths"
 
 ALTER TABLE ONLY "public"."schema_file_paths"
     ADD CONSTRAINT "schema_file_paths_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."user_provider_tokens"
+    ADD CONSTRAINT "user_provider_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
 
 
 
@@ -3242,6 +3283,21 @@ COMMENT ON POLICY "service_role_can_update_all_projects" ON "public"."projects" 
 
 
 
+ALTER TABLE "public"."user_provider_tokens" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "user_provider_tokens_select_self" ON "public"."user_provider_tokens" FOR SELECT TO "authenticated" USING (("auth"."uid"() = "user_id"));
+
+
+
+CREATE POLICY "user_provider_tokens_update_self" ON "public"."user_provider_tokens" FOR UPDATE TO "authenticated" USING (("auth"."uid"() = "user_id")) WITH CHECK (("auth"."uid"() = "user_id"));
+
+
+
+CREATE POLICY "user_provider_tokens_upsert_self" ON "public"."user_provider_tokens" FOR INSERT TO "authenticated" WITH CHECK (("auth"."uid"() = "user_id"));
+
+
+
 ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
 
 
@@ -4174,6 +4230,11 @@ GRANT ALL ON FUNCTION "public"."set_schema_file_paths_organization_id"() TO "ser
 
 
 
+GRANT ALL ON FUNCTION "public"."set_updated_at"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_updated_at"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "postgres";
 GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "anon";
 GRANT ALL ON FUNCTION "public"."sparsevec_cmp"("public"."sparsevec", "public"."sparsevec") TO "authenticated";
@@ -4680,6 +4741,11 @@ GRANT ALL ON TABLE "public"."review_suggestion_snippets" TO "service_role";
 
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "authenticated";
 GRANT ALL ON TABLE "public"."schema_file_paths" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."user_provider_tokens" TO "authenticated";
+GRANT ALL ON TABLE "public"."user_provider_tokens" TO "service_role";
 
 
 
