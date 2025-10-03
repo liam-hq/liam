@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  isHumanMessage,
   mapStoredMessagesToChatMessages,
   type StoredMessage,
 } from '@langchain/core/messages'
@@ -114,7 +113,7 @@ export const SessionDetailPageClient: FC<Props> = ({
     (artifact !== null || selectedVersion !== null) && activeTab
 
   const chatMessages = mapStoredMessagesToChatMessages(initialMessages)
-  const { isStreaming, messages, start, error } = useStream({
+  const { isStreaming, messages, start, replay, error } = useStream({
     initialMessages: chatMessages,
     designSessionId,
   })
@@ -127,27 +126,42 @@ export const SessionDetailPageClient: FC<Props> = ({
   // Auto-trigger workflow on page load if there's an unanswered user message
   useEffect(() => {
     const triggerInitialWorkflow = async () => {
-      // Skip if already triggered
-      if (hasTriggeredInitialWorkflow.current) return
+      const { determineWorkflowAction } = await import(
+        './utils/determineWorkflowAction'
+      )
+      const { getWorkflowInProgress } = await import('./utils/workflowStorage')
 
-      if (messages.length !== 1) return
+      const isWorkflowInProgress = getWorkflowInProgress(designSessionId)
 
-      const firstItem = messages[0]
-      if (!firstItem || !isHumanMessage(firstItem)) return
+      const action = determineWorkflowAction(
+        messages,
+        isWorkflowInProgress,
+        hasTriggeredInitialWorkflow.current,
+      )
+
+      if (action.type === 'none') return
 
       // Mark as triggered before the async call
       hasTriggeredInitialWorkflow.current = true
 
-      // Trigger the workflow for the initial user message
-      await start({
-        designSessionId,
-        userInput: firstItem.text,
-        isDeepModelingEnabled,
-      })
+      if (action.type === 'replay') {
+        // Trigger replay for interrupted workflow
+        await replay({
+          designSessionId,
+          isDeepModelingEnabled,
+        })
+      } else if (action.type === 'start') {
+        // Trigger the workflow for the initial user message
+        await start({
+          designSessionId,
+          userInput: action.userInput,
+          isDeepModelingEnabled,
+        })
+      }
     }
 
     triggerInitialWorkflow()
-  }, [messages, designSessionId, isDeepModelingEnabled, start])
+  }, [messages, designSessionId, isDeepModelingEnabled, start, replay])
 
   return (
     <div className={styles.container}>

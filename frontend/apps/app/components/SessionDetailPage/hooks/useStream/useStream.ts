@@ -77,10 +77,17 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
   const abortRef = useRef<AbortController | null>(null)
   const retryCountRef = useRef(0)
 
-  const finalizeStream = useCallback(() => {
+  const finalizeStream = useCallback((sessionId: string) => {
     setIsStreaming(false)
     abortRef.current = null
     retryCountRef.current = 0
+
+    // Clear workflow in progress flag
+    import('../../utils/workflowStorage').then(
+      ({ clearWorkflowInProgress }) => {
+        clearWorkflowInProgress(sessionId)
+      },
+    )
   }, [])
 
   const stop = useCallback(() => {
@@ -163,6 +170,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
     async (
       endpoint: string,
       payload: unknown,
+      sessionId: string,
     ): Promise<Result<StreamAttemptStatus, StreamError>> => {
       abortRef.current?.abort()
 
@@ -180,7 +188,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
         })
 
         if (!res.body) {
-          finalizeStream()
+          finalizeStream(sessionId)
           return err({
             type: 'network',
             message: ERROR_MESSAGES.FETCH_FAILED,
@@ -192,7 +200,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
 
         if (!endEventReceived) {
           if (controller.signal.aborted) {
-            finalizeStream()
+            finalizeStream(sessionId)
             return err({
               type: 'abort',
               message: 'Request was aborted',
@@ -204,10 +212,10 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
           return ok('shouldRetry')
         }
 
-        finalizeStream()
+        finalizeStream(sessionId)
         return ok('complete')
       } catch (unknownError) {
-        finalizeStream()
+        finalizeStream(sessionId)
 
         if (
           unknownError instanceof Error &&
@@ -233,7 +241,11 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
         retryCountRef.current = attempt
 
-        const result = await runStreamAttempt('/api/chat/replay', params)
+        const result = await runStreamAttempt(
+          '/api/chat/replay',
+          params,
+          params.designSessionId,
+        )
 
         if (result.isErr()) {
           return err(result.error)
@@ -245,7 +257,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
       }
 
       const timeoutMessage = ERROR_MESSAGES.CONNECTION_TIMEOUT
-      finalizeStream()
+      finalizeStream(params.designSessionId)
       setError(timeoutMessage)
       return err({
         type: 'timeout',
@@ -260,7 +272,18 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
       abortRef.current?.abort()
       retryCountRef.current = 0
 
-      const result = await runStreamAttempt('/api/chat/stream', params)
+      // Set workflow in progress flag
+      import('../../utils/workflowStorage').then(
+        ({ setWorkflowInProgress }) => {
+          setWorkflowInProgress(params.designSessionId)
+        },
+      )
+
+      const result = await runStreamAttempt(
+        '/api/chat/stream',
+        params,
+        params.designSessionId,
+      )
 
       if (result.isErr()) {
         return err(result.error)
@@ -284,6 +307,7 @@ export const useStream = ({ designSessionId, initialMessages }: Props) => {
     error,
     stop,
     start,
+    replay,
     clearError,
   }
 }
