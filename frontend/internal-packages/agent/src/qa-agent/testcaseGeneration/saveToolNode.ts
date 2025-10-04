@@ -9,17 +9,9 @@ import type { testcaseAnnotation } from './testcaseAnnotation'
  */
 export const saveToolNode = async (
   state: typeof testcaseAnnotation.State,
-  _config?: RunnableConfig,
+  config?: RunnableConfig,
 ) => {
   const toolNode = new ToolNode([saveTestcaseTool])
-
-  const config = {
-    ..._config,
-    configurable: {
-      ..._config?.configurable,
-      requirementId: state.currentRequirement.requirementId,
-    },
-  }
 
   const stream = await toolNode.stream(state, config)
 

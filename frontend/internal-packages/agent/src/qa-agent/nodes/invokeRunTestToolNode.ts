@@ -17,7 +17,6 @@ export const invokeRunTestToolNode = async (
     ...config,
     configurable: {
       ...config.configurable,
-      testcases: state.testcases,
       ddlStatements,
       requiredExtensions,
       designSessionId: state.designSessionId,

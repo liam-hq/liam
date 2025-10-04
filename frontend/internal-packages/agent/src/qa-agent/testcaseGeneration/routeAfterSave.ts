@@ -2,14 +2,14 @@ import { END } from '@langchain/langgraph'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
 /**
- * Route after saveToolNode based on whether testcases were successfully saved
+ * Route after saveToolNode based on whether SQL was successfully saved
  */
 export const routeAfterSave = (
   state: typeof testcaseAnnotation.State,
 ): 'generateTestcase' | typeof END => {
-  const { testcases } = state
+  const { generatedSqls } = state
 
-  if (testcases.length > 0) {
+  if (generatedSqls.length > 0) {
     return END
   }
 

@@ -234,13 +234,16 @@ The `qaAgent` node is implemented as a **LangGraph subgraph** that encapsulates 
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	testcaseGeneration(testcaseGeneration)
+	applyGeneratedSqls(applyGeneratedSqls)
 	validateSchema(validateSchema)
 	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
+	applyGeneratedSqls --> validateSchema;
 	invokeRunTestTool --> __end__;
-	testcaseGeneration --> validateSchema;
+	testcaseGeneration --> applyGeneratedSqls;
 	validateSchema --> invokeRunTestTool;
 	__start__ -.-> testcaseGeneration;
+	__start__ -.-> applyGeneratedSqls;
 	__start__ -.-> validateSchema;
 	__start__ -.-> invokeRunTestTool;
 	__start__ -.-> __end__;
@@ -257,6 +260,12 @@ graph TD;
 - **Performed by**: Multiple parallel instances of testcase generation subgraph
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Output**: AI-generated test cases with DML operations using tool calls
+
+#### 2. applyGeneratedSqls Node
+
+- **Purpose**: Maps generated SQLs from testcaseGeneration to analyzedRequirements.testcases
+- **Performed by**: applyGeneratedSqlsNode function
+- **Output**: Updates analyzedRequirements state with generated SQL for each testcase
 
 **Testcase Generation Subgraph Architecture:**
 
@@ -285,35 +294,35 @@ graph TD;
 - **generateTestcase**: Generates test cases and DML operations using GPT-5-nano with specialized prompts
 - **invokeSaveTool**: Executes saveTestcaseTool to persist generated test cases with DML operations
 
-#### 2. validateSchemaRequirements Node
+#### 3. validateSchemaRequirements Node
 
 - **Purpose**: Pre-validation node that checks if schema can fulfill requirements before test generation
 - **Performed by**: Schema validation logic with requirement analysis
 - **Retry Policy**: maxAttempts: 3 (internal to testcaseGeneration subgraph)
 - **Decision Making**: Routes to generateTestcase if sufficient, or END if schema is insufficient
 
-#### 3. generateTestcase Node
+#### 4. generateTestcase Node
 
 - **Purpose**: Generates test cases and DML operations for a single requirement
 - **Performed by**: GPT-5-nano with specialized test case generation prompts
 - **Retry Policy**: maxAttempts: 3 (internal to testcaseGeneration subgraph)
 - **Tool Integration**: Uses saveTestcaseTool for structured test case output
 
-#### 4. invokeSaveTool Node
+#### 5. invokeSaveTool Node
 
 - **Purpose**: Executes saveTestcaseTool to persist generated test cases
 - **Performed by**: ToolNode with saveTestcaseTool
 - **Retry Policy**: maxAttempts: 3 (internal to testcaseGeneration subgraph)
 - **Output**: Saves test cases with DML operations to workflow state
 
-#### 5. validateSchema Node
+#### 6. validateSchema Node
 
 - **Purpose**: Creates AI message to trigger test execution for schema validation
 - **Performed by**: validateSchemaNode function
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Output**: Generates tool call for runTestTool execution
 
-#### 6. invokeRunTestTool Node
+#### 7. invokeRunTestTool Node
 
 - **Purpose**: Executes DML statements and validates schema functionality
 - **Performed by**: ToolNode with runTestTool
@@ -322,9 +331,10 @@ graph TD;
 
 ### QA Agent Flow Patterns
 
-1. **Map-Reduce Flow**: `START → testcaseGeneration (parallel) → validateSchema → invokeRunTestTool → END`
-2. **Parallel Processing**: Multiple testcase generation instances run concurrently  
-3. **Split Validation**: Test case generation and execution are now separated - generation creates test cases, then validation triggers test execution via the new runTestTool
+1. **Map-Reduce Flow**: `START → testcaseGeneration (parallel) → applyGeneratedSqls → validateSchema → invokeRunTestTool → END`
+2. **Parallel Processing**: Multiple testcase generation instances run concurrently
+3. **SQL Mapping**: Generated SQLs are mapped to analyzedRequirements.testcases before validation
+4. **Split Validation**: Test case generation and execution are now separated - generation creates test cases, then validation triggers test execution via the new runTestTool
 
 ### QA Agent Benefits
 

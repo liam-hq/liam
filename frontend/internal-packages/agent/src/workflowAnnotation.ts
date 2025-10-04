@@ -9,12 +9,12 @@ export const workflowAnnotation = Annotation.Root({
   analyzedRequirements: Annotation<AnalyzedRequirements>({
     reducer: (x, y) => y ?? x,
     default: () => ({
-      businessRequirement: '',
-      functionalRequirements: {},
+      goal: '',
+      testcases: {},
     }),
   }),
   testcases: Annotation<Testcase[]>({
-    reducer: (prev, next) => prev.concat(next),
+    reducer: (x, y) => y ?? x,
     default: () => [],
   }),
   schemaData: Annotation<Schema>,

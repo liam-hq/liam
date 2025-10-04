@@ -28,8 +28,8 @@ describe('analyzeRequirementsNode Integration', () => {
     const state: PmAgentState = {
       messages: [new HumanMessage(userInput)],
       analyzedRequirements: {
-        businessRequirement: '',
-        functionalRequirements: {},
+        goal: '',
+        testcases: {},
       },
       designSessionId: context.designSessionId,
       schemaData: aSchema({

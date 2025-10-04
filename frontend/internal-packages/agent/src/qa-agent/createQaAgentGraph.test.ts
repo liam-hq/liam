@@ -8,13 +8,16 @@ describe('createQaAgentGraph', () => {
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	testcaseGeneration(testcaseGeneration)
+	applyGeneratedSqls(applyGeneratedSqls)
 	validateSchema(validateSchema)
 	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
+	applyGeneratedSqls --> validateSchema;
 	invokeRunTestTool --> __end__;
-	testcaseGeneration --> validateSchema;
+	testcaseGeneration --> applyGeneratedSqls;
 	validateSchema --> invokeRunTestTool;
 	__start__ -.-> testcaseGeneration;
+	__start__ -.-> applyGeneratedSqls;
 	__start__ -.-> validateSchema;
 	__start__ -.-> invokeRunTestTool;
 	__start__ -.-> __end__;

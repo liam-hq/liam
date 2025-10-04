@@ -1,5 +1,10 @@
 import * as v from 'valibot'
 
+// TODO: Deprecate this Artifact type definition in the future.
+// Plan to use AnalyzedRequirements structure from the agent package directly
+// instead of maintaining this separate but similar structure.
+// This will eliminate redundant type conversions between Artifact and AnalyzedRequirements.
+
 // DML execution log schema
 export const dmlExecutionLogSchema = v.object({
   executed_at: v.pipe(v.string(), v.isoDateTime()),

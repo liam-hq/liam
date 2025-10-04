@@ -43,17 +43,20 @@ describe('testcaseGeneration Integration', () => {
 
     const state: TestcaseState = {
       messages: [],
-      currentRequirement: {
-        type: 'functional',
+      currentTestcase: {
         category: 'tasks',
-        requirement: 'Users can create tasks with title and status',
-        businessContext:
-          'A task management system where users create projects and tasks',
-        requirementId: '550e8400-e29b-41d4-a716-446655440000',
+        testcase: {
+          id: '123',
+          title: 'Users can create tasks with title and status',
+          type: 'INSERT',
+          sql: '',
+          testResults: [],
+        },
       },
+      goal: 'A task management system where users create projects and tasks',
       schemaData: mockSchema,
-      testcases: [],
       schemaIssues: [],
+      generatedSqls: [],
     }
 
     // Act

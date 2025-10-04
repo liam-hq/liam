@@ -92,8 +92,8 @@ export const setupWorkflowState = (
         messages: allMessages,
         schemaData,
         analyzedRequirements: {
-          businessRequirement: '',
-          functionalRequirements: {},
+          goal: '',
+          testcases: {},
         },
         testcases: [],
         schemaIssues: [],

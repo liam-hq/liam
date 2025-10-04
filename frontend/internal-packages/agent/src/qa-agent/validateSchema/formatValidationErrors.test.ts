@@ -1,103 +1,181 @@
 import { describe, expect, it } from 'vitest'
+import type { AnalyzedRequirements } from '../../utils/schema/analyzedRequirements'
 import { formatValidationErrors } from './formatValidationErrors'
-import type { TestcaseDmlExecutionResult } from './types'
 
 describe('formatValidationErrors', () => {
-  it('should format single error with single operation', () => {
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'Test Insert Operation',
-        success: false,
-        failedOperation: {
-          sql: "INSERT INTO users (id, name) VALUES (1, 'John')",
-          error: 'duplicate key value violates unique constraint',
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+  it('should format single failed test case', () => {
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'Test Insert Operation',
+            type: 'INSERT',
+            sql: "INSERT INTO users (id, name) VALUES (1, 'John')",
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'duplicate key value violates unique constraint',
+              },
+            ],
+          },
+        ],
       },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** Test Insert Operation
-      #### 1. Error: \`duplicate key value violates unique constraint\`
+      #### Error: \`duplicate key value violates unique constraint\`
       \`\`\`sql
       INSERT INTO users (id, name) VALUES (1, 'John')
       \`\`\`"
     `)
   })
 
-  it('should format multiple errors in single test case', () => {
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'Complex Transaction Test',
-        success: false,
-        failedOperation: {
-          error: 'invalid input syntax for type uuid',
-          sql: "INSERT INTO accounts (id) VALUES ('invalid-uuid')",
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+  it('should format single test case with complex error', () => {
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        accounts: [
+          {
+            id: 'test-1',
+            title: 'Complex Transaction Test',
+            type: 'INSERT',
+            sql: "INSERT INTO accounts (id) VALUES ('invalid-uuid')",
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'invalid input syntax for type uuid',
+              },
+            ],
+          },
+        ],
       },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** Complex Transaction Test
-      #### 1. Error: \`invalid input syntax for type uuid\`
+      #### Error: \`invalid input syntax for type uuid\`
       \`\`\`sql
       INSERT INTO accounts (id) VALUES ('invalid-uuid')
       \`\`\`"
     `)
   })
 
-  it('should format errors from multiple test cases', () => {
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'First Test Case',
-        success: false,
-        failedOperation: {
-          sql: 'INSERT INTO table1 VALUES (1)',
-          error: 'table1 does not exist',
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+  it('should format multiple failed test cases', () => {
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'First Test Case',
+            type: 'INSERT',
+            sql: 'INSERT INTO table1 VALUES (1)',
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'table1 does not exist',
+              },
+            ],
+          },
+          {
+            id: 'test-2',
+            title: 'Second Test Case',
+            type: 'SELECT',
+            sql: 'SELECT * FROM table2',
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: true,
+                message: 'Operations completed successfully',
+              },
+            ],
+          },
+        ],
+        accounts: [
+          {
+            id: 'test-3',
+            title: 'Third Test Case',
+            type: 'UPDATE',
+            sql: 'UPDATE table2 SET col = 1',
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'permission denied',
+              },
+            ],
+          },
+        ],
       },
-      {
-        testCaseId: 'test-2',
-        testCaseTitle: 'Second Test Case',
-        success: true,
-        executedAt: new Date('2024-01-01T00:00:00Z'),
-      },
-      {
-        testCaseId: 'test-3',
-        testCaseTitle: 'Third Test Case',
-        success: false,
-        failedOperation: {
-          sql: 'UPDATE table2 SET col = 1',
-          error: 'permission denied',
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
-      },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** First Test Case
-      #### 1. Error: \`table1 does not exist\`
+      #### Error: \`table1 does not exist\`
       \`\`\`sql
       INSERT INTO table1 VALUES (1)
       \`\`\`
 
       ### ❌ **Test Case:** Third Test Case
-      #### 1. Error: \`permission denied\`
+      #### Error: \`permission denied\`
       \`\`\`sql
       UPDATE table2 SET col = 1
       \`\`\`"
     `)
+  })
+
+  it('should return success message when no failures', () => {
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'Successful Test',
+            type: 'INSERT',
+            sql: 'INSERT INTO users VALUES (1)',
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: true,
+                message: 'Operations completed successfully',
+              },
+            ],
+          },
+        ],
+      },
+    }
+
+    const formatted = formatValidationErrors(analyzedRequirements)
+
+    expect(formatted).toBe(
+      'Database validation complete: all checks passed successfully',
+    )
+  })
+
+  it('should return success message when no test cases', () => {
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {},
+    }
+
+    const formatted = formatValidationErrors(analyzedRequirements)
+
+    expect(formatted).toBe(
+      'Database validation complete: all checks passed successfully',
+    )
   })
 
   it('should display full long SQL statements', () => {
@@ -112,24 +190,32 @@ describe('formatValidationErrors', () => {
       'value8', 'value9', 'value10', 'value11', 'value12', 'value13'
     )`
 
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'Long SQL Test',
-        success: false,
-        failedOperation: {
-          sql: longSql,
-          error: 'syntax error',
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'Long SQL Test',
+            type: 'INSERT',
+            sql: longSql,
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'syntax error',
+              },
+            ],
+          },
+        ],
       },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** Long SQL Test
-      #### 1. Error: \`syntax error\`
+      #### Error: \`syntax error\`
       \`\`\`sql
       INSERT INTO very_long_table_name_with_many_columns (
             column1, column2, column3, column4, column5, column6, column7, column8,
@@ -151,24 +237,32 @@ describe('formatValidationErrors', () => {
     -- Another comment
     UPDATE users SET active = true WHERE id = 1;`
 
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'SQL with Comments',
-        success: false,
-        failedOperation: {
-          sql: sqlWithComments,
-          error: 'some error',
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'SQL with Comments',
+            type: 'INSERT',
+            sql: sqlWithComments,
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'some error',
+              },
+            ],
+          },
+        ],
       },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** SQL with Comments
-      #### 1. Error: \`some error\`
+      #### Error: \`some error\`
       \`\`\`sql
       -- This is a comment
           INSERT INTO users (id, name) VALUES (1, 'John');
@@ -179,24 +273,32 @@ describe('formatValidationErrors', () => {
   })
 
   it('should handle failed case without SQL details', () => {
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'Test with minimal error info',
-        success: false,
-        failedOperation: {
-          error: 'Unknown error occurred',
-          sql: '',
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'Test with minimal error info',
+            type: 'INSERT',
+            sql: '',
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'Unknown error occurred',
+              },
+            ],
+          },
+        ],
       },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** Test with minimal error info
-      #### 1. Error: \`Unknown error occurred\`
+      #### Error: \`Unknown error occurred\`
       \`\`\`sql
 
       \`\`\`"
@@ -204,54 +306,70 @@ describe('formatValidationErrors', () => {
   })
 
   it('should handle special characters in error messages', () => {
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'Test with Special Characters',
-        success: false,
-        failedOperation: {
-          sql: "INSERT INTO test VALUES ('data')",
-          error: 'Error with `backticks` and "quotes" and \'single quotes\'',
-        },
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'Test with Special Characters',
+            type: 'INSERT',
+            sql: "INSERT INTO test VALUES ('data')",
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message:
+                  'Error with `backticks` and "quotes" and \'single quotes\'',
+              },
+            ],
+          },
+        ],
       },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
       "### ❌ **Test Case:** Test with Special Characters
-      #### 1. Error: \`Error with \`backticks\` and "quotes" and 'single quotes'\`
+      #### Error: \`Error with \`backticks\` and "quotes" and 'single quotes'\`
       \`\`\`sql
       INSERT INTO test VALUES ('data')
       \`\`\`"
     `)
   })
 
-  it('should return success message when no errors', () => {
-    const results: TestcaseDmlExecutionResult[] = [
-      {
-        testCaseId: 'test-1',
-        testCaseTitle: 'Successful Test',
-        success: true,
-        executedAt: new Date('2024-01-01T00:00:00Z'),
+  it('should use latest test result when multiple results exist', () => {
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: 'Test goal',
+      testcases: {
+        users: [
+          {
+            id: 'test-1',
+            title: 'Test with Multiple Results',
+            type: 'INSERT',
+            sql: 'INSERT INTO users VALUES (1)',
+            testResults: [
+              {
+                executedAt: '2024-01-01T00:00:00Z',
+                success: false,
+                message: 'First execution failed',
+              },
+              {
+                executedAt: '2024-01-01T01:00:00Z',
+                success: true,
+                message: 'Second execution succeeded',
+              },
+            ],
+          },
+        ],
       },
-    ]
+    }
 
-    const formatted = formatValidationErrors(results)
+    const formatted = formatValidationErrors(analyzedRequirements)
 
-    expect(formatted).toMatchInlineSnapshot(
-      `"Database validation complete: all checks passed successfully"`,
-    )
-  })
-
-  it('should return success message when empty results', () => {
-    const results: TestcaseDmlExecutionResult[] = []
-
-    const formatted = formatValidationErrors(results)
-
-    expect(formatted).toMatchInlineSnapshot(
-      `"Database validation complete: all checks passed successfully"`,
+    expect(formatted).toBe(
+      'Database validation complete: all checks passed successfully',
     )
   })
 })

@@ -28,21 +28,55 @@ describe('invokeSaveArtifactToolNode Integration', () => {
           id: 'test-tool-call-id',
           name: 'saveRequirementsToArtifactTool',
           args: {
-            businessRequirement:
-              'Create a task management system for teams to collaborate effectively',
-            functionalRequirements: {
+            goal: 'Create a task management system for teams to collaborate effectively',
+            testcases: {
               'User Management': [
-                'Users can register and login to the system',
-                'Users can create and manage their profiles',
+                {
+                  title: 'Users can register and login to the system',
+                  type: 'INSERT',
+                  sql: '',
+                  testResults: [],
+                },
+                {
+                  title: 'Users can create and manage their profiles',
+                  type: 'UPDATE',
+                  sql: '',
+                  testResults: [],
+                },
               ],
               'Project Management': [
-                'Users can create projects',
-                'Users can assign team members to projects',
+                {
+                  title: 'Users can create projects',
+                  type: 'INSERT',
+                  sql: '',
+                  testResults: [],
+                },
+                {
+                  title: 'Users can assign team members to projects',
+                  type: 'INSERT',
+                  sql: '',
+                  testResults: [],
+                },
               ],
               'Task Management': [
-                'Users can create tasks within projects',
-                'Users can assign tasks to team members',
-                'Users can track task progress and status',
+                {
+                  title: 'Users can create tasks within projects',
+                  type: 'INSERT',
+                  sql: '',
+                  testResults: [],
+                },
+                {
+                  title: 'Users can assign tasks to team members',
+                  type: 'UPDATE',
+                  sql: '',
+                  testResults: [],
+                },
+                {
+                  title: 'Users can track task progress and status',
+                  type: 'SELECT',
+                  sql: '',
+                  testResults: [],
+                },
               ],
             },
           },
@@ -53,8 +87,8 @@ describe('invokeSaveArtifactToolNode Integration', () => {
     const state: PmAgentState = {
       messages: [toolCallMessage],
       analyzedRequirements: {
-        businessRequirement: '',
-        functionalRequirements: {},
+        goal: '',
+        testcases: {},
       },
       designSessionId: context.designSessionId,
       schemaData: aSchema({

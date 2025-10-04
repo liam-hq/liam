@@ -13,17 +13,19 @@ import { SSE_EVENTS } from '../../streaming/constants'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { getConfigurable } from '../../utils/getConfigurable'
 import { toJsonSchema } from '../../utils/jsonSchema'
-import type {
-  AnalyzedRequirements,
-  RequirementItem,
+import {
+  type AnalyzedRequirements,
+  testCaseSchema,
 } from '../../utils/schema/analyzedRequirements'
 
-const analyzedRequirementsWithoutIdSchema = v.object({
-  businessRequirement: v.string(),
-  functionalRequirements: v.record(v.string(), v.array(v.string())),
+const testCaseInputSchema = v.omit(testCaseSchema, ['id', 'sql', 'testResults'])
+
+const analyzedRequirementsInputSchema = v.object({
+  goal: v.string(),
+  testcases: v.record(v.string(), v.array(testCaseInputSchema)),
 })
 
-const toolSchema = toJsonSchema(analyzedRequirementsWithoutIdSchema)
+const toolSchema = toJsonSchema(analyzedRequirementsInputSchema)
 
 const configSchema = v.object({
   toolCall: v.object({
@@ -40,65 +42,48 @@ type ToolConfigurable = {
   toolCallId: string
 }
 
-type AnalyzedRequirementsWithoutId = v.InferOutput<
-  typeof analyzedRequirementsWithoutIdSchema
->
-
-/**
- * Convert string[] format to RequirementItem[] format with generated UUIDs
- */
-const convertToRequirementItems = (
-  requirements: Record<string, string[]>,
-): Record<string, RequirementItem[]> => {
-  const result: Record<string, RequirementItem[]> = {}
-
-  for (const [category, items] of Object.entries(requirements)) {
-    result[category] = items.map((desc) => ({
-      id: uuidv4(),
-      desc,
-    }))
-  }
-
-  return result
-}
-
-/**
- * Convert LLM output format to RequirementItems format with generated UUIDs
- */
-const convertLlmAnalyzedRequirements = (
-  input: AnalyzedRequirementsWithoutId,
-): AnalyzedRequirements => ({
-  businessRequirement: input.businessRequirement,
-  functionalRequirements: convertToRequirementItems(
-    input.functionalRequirements,
-  ),
-})
-
 /**
  * Create an Artifact from analyzed requirements
  * @param analyzedRequirements - Validated analyzed requirements object
  * @returns Artifact object ready to be saved
+ *
+ * TODO: Remove this conversion function in the future.
+ * Plan to deprecate the Artifact type definition in artifact.ts and use
+ * AnalyzedRequirements structure directly as the Artifact.
+ * This will eliminate the need for this transformation between similar structures.
  */
 const createArtifactFromRequirements = (
   analyzedRequirements: AnalyzedRequirements,
 ): Artifact => {
   const requirements: Artifact['requirement_analysis']['requirements'] = []
 
-  for (const [category, items] of Object.entries(
-    analyzedRequirements.functionalRequirements,
+  for (const [category, testcases] of Object.entries(
+    analyzedRequirements.testcases,
   )) {
+    const testCases: Artifact['requirement_analysis']['requirements'][number]['test_cases'] =
+      testcases.map((tc) => ({
+        title: tc.title,
+        description: `Test for ${tc.type} operation`,
+        dmlOperation: {
+          operation_type: tc.type,
+          sql: tc.sql,
+          description: tc.title,
+          dml_execution_logs: [],
+        },
+      }))
+
     const requirement: Artifact['requirement_analysis']['requirements'][number] =
       {
         name: category,
-        description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
-        test_cases: [], // Empty array as test cases don't exist at this point
+        description: [analyzedRequirements.goal],
+        test_cases: testCases,
       }
     requirements.push(requirement)
   }
 
   return {
     requirement_analysis: {
-      business_requirement: analyzedRequirements.businessRequirement,
+      business_requirement: analyzedRequirements.goal,
       requirements,
     },
   }
@@ -125,8 +110,23 @@ const getToolConfigurable = (
  */
 export const saveRequirementsToArtifactTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<Command> => {
-    const parseResult = v.parse(analyzedRequirementsWithoutIdSchema, input)
-    const analyzedRequirements = convertLlmAnalyzedRequirements(parseResult)
+    // Parse input and add id, sql, testResults to each testcase
+    const inputData = v.parse(analyzedRequirementsInputSchema, input)
+    const analyzedRequirements: AnalyzedRequirements = {
+      goal: inputData.goal,
+      testcases: Object.fromEntries(
+        Object.entries(inputData.testcases).map(([category, testcases]) => [
+          category,
+          testcases.map((tc) => ({
+            id: uuidv4(),
+            title: tc.title,
+            type: tc.type,
+            sql: '',
+            testResults: [],
+          })),
+        ]),
+      ),
+    }
 
     const toolConfigurableResult = getToolConfigurable(config)
     if (toolConfigurableResult.isErr()) {

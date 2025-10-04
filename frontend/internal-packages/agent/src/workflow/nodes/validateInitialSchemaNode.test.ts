@@ -46,8 +46,8 @@ describe('validateInitialSchemaNode Integration', () => {
           extensions: {},
         }),
         analyzedRequirements: {
-          businessRequirement: '',
-          functionalRequirements: {},
+          goal: '',
+          testcases: {},
         },
         testcases: [],
         schemaIssues: [],
@@ -98,8 +98,8 @@ describe('validateInitialSchemaNode Integration', () => {
           extensions: {},
         }),
         analyzedRequirements: {
-          businessRequirement: '',
-          functionalRequirements: {},
+          goal: '',
+          testcases: {},
         },
         testcases: [],
         schemaIssues: [],
@@ -139,8 +139,8 @@ describe('validateInitialSchemaNode Integration', () => {
           extensions: {},
         }),
         analyzedRequirements: {
-          businessRequirement: '',
-          functionalRequirements: {},
+          goal: '',
+          testcases: {},
         },
         testcases: [],
         schemaIssues: [],

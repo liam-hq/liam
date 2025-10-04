@@ -28,22 +28,22 @@ const model = new ChatOpenAI({
 
 /**
  * Generate Test Case Node for Subgraph
- * Generates test cases and DML operations for a single requirement
+ * Generates SQL for a single test case
  * This node is part of the testcase subgraph with isolated message state
  */
 export async function generateTestcaseNode(
   state: typeof testcaseAnnotation.State,
 ): Promise<{ messages: BaseMessage[] }> {
-  const { currentRequirement, schemaData, messages } = state
+  const { currentTestcase, schemaData, goal, messages } = state
 
   const schemaContext = convertSchemaToText(schemaData)
 
   const contextMessage = await humanPromptTemplateForTestcaseGeneration.format({
     schemaContext,
-    businessContext: currentRequirement.businessContext,
-    requirementType: currentRequirement.type,
-    requirementCategory: currentRequirement.category,
-    requirement: currentRequirement.requirement,
+    goal,
+    category: currentTestcase.category,
+    title: currentTestcase.testcase.title,
+    type: currentTestcase.testcase.type,
   })
 
   const cleanedMessages = removeReasoningFromMessages(messages)
@@ -69,7 +69,7 @@ export async function generateTestcaseNode(
   if (streamResult.isErr()) {
     // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
     throw new Error(
-      `Failed to generate test case for ${currentRequirement.category}: ${streamResult.error.message}`,
+      `Failed to generate SQL for ${currentTestcase.category}/${currentTestcase.testcase.title}: ${streamResult.error.message}`,
     )
   }
 

@@ -4,74 +4,113 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import type { StructuredTool } from '@langchain/core/tools'
 import { tool } from '@langchain/core/tools'
 import { Command } from '@langchain/langgraph'
-import type { DmlOperation } from '@liam-hq/artifact'
+import { executeQuery } from '@liam-hq/pglite-server'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import type { Testcase } from '../qa-agent/types'
 import { formatValidationErrors } from '../qa-agent/validateSchema/formatValidationErrors'
-import type { TestcaseDmlExecutionResult } from '../qa-agent/validateSchema/types'
 import { SSE_EVENTS } from '../streaming/constants'
 import { WorkflowTerminationError } from '../utils/errorHandling'
-import { executeTestcase } from '../utils/executeTestcase'
+import type {
+  AnalyzedRequirements,
+  TestCase,
+} from '../utils/schema/analyzedRequirements'
 import { getToolConfigurable } from './getToolConfigurable'
 import { transformStateToArtifact } from './transformStateToArtifact'
 
 /**
- * Execute DML operations by testcase with DDL statements
- * Combines DDL and testcase-specific DML into single execution units
+ * Build combined SQL for DDL and testcase
  */
-async function executeDmlOperationsByTestcase(
+const buildCombinedSql = (
   ddlStatements: string,
-  testcases: Testcase[],
-  requiredExtensions: string[],
-): Promise<TestcaseDmlExecutionResult[]> {
-  return Promise.all(
-    testcases.map((testcase) =>
-      executeTestcase(ddlStatements, testcase, requiredExtensions),
-    ),
+  testcase: TestCase,
+): string => {
+  const sqlParts = []
+
+  if (ddlStatements.trim()) {
+    sqlParts.push('-- DDL Statements', ddlStatements, '')
+  }
+
+  sqlParts.push(
+    `-- Test Case: ${testcase.id}`,
+    `-- ${testcase.title}`,
+    `-- ${testcase.type} operation\n${testcase.sql};`,
   )
+
+  return sqlParts.filter(Boolean).join('\n')
+}
+
+/**
+ * Execute a single testcase with DDL statements
+ */
+const executeTestCase = async (
+  ddlStatements: string,
+  testcase: TestCase,
+  requiredExtensions: string[],
+) => {
+  const combinedSql = buildCombinedSql(ddlStatements, testcase)
+  const startTime = new Date()
+
+  const sqlResults = await executeQuery(combinedSql, requiredExtensions)
+  const firstFailed = sqlResults.find((r) => !r.success)
+
+  if (firstFailed) {
+    const isErrorResult = (value: unknown): value is { error: unknown } =>
+      typeof value === 'object' && value !== null && 'error' in value
+
+    const error = isErrorResult(firstFailed.result)
+      ? String(firstFailed.result.error)
+      : String(firstFailed.result)
+
+    return {
+      executedAt: startTime.toISOString(),
+      success: false as const,
+      message: error,
+    }
+  }
+
+  return {
+    executedAt: startTime.toISOString(),
+    success: true as const,
+    message: 'Operations completed successfully',
+  }
+}
+
+/**
+ * Execute all test cases and update analyzedRequirements with results
+ */
+const executeTestCases = async (
+  ddlStatements: string,
+  analyzedRequirements: AnalyzedRequirements,
+  requiredExtensions: string[],
+): Promise<AnalyzedRequirements> => {
+  const updatedTestcases: Record<string, TestCase[]> = {}
+
+  for (const [category, testcases] of Object.entries(
+    analyzedRequirements.testcases,
+  )) {
+    updatedTestcases[category] = await Promise.all(
+      testcases.map(async (testcase) => {
+        const testResult = await executeTestCase(
+          ddlStatements,
+          testcase,
+          requiredExtensions,
+        )
+
+        return {
+          ...testcase,
+          testResults: [...testcase.testResults, testResult],
+        }
+      }),
+    )
+  }
+
+  return {
+    ...analyzedRequirements,
+    testcases: updatedTestcases,
+  }
 }
 
 const toolSchema = v.object({})
-
-/**
- * Update workflow state with testcase-based execution results
- */
-function updateWorkflowStateWithTestcaseResults(
-  testcases: Testcase[],
-  results: TestcaseDmlExecutionResult[],
-): Testcase[] {
-  const resultMap = new Map(
-    results.map((result) => [result.testCaseId, result]),
-  )
-
-  return testcases.map((testcase) => {
-    const testcaseResult = resultMap.get(testcase.id)
-
-    if (!testcaseResult) {
-      return testcase
-    }
-
-    const dmlOp: DmlOperation = testcase.dmlOperation
-    const executionLog = {
-      executed_at: testcaseResult.executedAt.toISOString(),
-      success: testcaseResult.success,
-      result_summary: testcaseResult.success
-        ? `Test Case "${testcaseResult.testCaseTitle}" operations completed successfully`
-        : `Test Case "${testcaseResult.testCaseTitle}" failed: ${testcaseResult.failedOperation?.error ?? 'Unknown error'}`,
-    }
-
-    const updatedDmlOperation = {
-      ...dmlOp,
-      dml_execution_logs: [executionLog],
-    }
-
-    return {
-      ...testcase,
-      dmlOperation: updatedDmlOperation,
-    }
-  })
-}
 
 export const runTestTool: StructuredTool = tool(
   async (_input: unknown, config: RunnableConfig): Promise<Command> => {
@@ -85,7 +124,6 @@ export const runTestTool: StructuredTool = tool(
 
     const {
       repositories,
-      testcases,
       ddlStatements,
       requiredExtensions,
       designSessionId,
@@ -93,7 +131,12 @@ export const runTestTool: StructuredTool = tool(
       toolCallId,
     } = toolConfigurableResult.value
 
-    if (testcases.length === 0) {
+    const totalTests = Object.values(analyzedRequirements.testcases).reduce(
+      (count, testcases) => count + testcases.length,
+      0,
+    )
+
+    if (totalTests === 0) {
       const toolMessage = new ToolMessage({
         id: uuidv4(),
         content: 'No test cases to execute.',
@@ -108,23 +151,22 @@ export const runTestTool: StructuredTool = tool(
       })
     }
 
-    // Execute all test cases (continue on failure - standard test framework behavior)
-    const testcaseExecutionResults = await executeDmlOperationsByTestcase(
+    // Execute all test cases and update analyzedRequirements with results
+    // (continue on failure - standard test framework behavior)
+    const updatedAnalyzedRequirements = await executeTestCases(
       ddlStatements,
-      testcases,
+      analyzedRequirements,
       requiredExtensions,
     )
 
-    // Update testcases with execution results
-    const updatedTestcases = updateWorkflowStateWithTestcaseResults(
-      testcases,
-      testcaseExecutionResults,
-    )
-
     // Save artifact with updated test results
+    // TODO: Remove testcases parameter in the future.
+    // All testcase data is now contained in analyzedRequirements.testcases.
+    // Plan to update transformStateToArtifact to accept only analyzedRequirements,
+    // eliminating the need for the separate testcases array parameter.
     const artifactState = {
-      testcases: updatedTestcases,
-      analyzedRequirements,
+      testcases: [],
+      analyzedRequirements: updatedAnalyzedRequirements,
     }
     const artifact = transformStateToArtifact(artifactState)
     await repositories.schema.upsertArtifact({
@@ -132,13 +174,29 @@ export const runTestTool: StructuredTool = tool(
       artifact,
     })
 
-    // Generate validation message
-    const validationMessage = formatValidationErrors(testcaseExecutionResults)
+    // Count passed and failed tests from testResults
+    let passedTests = 0
+    let failedTests = 0
+    for (const testcases of Object.values(
+      updatedAnalyzedRequirements.testcases,
+    )) {
+      for (const testcase of testcases) {
+        const latestResult =
+          testcase.testResults[testcase.testResults.length - 1]
+        if (latestResult) {
+          if (latestResult.success) {
+            passedTests++
+          } else {
+            failedTests++
+          }
+        }
+      }
+    }
 
-    // Create tool success message
-    const totalTests = testcaseExecutionResults.length
-    const passedTests = testcaseExecutionResults.filter((r) => r.success).length
-    const failedTests = totalTests - passedTests
+    // Generate validation message
+    const validationMessage = formatValidationErrors(
+      updatedAnalyzedRequirements,
+    )
 
     const summary =
       failedTests === 0
@@ -153,7 +211,7 @@ export const runTestTool: StructuredTool = tool(
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
 
     const updateData = {
-      testcases: updatedTestcases,
+      analyzedRequirements: updatedAnalyzedRequirements,
       messages: [toolMessage],
     }
 

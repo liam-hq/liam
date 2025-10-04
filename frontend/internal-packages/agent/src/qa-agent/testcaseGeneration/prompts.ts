@@ -1,71 +1,61 @@
 import { PromptTemplate } from '@langchain/core/prompts'
 
 const ROLE_CONTEXT = `
-You are a database testing expert specializing in Liam DB schema validation.
+You are a database testing SQL expert specializing in generating production-ready PostgreSQL SQL.
 Your SQL validates actual schema designs in production PostgreSQL environments.
 SUCCESS: Your executable SQL proves schema viability and dramatically increases design confidence.
 `
 
 const CRITICAL_INSTRUCTIONS = `
-CRITICAL: You MUST use the saveTestcase tool to save your generated test case. Do not provide test cases as text.
-GENERATE ONLY: Production-ready PostgreSQL DML that respects all constraints and executes without errors.
+CRITICAL: You MUST use the saveTestcase tool to save your generated SQL. Do not provide SQL as text.
+GENERATE ONLY: Production-ready PostgreSQL SQL that respects all constraints and executes without errors.
 `
 
-const TEST_REQUIREMENTS = `
-Create comprehensive test scenarios that include:
-- Valid data insertion tests that respect all schema constraints
-- Business logic validation tests (positive and negative scenarios)
-- Edge cases and boundary conditions within valid data ranges
-- Use gen_random_uuid() for UUID columns, not hardcoded strings
-- Ensure all DML operations are schema-compliant and executable without errors
+const SQL_REQUIREMENTS = `
+Generate SQL that:
+- Respects all schema constraints (foreign keys, NOT NULL, CHECK constraints, etc.)
+- Uses appropriate operations based on the test type (INSERT, UPDATE, DELETE, SELECT)
+- Validates business logic with realistic data
+- Handles edge cases and boundary conditions
+- Uses gen_random_uuid() for UUID columns, not hardcoded strings
+- Is schema-compliant and executable without errors
 `
 
 const EXAMPLES = `
-Use the saveTestcase tool with this structure:
+Use the saveTestcase tool to save only the SQL:
 {
-  "testcaseWithDml": {
-    "requirementType": "functional",
-    "requirementCategory": "category_from_requirement",
-    "requirement": "requirement_text_from_input",
-    "title": "Descriptive test case title",
-    "description": "Comprehensive description covering all test scenarios",
-    "dmlOperation": {
-      "operation_type": "INSERT",
-      "sql": "Your complete SQL test statements",
-      "description": "What this DML operation tests"
-    }
-  }
+  "sql": "Your complete SQL statement for the test case"
 }
 `
 
 /**
- * System prompt for generating test cases
+ * System prompt for generating SQL for test cases
  */
 export const SYSTEM_PROMPT_FOR_TESTCASE_GENERATION = `
 ${ROLE_CONTEXT}
 
 ${CRITICAL_INSTRUCTIONS}
 
-${TEST_REQUIREMENTS}
+${SQL_REQUIREMENTS}
 
 ${EXAMPLES}
 `
 
 /**
- * Human prompt template for test case generation
+ * Human prompt template for SQL generation
  */
 export const humanPromptTemplateForTestcaseGeneration =
   PromptTemplate.fromTemplate(`
 # Database Schema Context
 {schemaContext}
 
-# Business Context
-{businessContext}
+# Session Goal
+{goal}
 
-# Requirement to Test
-Type: {requirementType}
-Category: {requirementCategory}
-Requirement: {requirement}
+# Test Case to Generate SQL For
+Category: {category}
+Title: {title}
+Type: {type}
 
-Generate a comprehensive test case with DML operations for the above requirement.
+Generate production-ready PostgreSQL SQL for this test case.
 `)

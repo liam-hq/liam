@@ -2,7 +2,6 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { fromValibotSafeParse } from '@liam-hq/neverthrow'
 import { ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
-import { type Testcase, testcaseSchema } from '../qa-agent/types'
 import type { Repositories } from '../repositories'
 import { getConfigurable } from '../utils/getConfigurable'
 import {
@@ -15,7 +14,6 @@ const toolConfigurableSchema = v.object({
     id: v.string(),
   }),
   configurable: v.object({
-    testcases: v.array(testcaseSchema),
     ddlStatements: v.string(),
     requiredExtensions: v.array(v.string()),
     designSessionId: v.string(),
@@ -25,7 +23,6 @@ const toolConfigurableSchema = v.object({
 
 type ToolConfigurable = {
   repositories: Repositories
-  testcases: Testcase[]
   ddlStatements: string
   requiredExtensions: string[]
   designSessionId: string

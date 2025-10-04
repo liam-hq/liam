@@ -1,49 +1,41 @@
 import type { AnalyzedRequirements } from '../../utils/schema/analyzedRequirements'
 
+type TestCases = AnalyzedRequirements['testcases']
+
 export const convertRequirementsToPrompt = (
   requirements: AnalyzedRequirements,
-  schemaIssues?: Array<{ requirementId: string; description: string }>,
+  schemaIssues?: Array<{ testcaseId: string; description: string }>,
 ): string => {
-  // If schemaIssues provided, filter requirements to only those with issues
+  let testcasesToUse: TestCases = requirements.testcases
+
+  // If schemaIssues provided, filter testcases to only those with issues
   if (schemaIssues && schemaIssues.length > 0) {
-    const issueRequirementIds = new Set(
-      schemaIssues.map((issue) => issue.requirementId),
+    const issueTestcaseIds = new Set(
+      schemaIssues.map((issue) => issue.testcaseId),
     )
 
-    // Filter functional requirements
-    const filteredFunctionalRequirements: Record<
-      string,
-      Array<{ id: string; desc: string }>
-    > = {}
-    for (const [category, reqs] of Object.entries(
-      requirements.functionalRequirements,
+    const filteredTestcases: TestCases = {}
+    for (const [category, testcases] of Object.entries(
+      requirements.testcases,
     )) {
-      const filteredReqs = reqs.filter((req) => issueRequirementIds.has(req.id))
-      if (filteredReqs.length > 0) {
-        filteredFunctionalRequirements[category] = filteredReqs
+      const filteredCases = testcases.filter((tc) =>
+        issueTestcaseIds.has(tc.id),
+      )
+      if (filteredCases.length > 0) {
+        filteredTestcases[category] = filteredCases
       }
     }
 
-    // Return filtered requirements without schema issues information
-    return `Business Requirement: ${requirements.businessRequirement}
-
-Functional Requirements:
-${Object.entries(filteredFunctionalRequirements)
-  .map(
-    ([category, requirements]) =>
-      `- ${category}: ${requirements.map((req) => req.desc).join(', ')}`,
-  )
-  .join('\n')}`.trim()
+    testcasesToUse = filteredTestcases
   }
 
-  // Default behavior - process all requirements
-  return `Business Requirement: ${requirements.businessRequirement}
+  return `Session Goal:${requirements.goal ? ` ${requirements.goal}` : ''}
 
-Functional Requirements:
-${Object.entries(requirements.functionalRequirements)
+Test Cases:
+${Object.entries(testcasesToUse)
   .map(
-    ([category, requirements]) =>
-      `- ${category}: ${requirements.map((req) => req.desc).join(', ')}`,
+    ([category, testcases]) =>
+      `- ${category}: ${testcases.map((tc) => `${tc.title} (${tc.type})`).join(', ')}`,
   )
   .join('\n')}`.trim()
 }

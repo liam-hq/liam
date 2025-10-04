@@ -4,17 +4,53 @@ import { convertRequirementsToPrompt } from './convertAnalyzedRequirementsToProm
 
 describe('convertAnalyzedRequirementsToPrompt', () => {
   const sampleAnalyzedRequirements: AnalyzedRequirements = {
-    businessRequirement: 'Build a user management system',
-    functionalRequirements: {
+    goal: 'Build a user management system',
+    testcases: {
       authentication: [
-        { id: '1', desc: 'Login' },
-        { id: '2', desc: 'Logout' },
-        { id: '3', desc: 'Password reset' },
+        {
+          id: '1',
+          title: 'User login',
+          type: 'SELECT',
+          sql: '',
+          testResults: [],
+        },
+        {
+          id: '2',
+          title: 'User logout',
+          type: 'UPDATE',
+          sql: '',
+          testResults: [],
+        },
+        {
+          id: '3',
+          title: 'Password reset',
+          type: 'UPDATE',
+          sql: '',
+          testResults: [],
+        },
       ],
       userManagement: [
-        { id: '4', desc: 'Create user' },
-        { id: '5', desc: 'Update user' },
-        { id: '6', desc: 'Delete user' },
+        {
+          id: '4',
+          title: 'Create new user',
+          type: 'INSERT',
+          sql: '',
+          testResults: [],
+        },
+        {
+          id: '5',
+          title: 'Update user info',
+          type: 'UPDATE',
+          sql: '',
+          testResults: [],
+        },
+        {
+          id: '6',
+          title: 'Delete user',
+          type: 'DELETE',
+          sql: '',
+          testResults: [],
+        },
       ],
     },
   }
@@ -23,51 +59,59 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
     const result = convertRequirementsToPrompt(sampleAnalyzedRequirements)
 
     expect(result).toMatchInlineSnapshot(`
-      "Business Requirement: Build a user management system
+      "Session Goal: Build a user management system
 
-      Functional Requirements:
-      - authentication: Login, Logout, Password reset
-      - userManagement: Create user, Update user, Delete user"
+      Test Cases:
+      - authentication: User login (SELECT), User logout (UPDATE), Password reset (UPDATE)
+      - userManagement: Create new user (INSERT), Update user info (UPDATE), Delete user (DELETE)"
     `)
   })
 
-  it('should handle empty requirements objects', () => {
+  it('should handle empty testcases objects', () => {
     const analyzedRequirements: AnalyzedRequirements = {
-      businessRequirement: 'Simple system',
-      functionalRequirements: {},
+      goal: 'Simple system',
+      testcases: {},
     }
 
     const result = convertRequirementsToPrompt(analyzedRequirements)
 
     expect(result).toMatchInlineSnapshot(`
-      "Business Requirement: Simple system
+      "Session Goal: Simple system
 
-      Functional Requirements:"
+      Test Cases:"
     `)
   })
 
-  it('should handle empty business requirement', () => {
+  it('should handle empty goal', () => {
     const analyzedRequirements: AnalyzedRequirements = {
-      businessRequirement: '',
-      functionalRequirements: {
-        basic: [{ id: '1', desc: 'feature1' }],
+      goal: '',
+      testcases: {
+        basic: [
+          {
+            id: '1',
+            title: 'Basic feature test',
+            type: 'INSERT',
+            sql: '',
+            testResults: [],
+          },
+        ],
       },
     }
 
     const result = convertRequirementsToPrompt(analyzedRequirements)
 
     expect(result).toMatchInlineSnapshot(`
-      "Business Requirement: 
+      "Session Goal:
 
-      Functional Requirements:
-      - basic: feature1"
+      Test Cases:
+      - basic: Basic feature test (INSERT)"
     `)
   })
 
   describe('with schemaIssues filtering', () => {
-    it('should filter requirements based on schemaIssues without showing issue details', () => {
+    it('should filter testcases based on schemaIssues without showing issue details', () => {
       const schemaIssues = [
-        { requirementId: '2', description: 'Missing logout table' },
+        { testcaseId: '2', description: 'Missing logout table' },
       ]
 
       const result = convertRequirementsToPrompt(
@@ -76,16 +120,16 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
       )
 
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Session Goal: Build a user management system
 
-        Functional Requirements:
-        - authentication: Logout"
+        Test Cases:
+        - authentication: User logout (UPDATE)"
       `)
     })
 
     it('should handle empty schemaIssues array', () => {
       const schemaIssues: Array<{
-        requirementId: string
+        testcaseId: string
         description: string
       }> = []
 
@@ -96,17 +140,17 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
 
       // Should behave like no schemaIssues parameter
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Session Goal: Build a user management system
 
-        Functional Requirements:
-        - authentication: Login, Logout, Password reset
-        - userManagement: Create user, Update user, Delete user"
+        Test Cases:
+        - authentication: User login (SELECT), User logout (UPDATE), Password reset (UPDATE)
+        - userManagement: Create new user (INSERT), Update user info (UPDATE), Delete user (DELETE)"
       `)
     })
 
-    it('should filter out entire categories when no requirements match schemaIssues', () => {
+    it('should filter out entire categories when no testcases match schemaIssues', () => {
       const schemaIssues = [
-        { requirementId: '1', description: 'Login form missing' },
+        { testcaseId: '1', description: 'Login form missing' },
       ]
 
       const result = convertRequirementsToPrompt(
@@ -115,18 +159,18 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
       )
 
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Session Goal: Build a user management system
 
-        Functional Requirements:
-        - authentication: Login"
+        Test Cases:
+        - authentication: User login (SELECT)"
       `)
     })
 
-    it('should handle schemaIssues with no matching requirements', () => {
+    it('should handle schemaIssues with no matching testcases', () => {
       const schemaIssues = [
         {
-          requirementId: 'non-existent',
-          description: 'Non-existent requirement issue',
+          testcaseId: 'non-existent',
+          description: 'Non-existent testcase issue',
         },
       ]
 
@@ -136,15 +180,15 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
       )
 
       expect(result).toMatchInlineSnapshot(`
-        "Business Requirement: Build a user management system
+        "Session Goal: Build a user management system
 
-        Functional Requirements:"
+        Test Cases:"
       `)
     })
 
-    it('should filter requirements without showing IDs or issue details', () => {
+    it('should filter testcases without showing IDs or issue details', () => {
       const schemaIssues = [
-        { requirementId: '4', description: 'User table structure issue' },
+        { testcaseId: '4', description: 'User table structure issue' },
       ]
 
       const result = convertRequirementsToPrompt(
@@ -152,7 +196,7 @@ describe('convertAnalyzedRequirementsToPrompt', () => {
         schemaIssues,
       )
 
-      expect(result).toContain('Create user')
+      expect(result).toContain('Create new user')
       expect(result).not.toContain('[4]')
       expect(result).not.toContain('User table structure issue')
     })
