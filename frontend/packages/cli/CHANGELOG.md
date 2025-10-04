@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.7.18
+
+### Patch Changes
+
+- [#3499](https://github.com/liam-hq/liam/pull/3499) - - 💄 show BlinkCircle indicator when column element is selected in TableDetail / Thanks [@tnyo43](https://github.com/tnyo43)!
+
 ## 0.7.17
 
 ### Patch Changes
