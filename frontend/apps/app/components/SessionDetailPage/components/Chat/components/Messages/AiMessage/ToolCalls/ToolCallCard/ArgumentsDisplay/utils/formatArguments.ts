@@ -27,8 +27,8 @@ const hasOperations = (obj: unknown): obj is { operations: unknown } => {
 }
 
 type RequirementsArgs = {
-  businessRequirement?: unknown
-  functionalRequirements?: unknown
+  goal?: unknown
+  testcases?: unknown
 }
 
 const isRequirementsArgs = (args: unknown): args is RequirementsArgs => {
@@ -36,7 +36,16 @@ const isRequirementsArgs = (args: unknown): args is RequirementsArgs => {
     return false
   }
   // Check for at least one of the expected properties
-  return 'businessRequirement' in args || 'functionalRequirements' in args
+  return 'goal' in args || 'testcases' in args
+}
+
+type TestCaseObject = {
+  title: unknown
+  type: unknown
+}
+
+const isTestCaseObject = (tc: unknown): tc is TestCaseObject => {
+  return typeof tc === 'object' && tc !== null && 'title' in tc && 'type' in tc
 }
 
 const formatSaveRequirements = (args: unknown): string[] => {
@@ -48,35 +57,30 @@ const formatSaveRequirements = (args: unknown): string[] => {
 
   const argsObj = args
 
-  // Business Requirement
-  if (argsObj.businessRequirement) {
-    lines.push('📋 Business Requirement:')
-    lines.push(`  ${argsObj.businessRequirement}`)
+  if (argsObj.goal) {
+    lines.push('🎯 Goal:')
+    lines.push(`  ${argsObj.goal}`)
     lines.push(' ') // Minimal space for visual separation
   }
 
-  // Functional Requirements
-  if (
-    argsObj.functionalRequirements &&
-    typeof argsObj.functionalRequirements === 'object'
-  ) {
-    lines.push('⚙️ Functional Requirements:')
-    Object.entries(argsObj.functionalRequirements).forEach(
-      ([category, requirements]) => {
-        if (!Array.isArray(requirements)) {
-          return
+  if (argsObj.testcases && typeof argsObj.testcases === 'object') {
+    lines.push('✅ Test Cases:')
+    Object.entries(argsObj.testcases).forEach(([category, testcases]) => {
+      if (!Array.isArray(testcases)) {
+        return
+      }
+      lines.push(`  ${category}:`)
+      testcases.forEach((tc: unknown, index: number) => {
+        if (isTestCaseObject(tc)) {
+          const title = String(tc.title)
+          const type = String(tc.type)
+          lines.push(`    ${index + 1}. ${title} (${type})`)
+        } else {
+          lines.push(`    ${index + 1}. ${String(tc)}`)
         }
-        lines.push(`  ${category}:`)
-        requirements.forEach((req: unknown, index: number) => {
-          if (typeof req === 'string') {
-            lines.push(`    ${index + 1}. ${req}`)
-          } else {
-            lines.push(`    ${index + 1}. ${String(req)}`)
-          }
-        })
-        lines.push(' ') // Minimal space for visual separation
-      },
-    )
+      })
+      lines.push(' ') // Minimal space for visual separation
+    })
   }
 
   // Remove only the last separator line if it exists
@@ -367,7 +371,7 @@ export const formatArguments = (args: unknown): string[] => {
   if (
     typeof args === 'object' &&
     args !== null &&
-    ('businessRequirement' in args || 'functionalRequirements' in args)
+    ('goal' in args || 'testcases' in args)
   ) {
     const formatted = formatSaveRequirements(args)
     return formatted

@@ -15,12 +15,17 @@ import { getConfigurable } from '../../utils/getConfigurable'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import type {
   AnalyzedRequirements,
-  RequirementItem,
+  TestCase,
 } from '../../utils/schema/analyzedRequirements'
 
+const testCaseWithoutSqlSchema = v.object({
+  title: v.string(),
+  type: v.picklist(['INSERT', 'UPDATE', 'DELETE', 'SELECT']),
+})
+
 const analyzedRequirementsWithoutIdSchema = v.object({
-  businessRequirement: v.string(),
-  functionalRequirements: v.record(v.string(), v.array(v.string())),
+  goal: v.string(),
+  testcases: v.record(v.string(), v.array(testCaseWithoutSqlSchema)),
 })
 
 const toolSchema = toJsonSchema(analyzedRequirementsWithoutIdSchema)
@@ -45,17 +50,22 @@ type AnalyzedRequirementsWithoutId = v.InferOutput<
 >
 
 /**
- * Convert string[] format to RequirementItem[] format with generated UUIDs
+ * Convert test cases without SQL to test cases with empty SQL and test results
  */
-const convertToRequirementItems = (
-  requirements: Record<string, string[]>,
-): Record<string, RequirementItem[]> => {
-  const result: Record<string, RequirementItem[]> = {}
+const convertToTestCases = (
+  testcases: Record<
+    string,
+    Array<{ title: string; type: 'INSERT' | 'UPDATE' | 'DELETE' | 'SELECT' }>
+  >,
+): Record<string, TestCase[]> => {
+  const result: Record<string, TestCase[]> = {}
 
-  for (const [category, items] of Object.entries(requirements)) {
-    result[category] = items.map((desc) => ({
-      id: uuidv4(),
-      desc,
+  for (const [category, cases] of Object.entries(testcases)) {
+    result[category] = cases.map((tc) => ({
+      title: tc.title,
+      type: tc.type,
+      sql: '',
+      testResults: [],
     }))
   }
 
@@ -63,15 +73,13 @@ const convertToRequirementItems = (
 }
 
 /**
- * Convert LLM output format to RequirementItems format with generated UUIDs
+ * Convert LLM output format to AnalyzedRequirements format with empty SQL
  */
 const convertLlmAnalyzedRequirements = (
   input: AnalyzedRequirementsWithoutId,
 ): AnalyzedRequirements => ({
-  businessRequirement: input.businessRequirement,
-  functionalRequirements: convertToRequirementItems(
-    input.functionalRequirements,
-  ),
+  goal: input.goal,
+  testcases: convertToTestCases(input.testcases),
 })
 
 /**
@@ -84,21 +92,34 @@ const createArtifactFromRequirements = (
 ): Artifact => {
   const requirements: Artifact['requirement_analysis']['requirements'] = []
 
-  for (const [category, items] of Object.entries(
-    analyzedRequirements.functionalRequirements,
+  for (const [category, testcases] of Object.entries(
+    analyzedRequirements.testcases,
   )) {
     const requirement: Artifact['requirement_analysis']['requirements'][number] =
       {
         name: category,
-        description: items.map((item) => item.desc), // Extract descriptions from RequirementItems
-        test_cases: [], // Empty array as test cases don't exist at this point
+        description: [],
+        test_cases: testcases.map((tc) => ({
+          title: tc.title,
+          description: '',
+          dmlOperation: {
+            operation_type: tc.type,
+            sql: tc.sql,
+            description: '',
+            dml_execution_logs: tc.testResults.map((tr) => ({
+              executed_at: tr.executedAt,
+              success: tr.success,
+              result_summary: tr.resultSummary,
+            })),
+          },
+        })),
       }
     requirements.push(requirement)
   }
 
   return {
     requirement_analysis: {
-      business_requirement: analyzedRequirements.businessRequirement,
+      business_requirement: analyzedRequirements.goal,
       requirements,
     },
   }

@@ -1,5 +1,4 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
-import { v4 as uuidv4 } from 'uuid'
 import { describe, expect, it } from 'vitest'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import type { PmAgentState } from '../pmAgentAnnotations'
@@ -12,8 +11,8 @@ const createPmAgentState = (
   designSessionId: 'test-session',
   analyzedRequirementsRetryCount: 0,
   analyzedRequirements: {
-    businessRequirement: '',
-    functionalRequirements: {},
+    goal: '',
+    testcases: {},
   },
   schemaData: { tables: {}, enums: {}, extensions: {} },
   artifactSaveSuccessful: false,
@@ -21,14 +20,12 @@ const createPmAgentState = (
 })
 
 describe('routeAfterAnalyzeRequirements', () => {
-  describe('when businessRequirement is not empty', () => {
+  describe('when goal is not empty', () => {
     it('should return END', () => {
       const state = createPmAgentState({
         analyzedRequirements: {
-          businessRequirement: 'Test business requirement',
-          functionalRequirements: {
-            feature1: [{ id: uuidv4(), desc: 'req1' }],
-          },
+          goal: 'Test business requirement',
+          testcases: {},
         },
       })
 
@@ -51,10 +48,8 @@ describe('routeAfterAnalyzeRequirements', () => {
       const state = createPmAgentState({
         messages: [messageWithToolCalls],
         analyzedRequirements: {
-          businessRequirement: 'Test business requirement',
-          functionalRequirements: {
-            feature1: [{ id: uuidv4(), desc: 'req1' }],
-          },
+          goal: 'Test business requirement',
+          testcases: {},
         },
       })
 
@@ -96,8 +91,8 @@ describe('routeAfterAnalyzeRequirements', () => {
           {
             name: 'saveRequirementsToArtifactTool',
             args: {
-              businessRequirement: 'Test',
-              functionalRequirements: {},
+              goal: 'Test',
+              testcases: {},
             },
             id: 'test-id',
           },
@@ -139,7 +134,7 @@ describe('routeAfterAnalyzeRequirements', () => {
     })
   })
 
-  describe('when no tool calls and businessRequirement is empty', () => {
+  describe('when no tool calls and goal is empty', () => {
     it('should return analyzeRequirements for re-analysis', () => {
       const messageWithoutToolCalls = new AIMessage({
         content: 'Unable to analyze requirements',
@@ -220,11 +215,11 @@ describe('routeAfterAnalyzeRequirements', () => {
       expect(result).toBe('analyzeRequirements')
     })
 
-    it('should prioritize non-empty businessRequirement over retry count', () => {
+    it('should prioritize non-empty goal over retry count', () => {
       const state = createPmAgentState({
         analyzedRequirements: {
-          businessRequirement: 'Test',
-          functionalRequirements: {},
+          goal: 'Test',
+          testcases: {},
         },
         analyzedRequirementsRetryCount: 10, // Even with high retry count
       })

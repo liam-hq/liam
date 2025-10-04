@@ -1,19 +1,17 @@
 import { describe, expect, test } from 'vitest'
+import type { TestCase } from '../../utils/schema/analyzedRequirements'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
-import type { Testcase } from '../types'
 import { getUnprocessedRequirements } from './getUnprocessedRequirements'
 
 // Test helper to create mock state
 const createMockState = (
-  functionalReqs: Record<string, Array<{ id: string; desc: string }>>,
-  testcases: Testcase[] = [],
-  businessRequirement = 'Test business context',
+  testcases: Record<string, TestCase[]>,
+  goal = 'Test business context',
 ): QaAgentState => ({
   analyzedRequirements: {
-    businessRequirement,
-    functionalRequirements: functionalReqs,
+    goal,
+    testcases,
   },
-  testcases,
   schemaData: { tables: {}, enums: {}, extensions: {} },
   messages: [],
   designSessionId: 'test-session',
@@ -22,34 +20,24 @@ const createMockState = (
   next: 'END',
 })
 
-// Test helper to create mock testcase
-const createMockTestcase = (requirementId: string): Testcase => ({
-  id: `testcase-${requirementId}`,
-  requirementId,
-  requirementType: 'functional',
-  requirementCategory: 'user',
-  requirement: 'Test requirement',
-  title: 'Test title',
-  description: 'Test description',
-  dmlOperation: {
-    operation_type: 'SELECT',
-    sql: 'SELECT * FROM users',
-    description: 'Test DML operation',
-    dml_execution_logs: [],
-  },
-})
-
 describe('getUnprocessedRequirements', () => {
-  test('returns all requirements when no existing testcases', () => {
-    const state = createMockState(
-      {
-        user: [
-          { id: 'req-1', desc: 'User login functionality' },
-          { id: 'req-2', desc: 'User profile management' },
-        ],
-      },
-      [], // No existing testcases
-    )
+  test('returns all test cases without SQL', () => {
+    const state = createMockState({
+      user: [
+        {
+          title: 'User login functionality',
+          type: 'SELECT',
+          sql: '',
+          testResults: [],
+        },
+        {
+          title: 'User profile management',
+          type: 'UPDATE',
+          sql: '',
+          testResults: [],
+        },
+      ],
+    })
 
     const result = getUnprocessedRequirements(state)
 
@@ -59,32 +47,41 @@ describe('getUnprocessedRequirements', () => {
         category: 'user',
         requirement: 'User login functionality',
         businessContext: 'Test business context',
-        requirementId: 'req-1',
+        requirementId: 'User login functionality',
       },
       {
         type: 'functional',
         category: 'user',
         requirement: 'User profile management',
         businessContext: 'Test business context',
-        requirementId: 'req-2',
+        requirementId: 'User profile management',
       },
     ])
   })
 
-  test('filters out requirements with existing testcases', () => {
-    const state = createMockState(
-      {
-        user: [
-          { id: 'req-1', desc: 'User login functionality' },
-          { id: 'req-2', desc: 'User profile management' },
-          { id: 'req-3', desc: 'User settings' },
-        ],
-      },
-      [
-        createMockTestcase('req-1'), // req-1 already has testcase
-        createMockTestcase('req-3'), // req-3 already has testcase
+  test('filters out test cases that already have SQL', () => {
+    const state = createMockState({
+      user: [
+        {
+          title: 'User login functionality',
+          type: 'SELECT',
+          sql: 'SELECT * FROM users WHERE email = $1',
+          testResults: [],
+        },
+        {
+          title: 'User profile management',
+          type: 'UPDATE',
+          sql: '',
+          testResults: [],
+        },
+        {
+          title: 'User settings',
+          type: 'SELECT',
+          sql: 'SELECT * FROM settings',
+          testResults: [],
+        },
       ],
-    )
+    })
 
     const result = getUnprocessedRequirements(state)
 
@@ -94,37 +91,53 @@ describe('getUnprocessedRequirements', () => {
         category: 'user',
         requirement: 'User profile management',
         businessContext: 'Test business context',
-        requirementId: 'req-2',
+        requirementId: 'User profile management',
       },
     ])
   })
 
-  test('returns empty array when all requirements are already processed', () => {
-    const state = createMockState(
-      {
-        user: [
-          { id: 'req-1', desc: 'User login functionality' },
-          { id: 'req-2', desc: 'User profile management' },
-        ],
-      },
-      [createMockTestcase('req-1'), createMockTestcase('req-2')],
-    )
+  test('returns empty array when all test cases have SQL', () => {
+    const state = createMockState({
+      user: [
+        {
+          title: 'User login functionality',
+          type: 'SELECT',
+          sql: 'SELECT * FROM users',
+          testResults: [],
+        },
+        {
+          title: 'User profile management',
+          type: 'UPDATE',
+          sql: 'UPDATE users SET ...',
+          testResults: [],
+        },
+      ],
+    })
 
     const result = getUnprocessedRequirements(state)
 
     expect(result).toEqual([])
   })
 
-  test('handles mixed processed and unprocessed requirements', () => {
-    const state = createMockState(
-      {
-        user: [{ id: 'req-1', desc: 'User functionality' }],
-        admin: [{ id: 'req-2', desc: 'Admin functionality' }],
-      },
-      [
-        createMockTestcase('req-1'), // Only req-1 is processed
+  test('handles mixed categories with and without SQL', () => {
+    const state = createMockState({
+      user: [
+        {
+          title: 'User functionality',
+          type: 'SELECT',
+          sql: 'SELECT * FROM users',
+          testResults: [],
+        },
       ],
-    )
+      admin: [
+        {
+          title: 'Admin functionality',
+          type: 'INSERT',
+          sql: '',
+          testResults: [],
+        },
+      ],
+    })
 
     const result = getUnprocessedRequirements(state)
 
@@ -134,12 +147,12 @@ describe('getUnprocessedRequirements', () => {
         category: 'admin',
         requirement: 'Admin functionality',
         businessContext: 'Test business context',
-        requirementId: 'req-2',
+        requirementId: 'Admin functionality',
       },
     ])
   })
 
-  test('returns empty array when no requirements exist', () => {
+  test('returns empty array when no test cases exist', () => {
     const state = createMockState({})
 
     const result = getUnprocessedRequirements(state)

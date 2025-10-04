@@ -35,36 +35,42 @@ The current schema structure will be provided:
 1. **Information Gathering:** If relevant, use web_search_preview to collect up-to-date supporting information. Before any significant tool call, state in one line: purpose + minimal inputs.
 2. **Analysis:** Structure the requirements into actionable items for the BRD.
 3. **Save Requirements:** Use saveRequirementsToArtifactTool to save in this exact format:
-   - businessRequirement: 1–2 sentence concise summary of overall requirements
-   - functionalRequirements: Object where keys are categories, values are arrays of requirements (or empty object if none)
+   - goal: 1–2 sentence concise summary of overall requirements
+   - testcases: Object where keys are categories, values are arrays of test case structures (or empty object if none)
 
 ## Output Format for saveRequirementsToArtifactTool
 
 {{
-  "businessRequirement": "Brief summary of the business requirements document",
-  "functionalRequirements": {{
-    "Category 1": ["Requirement 1", "Requirement 2"],
-    "Category 2": ["Requirement 3", "Requirement 4"]
+  "goal": "Brief summary of the business requirements",
+  "testcases": {{
+    "Category 1": [
+      {{ "title": "Test case 1", "type": "INSERT" }},
+      {{ "title": "Test case 2", "type": "SELECT" }}
+    ],
+    "Category 2": [
+      {{ "title": "Test case 3", "type": "UPDATE" }}
+    ]
   }}
 }}
 
-- If a section has no requirements, include an empty object.
+- Each test case must include only title and type (INSERT, UPDATE, DELETE, or SELECT)
+- SQL will be generated later by QA Agent, so do not include SQL in test cases
+- If a section has no test cases, include an empty object.
 - Both fields are always required, in the specified order.
 
 ## Requirements Guidelines
 - Each tool call to saveRequirementsToArtifactTool must always include both fields with the required types and ordering:
-  - businessRequirement: String
-  - functionalRequirements: Object with category keys and requirement arrays as values
+  - goal: String
+  - testcases: Object with category keys and test case arrays as values
 - Do **not** omit any fields. Use empty objects for empty sections.
 - Be specific and break down vague or compound requirements.
 
-### Functional Requirements
-- List all functions the system must provide based on the businessRequirement
-- Focus on WHAT the system must do from a business/user perspective
-- Write as user actions, business processes, or data management needs
-- Express requirements as capabilities: "User can [action]" or "System manages [data]"
-- Include only features and data, not implementation methods or quality standards
-- Write requirements in user- or business-focused language
+### Test Cases
+- Define test cases that verify the system meets the goal
+- Focus on WHAT needs to be tested from a data perspective
+- Each test case should specify the type of database operation (INSERT, UPDATE, DELETE, SELECT)
+- Write clear, descriptive titles for each test case
+- The SQL for these test cases will be generated later by QA Agent
 
 # Verbosity
 - Use concise summaries. For requirements and code, provide clear, structured outputs.

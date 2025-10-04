@@ -28,9 +28,8 @@ describe('invokeSaveArtifactToolNode Integration', () => {
           id: 'test-tool-call-id',
           name: 'saveRequirementsToArtifactTool',
           args: {
-            businessRequirement:
-              'Create a task management system for teams to collaborate effectively',
-            functionalRequirements: {
+            goal: 'Create a task management system for teams to collaborate effectively',
+            testcases: {
               'User Management': [
                 'Users can register and login to the system',
                 'Users can create and manage their profiles',
@@ -53,8 +52,8 @@ describe('invokeSaveArtifactToolNode Integration', () => {
     const state: PmAgentState = {
       messages: [toolCallMessage],
       analyzedRequirements: {
-        businessRequirement: '',
-        functionalRequirements: {},
+        goal: '',
+        testcases: {},
       },
       designSessionId: context.designSessionId,
       schemaData: aSchema({
