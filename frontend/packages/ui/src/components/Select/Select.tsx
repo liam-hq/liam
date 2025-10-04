@@ -21,7 +21,6 @@ export const SelectTrigger = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
-    // biome-ignore lint/style/noParameterAssign: This is a false positive - ref is being passed to a prop, not reassigned
     ref={ref}
     className={clsx(styles.trigger, className)}
     {...props}
@@ -39,7 +38,6 @@ export const SelectScrollUpButton = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollUpButton
-    // biome-ignore lint/style/noParameterAssign: This is a false positive - ref is being passed to a prop, not reassigned
     ref={ref}
     className={clsx(styles.scrollButton, className)}
     {...props}
@@ -54,7 +52,6 @@ export const SelectScrollDownButton = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollDownButton
-    // biome-ignore lint/style/noParameterAssign: This is a false positive - ref is being passed to a prop, not reassigned
     ref={ref}
     className={clsx(styles.scrollButton, className)}
     {...props}
@@ -71,7 +68,6 @@ export const SelectContent = forwardRef<
 >(({ className, children, position = 'popper', ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
-      // biome-ignore lint/style/noParameterAssign: This is a false positive - ref is being passed to a prop, not reassigned
       ref={ref}
       className={clsx(
         styles.content,
@@ -101,7 +97,6 @@ export const SelectLabel = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
-    // biome-ignore lint/style/noParameterAssign: This is a false positive - ref is being passed to a prop, not reassigned
     ref={ref}
     className={clsx(styles.label, className)}
     {...props}
@@ -114,7 +109,6 @@ export const SelectItem = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
-    // biome-ignore lint/style/noParameterAssign: This is a false positive - ref is being passed to a prop, not reassigned
     ref={ref}
     className={clsx(styles.item, className)}
     {...props}
@@ -135,7 +129,6 @@ export const SelectSeparator = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
-    // biome-ignore lint/style/noParameterAssign: This is a false positive - ref is being passed to a prop, not reassigned
     ref={ref}
     className={clsx(styles.separator, className)}
     {...props}
