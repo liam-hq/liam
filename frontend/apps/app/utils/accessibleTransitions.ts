@@ -8,7 +8,8 @@ import type { CSSProperties } from 'react'
  * @returns CSS properties object with the appropriate transition
  */
 const checkReducedMotion = (): boolean => {
-  return window?.matchMedia('(prefers-reduced-motion: reduce)').matches ?? false
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ?? false
 }
 
 export const createAccessibleTransition = (

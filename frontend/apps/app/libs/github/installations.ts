@@ -1,6 +1,15 @@
 import type { Installation } from '@liam-hq/github'
 import { createClient } from '../../libs/db/server'
 
+const DEBUG = process.env.GITHUB_OAUTH_DEBUG === 'true'
+
+function logDebug(message: string, meta?: Record<string, unknown>) {
+  if (DEBUG) {
+    if (meta) console.info(`[GitHubOAuth] ${message}`, meta)
+    else console.info(`[GitHubOAuth] ${message}`)
+  }
+}
+
 type ProviderTokens = {
   access_token: string
   refresh_token: string
@@ -32,6 +41,12 @@ async function refreshGitHubToken(refreshToken: string) {
     throw new Error('Missing GitHub OAuth client credentials')
   }
 
+  logDebug('Refreshing GitHub token', {
+    hasClientId: Boolean(clientId),
+    hasClientSecret: Boolean(clientSecret),
+    refreshTokenLength: refreshToken?.length ?? 0,
+  })
+
   const body = new URLSearchParams()
   body.set('grant_type', 'refresh_token')
   body.set('refresh_token', refreshToken)
@@ -50,16 +65,36 @@ async function refreshGitHubToken(refreshToken: string) {
 
   if (!resp.ok) {
     const text = await resp.text().catch(() => '')
-    throw new Error(`GitHub token refresh failed: ${resp.status} ${text}`)
+    console.error('[GitHubOAuth] Token refresh failed', {
+      status: resp.status,
+      bodySnippet: text.slice(0, 120),
+    })
+    throw new Error(`GitHub token refresh failed: ${resp.status}`)
   }
 
-  return (await resp.json()) as {
+  const json = (await resp.json()) as {
     access_token?: string
     refresh_token?: string
     expires_in?: number
     token_type?: string
     scope?: string
   }
+  logDebug('Token refresh response', {
+    hasAccessToken: Boolean(json.access_token),
+    hasRefreshToken: Boolean(json.refresh_token),
+    expiresIn: json.expires_in ?? null,
+    tokenType: json.token_type ?? null,
+    scope: json.scope ?? null,
+  })
+  if (!json.access_token) {
+    // Many GitHub errors return fields like `error`, `error_description`
+    const errShape = json as unknown as Record<string, unknown>
+    console.error('[GitHubOAuth] Token refresh missing access_token', {
+      error: errShape.error,
+      error_description: errShape.error_description,
+    })
+  }
+  return json
 }
 
 async function loadOrCreateTokensForUser(
@@ -76,8 +111,14 @@ async function loadOrCreateTokensForUser(
 
   const accessToken = stored?.access_token
   const refreshToken = stored?.refresh_token
-  if (accessToken && refreshToken)
+  if (accessToken && refreshToken) {
+    logDebug('Using stored provider tokens', {
+      accessTokenLength: accessToken.length,
+      refreshTokenLength: refreshToken.length,
+    })
     return { access_token: accessToken, refresh_token: refreshToken }
+  }
+  logDebug('No stored provider tokens found. Falling back to current session')
 
   const { data: sessionData } = await supabase.auth.getSession()
   const session = sessionData?.session
@@ -87,6 +128,11 @@ async function loadOrCreateTokensForUser(
     ?.provider_refresh_token
   if (!sessAccess || !sessRefresh)
     throw new Error('GitHub connection required. Please re-authenticate.')
+
+  logDebug('Captured tokens from current session', {
+    accessTokenLength: sessAccess.length,
+    refreshTokenLength: sessRefresh.length,
+  })
 
   await supabase.from('user_provider_tokens').upsert(
     {
@@ -102,6 +148,11 @@ async function loadOrCreateTokensForUser(
 
 async function persistTokens(userId: string, tokens: ProviderTokens) {
   const supabase = await createClient()
+  logDebug('Persisting refreshed tokens', {
+    userId,
+    accessTokenLength: tokens.access_token.length,
+    refreshTokenLength: tokens.refresh_token.length,
+  })
   await supabase.from('user_provider_tokens').upsert(
     {
       user_id: userId,
@@ -118,9 +169,22 @@ async function getInstallationsWithRefresh(
   tokens: ProviderTokens,
 ) {
   const { access_token: accessToken, refresh_token: refreshToken } = tokens
+  logDebug('Fetching user installations with access token', {
+    accessTokenLength: accessToken.length,
+  })
   let resp = await fetchGitHubInstallations(accessToken)
+  if (DEBUG) {
+    logDebug('Initial installations fetch result', {
+      status: resp.status,
+      ratelimitRemaining: resp.headers.get('x-ratelimit-remaining'),
+      wwwAuth: resp.headers.get('www-authenticate')?.slice(0, 120) ?? null,
+    })
+  }
 
   if (resp.status === 401 || resp.status === 403) {
+    logDebug('Access token rejected, attempting refresh', {
+      status: resp.status,
+    })
     if (!refreshToken)
       throw new Error('GitHub token expired and no refresh token available')
     const refreshed = await refreshGitHubToken(refreshToken)
@@ -131,11 +195,18 @@ async function getInstallationsWithRefresh(
       access_token: newAccess,
       refresh_token: newRefresh,
     })
+    logDebug('Retrying installations with refreshed token', {
+      accessTokenLength: newAccess.length,
+    })
     resp = await fetchGitHubInstallations(newAccess)
   }
 
   if (!resp.ok) {
     const text = await resp.text().catch(() => '')
+    logDebug('Installations fetch failed (non-401/403)', {
+      status: resp.status,
+      bodySnippet: text.slice(0, 200),
+    })
     throw new Error(`GitHub API error: ${resp.status} ${text}`)
   }
   return (await resp.json()) as GitHubInstallationsResponse
