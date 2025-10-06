@@ -10,6 +10,11 @@ import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect } from 'react'
 import { useSchemaOrThrow } from '../../../../../../stores'
 import { useTableSelection } from '../../../../hooks'
+import {
+  getTableColumnElementId,
+  getTableColumnLinkHref,
+  getTableLinkHref,
+} from '../../../../utils'
 import { useCommandPaletteOrThrow } from '../CommandPaletteProvider'
 import type {
   CommandPaletteInputMode,
@@ -17,22 +22,6 @@ import type {
 } from '../types'
 import { getSuggestionText } from '../utils'
 import styles from './CommandPaletteOptions.module.css'
-
-const getTableLinkHref = (activeTableName: string) => {
-  const searchParams = new URLSearchParams(window.location.search)
-  searchParams.set('active', activeTableName)
-  return `?${searchParams.toString()}`
-}
-
-const getTableColumnLinkHref = (
-  activeTableName: string,
-  columnName: string,
-) => {
-  const searchParams = new URLSearchParams(window.location.search)
-  searchParams.set('active', activeTableName)
-  const hash = `${activeTableName}__columns__${columnName}`
-  return `?${searchParams.toString()}#${hash}`
-}
 
 type TableOptionProps = {
   tableName: string
@@ -109,7 +98,7 @@ const ColumnOption: FC<ColumnOptionProps> = ({
 
           event.preventDefault()
           goToERD(tableName)
-          location.hash = `${tableName}__columns__${columnName}`
+          location.hash = getTableColumnElementId(tableName, columnName)
         }}
       >
         <ColumnTypeIcon className={styles.itemIcon} />
@@ -179,7 +168,10 @@ export const TableOptions: FC<Props> = ({ suggestion, inputMode }) => {
           )
         } else {
           goToERD(suggestedTableName)
-          location.hash = `${suggestedTableName}__columns__${suggestedColumnName}`
+          location.hash = getTableColumnElementId(
+            suggestedTableName,
+            suggestedColumnName,
+          )
         }
       }
     }

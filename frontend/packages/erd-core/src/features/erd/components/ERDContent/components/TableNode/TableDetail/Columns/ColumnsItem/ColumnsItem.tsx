@@ -2,6 +2,7 @@ import type { Column, Constraints } from '@liam-hq/schema'
 import { GridTableRoot, Link } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
+import { getTableColumnElementId } from '../../../../../../../../../features/erd/utils'
 import {
   useSchemaOrThrow,
   useUserEditingOrThrow,
@@ -15,9 +16,6 @@ import { NotNull } from './NotNull'
 import { PrimaryKey } from './PrimaryKey'
 import { Type } from './Type'
 
-const columnElementId = (tableName: string, columnName: string) =>
-  `${tableName}__columns__${columnName}`
-
 type Props = {
   tableId: string
   column: Column
@@ -25,7 +23,7 @@ type Props = {
 }
 
 export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
-  const elementId = columnElementId(tableId, column.name)
+  const elementId = getTableColumnElementId(tableId, column.name)
 
   const { operations } = useSchemaOrThrow()
   const { showDiff } = useUserEditingOrThrow()
