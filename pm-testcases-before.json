@@ -1,0 +1,2192 @@
+{
+    "tables": {
+      "organizations": {
+        "name": "organizations",
+        "columns": {
+          "organization_code": {
+            "name": "organization_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique business code identifying an organization (used as natural primary key)"
+          },
+          "organization_name": {
+            "name": "organization_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Human-friendly unique organization name"
+          },
+          "parent_organization_code": {
+            "name": "parent_organization_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional parent organization_code to form organization hierarchy; null for root organizations"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Business description and purpose of the organization"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Identifier of user who created the record"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamp",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Last update timestamp for audit"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Identifier of user who last updated the record"
+          }
+        },
+        "comment": "Stores organizations and their hierarchy used for employee affiliations and internal ownership",
+        "indexes": {},
+        "constraints": {
+          "pk_organizations": {
+            "type": "PRIMARY KEY",
+            "name": "pk_organizations",
+            "columnNames": [
+              "organization_code"
+            ]
+          },
+          "uq_organizations_name": {
+            "type": "UNIQUE",
+            "name": "uq_organizations_name",
+            "columnNames": [
+              "organization_name"
+            ]
+          },
+          "fk_organizations_parent": {
+            "type": "FOREIGN KEY",
+            "name": "fk_organizations_parent",
+            "columnNames": [
+              "parent_organization_code"
+            ],
+            "targetTableName": "organizations",
+            "targetColumnNames": [
+              "organization_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "positions": {
+        "name": "positions",
+        "columns": {
+          "position_code": {
+            "name": "position_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique code for position or role within the organization"
+          },
+          "position_name": {
+            "name": "position_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Human-friendly unique position name"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Description of responsibilities for the position"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the position"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamp",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Last update timestamp for audit"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who last updated the position"
+          }
+        },
+        "comment": "Canonical list of positions/roles used in employee affiliations",
+        "indexes": {},
+        "constraints": {
+          "pk_positions": {
+            "type": "PRIMARY KEY",
+            "name": "pk_positions",
+            "columnNames": [
+              "position_code"
+            ]
+          },
+          "uq_positions_name": {
+            "type": "UNIQUE",
+            "name": "uq_positions_name",
+            "columnNames": [
+              "position_name"
+            ]
+          }
+        }
+      },
+      "employees": {
+        "name": "employees",
+        "columns": {
+          "employee_code": {
+            "name": "employee_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique Employee business identifier"
+          },
+          "employee_name": {
+            "name": "employee_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee full name (not required to be unique)"
+          },
+          "email": {
+            "name": "email",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Contact email"
+          },
+          "phone": {
+            "name": "phone",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Contact phone number"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the employee record"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamp",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Last update timestamp for audit"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who last updated the employee record"
+          }
+        },
+        "comment": "People who participate in procurement workflows and internal organizations",
+        "indexes": {},
+        "constraints": {
+          "pk_employees": {
+            "type": "PRIMARY KEY",
+            "name": "pk_employees",
+            "columnNames": [
+              "employee_code"
+            ]
+          }
+        }
+      },
+      "employee_affiliations": {
+        "name": "employee_affiliations",
+        "columns": {
+          "affiliation_id": {
+            "name": "affiliation_id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Surrogate id for the employee-organization affiliation"
+          },
+          "employee_code": {
+            "name": "employee_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee participating in the organization"
+          },
+          "organization_code": {
+            "name": "organization_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Organization the employee is affiliated with"
+          },
+          "position_code": {
+            "name": "position_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional position code assigned for this affiliation; at most one per affiliation"
+          },
+          "reporting_employee_code": {
+            "name": "reporting_employee_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional designated reporting employee code who must also belong to the same organization"
+          },
+          "start_date": {
+            "name": "start_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Affiliation start date"
+          },
+          "end_date": {
+            "name": "end_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Affiliation end date if applicable"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the affiliation"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamp",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Last update timestamp for audit"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who last updated the affiliation"
+          }
+        },
+        "comment": "Associates employees to organizations and optionally a position and designated reporting employee; reporting employee must belong to same organization",
+        "indexes": {},
+        "constraints": {
+          "pk_employee_affiliations": {
+            "type": "PRIMARY KEY",
+            "name": "pk_employee_affiliations",
+            "columnNames": [
+              "affiliation_id"
+            ]
+          },
+          "uq_emp_org_unique_position": {
+            "type": "UNIQUE",
+            "name": "uq_emp_org_unique_position",
+            "columnNames": [
+              "employee_code",
+              "organization_code",
+              "position_code"
+            ]
+          },
+          "fk_aff_employee": {
+            "type": "FOREIGN KEY",
+            "name": "fk_aff_employee",
+            "columnNames": [
+              "employee_code"
+            ],
+            "targetTableName": "employees",
+            "targetColumnNames": [
+              "employee_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_aff_organization": {
+            "type": "FOREIGN KEY",
+            "name": "fk_aff_organization",
+            "columnNames": [
+              "organization_code"
+            ],
+            "targetTableName": "organizations",
+            "targetColumnNames": [
+              "organization_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_aff_position": {
+            "type": "FOREIGN KEY",
+            "name": "fk_aff_position",
+            "columnNames": [
+              "position_code"
+            ],
+            "targetTableName": "positions",
+            "targetColumnNames": [
+              "position_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          },
+          "fk_aff_reporting_employee": {
+            "type": "FOREIGN KEY",
+            "name": "fk_aff_reporting_employee",
+            "columnNames": [
+              "reporting_employee_code"
+            ],
+            "targetTableName": "employees",
+            "targetColumnNames": [
+              "employee_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          }
+        }
+      },
+      "business_partners": {
+        "name": "business_partners",
+        "columns": {
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique business partner code used as natural key"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Business partner legal or display name"
+          },
+          "address": {
+            "name": "address",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Primary address for the business partner"
+          },
+          "category": {
+            "name": "category",
+            "type": "text",
+            "default": null,
+            "check": "category IN ('CLIENT','SUPPLIER')",
+            "notNull": true,
+            "comment": "Partner category: either CLIENT or SUPPLIER"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the partner record"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamp",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who last updated the partner record"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who last updated the partner record"
+          }
+        },
+        "comment": "Master list of business partners categorized as CLIENT or SUPPLIER; category enforces subtype consistency",
+        "indexes": {},
+        "constraints": {
+          "pk_business_partners": {
+            "type": "PRIMARY KEY",
+            "name": "pk_business_partners",
+            "columnNames": [
+              "business_partner_code"
+            ]
+          },
+          "uq_business_partner_code": {
+            "type": "UNIQUE",
+            "name": "uq_business_partner_code",
+            "columnNames": [
+              "business_partner_code"
+            ]
+          }
+        }
+      },
+      "clients": {
+        "name": "clients",
+        "columns": {
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to business_partners for partners with category CLIENT"
+          },
+          "last_fiscal_year_order_amount": {
+            "name": "last_fiscal_year_order_amount",
+            "type": "numeric",
+            "default": "0",
+            "check": null,
+            "notNull": false,
+            "comment": "Total order amount from last fiscal year for the client"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the client subtype record"
+          }
+        },
+        "comment": "Client-specific attributes for business partners categorized as CLIENT",
+        "indexes": {},
+        "constraints": {
+          "pk_clients": {
+            "type": "PRIMARY KEY",
+            "name": "pk_clients",
+            "columnNames": [
+              "business_partner_code"
+            ]
+          },
+          "fk_clients_bp": {
+            "type": "FOREIGN KEY",
+            "name": "fk_clients_bp",
+            "columnNames": [
+              "business_partner_code"
+            ],
+            "targetTableName": "business_partners",
+            "targetColumnNames": [
+              "business_partner_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "suppliers": {
+        "name": "suppliers",
+        "columns": {
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to business_partners for partners with category SUPPLIER"
+          },
+          "last_fiscal_year_procurement_amount": {
+            "name": "last_fiscal_year_procurement_amount",
+            "type": "numeric",
+            "default": "0",
+            "check": null,
+            "notNull": false,
+            "comment": "Total procurement amount from last fiscal year for the supplier"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the supplier subtype record"
+          }
+        },
+        "comment": "Supplier-specific attributes for business partners categorized as SUPPLIER",
+        "indexes": {},
+        "constraints": {
+          "pk_suppliers": {
+            "type": "PRIMARY KEY",
+            "name": "pk_suppliers",
+            "columnNames": [
+              "business_partner_code"
+            ]
+          },
+          "fk_suppliers_bp": {
+            "type": "FOREIGN KEY",
+            "name": "fk_suppliers_bp",
+            "columnNames": [
+              "business_partner_code"
+            ],
+            "targetTableName": "business_partners",
+            "targetColumnNames": [
+              "business_partner_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "manufacturers": {
+        "name": "manufacturers",
+        "columns": {
+          "manufacturer_code": {
+            "name": "manufacturer_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique manufacturer code"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Manufacturer name"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created this record"
+          }
+        },
+        "comment": "Entities that manufacture items and own brands",
+        "indexes": {},
+        "constraints": {
+          "pk_manufacturers": {
+            "type": "PRIMARY KEY",
+            "name": "pk_manufacturers",
+            "columnNames": [
+              "manufacturer_code"
+            ]
+          }
+        }
+      },
+      "brands": {
+        "name": "brands",
+        "columns": {
+          "brand_code": {
+            "name": "brand_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique brand code"
+          },
+          "brand_name": {
+            "name": "brand_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Human-friendly brand name"
+          },
+          "manufacturer_code": {
+            "name": "manufacturer_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Manufacturer that owns the brand"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the brand record"
+          }
+        },
+        "comment": "Brands associated with a single manufacturer",
+        "indexes": {},
+        "constraints": {
+          "pk_brands": {
+            "type": "PRIMARY KEY",
+            "name": "pk_brands",
+            "columnNames": [
+              "brand_code"
+            ]
+          },
+          "uq_brands_name": {
+            "type": "UNIQUE",
+            "name": "uq_brands_name",
+            "columnNames": [
+              "brand_name"
+            ]
+          },
+          "fk_brands_manufacturer": {
+            "type": "FOREIGN KEY",
+            "name": "fk_brands_manufacturer",
+            "columnNames": [
+              "manufacturer_code"
+            ],
+            "targetTableName": "manufacturers",
+            "targetColumnNames": [
+              "manufacturer_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "item_categories": {
+        "name": "item_categories",
+        "columns": {
+          "item_category_code": {
+            "name": "item_category_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique code for item category"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Human-friendly category name"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Business description of the item category"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          }
+        },
+        "comment": "Hierarchy of item categories used to classify parts and materials",
+        "indexes": {},
+        "constraints": {
+          "pk_item_categories": {
+            "type": "PRIMARY KEY",
+            "name": "pk_item_categories",
+            "columnNames": [
+              "item_category_code"
+            ]
+          },
+          "uq_item_categories_name": {
+            "type": "UNIQUE",
+            "name": "uq_item_categories_name",
+            "columnNames": [
+              "name"
+            ]
+          }
+        }
+      },
+      "items": {
+        "name": "items",
+        "columns": {
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Globally unique manufacturer part number identifying an item"
+          },
+          "brand_code": {
+            "name": "brand_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Brand associated with the item; implies the manufacturer via the brand"
+          },
+          "item_category_code": {
+            "name": "item_category_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Item category for classification"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Descriptive specification or notes for the item"
+          },
+          "unit_of_measure": {
+            "name": "unit_of_measure",
+            "type": "text",
+            "default": "\"EA\"",
+            "check": null,
+            "notNull": true,
+            "comment": "Unit of measure (e.g., EA, PCS) for quantities"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the item record"
+          }
+        },
+        "comment": "Catalog of items parts with enforced global uniqueness on manufacturer_part_number; brand associates the item to a manufacturer",
+        "indexes": {},
+        "constraints": {
+          "pk_items": {
+            "type": "PRIMARY KEY",
+            "name": "pk_items",
+            "columnNames": [
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_items_brand": {
+            "type": "FOREIGN KEY",
+            "name": "fk_items_brand",
+            "columnNames": [
+              "brand_code"
+            ],
+            "targetTableName": "brands",
+            "targetColumnNames": [
+              "brand_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_items_category": {
+            "type": "FOREIGN KEY",
+            "name": "fk_items_category",
+            "columnNames": [
+              "item_category_code"
+            ],
+            "targetTableName": "item_categories",
+            "targetColumnNames": [
+              "item_category_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "prototype_projects": {
+        "name": "prototype_projects",
+        "columns": {
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique project identifier for prototype projects"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Project name"
+          },
+          "client_business_partner_code": {
+            "name": "client_business_partner_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Client business_partner_code referencing a business partner with category CLIENT"
+          },
+          "product_purpose": {
+            "name": "product_purpose",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Product purpose description shared with suppliers (client identity suppressed)"
+          },
+          "registration_date": {
+            "name": "registration_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Project registration date"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the project record"
+          }
+        },
+        "comment": "Prototype projects requested by clients; product_purpose may be shared in RFQs without exposing client identity",
+        "indexes": {},
+        "constraints": {
+          "pk_prototype_projects": {
+            "type": "PRIMARY KEY",
+            "name": "pk_prototype_projects",
+            "columnNames": [
+              "prototype_project_number"
+            ]
+          },
+          "fk_projects_client_bp": {
+            "type": "FOREIGN KEY",
+            "name": "fk_projects_client_bp",
+            "columnNames": [
+              "client_business_partner_code"
+            ],
+            "targetTableName": "clients",
+            "targetColumnNames": [
+              "business_partner_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "models": {
+        "name": "models",
+        "columns": {
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Owning prototype project number"
+          },
+          "model_name": {
+            "name": "model_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Model name unique within a project"
+          },
+          "design_drawing_number": {
+            "name": "design_drawing_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Design drawing reference number"
+          },
+          "production_quantity": {
+            "name": "production_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Units to be produced for this model"
+          },
+          "client_requested_delivery_date": {
+            "name": "client_requested_delivery_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Delivery date requested by the client for this model"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the model record"
+          }
+        },
+        "comment": "Models belonging to prototype projects; composite primary key (project, model_name) enforces uniqueness",
+        "indexes": {},
+        "constraints": {
+          "pk_models": {
+            "type": "PRIMARY KEY",
+            "name": "pk_models",
+            "columnNames": [
+              "prototype_project_number",
+              "model_name"
+            ]
+          },
+          "fk_models_project": {
+            "type": "FOREIGN KEY",
+            "name": "fk_models_project",
+            "columnNames": [
+              "prototype_project_number"
+            ],
+            "targetTableName": "prototype_projects",
+            "targetColumnNames": [
+              "prototype_project_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "model_items": {
+        "name": "model_items",
+        "columns": {
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Project owning the model"
+          },
+          "model_name": {
+            "name": "model_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Model name within the project"
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Item used in this model identified by manufacturer part number"
+          },
+          "quantity_per_unit": {
+            "name": "quantity_per_unit",
+            "type": "integer",
+            "default": "1",
+            "check": null,
+            "notNull": true,
+            "comment": "Number of this item required per unit of model assembly"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the model item record"
+          }
+        },
+        "comment": "Bill of materials mapping items to models with per-unit quantities",
+        "indexes": {},
+        "constraints": {
+          "pk_model_items": {
+            "type": "PRIMARY KEY",
+            "name": "pk_model_items",
+            "columnNames": [
+              "prototype_project_number",
+              "model_name",
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_mi_model": {
+            "type": "FOREIGN KEY",
+            "name": "fk_mi_model",
+            "columnNames": [
+              "prototype_project_number",
+              "model_name"
+            ],
+            "targetTableName": "models",
+            "targetColumnNames": [
+              "prototype_project_number",
+              "model_name"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_mi_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_mi_item",
+            "columnNames": [
+              "manufacturer_part_number"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "project_items": {
+        "name": "project_items",
+        "columns": {
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Prototype project owning the aggregated item total"
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Item for which project-level totals are tracked"
+          },
+          "total_required_quantity": {
+            "name": "total_required_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Total quantity required across all models in the project (derived but stored for performance)"
+          },
+          "client_provided_quantity": {
+            "name": "client_provided_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Quantity provided by the client and therefore not procured"
+          },
+          "procurement_quantity": {
+            "name": "procurement_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Derived procurement quantity = total_required_quantity - client_provided_quantity"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "updated_at": {
+            "name": "updated_at",
+            "type": "timestamp",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Update timestamp to track recalculations"
+          },
+          "updated_by": {
+            "name": "updated_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who triggered recalculation or update"
+          }
+        },
+        "comment": "Per-project aggregated totals for each item to drive RFQs and procurement; procurement_quantity is maintained consistent with components",
+        "indexes": {},
+        "constraints": {
+          "pk_project_items": {
+            "type": "PRIMARY KEY",
+            "name": "pk_project_items",
+            "columnNames": [
+              "prototype_project_number",
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_pi_project": {
+            "type": "FOREIGN KEY",
+            "name": "fk_pi_project",
+            "columnNames": [
+              "prototype_project_number"
+            ],
+            "targetTableName": "prototype_projects",
+            "targetColumnNames": [
+              "prototype_project_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_pi_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_pi_item",
+            "columnNames": [
+              "manufacturer_part_number"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "rfqs": {
+        "name": "rfqs",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique RFQ identifier"
+          },
+          "rfq_date": {
+            "name": "rfq_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date RFQ was created/sent"
+          },
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Associated prototype project for which RFQ is issued"
+          },
+          "supplier_business_partner_code": {
+            "name": "supplier_business_partner_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Supplier receiving the RFQ; must be a business partner of category SUPPLIER"
+          },
+          "shared_product_purpose": {
+            "name": "shared_product_purpose",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Product purpose shared with supplier; client identity must not be exposed"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the RFQ record"
+          }
+        },
+        "comment": "Request for quote issued to a specific supplier for a project; supplier must handle items' brands",
+        "indexes": {},
+        "constraints": {
+          "pk_rfqs": {
+            "type": "PRIMARY KEY",
+            "name": "pk_rfqs",
+            "columnNames": [
+              "rfq_number"
+            ]
+          },
+          "fk_rfqs_project": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfqs_project",
+            "columnNames": [
+              "prototype_project_number"
+            ],
+            "targetTableName": "prototype_projects",
+            "targetColumnNames": [
+              "prototype_project_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_rfqs_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfqs_supplier",
+            "columnNames": [
+              "supplier_business_partner_code"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "rfq_details": {
+        "name": "rfq_details",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Parent RFQ identifier"
+          },
+          "rfq_detail_number": {
+            "name": "rfq_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Detail line number within the RFQ"
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Item requested in the RFQ detail; must be part of the project's item list"
+          },
+          "required_procurement_quantity": {
+            "name": "required_procurement_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Quantity requested to be procured for this RFQ detail"
+          },
+          "desired_delivery_date": {
+            "name": "desired_delivery_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Desired delivery date for this RFQ line"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          }
+        },
+        "comment": "Details of RFQs per supplier; item must exist in project_items and supplier must handle its brand",
+        "indexes": {},
+        "constraints": {
+          "pk_rfq_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_rfq_details",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number"
+            ]
+          },
+          "fk_rfq_details_rfq": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfq_details_rfq",
+            "columnNames": [
+              "rfq_number"
+            ],
+            "targetTableName": "rfqs",
+            "targetColumnNames": [
+              "rfq_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_rfq_details_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfq_details_item",
+            "columnNames": [
+              "manufacturer_part_number"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "quotations": {
+        "name": "quotations",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "RFQ that this quotation responds to (at most one quotation per RFQ)"
+          },
+          "supplier_quotation_number": {
+            "name": "supplier_quotation_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Supplier's own quotation reference number"
+          },
+          "quotation_date": {
+            "name": "quotation_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date the quotation was issued"
+          },
+          "validity_end_date": {
+            "name": "validity_end_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Date until which the quotation terms are valid"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who recorded the quotation"
+          }
+        },
+        "comment": "Supplier quotation in response to an RFQ; limited to one quotation per RFQ",
+        "indexes": {},
+        "constraints": {
+          "pk_quotations": {
+            "type": "PRIMARY KEY",
+            "name": "pk_quotations",
+            "columnNames": [
+              "rfq_number"
+            ]
+          },
+          "fk_quotations_rfq": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotations_rfq",
+            "columnNames": [
+              "rfq_number"
+            ],
+            "targetTableName": "rfqs",
+            "targetColumnNames": [
+              "rfq_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "quotation_details": {
+        "name": "quotation_details",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Parent RFQ/quotation identifier"
+          },
+          "rfq_detail_number": {
+            "name": "rfq_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Reference to the RFQ detail line being quoted"
+          },
+          "quotation_detail_number": {
+            "name": "quotation_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Supplier-provided detail number (not globally unique)"
+          },
+          "proposed_manufacturer_part_number": {
+            "name": "proposed_manufacturer_part_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Item proposed by supplier; if null implies the requested item"
+          },
+          "proposal_reason": {
+            "name": "proposal_reason",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional reason the supplier proposes an alternative item"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          }
+        },
+        "comment": "Detailed lines within a supplier quotation; may propose alternative items and link to the RFQ detail",
+        "indexes": {},
+        "constraints": {
+          "pk_quotation_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_quotation_details",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number",
+              "quotation_detail_number"
+            ]
+          },
+          "fk_qd_quotation": {
+            "type": "FOREIGN KEY",
+            "name": "fk_qd_quotation",
+            "columnNames": [
+              "rfq_number"
+            ],
+            "targetTableName": "quotations",
+            "targetColumnNames": [
+              "rfq_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_qd_rfq_detail_ref": {
+            "type": "FOREIGN KEY",
+            "name": "fk_qd_rfq_detail_ref",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number"
+            ],
+            "targetTableName": "rfq_details",
+            "targetColumnNames": [
+              "rfq_number",
+              "rfq_detail_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_qd_proposed_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_qd_proposed_item",
+            "columnNames": [
+              "proposed_manufacturer_part_number"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          }
+        }
+      },
+      "quotation_conditions": {
+        "name": "quotation_conditions",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Quotation (RFQ) identifier to which this condition applies"
+          },
+          "rfq_detail_number": {
+            "name": "rfq_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "RFQ detail number that this condition relates to"
+          },
+          "quotation_detail_number": {
+            "name": "quotation_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Quotation detail that provides this procurement condition"
+          },
+          "condition_sequence": {
+            "name": "condition_sequence",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Sequence number to identify multiple conditions for the same quotation detail"
+          },
+          "unit_price": {
+            "name": "unit_price",
+            "type": "numeric",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Unit price offered under this procurement condition"
+          },
+          "lot_size": {
+            "name": "lot_size",
+            "type": "integer",
+            "default": "1",
+            "check": null,
+            "notNull": true,
+            "comment": "Number of units per lot for pricing and ordering"
+          },
+          "deliverable_date": {
+            "name": "deliverable_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Date supplier can deliver for this condition"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          }
+        },
+        "comment": "One-to-many procurement condition rows per quotation detail describing price and lot terms",
+        "indexes": {},
+        "constraints": {
+          "pk_quotation_conditions": {
+            "type": "PRIMARY KEY",
+            "name": "pk_quotation_conditions",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number",
+              "quotation_detail_number",
+              "condition_sequence"
+            ]
+          },
+          "fk_qc_quotation_detail": {
+            "type": "FOREIGN KEY",
+            "name": "fk_qc_quotation_detail",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number",
+              "quotation_detail_number"
+            ],
+            "targetTableName": "quotation_details",
+            "targetColumnNames": [
+              "rfq_number",
+              "rfq_detail_number",
+              "quotation_detail_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "purchase_orders": {
+        "name": "purchase_orders",
+        "columns": {
+          "purchase_order_number": {
+            "name": "purchase_order_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique purchase order number grouping order details for a single supplier"
+          },
+          "supplier_business_partner_code": {
+            "name": "supplier_business_partner_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Supplier for the entire PO header"
+          },
+          "order_date": {
+            "name": "order_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date the purchase order was issued"
+          },
+          "total_amount": {
+            "name": "total_amount",
+            "type": "numeric",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Derived total amount for the PO header, sum of line amounts"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the PO"
+          }
+        },
+        "comment": "Purchase order header grouping multiple order details for one supplier across projects",
+        "indexes": {},
+        "constraints": {
+          "pk_purchase_orders": {
+            "type": "PRIMARY KEY",
+            "name": "pk_purchase_orders",
+            "columnNames": [
+              "purchase_order_number"
+            ]
+          },
+          "fk_po_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_po_supplier",
+            "columnNames": [
+              "supplier_business_partner_code"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "purchase_order_details": {
+        "name": "purchase_order_details",
+        "columns": {
+          "purchase_order_number": {
+            "name": "purchase_order_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "PO header this detail belongs to"
+          },
+          "line_number": {
+            "name": "line_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Line number within the purchase order"
+          },
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "RFQ identifier that originated the requirement"
+          },
+          "rfq_detail_number": {
+            "name": "rfq_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "RFQ detail line referenced"
+          },
+          "quotation_detail_number": {
+            "name": "quotation_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Quotation detail number selected"
+          },
+          "condition_sequence": {
+            "name": "condition_sequence",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Quotation condition sequence chosen for ordering"
+          },
+          "specified_delivery_date": {
+            "name": "specified_delivery_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Delivery date specified on the PO line"
+          },
+          "number_of_lots": {
+            "name": "number_of_lots",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Number of lots ordered for this line"
+          },
+          "ordered_units": {
+            "name": "ordered_units",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Computed ordered units = number_of_lots * lot_size (from quotation_conditions)"
+          },
+          "unit_price": {
+            "name": "unit_price",
+            "type": "numeric",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Unit price copied from selected quotation condition"
+          },
+          "line_amount": {
+            "name": "line_amount",
+            "type": "numeric",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Computed line amount = ordered_units * unit_price"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who created the PO detail"
+          }
+        },
+        "comment": "PO detail lines referencing a selected quotation condition; all lines in a PO must reference the PO's supplier via the quotation selected",
+        "indexes": {},
+        "constraints": {
+          "pk_po_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_po_details",
+            "columnNames": [
+              "purchase_order_number",
+              "line_number"
+            ]
+          },
+          "fk_pod_po": {
+            "type": "FOREIGN KEY",
+            "name": "fk_pod_po",
+            "columnNames": [
+              "purchase_order_number"
+            ],
+            "targetTableName": "purchase_orders",
+            "targetColumnNames": [
+              "purchase_order_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_pod_quotation_condition": {
+            "type": "FOREIGN KEY",
+            "name": "fk_pod_quotation_condition",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number",
+              "quotation_detail_number",
+              "condition_sequence"
+            ],
+            "targetTableName": "quotation_conditions",
+            "targetColumnNames": [
+              "rfq_number",
+              "rfq_detail_number",
+              "quotation_detail_number",
+              "condition_sequence"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_pod_rfq_detail": {
+            "type": "FOREIGN KEY",
+            "name": "fk_pod_rfq_detail",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number"
+            ],
+            "targetTableName": "rfq_details",
+            "targetColumnNames": [
+              "rfq_number",
+              "rfq_detail_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "receipts": {
+        "name": "receipts",
+        "columns": {
+          "receipt_number": {
+            "name": "receipt_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique receipt identifier representing a physical receipt event"
+          },
+          "receipt_date": {
+            "name": "receipt_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date goods were received"
+          },
+          "supplier_business_partner_code": {
+            "name": "supplier_business_partner_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Supplier associated with the receipt, matching the PO supplier"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who recorded the receipt"
+          }
+        },
+        "comment": "Receipt header linked to supplier and purchase order details; supplier derived from PO details",
+        "indexes": {},
+        "constraints": {
+          "pk_receipts": {
+            "type": "PRIMARY KEY",
+            "name": "pk_receipts",
+            "columnNames": [
+              "receipt_number"
+            ]
+          },
+          "fk_receipts_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_receipts_supplier",
+            "columnNames": [
+              "supplier_business_partner_code"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_code"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "receipt_details": {
+        "name": "receipt_details",
+        "columns": {
+          "receipt_number": {
+            "name": "receipt_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Receipt header identifier"
+          },
+          "receipt_detail_number": {
+            "name": "receipt_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Detail line within the receipt used for package labeling"
+          },
+          "purchase_order_number": {
+            "name": "purchase_order_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "PO number that the received line corresponds to"
+          },
+          "purchase_order_line_number": {
+            "name": "purchase_order_line_number",
+            "type": "integer",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "PO line number that was received (one-to-one mapping required)"
+          },
+          "received_units": {
+            "name": "received_units",
+            "type": "integer",
+            "default": "0",
+            "check": null,
+            "notNull": true,
+            "comment": "Quantity received in units; normally equals ordered_units but exceptions allowed per business rule"
+          },
+          "label": {
+            "name": "label",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Traceability label combining receipt_number and receipt_detail_number for packages"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamp",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Creation timestamp for audit"
+          },
+          "created_by": {
+            "name": "created_by",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "User who recorded the receipt detail"
+          }
+        },
+        "comment": "Receipt details referencing exactly one purchase order detail; prevents split deliveries by enforcing one-to-one mapping",
+        "indexes": {},
+        "constraints": {
+          "pk_receipt_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_receipt_details",
+            "columnNames": [
+              "receipt_number",
+              "receipt_detail_number"
+            ]
+          },
+          "fk_rd_receipt": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rd_receipt",
+            "columnNames": [
+              "receipt_number"
+            ],
+            "targetTableName": "receipts",
+            "targetColumnNames": [
+              "receipt_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_rd_po_detail": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rd_po_detail",
+            "columnNames": [
+              "purchase_order_number",
+              "purchase_order_line_number"
+            ],
+            "targetTableName": "purchase_order_details",
+            "targetColumnNames": [
+              "purchase_order_number",
+              "line_number"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "uq_po_detail_one_receipt_map": {
+            "type": "UNIQUE",
+            "name": "uq_po_detail_one_receipt_map",
+            "columnNames": [
+              "purchase_order_number",
+              "purchase_order_line_number"
+            ]
+          }
+        }
+      }
+    },
+    "enums": {},
+    "extensions": {}
+}

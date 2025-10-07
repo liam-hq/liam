@@ -1,0 +1,2199 @@
+{
+    "tables": {
+      "organizations": {
+        "name": "organizations",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for each organization unit (company, division, department)"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Official organization name, unique across the system"
+          },
+          "parent_id": {
+            "name": "parent_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional parent organization id for hierarchical structure"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active flag to soft-delete or archive organizations"
+          }
+        },
+        "comment": "Organizational units with parent-child hierarchy for company structure and access control",
+        "indexes": {
+          "ix_organizations_name": {
+            "name": "ix_organizations_name",
+            "unique": true,
+            "columns": [
+              "name"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_organizations": {
+            "type": "PRIMARY KEY",
+            "name": "pk_organizations",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_organizations_parent": {
+            "type": "FOREIGN KEY",
+            "name": "fk_organizations_parent",
+            "columnNames": [
+              "parent_id"
+            ],
+            "targetTableName": "organizations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "positions": {
+        "name": "positions",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for position/title (job role)"
+          },
+          "code": {
+            "name": "code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional short code for the position"
+          },
+          "title": {
+            "name": "title",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Human-readable position title"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Detailed description of responsibilities"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active flag for the position"
+          }
+        },
+        "comment": "Catalog of positions/roles that employees can hold within organizations",
+        "indexes": {},
+        "constraints": {
+          "pk_positions": {
+            "type": "PRIMARY KEY",
+            "name": "pk_positions",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "employees": {
+        "name": "employees",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for each employee"
+          },
+          "employee_number": {
+            "name": "employee_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional company employee number"
+          },
+          "first_name": {
+            "name": "first_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee given name"
+          },
+          "last_name": {
+            "name": "last_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee family name"
+          },
+          "email": {
+            "name": "email",
+            "type": "text",
+            "default": null,
+            "check": "email ~* '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+'",
+            "notNull": false,
+            "comment": "Work email address"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active employment flag"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation timestamp"
+          }
+        },
+        "comment": "Employees who may belong to multiple organizations and hold positions",
+        "indexes": {
+          "ix_employees_email": {
+            "name": "ix_employees_email",
+            "unique": true,
+            "columns": [
+              "email"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_employees": {
+            "type": "PRIMARY KEY",
+            "name": "pk_employees",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "employee_affiliations": {
+        "name": "employee_affiliations",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique id for an employee affiliation to an organization"
+          },
+          "employee_id": {
+            "name": "employee_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Reference to the employee"
+          },
+          "organization_id": {
+            "name": "organization_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Reference to the organization the employee is affiliated with"
+          },
+          "position_id": {
+            "name": "position_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Position the employee holds in this organization"
+          },
+          "reports_to_affiliation_id": {
+            "name": "reports_to_affiliation_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Affiliation id of the manager/reporting person within the same organization"
+          },
+          "is_primary": {
+            "name": "is_primary",
+            "type": "boolean",
+            "default": "false",
+            "check": null,
+            "notNull": true,
+            "comment": "Marks the primary affiliation for cross-organization contexts"
+          },
+          "start_date": {
+            "name": "start_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Affiliation start date"
+          },
+          "end_date": {
+            "name": "end_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Affiliation end date, if any"
+          }
+        },
+        "comment": "Mapping of employees to organizations with a single position per employee-organization pair and reporting within same org",
+        "indexes": {
+          "ux_employee_org_position": {
+            "name": "ux_employee_org_position",
+            "unique": true,
+            "columns": [
+              "employee_id",
+              "organization_id",
+              "position_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_employee_affiliations": {
+            "type": "PRIMARY KEY",
+            "name": "pk_employee_affiliations",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_affil_employee": {
+            "type": "FOREIGN KEY",
+            "name": "fk_affil_employee",
+            "columnNames": [
+              "employee_id"
+            ],
+            "targetTableName": "employees",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_affil_organization": {
+            "type": "FOREIGN KEY",
+            "name": "fk_affil_organization",
+            "columnNames": [
+              "organization_id"
+            ],
+            "targetTableName": "organizations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_affil_position": {
+            "type": "FOREIGN KEY",
+            "name": "fk_affil_position",
+            "columnNames": [
+              "position_id"
+            ],
+            "targetTableName": "positions",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_affil_reports_to": {
+            "type": "FOREIGN KEY",
+            "name": "fk_affil_reports_to",
+            "columnNames": [
+              "reports_to_affiliation_id"
+            ],
+            "targetTableName": "employee_affiliations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "business_partners": {
+        "name": "business_partners",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for a business partner entity"
+          },
+          "legal_name": {
+            "name": "legal_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Legal name of the business partner"
+          },
+          "category": {
+            "name": "category",
+            "type": "text",
+            "default": "vendor",
+            "check": "category IN ('vendor','client')",
+            "notNull": true,
+            "comment": "High-level category: vendor (supplier) or client"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Record creation time"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active flag indicating partner can be used in transactions"
+          }
+        },
+        "comment": "Master record for any external business partner, either a client or a supplier",
+        "indexes": {
+          "ux_business_partners_name": {
+            "name": "ux_business_partners_name",
+            "unique": true,
+            "columns": [
+              "legal_name"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_business_partners": {
+            "type": "PRIMARY KEY",
+            "name": "pk_business_partners",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "suppliers": {
+        "name": "suppliers",
+        "columns": {
+          "business_partner_id": {
+            "name": "business_partner_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to business_partners, represents supplier subtype"
+          },
+          "supplier_code": {
+            "name": "supplier_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional supplier code"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active supplier flag"
+          }
+        },
+        "comment": "Supplier-specific extension row for business partners that act as suppliers. One row per business_partner when partner is supplier",
+        "indexes": {},
+        "constraints": {
+          "pk_suppliers": {
+            "type": "PRIMARY KEY",
+            "name": "pk_suppliers",
+            "columnNames": [
+              "business_partner_id"
+            ]
+          },
+          "fk_suppliers_bp": {
+            "type": "FOREIGN KEY",
+            "name": "fk_suppliers_bp",
+            "columnNames": [
+              "business_partner_id"
+            ],
+            "targetTableName": "business_partners",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "clients": {
+        "name": "clients",
+        "columns": {
+          "business_partner_id": {
+            "name": "business_partner_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to business_partners, represents client subtype"
+          },
+          "client_code": {
+            "name": "client_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional client code"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active client flag"
+          }
+        },
+        "comment": "Client-specific extension row for business partners that act as clients. One row per business_partner when partner is client",
+        "indexes": {},
+        "constraints": {
+          "pk_clients": {
+            "type": "PRIMARY KEY",
+            "name": "pk_clients",
+            "columnNames": [
+              "business_partner_id"
+            ]
+          },
+          "fk_clients_bp": {
+            "type": "FOREIGN KEY",
+            "name": "fk_clients_bp",
+            "columnNames": [
+              "business_partner_id"
+            ],
+            "targetTableName": "business_partners",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "brands": {
+        "name": "brands",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique brand identifier"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Brand name"
+          },
+          "manufacturer": {
+            "name": "manufacturer",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Manufacturer name associated with the brand"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active flag for brand"
+          }
+        },
+        "comment": "Brands of items; suppliers may handle brands",
+        "indexes": {
+          "ux_brands_name": {
+            "name": "ux_brands_name",
+            "unique": true,
+            "columns": [
+              "name"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_brands": {
+            "type": "PRIMARY KEY",
+            "name": "pk_brands",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "handled_brands": {
+        "name": "handled_brands",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique id for supplier handled brand mapping"
+          },
+          "supplier_id": {
+            "name": "supplier_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to suppliers.business_partner_id"
+          },
+          "brand_id": {
+            "name": "brand_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to brands.id"
+          },
+          "since_date": {
+            "name": "since_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date supplier started handling this brand"
+          },
+          "is_preferred": {
+            "name": "is_preferred",
+            "type": "boolean",
+            "default": "false",
+            "check": null,
+            "notNull": true,
+            "comment": "Indicates preferred supplier for this brand"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional notes about handling terms"
+          }
+        },
+        "comment": "Which suppliers handle which brands; only valid for suppliers (not clients)",
+        "indexes": {
+          "ux_handled_supplier_brand": {
+            "name": "ux_handled_supplier_brand",
+            "unique": true,
+            "columns": [
+              "supplier_id",
+              "brand_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_handled_brands": {
+            "type": "PRIMARY KEY",
+            "name": "pk_handled_brands",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_handled_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_handled_supplier",
+            "columnNames": [
+              "supplier_id"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_handled_brand": {
+            "type": "FOREIGN KEY",
+            "name": "fk_handled_brand",
+            "columnNames": [
+              "brand_id"
+            ],
+            "targetTableName": "brands",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "item_categories": {
+        "name": "item_categories",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Category id for grouping items"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Category name"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Category description"
+          }
+        },
+        "comment": "Hierarchy of item categories for classification and procurement grouping",
+        "indexes": {
+          "ux_item_categories_name": {
+            "name": "ux_item_categories_name",
+            "unique": true,
+            "columns": [
+              "name"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_item_categories": {
+            "type": "PRIMARY KEY",
+            "name": "pk_item_categories",
+            "columnNames": [
+              "id"
+            ]
+          }
+        }
+      },
+      "items": {
+        "name": "items",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique item identifier used in procurement and projects"
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Manufacturer part number, unique across items"
+          },
+          "description": {
+            "name": "description",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Item description and specifications"
+          },
+          "brand_id": {
+            "name": "brand_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Brand for the item"
+          },
+          "category_id": {
+            "name": "category_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Item category"
+          },
+          "is_active": {
+            "name": "is_active",
+            "type": "boolean",
+            "default": "true",
+            "check": null,
+            "notNull": true,
+            "comment": "Active item flag"
+          }
+        },
+        "comment": "Procurement catalog of items with unique manufacturer part numbers and category/brand references",
+        "indexes": {
+          "ux_items_mpn": {
+            "name": "ux_items_mpn",
+            "unique": true,
+            "columns": [
+              "manufacturer_part_number"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_items": {
+            "type": "PRIMARY KEY",
+            "name": "pk_items",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_items_brand": {
+            "type": "FOREIGN KEY",
+            "name": "fk_items_brand",
+            "columnNames": [
+              "brand_id"
+            ],
+            "targetTableName": "brands",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_items_category": {
+            "type": "FOREIGN KEY",
+            "name": "fk_items_category",
+            "columnNames": [
+              "category_id"
+            ],
+            "targetTableName": "item_categories",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "prototype_projects": {
+        "name": "prototype_projects",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique identifier for a prototype project"
+          },
+          "client_id": {
+            "name": "client_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to business_partners acting as client"
+          },
+          "project_code": {
+            "name": "project_code",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Unique project code for identification"
+          },
+          "name": {
+            "name": "name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Project name"
+          },
+          "registration_date": {
+            "name": "registration_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date the project was registered"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Project-level notes"
+          }
+        },
+        "comment": "Prototype projects commissioned by clients for which models and procurement are tracked",
+        "indexes": {
+          "ux_project_code": {
+            "name": "ux_project_code",
+            "unique": true,
+            "columns": [
+              "project_code"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_prototype_projects": {
+            "type": "PRIMARY KEY",
+            "name": "pk_prototype_projects",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_project_client": {
+            "type": "FOREIGN KEY",
+            "name": "fk_project_client",
+            "columnNames": [
+              "client_id"
+            ],
+            "targetTableName": "clients",
+            "targetColumnNames": [
+              "business_partner_id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "models": {
+        "name": "models",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique model identifier within a project"
+          },
+          "project_id": {
+            "name": "project_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to prototype_projects"
+          },
+          "model_name": {
+            "name": "model_name",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Model name unique within project"
+          },
+          "production_quantity": {
+            "name": "production_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": "production_quantity >= 0",
+            "notNull": true,
+            "comment": "Number of units to be produced for this model"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Model-level notes"
+          }
+        },
+        "comment": "Models belonging to a prototype project; model_name scoped unique per project",
+        "indexes": {
+          "ux_model_project_name": {
+            "name": "ux_model_project_name",
+            "unique": true,
+            "columns": [
+              "project_id",
+              "model_name"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_models": {
+            "type": "PRIMARY KEY",
+            "name": "pk_models",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_models_project": {
+            "type": "FOREIGN KEY",
+            "name": "fk_models_project",
+            "columnNames": [
+              "project_id"
+            ],
+            "targetTableName": "prototype_projects",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "model_items": {
+        "name": "model_items",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique id for a BOM line (item within a model)"
+          },
+          "model_id": {
+            "name": "model_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to models"
+          },
+          "item_id": {
+            "name": "item_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to items used in the model"
+          },
+          "quantity_per_unit": {
+            "name": "quantity_per_unit",
+            "type": "integer",
+            "default": "1",
+            "check": "quantity_per_unit > 0",
+            "notNull": true,
+            "comment": "Quantity of the item required per produced model unit"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Notes about this BOM line"
+          }
+        },
+        "comment": "Bill of Materials lines for models; quantities per model must be positive integers",
+        "indexes": {
+          "ux_model_item_unique": {
+            "name": "ux_model_item_unique",
+            "unique": true,
+            "columns": [
+              "model_id",
+              "item_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_model_items": {
+            "type": "PRIMARY KEY",
+            "name": "pk_model_items",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_model_items_model": {
+            "type": "FOREIGN KEY",
+            "name": "fk_model_items_model",
+            "columnNames": [
+              "model_id"
+            ],
+            "targetTableName": "models",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_model_items_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_model_items_item",
+            "columnNames": [
+              "item_id"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "project_items": {
+        "name": "project_items",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique id representing an aggregated project procurement line"
+          },
+          "project_id": {
+            "name": "project_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to prototype_projects"
+          },
+          "item_id": {
+            "name": "item_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to items aggregated across models in project"
+          },
+          "client_provided_quantity": {
+            "name": "client_provided_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": "client_provided_quantity >= 0",
+            "notNull": true,
+            "comment": "Quantity provided by client and thus not requiring procurement"
+          },
+          "required_procurement_quantity": {
+            "name": "required_procurement_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": "required_procurement_quantity >= 0",
+            "notNull": true,
+            "comment": "Calculated required procurement quantity across models minus client provided quantity"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Notes about aggregated project item needs"
+          }
+        },
+        "comment": "Aggregated project-level items and required procurement quantities computed from models and client-provided quantities",
+        "indexes": {
+          "ux_project_item_unique": {
+            "name": "ux_project_item_unique",
+            "unique": true,
+            "columns": [
+              "project_id",
+              "item_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_project_items": {
+            "type": "PRIMARY KEY",
+            "name": "pk_project_items",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_project_items_project": {
+            "type": "FOREIGN KEY",
+            "name": "fk_project_items_project",
+            "columnNames": [
+              "project_id"
+            ],
+            "targetTableName": "prototype_projects",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_project_items_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_project_items_item",
+            "columnNames": [
+              "item_id"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "rfqs": {
+        "name": "rfqs",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique RFQ header identifier"
+          },
+          "project_id": {
+            "name": "project_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional linked prototype project"
+          },
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Business RFQ number"
+          },
+          "created_at": {
+            "name": "created_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "RFQ creation timestamp"
+          },
+          "created_by_affiliation_id": {
+            "name": "created_by_affiliation_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee affiliation who created the RFQ"
+          },
+          "status": {
+            "name": "status",
+            "type": "text",
+            "default": "'open'",
+            "check": "status IN ('open','closed','cancelled')",
+            "notNull": true,
+            "comment": "Lifecycle status of the RFQ"
+          }
+        },
+        "comment": "Request for quotation headers, optionally linked to prototype projects and created by an employee affiliation",
+        "indexes": {
+          "ux_rfqs_number": {
+            "name": "ux_rfqs_number",
+            "unique": true,
+            "columns": [
+              "rfq_number"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_rfqs": {
+            "type": "PRIMARY KEY",
+            "name": "pk_rfqs",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_rfqs_project": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfqs_project",
+            "columnNames": [
+              "project_id"
+            ],
+            "targetTableName": "prototype_projects",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "SET_NULL"
+          },
+          "fk_rfqs_created_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfqs_created_by",
+            "columnNames": [
+              "created_by_affiliation_id"
+            ],
+            "targetTableName": "employee_affiliations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "rfq_recipients": {
+        "name": "rfq_recipients",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique mapping id between RFQ and recipient supplier"
+          },
+          "rfq_id": {
+            "name": "rfq_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to rfqs"
+          },
+          "supplier_id": {
+            "name": "supplier_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to suppliers.business_partner_id who receive the RFQ"
+          },
+          "invited_at": {
+            "name": "invited_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Timestamp when supplier was invited to the RFQ"
+          }
+        },
+        "comment": "List of suppliers invited to respond to an RFQ; used to validate quotations come only from recipients",
+        "indexes": {
+          "ux_rfq_recipient_unique": {
+            "name": "ux_rfq_recipient_unique",
+            "unique": true,
+            "columns": [
+              "rfq_id",
+              "supplier_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_rfq_recipients": {
+            "type": "PRIMARY KEY",
+            "name": "pk_rfq_recipients",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_rfq_recipients_rfq": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfq_recipients_rfq",
+            "columnNames": [
+              "rfq_id"
+            ],
+            "targetTableName": "rfqs",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_rfq_recipients_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfq_recipients_supplier",
+            "columnNames": [
+              "supplier_id"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "rfq_details": {
+        "name": "rfq_details",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "RFQ detail line identifier"
+          },
+          "rfq_id": {
+            "name": "rfq_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to rfqs"
+          },
+          "rfq_detail_number": {
+            "name": "rfq_detail_number",
+            "type": "integer",
+            "default": null,
+            "check": "rfq_detail_number > 0",
+            "notNull": true,
+            "comment": "Sequence number unique within RFQ"
+          },
+          "item_id": {
+            "name": "item_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Requested item"
+          },
+          "required_quantity": {
+            "name": "required_quantity",
+            "type": "integer",
+            "default": null,
+            "check": "required_quantity > 0",
+            "notNull": true,
+            "comment": "Quantity required for procurement; must be positive"
+          },
+          "desired_delivery_date": {
+            "name": "desired_delivery_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Desired delivery date for the item"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional notes about the RFQ line"
+          }
+        },
+        "comment": "Line items requested in an RFQ with required quantities and unique sequence numbers per RFQ",
+        "indexes": {
+          "ux_rfq_detail_number": {
+            "name": "ux_rfq_detail_number",
+            "unique": true,
+            "columns": [
+              "rfq_id",
+              "rfq_detail_number"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_rfq_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_rfq_details",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_rfq_details_rfq": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfq_details_rfq",
+            "columnNames": [
+              "rfq_id"
+            ],
+            "targetTableName": "rfqs",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_rfq_details_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_rfq_details_item",
+            "columnNames": [
+              "item_id"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "quotations": {
+        "name": "quotations",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Quotation header unique id"
+          },
+          "rfq_id": {
+            "name": "rfq_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to RFQ being quoted"
+          },
+          "supplier_id": {
+            "name": "supplier_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to supplier providing the quotation"
+          },
+          "quotation_number": {
+            "name": "quotation_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Business quotation number"
+          },
+          "quotation_date": {
+            "name": "quotation_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date of the quotation"
+          },
+          "valid_until": {
+            "name": "valid_until",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Validity end date for the quotation"
+          },
+          "created_by_affiliation_id": {
+            "name": "created_by_affiliation_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee affiliation who recorded the quotation"
+          }
+        },
+        "comment": "Supplier quotations submitted in response to RFQs; one quotation per (rfq,supplier)",
+        "indexes": {
+          "ux_quotation_unique": {
+            "name": "ux_quotation_unique",
+            "unique": true,
+            "columns": [
+              "rfq_id",
+              "supplier_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_quotations": {
+            "type": "PRIMARY KEY",
+            "name": "pk_quotations",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_quotations_rfq": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotations_rfq",
+            "columnNames": [
+              "rfq_id"
+            ],
+            "targetTableName": "rfqs",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_quotations_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotations_supplier",
+            "columnNames": [
+              "supplier_id"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_quotations_created_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotations_created_by",
+            "columnNames": [
+              "created_by_affiliation_id"
+            ],
+            "targetTableName": "employee_affiliations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "quotation_details": {
+        "name": "quotation_details",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Quotation detail line id referencing an RFQ detail"
+          },
+          "quotation_id": {
+            "name": "quotation_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to quotations header"
+          },
+          "rfq_detail_id": {
+            "name": "rfq_detail_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to rfq_details being quoted"
+          },
+          "proposed_item_id": {
+            "name": "proposed_item_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional alternative item proposed by supplier"
+          },
+          "proposed_reason": {
+            "name": "proposed_reason",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Reason for proposing an alternative item"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional notes"
+          }
+        },
+        "comment": "Line-level supplier proposal referencing RFQ detail and optionally proposing alternatives",
+        "indexes": {
+          "ux_quotation_detail_unique": {
+            "name": "ux_quotation_detail_unique",
+            "unique": true,
+            "columns": [
+              "quotation_id",
+              "rfq_detail_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_quotation_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_quotation_details",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_quotation_details_quotation": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotation_details_quotation",
+            "columnNames": [
+              "quotation_id"
+            ],
+            "targetTableName": "quotations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_quotation_details_rfq_detail": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotation_details_rfq_detail",
+            "columnNames": [
+              "rfq_detail_id"
+            ],
+            "targetTableName": "rfq_details",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_quotation_details_proposed_item": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotation_details_proposed_item",
+            "columnNames": [
+              "proposed_item_id"
+            ],
+            "targetTableName": "items",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "quotation_conditions": {
+        "name": "quotation_conditions",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Condition option for a quotation detail, e.g., price, lot size, deliverable date"
+          },
+          "quotation_detail_id": {
+            "name": "quotation_detail_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to quotation_details"
+          },
+          "unit_price": {
+            "name": "unit_price",
+            "type": "numeric(14,4)",
+            "default": null,
+            "check": "unit_price > 0",
+            "notNull": true,
+            "comment": "Unit price per item, must be positive"
+          },
+          "lot_size": {
+            "name": "lot_size",
+            "type": "integer",
+            "default": "1",
+            "check": "lot_size > 0",
+            "notNull": true,
+            "comment": "Lot size for ordering; must be positive integer"
+          },
+          "deliverable_date": {
+            "name": "deliverable_date",
+            "type": "date",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Proposed deliverable date for this condition"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Additional condition notes"
+          }
+        },
+        "comment": "Multiple procurement conditions per quotation detail representing price and logistical options",
+        "indexes": {
+          "ux_condition_one_per_selection": {
+            "name": "ux_condition_one_per_selection",
+            "unique": true,
+            "columns": [
+              "quotation_detail_id",
+              "unit_price",
+              "lot_size",
+              "deliverable_date"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_quotation_conditions": {
+            "type": "PRIMARY KEY",
+            "name": "pk_quotation_conditions",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_quotation_conditions_detail": {
+            "type": "FOREIGN KEY",
+            "name": "fk_quotation_conditions_detail",
+            "columnNames": [
+              "quotation_detail_id"
+            ],
+            "targetTableName": "quotation_details",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          }
+        }
+      },
+      "purchase_orders": {
+        "name": "purchase_orders",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Purchase order header id"
+          },
+          "po_number": {
+            "name": "po_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Business PO number"
+          },
+          "supplier_id": {
+            "name": "supplier_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to supplier who is seller on the PO"
+          },
+          "order_date": {
+            "name": "order_date",
+            "type": "date",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Date PO was created"
+          },
+          "created_by_affiliation_id": {
+            "name": "created_by_affiliation_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee affiliation who created the PO"
+          },
+          "status": {
+            "name": "status",
+            "type": "text",
+            "default": "'open'",
+            "check": "status IN ('open','confirmed','received','closed','cancelled')",
+            "notNull": true,
+            "comment": "Lifecycle status of the PO"
+          }
+        },
+        "comment": "Purchase order headers issued to suppliers selecting quotation conditions",
+        "indexes": {
+          "ux_po_number": {
+            "name": "ux_po_number",
+            "unique": true,
+            "columns": [
+              "po_number"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_purchase_orders": {
+            "type": "PRIMARY KEY",
+            "name": "pk_purchase_orders",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_po_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_po_supplier",
+            "columnNames": [
+              "supplier_id"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_po_created_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_po_created_by",
+            "columnNames": [
+              "created_by_affiliation_id"
+            ],
+            "targetTableName": "employee_affiliations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "po_details": {
+        "name": "po_details",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "PO detail line id referencing chosen quotation condition"
+          },
+          "po_id": {
+            "name": "po_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to purchase_orders header"
+          },
+          "quotation_condition_id": {
+            "name": "quotation_condition_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Selected quotation condition; one-to-one mapping to PO detail"
+          },
+          "number_of_lots": {
+            "name": "number_of_lots",
+            "type": "integer",
+            "default": "1",
+            "check": "number_of_lots > 0",
+            "notNull": true,
+            "comment": "Number of lots ordered"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Optional notes"
+          },
+          "unit_price_cached": {
+            "name": "unit_price_cached",
+            "type": "numeric(14,4)",
+            "default": null,
+            "check": "unit_price_cached > 0",
+            "notNull": true,
+            "comment": "Cached unit price copied from the selected quotation condition at order time"
+          },
+          "lot_size_cached": {
+            "name": "lot_size_cached",
+            "type": "integer",
+            "default": null,
+            "check": "lot_size_cached > 0",
+            "notNull": true,
+            "comment": "Cached lot size copied from the selected quotation condition at order time"
+          }
+        },
+        "comment": "PO detail lines that reference a single quotation condition; caches unit/lot for stable computation and prevents reuse of condition across PO details",
+        "indexes": {
+          "ux_po_detail_condition_unique": {
+            "name": "ux_po_detail_condition_unique",
+            "unique": true,
+            "columns": [
+              "quotation_condition_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_po_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_po_details",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_po_details_po": {
+            "type": "FOREIGN KEY",
+            "name": "fk_po_details_po",
+            "columnNames": [
+              "po_id"
+            ],
+            "targetTableName": "purchase_orders",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_po_details_condition": {
+            "type": "FOREIGN KEY",
+            "name": "fk_po_details_condition",
+            "columnNames": [
+              "quotation_condition_id"
+            ],
+            "targetTableName": "quotation_conditions",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "receipts": {
+        "name": "receipts",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Receipt header unique id for goods received"
+          },
+          "receipt_number": {
+            "name": "receipt_number",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Business receipt number"
+          },
+          "supplier_id": {
+            "name": "supplier_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Supplier who delivered goods"
+          },
+          "received_at": {
+            "name": "received_at",
+            "type": "timestamptz",
+            "default": "now()",
+            "check": null,
+            "notNull": true,
+            "comment": "Timestamp when goods were received"
+          },
+          "created_by_affiliation_id": {
+            "name": "created_by_affiliation_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "Employee affiliation who recorded the receipt"
+          }
+        },
+        "comment": "Goods receipt headers linked to POs and suppliers",
+        "indexes": {
+          "ux_receipts_number": {
+            "name": "ux_receipts_number",
+            "unique": true,
+            "columns": [
+              "receipt_number"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_receipts": {
+            "type": "PRIMARY KEY",
+            "name": "pk_receipts",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_receipts_supplier": {
+            "type": "FOREIGN KEY",
+            "name": "fk_receipts_supplier",
+            "columnNames": [
+              "supplier_id"
+            ],
+            "targetTableName": "suppliers",
+            "targetColumnNames": [
+              "business_partner_id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          },
+          "fk_receipts_created_by": {
+            "type": "FOREIGN KEY",
+            "name": "fk_receipts_created_by",
+            "columnNames": [
+              "created_by_affiliation_id"
+            ],
+            "targetTableName": "employee_affiliations",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      },
+      "receipt_details": {
+        "name": "receipt_details",
+        "columns": {
+          "id": {
+            "name": "id",
+            "type": "uuid",
+            "default": "gen_random_uuid()",
+            "check": null,
+            "notNull": true,
+            "comment": "Unique receipt detail identifier mapped to a PO detail"
+          },
+          "receipt_id": {
+            "name": "receipt_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to receipts header"
+          },
+          "po_detail_id": {
+            "name": "po_detail_id",
+            "type": "uuid",
+            "default": null,
+            "check": null,
+            "notNull": true,
+            "comment": "FK to the PO detail being received (no split deliveries allowed)"
+          },
+          "received_quantity": {
+            "name": "received_quantity",
+            "type": "integer",
+            "default": "0",
+            "check": "received_quantity >= 0",
+            "notNull": true,
+            "comment": "Quantity received for this PO detail"
+          },
+          "notes": {
+            "name": "notes",
+            "type": "text",
+            "default": null,
+            "check": null,
+            "notNull": false,
+            "comment": "Receiving notes"
+          }
+        },
+        "comment": "Receipt detail lines mapping each PO detail to a single receipt (no split deliveries allowed)",
+        "indexes": {
+          "ux_receipt_po_detail_unique": {
+            "name": "ux_receipt_po_detail_unique",
+            "unique": true,
+            "columns": [
+              "po_detail_id"
+            ],
+            "type": "btree"
+          }
+        },
+        "constraints": {
+          "pk_receipt_details": {
+            "type": "PRIMARY KEY",
+            "name": "pk_receipt_details",
+            "columnNames": [
+              "id"
+            ]
+          },
+          "fk_receipt_details_receipt": {
+            "type": "FOREIGN KEY",
+            "name": "fk_receipt_details_receipt",
+            "columnNames": [
+              "receipt_id"
+            ],
+            "targetTableName": "receipts",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "CASCADE"
+          },
+          "fk_receipt_details_po_detail": {
+            "type": "FOREIGN KEY",
+            "name": "fk_receipt_details_po_detail",
+            "columnNames": [
+              "po_detail_id"
+            ],
+            "targetTableName": "po_details",
+            "targetColumnNames": [
+              "id"
+            ],
+            "updateConstraint": "NO_ACTION",
+            "deleteConstraint": "RESTRICT"
+          }
+        }
+      }
+    },
+    "enums": {},
+    "extensions": {}
+}

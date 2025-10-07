@@ -1,0 +1,1493 @@
+{
+    "enums": {},
+    "tables": {
+      "item": {
+        "name": "item",
+        "columns": {
+          "brand_code": {
+            "name": "brand_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK brand.brand_code",
+            "default": null,
+            "notNull": true
+          },
+          "item_category_code": {
+            "name": "item_category_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK item_category.item_category_code",
+            "default": null,
+            "notNull": true
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Manufacturer part number PK",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Electronic components",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_item",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_item_cat": {
+            "name": "fk_item_cat",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "item_category_code"
+            ],
+            "targetTableName": "item_category",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "item_category_code"
+            ]
+          },
+          "fk_item_brand": {
+            "name": "fk_item_brand",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "brand_code"
+            ],
+            "targetTableName": "brand",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "brand_code"
+            ]
+          }
+        }
+      },
+      "brand": {
+        "name": "brand",
+        "columns": {
+          "brand_code": {
+            "name": "brand_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          },
+          "brand_name": {
+            "name": "brand_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Name",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Component brands",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_brand",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "brand_code"
+            ]
+          },
+          "unique_brand_name": {
+            "name": "unique_brand_name",
+            "type": "UNIQUE",
+            "columnNames": [
+              "brand_name"
+            ]
+          }
+        }
+      },
+      "model": {
+        "name": "model",
+        "columns": {
+          "model_name": {
+            "name": "model_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Model identifier",
+            "default": null,
+            "notNull": true
+          },
+          "production_quantity": {
+            "name": "production_quantity",
+            "type": "INT",
+            "check": null,
+            "comment": "Quantity",
+            "default": null,
+            "notNull": true
+          },
+          "design_drawing_number": {
+            "name": "design_drawing_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Design drawing",
+            "default": null,
+            "notNull": true
+          },
+          "client_req_delivery_date": {
+            "name": "client_req_delivery_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Requested date",
+            "default": null,
+            "notNull": true
+          },
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK prototype_project.prototype_project_number",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Models in prototype projects",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_model",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "prototype_project_number",
+              "model_name"
+            ]
+          },
+          "fk_model_prototype_project": {
+            "name": "fk_model_prototype_project",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "prototype_project_number"
+            ],
+            "targetTableName": "prototype_project",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "prototype_project_number"
+            ]
+          }
+        }
+      },
+      "client": {
+        "name": "client",
+        "columns": {
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK/FK business_partner.business_partner_code",
+            "default": null,
+            "notNull": true
+          },
+          "order_amount_last_year": {
+            "name": "order_amount_last_year",
+            "type": "DECIMAL",
+            "check": null,
+            "comment": "Total orders",
+            "default": 0,
+            "notNull": true
+          }
+        },
+        "comment": "Client-specific",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_client",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "business_partner_code"
+            ]
+          },
+          "fk_client_business_partner": {
+            "name": "fk_client_business_partner",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "business_partner_code"
+            ],
+            "targetTableName": "business_partner",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "business_partner_code"
+            ]
+          }
+        }
+      },
+      "receipt": {
+        "name": "receipt",
+        "columns": {
+          "receipt_date": {
+            "name": "receipt_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Date received",
+            "default": null,
+            "notNull": true
+          },
+          "receipt_number": {
+            "name": "receipt_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Receipts from suppliers",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_receipt",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "receipt_number"
+            ]
+          }
+        }
+      },
+      "employee": {
+        "name": "employee",
+        "columns": {
+          "employee_code": {
+            "name": "employee_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          },
+          "employee_name": {
+            "name": "employee_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Employee name",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Employees",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_employee",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "employee_code"
+            ]
+          }
+        }
+      },
+      "position": {
+        "name": "position",
+        "columns": {
+          "position_code": {
+            "name": "position_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          },
+          "position_name": {
+            "name": "position_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Unique",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Job positions",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_position",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "position_code"
+            ]
+          },
+          "unique_position_name": {
+            "name": "unique_position_name",
+            "type": "UNIQUE",
+            "columnNames": [
+              "position_name"
+            ]
+          }
+        }
+      },
+      "supplier": {
+        "name": "supplier",
+        "columns": {
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK/FK business_partner.business_partner_code",
+            "default": null,
+            "notNull": true
+          },
+          "procurement_amount_last_year": {
+            "name": "procurement_amount_last_year",
+            "type": "DECIMAL",
+            "check": null,
+            "comment": "Total procured",
+            "default": 0,
+            "notNull": true
+          }
+        },
+        "comment": "Supplier-specific",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_supplier",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "business_partner_code"
+            ]
+          },
+          "fk_supplier_business_partner": {
+            "name": "fk_supplier_business_partner",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "business_partner_code"
+            ],
+            "targetTableName": "business_partner",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "business_partner_code"
+            ]
+          }
+        }
+      },
+      "quotation": {
+        "name": "quotation",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK rfq.rfq_number",
+            "default": null,
+            "notNull": true
+          },
+          "quotation_date": {
+            "name": "quotation_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Date received",
+            "default": null,
+            "notNull": true
+          },
+          "quotation_number": {
+            "name": "quotation_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Supplier's ref",
+            "default": null,
+            "notNull": true
+          },
+          "quotation_validity_period": {
+            "name": "quotation_validity_period",
+            "type": "INT",
+            "check": null,
+            "comment": "Days valid",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Supplier's quotation responses",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_quotation",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "rfq_number"
+            ]
+          },
+          "fk_q_rfq": {
+            "name": "fk_q_rfq",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "rfq_number"
+            ],
+            "targetTableName": "request_for_quotation",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "rfq_number"
+            ]
+          }
+        }
+      },
+      "model_item": {
+        "name": "model_item",
+        "columns": {
+          "model_name": {
+            "name": "model_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK model.model_name",
+            "default": null,
+            "notNull": true
+          },
+          "req_quantity_per_unit": {
+            "name": "req_quantity_per_unit",
+            "type": "INT",
+            "check": null,
+            "comment": "Per unit",
+            "default": null,
+            "notNull": true
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK item.manufacturer_part_number",
+            "default": null,
+            "notNull": true
+          },
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK model.prototype_project_number",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Items per model",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_model_item",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "prototype_project_number",
+              "model_name",
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_mi_item": {
+            "name": "fk_mi_item",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "manufacturer_part_number"
+            ],
+            "targetTableName": "item",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_mi_model": {
+            "name": "fk_mi_model",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "prototype_project_number"
+            ],
+            "targetTableName": "model",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "prototype_project_number"
+            ]
+          },
+          "fk_mi_model2": {
+            "name": "fk_mi_model2",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "model_name"
+            ],
+            "targetTableName": "model",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "model_name"
+            ]
+          }
+        }
+      },
+      "rfq_detail": {
+        "name": "rfq_detail",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK rfq.rfq_number",
+            "default": null,
+            "notNull": true
+          },
+          "req_quantity": {
+            "name": "req_quantity",
+            "type": "INT",
+            "check": null,
+            "comment": "Quantity needed",
+            "default": null,
+            "notNull": true
+          },
+          "rfq_detail_number": {
+            "name": "rfq_detail_number",
+            "type": "INT",
+            "check": null,
+            "comment": "Sequence",
+            "default": null,
+            "notNull": true
+          },
+          "desired_delivery_date": {
+            "name": "desired_delivery_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Date",
+            "default": null,
+            "notNull": true
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Item FK",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Items in each RFQ",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_rfq_detail",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "rfq_number",
+              "rfq_detail_number"
+            ]
+          },
+          "fk_rd_rfq": {
+            "name": "fk_rd_rfq",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "rfq_number"
+            ],
+            "targetTableName": "request_for_quotation",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "rfq_number"
+            ]
+          },
+          "fk_rd_item": {
+            "name": "fk_rd_item",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "manufacturer_part_number"
+            ],
+            "targetTableName": "item",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ]
+          }
+        }
+      },
+      "organization": {
+        "name": "organization",
+        "columns": {
+          "organization_code": {
+            "name": "organization_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          },
+          "organization_name": {
+            "name": "organization_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Unique",
+            "default": null,
+            "notNull": true
+          },
+          "parent_organization_code": {
+            "name": "parent_organization_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK to organization.organization_code",
+            "default": null,
+            "notNull": false
+          }
+        },
+        "comment": "Hierarchical organizations",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_organization",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "organization_code"
+            ]
+          },
+          "fk_parent_org": {
+            "name": "fk_organization_parent",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "parent_organization_code"
+            ],
+            "targetTableName": "organization",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "organization_code"
+            ]
+          },
+          "unique_organization_name": {
+            "name": "unique_organization_name",
+            "type": "UNIQUE",
+            "columnNames": [
+              "organization_name"
+            ]
+          }
+        }
+      },
+      "handled_brand": {
+        "name": "handled_brand",
+        "columns": {
+          "brand_code": {
+            "name": "brand_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK brand.brand_code",
+            "default": null,
+            "notNull": true
+          },
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK supplier.business_partner_code",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Which brands suppliers handle",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_handled_brand",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "business_partner_code",
+              "brand_code"
+            ]
+          },
+          "fk_hb_brand": {
+            "name": "fk_hb_brand",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "brand_code"
+            ],
+            "targetTableName": "brand",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "brand_code"
+            ]
+          },
+          "fk_hb_supplier": {
+            "name": "fk_hb_supplier",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "business_partner_code"
+            ],
+            "targetTableName": "supplier",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "business_partner_code"
+            ]
+          }
+        }
+      },
+      "item_category": {
+        "name": "item_category",
+        "columns": {
+          "item_category_code": {
+            "name": "item_category_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          },
+          "item_category_name": {
+            "name": "item_category_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Name",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "item categories",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_item_cat",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "item_category_code"
+            ]
+          }
+        }
+      },
+      "purchase_order": {
+        "name": "purchase_order",
+        "columns": {
+          "total_amount": {
+            "name": "total_amount",
+            "type": "DECIMAL",
+            "check": null,
+            "comment": "Sum of details",
+            "default": 0,
+            "notNull": true
+          },
+          "purchase_order_date": {
+            "name": "purchase_order_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Issue date",
+            "default": null,
+            "notNull": true
+          },
+          "purchase_order_number": {
+            "name": "purchase_order_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Purchase orders",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_purchase_order",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "purchase_order_number"
+            ]
+          }
+        }
+      },
+      "receipt_detail": {
+        "name": "receipt_detail",
+        "columns": {
+          "receipt_number": {
+            "name": "receipt_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK receipt.receipt_number",
+            "default": null,
+            "notNull": true
+          },
+          "purchase_order_number": {
+            "name": "purchase_order_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK to PO",
+            "default": null,
+            "notNull": true
+          },
+          "receipt_detail_number": {
+            "name": "receipt_detail_number",
+            "type": "INT",
+            "check": null,
+            "comment": "Seq within receipt",
+            "default": null,
+            "notNull": true
+          },
+          "delivered_lot_quantity": {
+            "name": "delivered_lot_quantity",
+            "type": "INT",
+            "check": null,
+            "comment": "Lots delivered",
+            "default": null,
+            "notNull": true
+          },
+          "purchase_order_detail_number": {
+            "name": "purchase_order_detail_number",
+            "type": "INT",
+            "check": null,
+            "comment": "FK to PO detail",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Details of items received, partial allowed",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_receipt_detail",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "receipt_number",
+              "receipt_detail_number"
+            ]
+          },
+          "fk_rd_pod": {
+            "name": "fk_rd_pod",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "purchase_order_detail_number"
+            ],
+            "targetTableName": "purchase_order_detail",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "purchase_order_detail_number"
+            ]
+          },
+          "fk_rd_receipt": {
+            "name": "fk_rd_rcpt",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "receipt_number"
+            ],
+            "targetTableName": "receipt",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "receipt_number"
+            ]
+          },
+          "fk_rd_purchase_order": {
+            "name": "fk_rd_purchase_order",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "purchase_order_number"
+            ],
+            "targetTableName": "purchase_order",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "purchase_order_number"
+            ]
+          }
+        }
+      },
+      "business_partner": {
+        "name": "business_partner",
+        "columns": {
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          },
+          "business_partner_name": {
+            "name": "business_partner_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Name",
+            "default": null,
+            "notNull": true
+          },
+          "business_partner_address": {
+            "name": "business_partner_address",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Address",
+            "default": null,
+            "notNull": true
+          },
+          "business_partner_category": {
+            "name": "business_partner_category",
+            "type": "VARCHAR",
+            "check": "IN ('CLIENT','SUPPLIER')",
+            "comment": "CLIENT or SUPPLIER",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Clients and suppliers",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_business_partner",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "business_partner_code"
+            ]
+          }
+        }
+      },
+      "quotation_detail": {
+        "name": "quotation_detail",
+        "columns": {
+          "lot_size": {
+            "name": "lot_size",
+            "type": "INT",
+            "check": null,
+            "comment": "Units per lot",
+            "default": null,
+            "notNull": true
+          },
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK quotation.rfq_number",
+            "default": null,
+            "notNull": true
+          },
+          "unit_price": {
+            "name": "unit_price",
+            "type": "DECIMAL",
+            "check": null,
+            "comment": "Price per unit",
+            "default": null,
+            "notNull": true
+          },
+          "proposal_reason": {
+            "name": "proposal_reason",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "If alternate proposed",
+            "default": null,
+            "notNull": false
+          },
+          "deliverable_date": {
+            "name": "deliverable_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Date",
+            "default": null,
+            "notNull": true
+          },
+          "rfq_detail_number": {
+            "name": "rfq_detail_number",
+            "type": "INT",
+            "check": null,
+            "comment": "FK rfq_detail.rfq_detail_number",
+            "default": null,
+            "notNull": true
+          },
+          "quotation_detail_number": {
+            "name": "quotation_detail_number",
+            "type": "INT",
+            "check": null,
+            "comment": "Supplier seq no",
+            "default": null,
+            "notNull": true
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Proposed item",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Line items in quotations",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_quote_detail",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "rfq_number",
+              "quotation_detail_number"
+            ]
+          },
+          "fk_qd_item": {
+            "name": "fk_qd_item",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "manufacturer_part_number"
+            ],
+            "targetTableName": "item",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_qd_quote": {
+            "name": "fk_qd_quote",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "rfq_number"
+            ],
+            "targetTableName": "quotation",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "rfq_number"
+            ]
+          },
+          "fk_qd_rfq_detail": {
+            "name": "fk_qd_rd",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "rfq_detail_number"
+            ],
+            "targetTableName": "rfq_detail",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "rfq_detail_number"
+            ]
+          }
+        }
+      },
+      "prototype_project": {
+        "name": "prototype_project",
+        "columns": {
+          "product_purpose": {
+            "name": "product_purpose",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Shared to suppliers",
+            "default": null,
+            "notNull": true
+          },
+          "registration_date": {
+            "name": "registration_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Registration date",
+            "default": null,
+            "notNull": true
+          },
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Client FK",
+            "default": null,
+            "notNull": true
+          },
+          "prototype_project_name": {
+            "name": "prototype_project_name",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Project name",
+            "default": null,
+            "notNull": true
+          },
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Prototype projects",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_prototype_project",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "prototype_project_number"
+            ]
+          },
+          "fk_prototype_project_client": {
+            "name": "fk_prototype_project_client",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "business_partner_code"
+            ],
+            "targetTableName": "client",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "business_partner_code"
+            ]
+          }
+        }
+      },
+      "employee_affiliation": {
+        "name": "employee_affiliation",
+        "columns": {
+          "employee_code": {
+            "name": "employee_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK employee.employee_code",
+            "default": null,
+            "notNull": true
+          },
+          "position_code": {
+            "name": "position_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Optional FK position.position_code",
+            "default": null,
+            "notNull": false
+          },
+          "organization_code": {
+            "name": "organization_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK organization.organization_code",
+            "default": null,
+            "notNull": true
+          },
+          "reporting_employee_code": {
+            "name": "reporting_employee_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Optional FK to employee.employee_code",
+            "default": null,
+            "notNull": false
+          }
+        },
+        "comment": "Link employees with organizations, positions, and reporting relationships",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_emp_aff",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "employee_code",
+              "organization_code"
+            ]
+          },
+          "fk_emp_aff_emp": {
+            "name": "fk_ea_emp",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "employee_code"
+            ],
+            "targetTableName": "employee",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "employee_code"
+            ]
+          },
+          "fk_emp_aff_org": {
+            "name": "fk_ea_org",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "organization_code"
+            ],
+            "targetTableName": "organization",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "organization_code"
+            ]
+          },
+          "fk_emp_aff_pos": {
+            "name": "fk_ea_pos",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "position_code"
+            ],
+            "targetTableName": "position",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "position_code"
+            ]
+          },
+          "fk_emp_aff_report": {
+            "name": "fk_ea_report",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "reporting_employee_code"
+            ],
+            "targetTableName": "employee",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "employee_code"
+            ]
+          }
+        }
+      },
+      "purchase_order_detail": {
+        "name": "purchase_order_detail",
+        "columns": {
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "From which RFQ",
+            "default": null,
+            "notNull": true
+          },
+          "order_lot_quantity": {
+            "name": "order_lot_quantity",
+            "type": "INT",
+            "check": null,
+            "comment": "Lots ordered",
+            "default": null,
+            "notNull": true
+          },
+          "purchase_order_number": {
+            "name": "purchase_order_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK purchase_order.purchase_order_number",
+            "default": null,
+            "notNull": true
+          },
+          "quotation_detail_number": {
+            "name": "quotation_detail_number",
+            "type": "INT",
+            "check": null,
+            "comment": "Selected detail",
+            "default": null,
+            "notNull": true
+          },
+          "specified_delivery_date": {
+            "name": "specified_delivery_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "Planned delivery",
+            "default": null,
+            "notNull": true
+          },
+          "purchase_order_detail_number": {
+            "name": "purchase_order_detail_number",
+            "type": "INT",
+            "check": null,
+            "comment": "Seq within PO",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Line items in POs, supports partial deliveries",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_purchase_order_detail",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "purchase_order_number",
+              "purchase_order_detail_number"
+            ]
+          },
+          "fk_pod_quote": {
+            "name": "fk_pod_q",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "rfq_number"
+            ],
+            "targetTableName": "quotation",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "rfq_number"
+            ]
+          },
+          "fk_pod_quote3": {
+            "name": "fk_pod_q3",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "quotation_detail_number"
+            ],
+            "targetTableName": "quotation_detail",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "quotation_detail_number"
+            ]
+          },
+          "fk_pod_purchase_order": {
+            "name": "fk_pod_purchase_order",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "purchase_order_number"
+            ],
+            "targetTableName": "purchase_order",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "purchase_order_number"
+            ]
+          }
+        }
+      },
+      "request_for_quotation": {
+        "name": "request_for_quotation",
+        "columns": {
+          "rfq_date": {
+            "name": "rfq_date",
+            "type": "DATE",
+            "check": null,
+            "comment": "RFQ date",
+            "default": null,
+            "notNull": true
+          },
+          "rfq_number": {
+            "name": "rfq_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "PK",
+            "default": null,
+            "notNull": true
+          },
+          "business_partner_code": {
+            "name": "business_partner_code",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK business_partner_code",
+            "default": null,
+            "notNull": true
+          },
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "Project FK",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Requests for quotation",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_rfq",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "rfq_number"
+            ]
+          },
+          "fk_business_partner_code": {
+            "name": "fk_business_partner_code",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "business_partner_code"
+            ],
+            "targetTableName": "business_partner",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "business_partner_code"
+            ]
+          },
+          "fk_rfq_prototype_project": {
+            "name": "fk_rfq_prototype_project",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "prototype_project_number"
+            ],
+            "targetTableName": "prototype_project",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "prototype_project_number"
+            ]
+          }
+        }
+      },
+      "prototype_project_item": {
+        "name": "prototype_project_item",
+        "columns": {
+          "total_req_quantity": {
+            "name": "total_req_quantity",
+            "type": "INT",
+            "check": null,
+            "comment": "Total needed",
+            "default": null,
+            "notNull": true
+          },
+          "client_provided_quantity": {
+            "name": "client_provided_quantity",
+            "type": "INT",
+            "check": null,
+            "comment": "Provided by client",
+            "default": 0,
+            "notNull": true
+          },
+          "manufacturer_part_number": {
+            "name": "manufacturer_part_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK item.manufacturer_part_number",
+            "default": null,
+            "notNull": true
+          },
+          "prototype_project_number": {
+            "name": "prototype_project_number",
+            "type": "VARCHAR",
+            "check": null,
+            "comment": "FK prototype_project.prototype_project_number",
+            "default": null,
+            "notNull": true
+          },
+          "req_procurement_quantity": {
+            "name": "req_procurement_quantity",
+            "type": "INT",
+            "check": null,
+            "comment": "Computed",
+            "default": null,
+            "notNull": true
+          }
+        },
+        "comment": "Overall project item needs",
+        "indexes": {},
+        "constraints": {
+          "pk": {
+            "name": "pk_prototype_project_item",
+            "type": "PRIMARY KEY",
+            "columnNames": [
+              "prototype_project_number",
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_ppi_item": {
+            "name": "fk_ppi_item",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "manufacturer_part_number"
+            ],
+            "targetTableName": "item",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "manufacturer_part_number"
+            ]
+          },
+          "fk_ppi_prototype_project": {
+            "name": "fk_ppi_prototype_project",
+            "type": "FOREIGN KEY",
+            "columnNames": [
+              "prototype_project_number"
+            ],
+            "targetTableName": "prototype_project",
+            "deleteConstraint": "NO_ACTION",
+            "updateConstraint": "NO_ACTION",
+            "targetColumnNames": [
+              "prototype_project_number"
+            ]
+          }
+        }
+      }
+    },
+    "extensions": {}
+}
