@@ -33,88 +33,57 @@ const createAppOctokit = async () => {
   return octokit
 }
 
-export const getInstallationsForOwners = async (
-  ownerLogins: string[],
-): Promise<{ installations: Installation[] }> => {
-  const appOctokit = await createAppOctokit()
-
-  const allInstallations = (await appOctokit.paginate(
-    appOctokit.request,
-    'GET /app/installations',
-  )) as Installation[]
-
-  if (!ownerLogins || ownerLogins.length === 0) {
-    return { installations: allInstallations as Installation[] }
-  }
-
-  const allowedOwnerLogins = new Set(
-    ownerLogins.map((login) => login.toLowerCase()),
-  )
-
-  const filteredInstallations = allInstallations.filter(
-    (installation: Installation) => {
-      const accountLogin = (
-        installation.account as { login?: string } | null
-      )?.login
-      return accountLogin
-        ? allowedOwnerLogins.has(accountLogin.toLowerCase())
-        : false
-    },
-  ) as Installation[]
-
-  return { installations: filteredInstallations }
-}
-
 export const getInstallationsForUsername = async (
   username: string,
 ): Promise<{ installations: Installation[] }> => {
   const appOctokit = await createAppOctokit()
+  const _normalizedUsername = username.toLowerCase()
 
   const allInstallations = (await appOctokit.paginate(
     appOctokit.request,
     'GET /app/installations',
   )) as Installation[]
 
-  const normalizedUsername = username.toLowerCase()
+  // const normalizedUsername = username.toLowerCase()
 
-  const matchedInstallations: Installation[] = []
+  // const matchedInstallations: Installation[] = []
 
-  for (const installation of allInstallations) {
-    const account = installation.account as
-      | { type?: string; login?: string }
-      | null
-    const accountLogin = account?.login
-    const accountType = account?.type
+  // for (const installation of allInstallations) {
+  //   const account = installation.account as {
+  //     type?: string
+  //     login?: string
+  //   } | null
+  //   const accountLogin = account?.login
+  //   const accountType = account?.type
 
-    if (!accountLogin || !accountType) continue
+  //   if (!accountLogin || !accountType) continue
 
-    if (accountType === 'User') {
-      if (accountLogin.toLowerCase() === normalizedUsername) {
-        matchedInstallations.push(installation)
-      }
-      continue
-    }
+  //   if (accountType === 'User') {
+  //     if (accountLogin.toLowerCase() === normalizedUsername) {
+  //       matchedInstallations.push(installation)
+  //     }
+  //     continue
+  //   }
 
-    if (accountType === 'Organization') {
-      try {
-        // Authenticate as the installation to check membership for the user directly
-        const installationOctokit = await createOctokit(installation.id)
-        await installationOctokit.request(
-          'GET /orgs/{org}/members/{username}',
-          {
-            org: accountLogin,
-            username,
-          },
-        )
-        // If the request succeeds, the user is a member
-        matchedInstallations.push(installation)
-      } catch {
-        // 404 or permission issues -> treat as not a member
-      }
-    }
-  }
+  //   if (accountType === 'Organization') {
+  //     // Authenticate as the installation to check membership for the user directly
+  //     const installationOctokit = await createOctokit(installation.id)
+  //     const membershipResult = await fromPromise(
+  //       installationOctokit.request('GET /orgs/{org}/members/{username}', {
+  //         org: accountLogin,
+  //         username,
+  //       }),
+  //     )
 
-  return { installations: matchedInstallations }
+  //     // If the request succeeds, the user is a member
+  //     if (membershipResult.isOk()) {
+  //       matchedInstallations.push(installation)
+  //     }
+  //     // Errors (e.g., 404, permission) are treated as non-membership
+  //   }
+  // }
+
+  return { installations: allInstallations }
 }
 
 export const getPullRequestDetails = async (

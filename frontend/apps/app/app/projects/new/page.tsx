@@ -31,18 +31,11 @@ export default async function NewProjectPage() {
     redirect(urlgen('login'))
   }
 
-  // Derive GitHub username from Supabase user metadata (GitHub provider) without using `any`
+  // Derive GitHub username from Supabase user metadata (GitHub provider) without using `any`.
+  // Supabase types `user.user_metadata` and `identity_data` as `any`, so we first
+  // treat them as `unknown` and then narrow with a custom type guard.
   const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null
-
-  const usernameFromUserMetadata = (() => {
-    const userMetadata = user.user_metadata as unknown
-    if (isRecord(userMetadata)) {
-      const userNameField = userMetadata['user_name']
-      if (typeof userNameField === 'string') return userNameField
-    }
-    return undefined
-  })()
 
   const usernameFromIdentities = (() => {
     const identities = Array.isArray(user.identities) ? user.identities : []
@@ -60,7 +53,7 @@ export default async function NewProjectPage() {
     return undefined
   })()
 
-  const githubLogin = usernameFromUserMetadata ?? usernameFromIdentities
+  const githubLogin = usernameFromIdentities
 
   if (!githubLogin) {
     console.error('GitHub login not found on user metadata')
