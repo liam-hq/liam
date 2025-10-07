@@ -6,7 +6,7 @@ import {
 import { createAppAuth } from '@octokit/auth-app'
 import { Octokit } from '@octokit/rest'
 import { err, type Result, type ResultAsync } from 'neverthrow'
-import type { GitHubContentItem } from './types'
+import type { GitHubContentItem, Installation } from './types'
 
 const createOctokit = async (installationId: number) => {
   const octokit = new Octokit({
@@ -19,6 +19,72 @@ const createOctokit = async (installationId: number) => {
   })
 
   return octokit
+}
+
+const createAppOctokit = async () => {
+  const octokit = new Octokit({
+    authStrategy: createAppAuth,
+    auth: {
+      appId: process.env['GITHUB_APP_ID'],
+      privateKey: process.env['GITHUB_PRIVATE_KEY']?.replace(/\\n/g, '\n'),
+    },
+  })
+
+  return octokit
+}
+
+export const getInstallationsForUsername = async (
+  username: string,
+): Promise<{ installations: Installation[] }> => {
+  const appOctokit = await createAppOctokit()
+
+  const allInstallations = (await appOctokit.paginate(
+    appOctokit.request,
+    'GET /installation/repositories',
+  )) as Installation[]
+
+  const normalizedUsername = username.toLowerCase()
+
+  const matchedInstallations: Installation[] = []
+
+  for (const installation of allInstallations) {
+    const account = installation.account as {
+      type?: string
+      login?: string
+    } | null
+    const accountLogin = account?.login
+    const accountType = account?.type
+
+    if (!accountLogin || !accountType) continue
+
+    if (accountType === 'User') {
+      if (accountLogin.toLowerCase() === normalizedUsername) {
+        matchedInstallations.push(installation)
+        console.info(accountLogin.toLowerCase())
+      }
+      continue
+    }
+
+    if (accountType === 'Organization') {
+      // Authenticate as the installation to check membership for the user directly
+      const installationOctokit = await createOctokit(installation.id)
+      const membershipResult = await fromPromise(
+        installationOctokit.request('GET /orgs/{org}/members/{username}', {
+          org: accountLogin,
+          username,
+        }),
+      )
+      console.info(username)
+
+      // If the request succeeds, the user is a member
+      if (membershipResult.isOk()) {
+        matchedInstallations.push(installation)
+      }
+      // Errors (e.g., 404, permission) are treated as non-membership
+    }
+  }
+
+  return { installations: allInstallations }
 }
 
 export const getPullRequestDetails = async (
