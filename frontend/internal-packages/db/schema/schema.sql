@@ -1516,7 +1516,7 @@ CREATE TABLE IF NOT EXISTS "public"."user_provider_tokens" (
     "user_id" "uuid" NOT NULL,
     "provider" "text" NOT NULL,
     "access_token" "text" NOT NULL,
-    "refresh_token" "text" NOT NULL,
+    "refresh_token" "text",
     "expires_at" timestamp with time zone,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL

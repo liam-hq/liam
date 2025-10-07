@@ -12,7 +12,7 @@ function logDebug(message: string, meta?: Record<string, unknown>) {
 
 type ProviderTokens = {
   access_token: string
-  refresh_token: string
+  refresh_token: string | null
 }
 
 type GitHubInstallationsResponse = {
@@ -110,11 +110,11 @@ async function loadOrCreateTokensForUser(
   if (loadErr) throw new Error('Failed to load provider token')
 
   const accessToken = stored?.access_token
-  const refreshToken = stored?.refresh_token
-  if (accessToken && refreshToken) {
+  const refreshToken = stored?.refresh_token ?? null
+  if (accessToken) {
     logDebug('Using stored provider tokens', {
       accessTokenLength: accessToken.length,
-      refreshTokenLength: refreshToken.length,
+      refreshTokenLength: refreshToken?.length ?? 0,
     })
     return { access_token: accessToken, refresh_token: refreshToken }
   }
@@ -124,14 +124,15 @@ async function loadOrCreateTokensForUser(
   const session = sessionData?.session
   const sessAccess = (session as { provider_token?: string } | null)
     ?.provider_token
-  const sessRefresh = (session as { provider_refresh_token?: string } | null)
-    ?.provider_refresh_token
-  if (!sessAccess || !sessRefresh)
+  const sessRefresh =
+    (session as { provider_refresh_token?: string } | null)
+      ?.provider_refresh_token ?? null
+  if (!sessAccess)
     throw new Error('GitHub connection required. Please re-authenticate.')
 
   logDebug('Captured tokens from current session', {
     accessTokenLength: sessAccess.length,
-    refreshTokenLength: sessRefresh.length,
+    refreshTokenLength: sessRefresh?.length,
   })
 
   await supabase.from('user_provider_tokens').upsert(
@@ -151,7 +152,7 @@ async function persistTokens(userId: string, tokens: ProviderTokens) {
   logDebug('Persisting refreshed tokens', {
     userId,
     accessTokenLength: tokens.access_token.length,
-    refreshTokenLength: tokens.refresh_token.length,
+    refreshTokenLength: tokens.refresh_token?.length ?? 0,
   })
   await supabase.from('user_provider_tokens').upsert(
     {
@@ -181,12 +182,10 @@ async function getInstallationsWithRefresh(
     })
   }
 
-  if (resp.status === 401 || resp.status === 403) {
+  if ((resp.status === 401 || resp.status === 403) && refreshToken) {
     logDebug('Access token rejected, attempting refresh', {
       status: resp.status,
     })
-    if (!refreshToken)
-      throw new Error('GitHub token expired and no refresh token available')
     const refreshed = await refreshGitHubToken(refreshToken)
     const newAccess = refreshed.access_token
     const newRefresh = refreshed.refresh_token ?? refreshToken

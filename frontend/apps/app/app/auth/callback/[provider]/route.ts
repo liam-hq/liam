@@ -15,18 +15,18 @@ async function persistGitHubProviderTokens() {
   const provider =
     (session?.user?.app_metadata?.provider as string | undefined) ?? 'github'
 
-  if (userId && provider === 'github' && accessToken && refreshToken) {
+  if (userId && provider === 'github' && accessToken) {
     console.info('[AuthCallback] Persisting GitHub provider tokens', {
       userId,
       accessTokenLength: accessToken.length,
-      refreshTokenLength: refreshToken.length,
+      refreshTokenLength: refreshToken?.length ?? 0,
     })
     const { error } = await supabase.from('user_provider_tokens').upsert(
       {
         user_id: userId,
         provider: 'github',
         access_token: accessToken,
-        refresh_token: refreshToken,
+        refresh_token: refreshToken ?? null,
       },
       { onConflict: 'user_id,provider' },
     )
