@@ -7,11 +7,14 @@ async function persistGitHubProviderTokens() {
   const supabase = await createClient()
   const { data: sessionData } = await supabase.auth.getSession()
   const session = sessionData?.session
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const accessToken = (session as { provider_token?: string } | null)
     ?.provider_token
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const refreshToken = (session as { provider_refresh_token?: string } | null)
     ?.provider_refresh_token
   const userId = session?.user?.id
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const provider =
     (session?.user?.app_metadata?.provider as string | undefined) ?? 'github'
 

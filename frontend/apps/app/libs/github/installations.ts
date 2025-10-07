@@ -38,6 +38,7 @@ async function refreshGitHubToken(refreshToken: string) {
   const clientSecret = process.env.GITHUB_OAUTH_CLIENT_SECRET || ''
 
   if (!clientId || !clientSecret) {
+    // eslint-disable-next-line no-throw-error/no-throw-error
     throw new Error('Missing GitHub OAuth client credentials')
   }
 
@@ -69,9 +70,11 @@ async function refreshGitHubToken(refreshToken: string) {
       status: resp.status,
       bodySnippet: text.slice(0, 120),
     })
+    // eslint-disable-next-line no-throw-error/no-throw-error
     throw new Error(`GitHub token refresh failed: ${resp.status}`)
   }
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const json = (await resp.json()) as {
     access_token?: string
     refresh_token?: string
@@ -88,6 +91,7 @@ async function refreshGitHubToken(refreshToken: string) {
   })
   if (!json.access_token) {
     // Many GitHub errors return fields like `error`, `error_description`
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const errShape = json as unknown as Record<string, unknown>
     console.error('[GitHubOAuth] Token refresh missing access_token', {
       error: errShape.error,
@@ -107,6 +111,7 @@ async function loadOrCreateTokensForUser(
     .eq('user_id', userId)
     .eq('provider', 'github')
     .maybeSingle()
+  // eslint-disable-next-line no-throw-error/no-throw-error
   if (loadErr) throw new Error('Failed to load provider token')
 
   const accessToken = stored?.access_token
@@ -122,12 +127,15 @@ async function loadOrCreateTokensForUser(
 
   const { data: sessionData } = await supabase.auth.getSession()
   const session = sessionData?.session
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const sessAccess = (session as { provider_token?: string } | null)
     ?.provider_token
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const sessRefresh =
     (session as { provider_refresh_token?: string } | null)
       ?.provider_refresh_token ?? null
   if (!sessAccess)
+    // eslint-disable-next-line no-throw-error/no-throw-error
     throw new Error('GitHub connection required. Please re-authenticate.')
 
   logDebug('Captured tokens from current session', {
@@ -189,6 +197,7 @@ async function getInstallationsWithRefresh(
     const refreshed = await refreshGitHubToken(refreshToken)
     const newAccess = refreshed.access_token
     const newRefresh = refreshed.refresh_token ?? refreshToken
+    // eslint-disable-next-line no-throw-error/no-throw-error
     if (!newAccess) throw new Error('Failed to refresh GitHub token')
     await persistTokens(userId, {
       access_token: newAccess,
@@ -206,8 +215,10 @@ async function getInstallationsWithRefresh(
       status: resp.status,
       bodySnippet: text.slice(0, 200),
     })
+    // eslint-disable-next-line no-throw-error/no-throw-error
     throw new Error(`GitHub API error: ${resp.status} ${text}`)
   }
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return (await resp.json()) as GitHubInstallationsResponse
 }
 
@@ -221,6 +232,7 @@ export async function getUserInstallationsForCurrentUser(): Promise<GitHubInstal
     data: { user },
     error: userError,
   } = await supabase.auth.getUser()
+  // eslint-disable-next-line no-throw-error/no-throw-error
   if (userError || !user) throw new Error('Unauthorized')
 
   const tokens = await loadOrCreateTokensForUser(user.id)

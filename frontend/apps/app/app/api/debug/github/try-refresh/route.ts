@@ -13,7 +13,8 @@ export async function GET() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data, error } = await supabase
     .from('user_provider_tokens')
@@ -29,14 +30,22 @@ export async function GET() {
 
   const refreshToken = data?.refresh_token ?? null
   if (!refreshToken) {
-    return NextResponse.json({ ok: false, message: 'No refresh token stored' }, { status: 200 })
+    return NextResponse.json(
+      { ok: false, message: 'No refresh token stored' },
+      { status: 200 },
+    )
   }
 
   const clientId = process.env.GITHUB_OAUTH_CLIENT_ID || ''
   const clientSecret = process.env.GITHUB_OAUTH_CLIENT_SECRET || ''
   if (!clientId || !clientSecret)
     return NextResponse.json(
-      { ok: false, message: 'Missing client credentials', hasClientId: Boolean(clientId), hasClientSecret: Boolean(clientSecret) },
+      {
+        ok: false,
+        message: 'Missing client credentials',
+        hasClientId: Boolean(clientId),
+        hasClientSecret: Boolean(clientSecret),
+      },
       { status: 200 },
     )
 
@@ -48,12 +57,17 @@ export async function GET() {
 
   const resp = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
     body,
     cache: 'no-store',
   })
 
   const text = await resp.text().catch(() => '')
+  // biome-ignore lint/suspicious/noExplicitAny: Debug endpoint for GitHub OAuth response
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   let json: any = null
   try {
     json = JSON.parse(text)
@@ -62,11 +76,14 @@ export async function GET() {
   return NextResponse.json({
     status: resp.status,
     ok: resp.ok,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     hasAccessToken: Boolean(json?.access_token),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     hasRefreshToken: Boolean(json?.refresh_token),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     error: json?.error ?? null,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     error_description: json?.error_description ?? null,
     rawSnippet: text.slice(0, 200),
   })
 }
-

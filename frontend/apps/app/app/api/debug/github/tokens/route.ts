@@ -4,7 +4,7 @@ import { createClient } from '../../../../../libs/db/server'
 const mask = (v?: string | null) =>
   typeof v === 'string' && v.length > 8
     ? `${v.slice(0, 4)}...${v.slice(-2)}`
-    : v ?? null
+    : (v ?? null)
 
 export async function GET() {
   if (process.env.NODE_ENV === 'production') {
@@ -18,7 +18,8 @@ export async function GET() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data, error } = await supabase
     .from('user_provider_tokens')
@@ -45,4 +46,3 @@ export async function GET() {
     updatedAt: data?.updated_at ?? null,
   })
 }
-

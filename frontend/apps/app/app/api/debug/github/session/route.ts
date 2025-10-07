@@ -4,7 +4,7 @@ import { createClient } from '../../../../../libs/db/server'
 const mask = (v?: string | null) =>
   typeof v === 'string' && v.length > 8
     ? `${v.slice(0, 4)}...${v.slice(-2)}`
-    : v ?? null
+    : (v ?? null)
 
 export async function GET() {
   if (process.env.NODE_ENV === 'production') {
@@ -19,9 +19,16 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const session = sessionData?.session ?? null
-  const provider = (session?.user?.app_metadata?.provider as string | undefined) ?? null
-  const providerToken = (session as { provider_token?: string } | null)?.provider_token ?? null
-  const providerRefresh = (session as { provider_refresh_token?: string } | null)?.provider_refresh_token ?? null
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const provider =
+    (session?.user?.app_metadata?.provider as string | undefined) ?? null
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const providerToken =
+    (session as { provider_token?: string } | null)?.provider_token ?? null
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const providerRefresh =
+    (session as { provider_refresh_token?: string } | null)
+      ?.provider_refresh_token ?? null
 
   return NextResponse.json({
     hasSession: Boolean(session),
@@ -32,4 +39,3 @@ export async function GET() {
     providerRefreshTokenLength: providerRefresh?.length ?? 0,
   })
 }
-
