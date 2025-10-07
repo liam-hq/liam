@@ -3,7 +3,7 @@ import type { FC, ReactNode } from 'react'
 import styles from './BaseLayout.module.css'
 
 export type BaseLayoutProps = {
-  globalNav: ReactNode
+  globalNav?: ReactNode
   appBar: ReactNode
   children: ReactNode
   className?: string
