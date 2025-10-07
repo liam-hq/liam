@@ -133,19 +133,26 @@ export const processor: Processor = async (
   sql: string,
   chunkSize = CHUNK_SIZE,
 ) => {
+  const filteredSql = sql
+    .split('\n')
+    .filter((line) => {
+      return !line.startsWith('\\restrict') && !line.startsWith('\\unrestrict')
+    })
+    .join('\n')
+
   const schema: Schema = { tables: {}, enums: {}, extensions: {} }
 
   const parseErrors: ProcessError[] = []
 
   const errors = await processSQLInChunks(
-    sql,
+    filteredSql,
     chunkSize,
     async (chunk, chunkOffset = 0) => {
       const result = await processChunk(
         chunk,
         schema,
         parseErrors,
-        sql,
+        filteredSql,
         chunkOffset,
       )
       return result.match(

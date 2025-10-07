@@ -4,15 +4,6 @@ import type { RawStmt } from '@pgsql/types'
 import Module from 'pg-query-emscripten'
 
 export const parse = async (str: string): Promise<PgParseResult> => {
-  // Filter out \restrict and \unrestrict lines from PostgreSQL 16.10+
-  // These lines are added by pg_dump but are not valid SQL statements for parsing
-  const filteredStr = str
-    .split('\n')
-    .filter((line) => {
-      return !line.startsWith('\\restrict') && !line.startsWith('\\unrestrict')
-    })
-    .join('\n')
-
   const pgQuery = await new Module({
     wasmMemory: new WebAssembly.Memory({
       initial: 2048, // 128MB (64KB × 2048 pages)
@@ -20,7 +11,7 @@ export const parse = async (str: string): Promise<PgParseResult> => {
     }),
   })
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const result = pgQuery.parse(filteredStr)
+  const result = pgQuery.parse(str)
   return result
 }
 
