@@ -37,51 +37,52 @@ export const getInstallationsForUsername = async (
   username: string,
 ): Promise<{ installations: Installation[] }> => {
   const appOctokit = await createAppOctokit()
-  const _normalizedUsername = username.toLowerCase()
 
   const allInstallations = (await appOctokit.paginate(
     appOctokit.request,
-    'GET /app/installations',
+    'GET /installation/repositories',
   )) as Installation[]
 
-  // const normalizedUsername = username.toLowerCase()
+  const normalizedUsername = username.toLowerCase()
 
-  // const matchedInstallations: Installation[] = []
+  const matchedInstallations: Installation[] = []
 
-  // for (const installation of allInstallations) {
-  //   const account = installation.account as {
-  //     type?: string
-  //     login?: string
-  //   } | null
-  //   const accountLogin = account?.login
-  //   const accountType = account?.type
+  for (const installation of allInstallations) {
+    const account = installation.account as {
+      type?: string
+      login?: string
+    } | null
+    const accountLogin = account?.login
+    const accountType = account?.type
 
-  //   if (!accountLogin || !accountType) continue
+    if (!accountLogin || !accountType) continue
 
-  //   if (accountType === 'User') {
-  //     if (accountLogin.toLowerCase() === normalizedUsername) {
-  //       matchedInstallations.push(installation)
-  //     }
-  //     continue
-  //   }
+    if (accountType === 'User') {
+      if (accountLogin.toLowerCase() === normalizedUsername) {
+        matchedInstallations.push(installation)
+        console.info(accountLogin.toLowerCase())
+      }
+      continue
+    }
 
-  //   if (accountType === 'Organization') {
-  //     // Authenticate as the installation to check membership for the user directly
-  //     const installationOctokit = await createOctokit(installation.id)
-  //     const membershipResult = await fromPromise(
-  //       installationOctokit.request('GET /orgs/{org}/members/{username}', {
-  //         org: accountLogin,
-  //         username,
-  //       }),
-  //     )
+    if (accountType === 'Organization') {
+      // Authenticate as the installation to check membership for the user directly
+      const installationOctokit = await createOctokit(installation.id)
+      const membershipResult = await fromPromise(
+        installationOctokit.request('GET /orgs/{org}/members/{username}', {
+          org: accountLogin,
+          username,
+        }),
+      )
+      console.info(username)
 
-  //     // If the request succeeds, the user is a member
-  //     if (membershipResult.isOk()) {
-  //       matchedInstallations.push(installation)
-  //     }
-  //     // Errors (e.g., 404, permission) are treated as non-membership
-  //   }
-  // }
+      // If the request succeeds, the user is a member
+      if (membershipResult.isOk()) {
+        matchedInstallations.push(installation)
+      }
+      // Errors (e.g., 404, permission) are treated as non-membership
+    }
+  }
 
   return { installations: allInstallations }
 }
