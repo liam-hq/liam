@@ -31,7 +31,17 @@ export default async function NewProjectPage() {
     redirect(urlgen('login'))
   }
 
-  const { installations } = await getInstallations(data.session)
+  const installationsResult = await getInstallations(data.session)
+
+  if (installationsResult.isErr()) {
+    console.error(
+      'Error fetching GitHub installations:',
+      installationsResult.error,
+    )
+    redirect(urlgen('login'))
+  }
+
+  const { installations } = installationsResult.value
 
   return (
     <ProjectNewPage
