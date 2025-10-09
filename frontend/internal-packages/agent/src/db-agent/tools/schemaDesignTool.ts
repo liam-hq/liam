@@ -10,6 +10,7 @@ import {
 } from '@liam-hq/schema'
 import * as v from 'valibot'
 import { toJsonSchema } from '../../utils/jsonSchema'
+import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
 import { getToolConfigurable } from '../getToolConfigurable'
 
 const schemaDesignToolSchema = v.object({
@@ -69,65 +70,67 @@ const validateAndExecuteDDL = async (
 
 export const schemaDesignTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<string> => {
-    const toolConfigurableResult = getToolConfigurable(config)
-    if (toolConfigurableResult.isErr()) {
-      return `Configuration error: ${toolConfigurableResult.error.message}. Please check the tool configuration and try again.`
-    }
-    const { repositories, buildingSchemaId, designSessionId } =
-      toolConfigurableResult.value
-    const parsed = v.safeParse(schemaDesignToolSchema, input)
-    if (!parsed.success) {
-      const errorDetails = parsed.issues
-        .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
-        .join(', ')
-      return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
-    }
+    return withSentryCaptureException(async () => {
+      const toolConfigurableResult = getToolConfigurable(config)
+      if (toolConfigurableResult.isErr()) {
+        return `Configuration error: ${toolConfigurableResult.error.message}. Please check the tool configuration and try again.`
+      }
+      const { repositories, buildingSchemaId, designSessionId } =
+        toolConfigurableResult.value
+      const parsed = v.safeParse(schemaDesignToolSchema, input)
+      if (!parsed.success) {
+        const errorDetails = parsed.issues
+          .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
+          .join(', ')
+        return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
+      }
 
-    const schemaResult = await repositories.schema.getSchema(designSessionId)
-    if (schemaResult.isErr()) {
-      // LangGraph tool nodes require throwing errors to trigger retry mechanism
-      // eslint-disable-next-line no-throw-error/no-throw-error
-      throw new Error(
-        'Could not retrieve current schema for DDL validation. Please check the schema ID and try again.',
+      const schemaResult = await repositories.schema.getSchema(designSessionId)
+      if (schemaResult.isErr()) {
+        // LangGraph tool nodes require throwing errors to trigger retry mechanism
+        // eslint-disable-next-line no-throw-error/no-throw-error
+        throw new Error(
+          'Could not retrieve current schema for DDL validation. Please check the schema ID and try again.',
+        )
+      }
+
+      const applyResult = applyPatchOperations(
+        schemaResult.value.schema,
+        parsed.output.operations,
       )
-    }
 
-    const applyResult = applyPatchOperations(
-      schemaResult.value.schema,
-      parsed.output.operations,
-    )
+      if (applyResult.isErr()) {
+        // LangGraph tool nodes require throwing errors to trigger retry mechanism
+        // eslint-disable-next-line no-throw-error/no-throw-error
+        throw new Error(
+          `Failed to apply patch operations before DDL validation: ${applyResult.error.message}`,
+        )
+      }
 
-    if (applyResult.isErr()) {
-      // LangGraph tool nodes require throwing errors to trigger retry mechanism
-      // eslint-disable-next-line no-throw-error/no-throw-error
-      throw new Error(
-        `Failed to apply patch operations before DDL validation: ${applyResult.error.message}`,
-      )
-    }
+      const { results } = await validateAndExecuteDDL(applyResult.value)
 
-    const { results } = await validateAndExecuteDDL(applyResult.value)
+      const successfulStatements = results.filter(
+        (result) => result.success,
+      ).length
+      const totalStatements = results.length
 
-    const successfulStatements = results.filter(
-      (result) => result.success,
-    ).length
-    const totalStatements = results.length
+      const versionResult = await repositories.schema.createVersion({
+        buildingSchemaId,
+        latestVersionNumber: schemaResult.value.latestVersionNumber,
+        patch: parsed.output.operations,
+      })
 
-    const versionResult = await repositories.schema.createVersion({
-      buildingSchemaId,
-      latestVersionNumber: schemaResult.value.latestVersionNumber,
-      patch: parsed.output.operations,
+      if (!versionResult.success) {
+        const errorMessage = versionResult.error ?? 'Unknown error occurred'
+        // LangGraph tool nodes require throwing errors to trigger retry mechanism
+        // eslint-disable-next-line no-throw-error/no-throw-error
+        throw new Error(
+          `Failed to create schema version after DDL validation: ${errorMessage}. Please try again.`,
+        )
+      }
+
+      return `Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (${successfulStatements}/${totalStatements} statements executed successfully), and new version created.`
     })
-
-    if (!versionResult.success) {
-      const errorMessage = versionResult.error ?? 'Unknown error occurred'
-      // LangGraph tool nodes require throwing errors to trigger retry mechanism
-      // eslint-disable-next-line no-throw-error/no-throw-error
-      throw new Error(
-        `Failed to create schema version after DDL validation: ${errorMessage}. Please try again.`,
-      )
-    }
-
-    return `Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (${successfulStatements}/${totalStatements} statements executed successfully), and new version created.`
   },
   {
     name: 'schemaDesignTool',
