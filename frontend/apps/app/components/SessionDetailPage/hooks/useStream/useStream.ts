@@ -6,6 +6,10 @@ import {
   HumanMessage,
 } from '@langchain/core/messages'
 import { MessageTupleManager, SSE_EVENTS } from '@liam-hq/agent/client'
+import {
+  type AnalyzedRequirements,
+  analyzedRequirementsSchema,
+} from '@liam-hq/artifact'
 import { err, ok, type Result } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
@@ -84,6 +88,8 @@ export const useStream = ({
   const [messages, setMessages] = useState<BaseMessage[]>(
     processedInitialMessages,
   )
+  const [analyzedRequirements, setAnalyzedRequirements] =
+    useState<AnalyzedRequirements | null>(null)
 
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -138,6 +144,48 @@ export const useStream = ({
     })
   }, [])
 
+  const handleAnalyzedRequirementsEvent = useCallback(
+    (ev: { data: string }) => {
+      const parsedData = JSON.parse(ev.data)
+      const [serialized] = parsedData
+      const result = safeParse(analyzedRequirementsSchema, serialized)
+      if (result.success) {
+        setAnalyzedRequirements(result.output)
+      }
+    },
+    [],
+  )
+
+  const handleErrorEvent = useCallback((ev: { data: string }) => {
+    setIsStreaming(false)
+    setError(extractStreamErrorMessage(ev.data))
+  }, [])
+
+  const handleStreamEvent = useCallback(
+    (ev: { event: string; data: string }): 'end' | 'error' | 'continue' => {
+      if (ev.event === SSE_EVENTS.END) {
+        setIsStreaming(false)
+        return 'end'
+      }
+
+      if (ev.event === SSE_EVENTS.ERROR) {
+        handleErrorEvent(ev)
+        return 'error'
+      }
+
+      if (ev.event === SSE_EVENTS.MESSAGES) {
+        handleMessageEvent(ev)
+      }
+
+      if (ev.event === SSE_EVENTS.ANALYZED_REQUIREMENTS) {
+        handleAnalyzedRequirementsEvent(ev)
+      }
+
+      return 'continue'
+    },
+    [handleMessageEvent, handleAnalyzedRequirementsEvent, handleErrorEvent],
+  )
+
   const processStreamEvents = useCallback(
     async (res: Response): Promise<boolean> => {
       if (!res.body) return false
@@ -145,26 +193,18 @@ export const useStream = ({
       let endEventReceived = false
 
       for await (const ev of parseSse(res.body)) {
-        if (ev.event === SSE_EVENTS.END) {
+        const result = handleStreamEvent(ev)
+        if (result === 'end') {
           endEventReceived = true
-          setIsStreaming(false)
           break
         }
-
-        if (ev.event === SSE_EVENTS.ERROR) {
-          setIsStreaming(false)
-          setError(extractStreamErrorMessage(ev.data))
-          continue
-        }
-
-        if (ev.event === SSE_EVENTS.MESSAGES) {
-          handleMessageEvent(ev)
+        if (result === 'error') {
         }
       }
 
       return endEventReceived
     },
-    [handleMessageEvent],
+    [handleStreamEvent],
   )
 
   const runStreamAttempt = useCallback(
@@ -309,6 +349,7 @@ export const useStream = ({
 
   return {
     messages,
+    analyzedRequirements,
     isStreaming,
     error,
     start,

@@ -108,6 +108,10 @@ export const saveRequirementsToArtifactTool: StructuredTool = tool(
       tool_call_id: toolCallId,
     })
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+    await dispatchCustomEvent(
+      SSE_EVENTS.ANALYZED_REQUIREMENTS,
+      analyzedRequirements,
+    )
 
     return new Command({
       update: {
