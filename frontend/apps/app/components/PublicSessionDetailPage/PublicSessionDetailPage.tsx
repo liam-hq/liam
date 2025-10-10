@@ -1,3 +1,7 @@
+import {
+  createSupabaseRepositories,
+  getAnalyzedRequirements,
+} from '@liam-hq/agent'
 import { schemaSchema } from '@liam-hq/schema'
 import { notFound } from 'next/navigation'
 import type { ReactElement } from 'react'
@@ -44,7 +48,7 @@ export const PublicSessionDetailPage = async ({
   const { data: buildingSchemas } = await supabase
     .from('building_schemas')
     .select(
-      'id, design_session_id, schema, created_at, git_sha, initial_schema_snapshot, schema_file_path',
+      'id, design_session_id, organization_id, schema, created_at, git_sha, initial_schema_snapshot, schema_file_path',
     )
     .eq('design_session_id', designSessionId)
 
@@ -88,6 +92,20 @@ export const PublicSessionDetailPage = async ({
       currentVersionId: latestVersion.id,
     })) ?? initialSchema
 
+  const organizationId = buildingSchema.organization_id
+  if (!organizationId) {
+    notFound()
+  }
+
+  const repositories = createSupabaseRepositories(supabase, organizationId)
+  const config = {
+    configurable: {
+      repositories,
+      thread_id: designSessionId,
+    },
+  }
+  const initialAnalyzedRequirements = await getAnalyzedRequirements(config)
+
   return (
     <PublicLayout>
       <ViewModeProvider mode="public">
@@ -95,7 +113,7 @@ export const PublicSessionDetailPage = async ({
           buildingSchemaId={buildingSchemaId}
           designSessionId={designSessionId}
           initialMessages={[]}
-          initialAnalyzedRequirements={null}
+          initialAnalyzedRequirements={initialAnalyzedRequirements}
           initialDisplayedSchema={initialSchema}
           initialPrevSchema={initialPrevSchema}
           initialVersions={versions
