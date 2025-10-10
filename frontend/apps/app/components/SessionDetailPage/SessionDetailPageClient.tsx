@@ -75,6 +75,8 @@ export const SessionDetailPageClient: FC<Props> = ({
   const [activeTab, setActiveTab] = useState<OutputTabValue | undefined>(
     determineInitialTab(initialArtifact, initialVersions),
   )
+  const [hasReceivedAnalyzedRequirements, setHasReceivedAnalyzedRequirements] =
+    useState(false)
 
   const {
     versions,
@@ -113,15 +115,26 @@ export const SessionDetailPageClient: FC<Props> = ({
     onChangeArtifact: handleArtifactChange,
   })
 
-  const shouldShowOutputSection =
-    (artifact !== null || selectedVersion !== null) && activeTab
-
   const chatMessages = mapStoredMessagesToChatMessages(initialMessages)
-  const { isStreaming, messages, start, replay, error } = useStream({
-    initialMessages: chatMessages,
-    designSessionId,
-    senderName,
-  })
+  const { isStreaming, messages, analyzedRequirements, start, replay, error } =
+    useStream({
+      initialMessages: chatMessages,
+      designSessionId,
+      senderName,
+    })
+
+  useEffect(() => {
+    if (analyzedRequirements !== null && !hasReceivedAnalyzedRequirements) {
+      setActiveTab(OUTPUT_TABS.ARTIFACT)
+      setHasReceivedAnalyzedRequirements(true)
+    }
+  }, [analyzedRequirements, hasReceivedAnalyzedRequirements])
+
+  const shouldShowOutputSection =
+    (artifact !== null ||
+      selectedVersion !== null ||
+      analyzedRequirements !== null) &&
+    activeTab
 
   // Combine streaming error with workflow errors
   const combinedError = error || initialWorkflowError
@@ -202,6 +215,7 @@ export const SessionDetailPageClient: FC<Props> = ({
               initialIsPublic={initialIsPublic}
               artifact={artifact}
               artifactError={artifactError}
+              analyzedRequirements={analyzedRequirements}
             />
           </div>
         )}
