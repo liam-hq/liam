@@ -424,34 +424,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
     )
   }
 
-  async getArtifact(designSessionId: string): Promise<ArtifactResult> {
-    const { data: artifactData, error } = await this.client
-      .from('artifacts')
-      .select('*')
-      .eq('design_session_id', designSessionId)
-      .maybeSingle()
-
-    if (error) {
-      console.error('Failed to get artifact:', JSON.stringify(error, null, 2))
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    if (!artifactData) {
-      return {
-        success: false,
-        error: 'Artifact not found',
-      }
-    }
-
-    return {
-      success: true,
-      artifact: artifactData,
-    }
-  }
-
   async getUserInfo(userId: string): Promise<UserInfo | null> {
     const { data, error } = await this.client
       .from('users')

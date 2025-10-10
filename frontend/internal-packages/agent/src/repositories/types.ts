@@ -79,11 +79,6 @@ export type SchemaRepository = {
   ): ResultAsync<Tables<'artifacts'>, Error>
 
   /**
-   * Get artifact for a design session
-   */
-  getArtifact(designSessionId: string): Promise<ArtifactResult>
-
-  /**
    * Create a new workflow run record
    */
 

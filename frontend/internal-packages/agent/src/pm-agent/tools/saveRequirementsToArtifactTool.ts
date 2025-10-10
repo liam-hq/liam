@@ -85,21 +85,7 @@ export const saveRequirementsToArtifactTool: StructuredTool = tool(
       )
     }
 
-    const { repositories, designSessionId, toolCallId } =
-      toolConfigurableResult.value
-
-    const result = await repositories.schema.upsertArtifact({
-      designSessionId,
-      artifact: { requirement: analyzedRequirements },
-    })
-
-    if (result.isErr()) {
-      // LangGraph tool nodes require throwing errors to trigger retry mechanism
-      // eslint-disable-next-line no-throw-error/no-throw-error
-      throw new Error(
-        `Failed to save artifact: ${result.error.message}. Please try again or contact support if the issue persists.`,
-      )
-    }
+    const { toolCallId } = toolConfigurableResult.value
 
     const toolMessage = new ToolMessage({
       id: uuidv4(),
