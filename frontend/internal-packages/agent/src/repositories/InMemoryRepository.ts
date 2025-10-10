@@ -239,16 +239,6 @@ export class InMemoryRepository implements SchemaRepository {
     return okAsync(newArtifact)
   }
 
-  async getArtifact(designSessionId: string): Promise<ArtifactResult> {
-    const artifact = this.state.artifacts.get(designSessionId)
-
-    if (!artifact) {
-      return { success: false, error: 'Artifact not found' }
-    }
-
-    return { success: true, artifact }
-  }
-
   // Helper methods for testing
   getCurrentSchema(designSessionId: string): Schema | null {
     const schemaData = this.state.schemas.get(designSessionId)

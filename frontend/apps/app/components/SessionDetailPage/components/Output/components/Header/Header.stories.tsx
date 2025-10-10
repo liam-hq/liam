@@ -67,29 +67,28 @@ export const Default: Story = {}
 export const WithArtifactDoc: Story = {
   args: {
     tabValue: OUTPUT_TABS.ARTIFACT,
-    artifactDoc: `# Database Schema Documentation
-
-## Overview
-This is the database schema documentation generated from the current design session.
-
-## Tables
-
-### users
-The users table stores user account information.
-
-**Columns:**
-- id: Primary key
-- email: User email address
-- created_at: Account creation timestamp
-
-### posts
-The posts table stores user-generated content.
-
-**Columns:**
-- id: Primary key
-- user_id: Foreign key to users table
-- title: Post title
-- content: Post content
-- published_at: Publication timestamp`,
+    analyzedRequirements: {
+      goal: 'Create database schema for user management and content system',
+      testcases: {
+        users: [
+          {
+            id: 'tc-1',
+            title: 'Create user with email',
+            type: 'INSERT',
+            sql: 'INSERT INTO users (email, created_at) VALUES (?, ?)',
+            testResults: [],
+          },
+        ],
+        posts: [
+          {
+            id: 'tc-2',
+            title: 'Create post for user',
+            type: 'INSERT',
+            sql: 'INSERT INTO posts (user_id, title, content, published_at) VALUES (?, ?, ?, ?)',
+            testResults: [],
+          },
+        ],
+      },
+    },
   },
 }

@@ -1,4 +1,7 @@
-import { type Artifact, artifactSchema } from '@liam-hq/artifact'
+import {
+  createSupabaseRepositories,
+  getAnalyzedRequirements,
+} from '@liam-hq/agent'
 import { schemaSchema } from '@liam-hq/schema'
 import { notFound } from 'next/navigation'
 import type { ReactElement } from 'react'
@@ -45,7 +48,7 @@ export const PublicSessionDetailPage = async ({
   const { data: buildingSchemas } = await supabase
     .from('building_schemas')
     .select(
-      'id, design_session_id, schema, created_at, git_sha, initial_schema_snapshot, schema_file_path',
+      'id, design_session_id, organization_id, schema, created_at, git_sha, initial_schema_snapshot, schema_file_path',
     )
     .eq('design_session_id', designSessionId)
 
@@ -89,21 +92,19 @@ export const PublicSessionDetailPage = async ({
       currentVersionId: latestVersion.id,
     })) ?? initialSchema
 
-  const { data: artifactData, error } = await supabase
-    .from('artifacts') // Explicitly specify columns as anon user has grants on individual columns, not all columns
-    .select('id, design_session_id, artifact, created_at, updated_at')
-    .eq('design_session_id', designSessionId)
-    .maybeSingle()
+  const organizationId = buildingSchema.organization_id
+  if (!organizationId) {
+    notFound()
+  }
 
-  if (error) {
-    // Degrade gracefully: continue without artifact
-    // Optionally log error server-side if desired
+  const repositories = createSupabaseRepositories(supabase, organizationId)
+  const config = {
+    configurable: {
+      repositories,
+      thread_id: designSessionId,
+    },
   }
-  let initialArtifact: Artifact | null = null
-  const parsedArtifact = safeParse(artifactSchema, artifactData?.artifact)
-  if (parsedArtifact.success) {
-    initialArtifact = parsedArtifact.output
-  }
+  const initialAnalyzedRequirements = await getAnalyzedRequirements(config)
 
   return (
     <PublicLayout>
@@ -112,6 +113,7 @@ export const PublicSessionDetailPage = async ({
           buildingSchemaId={buildingSchemaId}
           designSessionId={designSessionId}
           initialMessages={[]}
+          initialAnalyzedRequirements={initialAnalyzedRequirements}
           initialDisplayedSchema={initialSchema}
           initialPrevSchema={initialPrevSchema}
           initialVersions={versions
@@ -134,7 +136,6 @@ export const PublicSessionDetailPage = async ({
             }))}
           isDeepModelingEnabled={false}
           initialIsPublic={true}
-          initialArtifact={initialArtifact}
           senderName="Guest"
         />
       </ViewModeProvider>
