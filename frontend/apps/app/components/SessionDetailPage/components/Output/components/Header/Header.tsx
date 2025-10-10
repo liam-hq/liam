@@ -1,3 +1,4 @@
+import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import { type Operation, operationsSchema } from '@liam-hq/schema'
 import { TabsList, TabsTrigger } from '@liam-hq/ui'
@@ -10,15 +11,17 @@ import {
   ERD_SCHEMA_TABS_LIST,
   type OutputTabValue,
 } from '../../constants'
+import { formatArtifactToMarkdown } from '../Artifact/utils'
 import { ExportDropdown } from './ExportDropdown'
 import styles from './Header.module.css'
 import { ShareButton } from './ShareButton'
 import { VersionDropdown } from './VersionDropdown'
 
+// Phase 6.4: artifactDoc replaced with analyzedRequirements
 type Props = ComponentProps<typeof VersionDropdown> & {
   schema: Schema
   tabValue: OutputTabValue
-  artifactDoc?: string
+  analyzedRequirements?: AnalyzedRequirements | null
   designSessionId: string
   initialIsPublic: boolean
 }
@@ -48,7 +51,7 @@ const generateCumulativeOperations = (
 export const Header: FC<Props> = ({
   schema,
   tabValue,
-  artifactDoc,
+  analyzedRequirements,
   designSessionId,
   initialIsPublic,
   ...propsForVersionDropdown
@@ -59,6 +62,11 @@ export const Header: FC<Props> = ({
     versions,
     selectedVersion,
   )
+
+  // Phase 6.4: Convert analyzedRequirements to markdown
+  const artifactDoc = analyzedRequirements
+    ? formatArtifactToMarkdown({ requirement: analyzedRequirements })
+    : undefined
 
   return (
     <div className={styles.wrapper}>

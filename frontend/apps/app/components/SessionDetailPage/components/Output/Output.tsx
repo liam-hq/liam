@@ -1,12 +1,11 @@
 'use client'
 
-import type { AnalyzedRequirements, Artifact } from '@liam-hq/artifact'
+import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import { TabsContent, TabsRoot } from '@liam-hq/ui'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
 import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
-import { formatArtifactToMarkdown } from './components/Artifact/utils'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
 import type { VersionDropdown } from './components/Header/VersionDropdown'
@@ -26,8 +25,6 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   initialIsPublic: boolean
   activeTab: OutputTabValue
   onTabChange: (value: OutputTabValue) => void
-  artifact: Artifact | null
-  artifactError: Error | null
   analyzedRequirements?: AnalyzedRequirements | null
 }
 
@@ -39,8 +36,6 @@ export const Output: FC<Props> = ({
   activeTab,
   onTabChange,
   initialIsPublic = false,
-  artifact,
-  artifactError,
   analyzedRequirements,
   ...propsForVersionDropdown
 }) => {
@@ -71,9 +66,6 @@ export const Output: FC<Props> = ({
       }
     : handleChangeValue
 
-  // Convert artifact data to markdown format
-  const artifactDoc = artifact ? formatArtifactToMarkdown(artifact) : undefined
-
   return (
     <TabsRoot
       value={tabValue}
@@ -83,7 +75,7 @@ export const Output: FC<Props> = ({
       <Header
         schema={schema}
         tabValue={tabValue}
-        artifactDoc={artifactDoc}
+        analyzedRequirements={analyzedRequirements}
         designSessionId={designSessionId}
         initialIsPublic={initialIsPublic}
         {...propsForVersionDropdown}
@@ -99,11 +91,7 @@ export const Output: FC<Props> = ({
         />
       </TabsContent>
       <TabsContent value={OUTPUT_TABS.ARTIFACT} className={styles.tabsContent}>
-        <ArtifactContainer
-          artifact={artifact}
-          error={artifactError}
-          analyzedRequirements={analyzedRequirements}
-        />
+        <ArtifactContainer analyzedRequirements={analyzedRequirements} />
       </TabsContent>
     </TabsRoot>
   )

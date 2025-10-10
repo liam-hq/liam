@@ -4,13 +4,12 @@ import {
   mapStoredMessagesToChatMessages,
   type StoredMessage,
 } from '@langchain/core/messages'
-import type { AnalyzedRequirements, Artifact } from '@liam-hq/artifact'
+import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { Chat } from './components/Chat'
 import { Output } from './components/Output'
-import { useRealtimeArtifact } from './components/Output/components/Artifact/hooks/useRealtimeArtifact'
 import { OUTPUT_TABS, type OutputTabValue } from './components/Output/constants'
 import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
 import { useStream } from './hooks/useStream'
@@ -31,29 +30,24 @@ type Props = {
   isDeepModelingEnabled: boolean
   initialIsPublic: boolean
   initialWorkflowError?: string | null
-  initialArtifact: Artifact | null
   senderName: string
 }
 
 // Determine the initial active tab based on available data
 const determineInitialTab = (
-  artifact: Artifact | null,
   versions: Version[],
+  analyzedRequirements: AnalyzedRequirements | null,
 ): OutputTabValue | undefined => {
-  const hasArtifact = artifact !== null
   const hasVersions = versions.length > 0
+  const hasAnalyzedRequirements = analyzedRequirements !== null
 
-  if (!hasArtifact && !hasVersions) {
-    return undefined
-  }
-
-  // Prioritize ERD tab when versions exist
+  // Show ERD tab when versions exist
   if (hasVersions) {
     return OUTPUT_TABS.ERD
   }
 
-  // Show artifact tab when only artifact exists
-  if (hasArtifact) {
+  // Show Artifact tab when only analyzedRequirements exist
+  if (hasAnalyzedRequirements) {
     return OUTPUT_TABS.ARTIFACT
   }
 
@@ -71,11 +65,10 @@ export const SessionDetailPageClient: FC<Props> = ({
   isDeepModelingEnabled,
   initialIsPublic,
   initialWorkflowError,
-  initialArtifact,
   senderName,
 }) => {
   const [activeTab, setActiveTab] = useState<OutputTabValue | undefined>(
-    determineInitialTab(initialArtifact, initialVersions),
+    determineInitialTab(initialVersions, initialAnalyzedRequirements),
   )
   const [hasReceivedAnalyzedRequirements, setHasReceivedAnalyzedRequirements] =
     useState(false)
@@ -106,17 +99,8 @@ export const SessionDetailPageClient: FC<Props> = ({
     [setSelectedVersion],
   )
 
-  const handleArtifactChange = useCallback((newArtifact: unknown) => {
-    if (newArtifact !== null) {
-      setActiveTab(OUTPUT_TABS.ARTIFACT)
-    }
-  }, [])
-
-  const { artifact, error: artifactError } = useRealtimeArtifact({
-    designSessionId,
-    initialArtifact,
-    onChangeArtifact: handleArtifactChange,
-  })
+  // Phase 6.4: useRealtimeArtifact and handleArtifactChange removed
+  // Now using only analyzedRequirements
 
   const chatMessages = mapStoredMessagesToChatMessages(initialMessages)
   const { isStreaming, messages, analyzedRequirements, start, replay, error } =
@@ -138,11 +122,9 @@ export const SessionDetailPageClient: FC<Props> = ({
     }
   }, [analyzedRequirements, hasReceivedAnalyzedRequirements])
 
+  // Phase 6.4: artifact removed from condition
   const shouldShowOutputSection =
-    (artifact !== null ||
-      selectedVersion !== null ||
-      analyzedRequirements !== null) &&
-    activeTab
+    (selectedVersion !== null || analyzedRequirements !== null) && activeTab
 
   // Combine streaming error with workflow errors
   const combinedError = error || initialWorkflowError
@@ -221,8 +203,6 @@ export const SessionDetailPageClient: FC<Props> = ({
               activeTab={activeTab}
               onTabChange={setActiveTab}
               initialIsPublic={initialIsPublic}
-              artifact={artifact}
-              artifactError={artifactError}
               analyzedRequirements={analyzedRequirements}
             />
           </div>
