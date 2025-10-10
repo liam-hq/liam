@@ -1,7 +1,7 @@
 import { ArrowTooltipProvider } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ChangeEvent, DragEvent, FC } from 'react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { Projects } from '../../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import { AttachmentPreview } from '../../shared/AttachmentPreview'
@@ -52,11 +52,23 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
     isPending,
     formRef,
   )
-  const [selectedBranchSha, setSelectedBranchSha] = useState('')
+  const [manuallySelectedBranchSha, setManuallySelectedBranchSha] = useState<
+    string | null
+  >(null)
   const [attachments, setAttachments] = useState<
     { id: string; url: string; name: string }[]
   >([])
   const [dragActive, setDragActive] = useState(false)
+  const selectedBranchSha = useMemo(() => {
+    if (manuallySelectedBranchSha) {
+      return manuallySelectedBranchSha
+    }
+    if (branches.length > 0) {
+      const protectedBranch = branches.find((branch) => branch.protected)
+      return protectedBranch?.sha ?? ''
+    }
+    return ''
+  }, [branches, manuallySelectedBranchSha])
 
   const handleFileSelect = (files: FileList) => {
     const newAttachments = Array.from(files).map((file) => ({
@@ -117,15 +129,6 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
       setHasContent(textareaRef.current.value.trim().length > 0)
     }
   }, [isPending])
-
-  useEffect(() => {
-    if (branches.length > 0 && !selectedBranchSha) {
-      const protectedBranch = branches.find((branch) => branch.protected)
-      if (protectedBranch) {
-        setSelectedBranchSha(protectedBranch.sha)
-      }
-    }
-  }, [branches, selectedBranchSha])
 
   const hasError = !!formError || !!branchesError
 
@@ -204,7 +207,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
                   <BranchesDropdown
                     branches={branches}
                     selectedBranchSha={selectedBranchSha}
-                    onBranchChange={setSelectedBranchSha}
+                    onBranchChange={setManuallySelectedBranchSha}
                     disabled={isPending}
                     isLoading={isBranchesLoading}
                   />
