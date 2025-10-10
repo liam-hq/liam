@@ -3,7 +3,6 @@
 import {
   type BaseMessage,
   coerceMessageLikeToMessage,
-  HumanMessage,
 } from '@langchain/core/messages'
 import { MessageTupleManager, SSE_EVENTS } from '@liam-hq/agent/client'
 import { err, ok, type Result } from 'neverthrow'
@@ -63,17 +62,10 @@ const extractStreamErrorMessage = (rawData: unknown): string => {
 type Props = {
   designSessionId: string
   initialMessages: BaseMessage[]
-  senderName: string
 }
-export const useStream = ({
-  designSessionId,
-  initialMessages,
-  senderName,
-}: Props) => {
+export const useStream = ({ designSessionId, initialMessages }: Props) => {
   const messageManagerRef = useRef(new MessageTupleManager())
   const storedMessage = useSessionStorageOnce(designSessionId)
-
-  const isFirstMessage = useRef(true)
 
   const processedInitialMessages = useMemo(() => {
     if (storedMessage) {
@@ -268,30 +260,12 @@ export const useStream = ({
       abortRef.current?.abort()
       retryCountRef.current = 0
 
-      let tempId: string | undefined
-      if (!isFirstMessage.current) {
-        tempId = `optimistic-${crypto.randomUUID()}`
-        const optimisticMessage = new HumanMessage({
-          content: params.userInput,
-          id: tempId,
-          additional_kwargs: {
-            userName: senderName,
-          },
-        })
-        setMessages((prev) => [...prev, optimisticMessage])
-      } else {
-        isFirstMessage.current = false
-      }
-
       // Set workflow in progress flag
       setWorkflowInProgress(params.designSessionId)
 
       const result = await runStreamAttempt('/api/chat/stream', params)
 
       if (result.isErr()) {
-        if (tempId) {
-          setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
-        }
         return err(result.error)
       }
 
@@ -304,11 +278,12 @@ export const useStream = ({
         isDeepModelingEnabled: params.isDeepModelingEnabled,
       })
     },
-    [replay, runStreamAttempt, senderName],
+    [replay, runStreamAttempt],
   )
 
   return {
     messages,
+    setMessages,
     isStreaming,
     error,
     start,

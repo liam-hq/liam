@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  HumanMessage,
   mapStoredMessagesToChatMessages,
   type StoredMessage,
 } from '@langchain/core/messages'
@@ -117,16 +118,41 @@ export const SessionDetailPageClient: FC<Props> = ({
     (artifact !== null || selectedVersion !== null) && activeTab
 
   const chatMessages = mapStoredMessagesToChatMessages(initialMessages)
-  const { isStreaming, messages, start, replay, error } = useStream({
-    initialMessages: chatMessages,
-    designSessionId,
-    senderName,
-  })
+  const { isStreaming, messages, setMessages, start, replay, error } =
+    useStream({
+      initialMessages: chatMessages,
+      designSessionId,
+    })
 
   // Combine streaming error with workflow errors
   const combinedError = error || initialWorkflowError
   // Track if initial workflow has been triggered to prevent multiple executions
   const hasTriggeredInitialWorkflow = useRef(false)
+
+  const handleSendMessage = useCallback(
+    async (content: string) => {
+      const tempId = `optimistic-${crypto.randomUUID()}`
+      const optimisticMessage = new HumanMessage({
+        content,
+        id: tempId,
+        additional_kwargs: {
+          userName: senderName,
+        },
+      })
+      setMessages((prev) => [...prev, optimisticMessage])
+
+      const result = await start({
+        userInput: content,
+        designSessionId,
+        isDeepModelingEnabled,
+      })
+
+      if (result.isErr()) {
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+      }
+    },
+    [setMessages, start, senderName, designSessionId, isDeepModelingEnabled],
+  )
 
   // Auto-trigger workflow on page load if there's an unanswered user message
   useEffect(() => {
@@ -176,13 +202,7 @@ export const SessionDetailPageClient: FC<Props> = ({
             schemaData={displayedSchema}
             messages={messages}
             isWorkflowRunning={isStreaming}
-            onSendMessage={(content: string) =>
-              start({
-                userInput: content,
-                designSessionId,
-                isDeepModelingEnabled,
-              })
-            }
+            onSendMessage={handleSendMessage}
             onNavigate={setActiveTab}
             error={combinedError}
           />
