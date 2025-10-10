@@ -23,6 +23,7 @@
     "neverthrow": "8.2.0",
     "pg-query-emscripten": "5.1.0",
     "valibot": "1.1.0",
+    "yaml": "2.8.1",
     "zod": "3.25.76"
   },
   "devDependencies": {
