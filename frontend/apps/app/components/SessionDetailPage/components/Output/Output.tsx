@@ -1,6 +1,6 @@
 'use client'
 
-import type { Artifact } from '@liam-hq/artifact'
+import type { AnalyzedRequirements, Artifact } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import { TabsContent, TabsRoot } from '@liam-hq/ui'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
@@ -28,6 +28,7 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   onTabChange: (value: OutputTabValue) => void
   artifact: Artifact | null
   artifactError: Error | null
+  analyzedRequirements?: AnalyzedRequirements | null
 }
 
 export const Output: FC<Props> = ({
@@ -40,6 +41,7 @@ export const Output: FC<Props> = ({
   initialIsPublic = false,
   artifact,
   artifactError,
+  analyzedRequirements,
   ...propsForVersionDropdown
 }) => {
   const [internalTabValue, setInternalTabValue] =
@@ -97,7 +99,11 @@ export const Output: FC<Props> = ({
         />
       </TabsContent>
       <TabsContent value={OUTPUT_TABS.ARTIFACT} className={styles.tabsContent}>
-        <ArtifactContainer artifact={artifact} error={artifactError} />
+        <ArtifactContainer
+          artifact={artifact}
+          error={artifactError}
+          analyzedRequirements={analyzedRequirements}
+        />
       </TabsContent>
     </TabsRoot>
   )
