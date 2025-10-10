@@ -118,6 +118,15 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
     }
   }, [isPending])
 
+  useEffect(() => {
+    if (branches.length > 0 && !selectedBranchSha) {
+      const protectedBranch = branches.find((branch) => branch.protected)
+      if (protectedBranch) {
+        setSelectedBranchSha(protectedBranch.sha)
+      }
+    }
+  }, [branches, selectedBranchSha])
+
   const hasError = !!formError || !!branchesError
 
   return (
