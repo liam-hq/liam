@@ -2,7 +2,13 @@ export {
   postgresqlOperationDeparser,
   postgresqlSchemaDeparser,
 } from './deparser/postgresql/index.js'
-export type { OperationDeparser, SchemaDeparser } from './deparser/type.js'
+export type {
+  LegacyOperationDeparser,
+  LegacySchemaDeparser,
+  OperationDeparser,
+  SchemaDeparser,
+} from './deparser/type.js'
+export { yamlSchemaDeparser } from './deparser/yaml/index.js'
 export { PATH_PATTERNS } from './operation/constants.js'
 export {
   applyPatchOperations,

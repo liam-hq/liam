@@ -5,7 +5,7 @@ import type {
   Schema,
   Table,
 } from '../../schema/index.js'
-import type { SchemaDeparser } from '../type.js'
+import type { LegacySchemaDeparser } from '../type.js'
 import {
   generateAddConstraintStatement,
   generateCreateEnumStatement,
@@ -14,7 +14,14 @@ import {
   generateCreateTableStatement,
 } from './utils.js'
 
-export const postgresqlSchemaDeparser: SchemaDeparser = (schema: Schema) => {
+/**
+ * PostgreSQL schema deparser
+ * @deprecated This implementation uses LegacySchemaDeparser type.
+ * TODO: Migrate to new SchemaDeparser type (Result<string, Error>) for better error handling.
+ */
+export const postgresqlSchemaDeparser: LegacySchemaDeparser = (
+  schema: Schema,
+) => {
   const ddlStatements: string[] = []
   const errors: { message: string }[] = []
 
