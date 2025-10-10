@@ -112,6 +112,7 @@ export const PublicSessionDetailPage = async ({
           buildingSchemaId={buildingSchemaId}
           designSessionId={designSessionId}
           initialMessages={[]}
+          initialAnalyzedRequirements={null}
           initialDisplayedSchema={initialSchema}
           initialPrevSchema={initialPrevSchema}
           initialVersions={versions

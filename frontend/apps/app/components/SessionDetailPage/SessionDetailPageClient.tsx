@@ -4,7 +4,7 @@ import {
   mapStoredMessagesToChatMessages,
   type StoredMessage,
 } from '@langchain/core/messages'
-import type { Artifact } from '@liam-hq/artifact'
+import type { AnalyzedRequirements, Artifact } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import clsx from 'clsx'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -24,6 +24,7 @@ type Props = {
   buildingSchemaId: string
   designSessionId: string
   initialMessages: StoredMessage[]
+  initialAnalyzedRequirements: AnalyzedRequirements | null
   initialDisplayedSchema: Schema
   initialPrevSchema: Schema
   initialVersions: Version[]
@@ -63,6 +64,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   buildingSchemaId,
   designSessionId,
   initialMessages,
+  initialAnalyzedRequirements,
   initialDisplayedSchema,
   initialPrevSchema,
   initialVersions,
@@ -77,6 +79,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   )
   const [hasReceivedAnalyzedRequirements, setHasReceivedAnalyzedRequirements] =
     useState(false)
+  const initialAnalyzedRequirementsRef = useRef(initialAnalyzedRequirements)
 
   const {
     versions,
@@ -119,12 +122,17 @@ export const SessionDetailPageClient: FC<Props> = ({
   const { isStreaming, messages, analyzedRequirements, start, replay, error } =
     useStream({
       initialMessages: chatMessages,
+      initialAnalyzedRequirements,
       designSessionId,
       senderName,
     })
 
   useEffect(() => {
-    if (analyzedRequirements !== null && !hasReceivedAnalyzedRequirements) {
+    if (
+      analyzedRequirements !== null &&
+      analyzedRequirements !== initialAnalyzedRequirementsRef.current &&
+      !hasReceivedAnalyzedRequirements
+    ) {
       setActiveTab(OUTPUT_TABS.ARTIFACT)
       setHasReceivedAnalyzedRequirements(true)
     }
