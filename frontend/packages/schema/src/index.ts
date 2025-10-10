@@ -34,6 +34,7 @@ export {
 } from './operation/index.js'
 export type { ProcessError } from './parser.js'
 export {
+  aCheckConstraint,
   aColumn,
   aForeignKeyConstraint,
   anIndex,
