@@ -1,10 +1,15 @@
 import type { BaseMessage, StoredMessage } from '@langchain/core/messages'
 import {
   createSupabaseRepositories,
+  getAnalyzedRequirements,
   getCheckpointErrors,
   getMessages,
 } from '@liam-hq/agent'
-import { type Artifact, artifactSchema } from '@liam-hq/artifact'
+import {
+  type AnalyzedRequirements,
+  type Artifact,
+  artifactSchema,
+} from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import { schemaSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
@@ -37,6 +42,7 @@ async function loadSessionData(designSessionId: string): Promise<
       buildingSchema: NonNullable<Awaited<ReturnType<typeof getBuildingSchema>>>
       initialSchema: Schema
       initialArtifact: Artifact | null
+      initialAnalyzedRequirements: AnalyzedRequirements | null
       workflowError: string | null
       senderName: string
     },
@@ -59,6 +65,7 @@ async function loadSessionData(designSessionId: string): Promise<
   }
   const baseMessages = await getMessages(config)
   const messages = serializeMessages(baseMessages)
+  const initialAnalyzedRequirements = await getAnalyzedRequirements(config)
 
   const { data: userData } = await supabase.auth.getUser()
   const userId = userData?.user?.id
@@ -111,6 +118,7 @@ async function loadSessionData(designSessionId: string): Promise<
     buildingSchema,
     initialSchema,
     initialArtifact,
+    initialAnalyzedRequirements,
     workflowError,
     senderName,
   })
@@ -132,6 +140,7 @@ export const SessionDetailPage: FC<Props> = async ({
     initialSchema,
     workflowError,
     initialArtifact,
+    initialAnalyzedRequirements,
     senderName,
   } = result.value
 
@@ -154,6 +163,7 @@ export const SessionDetailPage: FC<Props> = async ({
         buildingSchemaId={buildingSchema.id}
         designSessionId={designSessionId}
         initialMessages={messages}
+        initialAnalyzedRequirements={initialAnalyzedRequirements}
         initialDisplayedSchema={initialSchema}
         initialPrevSchema={initialPrevSchema}
         initialVersions={versions}

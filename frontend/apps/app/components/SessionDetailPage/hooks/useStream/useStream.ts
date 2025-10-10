@@ -67,11 +67,13 @@ const extractStreamErrorMessage = (rawData: unknown): string => {
 type Props = {
   designSessionId: string
   initialMessages: BaseMessage[]
+  initialAnalyzedRequirements?: AnalyzedRequirements | null
   senderName: string
 }
 export const useStream = ({
   designSessionId,
   initialMessages,
+  initialAnalyzedRequirements,
   senderName,
 }: Props) => {
   const messageManagerRef = useRef(new MessageTupleManager())
@@ -89,7 +91,7 @@ export const useStream = ({
     processedInitialMessages,
   )
   const [analyzedRequirements, setAnalyzedRequirements] =
-    useState<AnalyzedRequirements | null>(null)
+    useState<AnalyzedRequirements | null>(initialAnalyzedRequirements ?? null)
 
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
