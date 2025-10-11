@@ -9,7 +9,7 @@ import styles from './BranchCombobox.module.css'
 export type Branch = {
   name: string
   sha: string
-  protected: boolean
+  isProduction: boolean
 }
 
 type Props = {
@@ -110,7 +110,7 @@ export const BranchCombobox: FC<Props> = ({
             <span className={styles.branchName}>
               {selectedBranch?.name || 'Select a branch...'}
             </span>
-            {selectedBranch?.protected && (
+            {selectedBranch?.isProduction && (
               <Code size="sm" style="fill">
                 production
               </Code>
@@ -156,7 +156,7 @@ export const BranchCombobox: FC<Props> = ({
                   >
                     <GitBranch className={styles.itemIcon} />
                     <span className={styles.itemLabel}>{branch.name}</span>
-                    {branch.protected && (
+                    {branch.isProduction && (
                       <Code size="sm" style="fill">
                         production
                       </Code>

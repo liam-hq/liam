@@ -6,7 +6,7 @@ import { GitHubSessionFormPresenter } from './GitHubSessionFormPresenter'
 type Branch = {
   name: string
   sha: string
-  protected: boolean
+  isProduction: boolean
 }
 
 const mockProjects: Projects = [
@@ -25,9 +25,9 @@ const mockProjects: Projects = [
 ]
 
 const mockBranches = [
-  { name: 'main', sha: 'abc123', protected: true },
-  { name: 'develop', sha: 'def456', protected: false },
-  { name: 'feature/user-auth', sha: 'ghi789', protected: false },
+  { name: 'main', sha: 'abc123', isProduction: true },
+  { name: 'develop', sha: 'def456', isProduction: false },
+  { name: 'feature/user-auth', sha: 'ghi789', isProduction: false },
 ]
 
 const meta = {

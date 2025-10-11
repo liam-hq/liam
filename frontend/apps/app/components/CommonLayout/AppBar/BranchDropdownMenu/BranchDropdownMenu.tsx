@@ -20,15 +20,9 @@ export const BranchDropdownMenu: FC<Props> = async ({
     return null
   }
 
-  const comboboxBranches = branches.map((branch) => ({
-    name: branch.name,
-    sha: branch.name,
-    protected: branch.protected,
-  }))
-
   return (
     <Content
-      branches={comboboxBranches}
+      branches={branches}
       currentBranchName={currentBranch.name}
       currentProjectId={currentProjectId}
     />

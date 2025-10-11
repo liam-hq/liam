@@ -1,5 +1,6 @@
 'use client'
 
+import type { GitHubBranch } from '@liam-hq/github'
 import { useRouter } from 'next/navigation'
 import type { FC } from 'react'
 import { urlgen } from '../../../../libs/routes'
@@ -7,7 +8,7 @@ import { BranchCombobox } from '../../../shared/BranchCombobox'
 import styles from './BranchDropdownMenu.module.css'
 
 type Props = {
-  branches: Array<{ name: string; sha: string; protected: boolean }>
+  branches: GitHubBranch[]
   currentBranchName: string
   currentProjectId: string
 }

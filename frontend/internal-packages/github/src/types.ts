@@ -35,3 +35,9 @@ export type GitHubContentItem = {
   path: string
   download_url?: string | null
 }
+
+export type GitHubBranch = {
+  name: string
+  sha: string
+  isProduction: boolean
+}
