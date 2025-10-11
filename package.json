@@ -11,7 +11,7 @@
     "@vitest/coverage-v8": "3.2.4",
     "concurrently": "9.2.1",
     "knip": "5.63.1",
-    "lefthook": "1.13.1",
+    "lefthook": "1.13.4",
     "syncpack": "13.0.4",
     "turbo": "2.5.6",
     "typescript": "5.9.2",
