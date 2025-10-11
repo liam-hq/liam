@@ -60,16 +60,44 @@
   overflow-wrap: break-word;
   word-break: break-word;
   letter-spacing: 0.01em;
-  animation: slideDown 0.2s ease;
+  overflow: hidden;
+  transform-origin: top;
+  will-change: opacity, transform;
 }
 
-@keyframes slideDown {
+.content[data-state='open'] {
+  animation: reasoningFadeIn 200ms ease-out;
+}
+
+.content[data-state='closed'] {
+  animation: reasoningFadeOut 200ms ease-in forwards;
+}
+
+@keyframes reasoningFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes reasoningFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content[data-state='open'],
+  .content[data-state='closed'] {
+    animation: none;
   }
 }

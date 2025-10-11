@@ -1,4 +1,10 @@
-import { ChevronDown, ChevronRight } from '@liam-hq/ui'
+import {
+  ChevronDown,
+  ChevronRight,
+  CollapsibleContent,
+  CollapsibleRoot,
+  CollapsibleTrigger,
+} from '@liam-hq/ui'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { MarkdownContent } from '../../../../../../../MarkdownContent'
@@ -36,37 +42,36 @@ export const ReasoningMessage: FC<Props> = ({
     return () => clearTimeout(timer)
   }, [content, isWorkflowRunning])
 
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded)
-  }
-
   return (
-    <div className={styles.container}>
-      <button
-        type="button"
-        className={styles.header}
-        onClick={handleToggle}
-        aria-expanded={isExpanded}
-      >
-        <span className={styles.chevron}>
-          {isExpanded ? <ChevronDown /> : <ChevronRight />}
-        </span>
-        <span className={styles.durationWrapper}>
-          {isContentStreaming ? (
-            <>
-              <span className={styles.workedForText}>Reasoning</span>
-              <WorkflowRunningIndicator size={4} />
-            </>
-          ) : (
-            <span className={styles.workedForText}>Reasoning finished</span>
-          )}
-        </span>
-      </button>
-      {isExpanded && (
-        <div className={styles.content}>
-          <MarkdownContent content={content} />
-        </div>
-      )}
-    </div>
+    <CollapsibleRoot
+      open={isExpanded}
+      onOpenChange={setIsExpanded}
+      className={styles.container}
+    >
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className={styles.header}
+          aria-expanded={isExpanded}
+        >
+          <span className={styles.chevron}>
+            {isExpanded ? <ChevronDown /> : <ChevronRight />}
+          </span>
+          <span className={styles.durationWrapper}>
+            {isContentStreaming ? (
+              <>
+                <span className={styles.workedForText}>Reasoning</span>
+                <WorkflowRunningIndicator size={4} />
+              </>
+            ) : (
+              <span className={styles.workedForText}>Reasoning finished</span>
+            )}
+          </span>
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className={styles.content}>
+        <MarkdownContent content={content} />
+      </CollapsibleContent>
+    </CollapsibleRoot>
   )
 }
