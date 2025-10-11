@@ -1,25 +1,18 @@
-import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import type { FC } from 'react'
+import type { FormatType } from '../../../FormatIcon'
 import { SchemaLink } from '../../../SchemaLink'
-import { SCHEMA_TABS } from '../../constants'
 import styles from './SchemaHeader.module.css'
 
-export const SchemaHeader: FC = () => {
+type SchemaHeaderProps = {
+  schemaName: string
+  format: FormatType
+}
+
+export const SchemaHeader: FC<SchemaHeaderProps> = ({ schemaName, format }) => {
   return (
     <div className={styles.wrapper}>
       <span className={styles.schemaNameLabel}>Schema:</span>
-      <SchemaLink schemaName="schema1.in.rb" format="schemarb" />
-      <TabsList className={styles.tabsList}>
-        {SCHEMA_TABS.map((tab) => (
-          <TabsTrigger
-            key={tab.value}
-            value={tab.value}
-            className={styles.tabsTrigger}
-          >
-            {tab.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+      <SchemaLink schemaName={schemaName} format={format} />
     </div>
   )
 }

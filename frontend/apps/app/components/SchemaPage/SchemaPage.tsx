@@ -152,9 +152,20 @@ export const SchemaPage: FC<Props> = async ({
     schemaFilePath,
   })
 
+  const supabase = await createClient()
+  const { data: gitHubSchemaFilePath } = await supabase
+    .from('schema_file_paths')
+    .select('path, format')
+    .eq('project_id', projectId)
+    .eq('path', schemaFilePath)
+    .single()
+
+  const schemaFileName = path.basename(schemaFilePath)
+  const schemaFormat = gitHubSchemaFilePath?.format || 'postgres'
+
   return (
     <TabsRoot defaultValue={DEFAULT_SCHEMA_TAB} className={styles.wrapper}>
-      <SchemaHeader />
+      <SchemaHeader schemaName={schemaFileName} format={schemaFormat} />
       <TabsContent value={SCHEMA_TAB.ERD} className={styles.tabsContent}>
         <ERDEditor {...contentProps} />
       </TabsContent>
