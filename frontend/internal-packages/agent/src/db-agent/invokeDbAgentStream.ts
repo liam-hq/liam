@@ -29,6 +29,7 @@ export async function invokeDbAgentStream(
   const dbAgentState = {
     ...workflowState,
     prompt,
+    messages: [],
   }
 
   const stream = compiled.streamEvents(dbAgentState, {
