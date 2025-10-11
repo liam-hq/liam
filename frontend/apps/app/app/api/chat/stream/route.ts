@@ -7,6 +7,7 @@ import {
 } from '@liam-hq/agent'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
 import * as Sentry from '@sentry/nextjs'
+import { encodingForModel } from 'js-tiktoken'
 import { after, NextResponse } from 'next/server'
 import * as v from 'valibot'
 import { line } from '../../../../features/stream/utils/line'
@@ -16,9 +17,24 @@ import { createClient } from '../../../../libs/db/server'
 // https://vercel.com/docs/functions/configuring-functions/duration#maximum-duration-for-different-runtimes
 export const maxDuration = 800
 const TIMEOUT_MS = 700000
+const MAX_USER_INPUT_TOKENS = 300000
+
+const countTokens = (text: string): number => {
+  const encoding = encodingForModel('gpt-4')
+  const tokens = encoding.encode(text)
+  return tokens.length
+}
 
 const chatRequestSchema = v.object({
-  userInput: v.pipe(v.string(), v.minLength(1, 'Message is required')),
+  userInput: v.pipe(
+    v.string(),
+    v.minLength(1, 'Message is required'),
+    v.check((input) => {
+      const tokenCount = countTokens(input)
+      return tokenCount <= MAX_USER_INPUT_TOKENS
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+    }, `ユーザー入力が長すぎます。入力は${MAX_USER_INPUT_TOKENS.toLocaleString()}トークン以内にしてください。`),
+  ),
   designSessionId: v.pipe(v.string(), v.uuid('Invalid design session ID')),
   isDeepModelingEnabled: v.optional(v.boolean(), true),
 })
