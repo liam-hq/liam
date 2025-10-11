@@ -256,8 +256,8 @@ importers:
         specifier: 15.3.5
         version: 15.3.5(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@rive-app/react-canvas':
-        specifier: 4.23.3
-        version: 4.23.3(react@19.1.1)
+        specifier: 4.23.4
+        version: 4.23.4(react@19.1.1)
       '@sentry/nextjs':
         specifier: '9'
         version: 9.46.0(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)(webpack@5.102.0(@swc/core@1.12.11))
@@ -4460,11 +4460,11 @@ packages:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^18.0 || ^19.0 || ^19.0.0-rc
 
-  '@rive-app/canvas@2.31.5':
-    resolution: {integrity: sha512-rVWN1RHM7nflvmJCOhrN/Q3d2Sasf8/J8EhArxB7/rFvby/96AREwkXlmKAMxgar8PzN9hyCKyanY5TmPAPd9A==}
+  '@rive-app/canvas@2.31.6':
+    resolution: {integrity: sha512-YVhBnqZnPEwMANqDzExpoFSPYjkuSm/ZWL6WQetC5S54clSkahmUYIV/eOYRKo3rTeEb0S98CL2tTEZqK3RC4A==}
 
-  '@rive-app/react-canvas@4.23.3':
-    resolution: {integrity: sha512-qvy896Joes4w1yTMo8BPdF2JfPKZ5rawGy0JEX2UXFM5VjMHc/NG46BIbdnBrk9ozX/HQ2uRWTp4hNkybJzgSQ==}
+  '@rive-app/react-canvas@4.23.4':
+    resolution: {integrity: sha512-kIYpvyLxhbpyzUzYaBKgUCNzfKgqMQ2uuGRRpo/iPbY8TIGInTGcwiAOSHr0UKGYD1LaTiBm3gMktjsc673Xfw==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0
 
@@ -14867,11 +14867,11 @@ snapshots:
       react-dom: 19.1.1(react@19.1.1)
       react-promise-suspense: 0.3.4
 
-  '@rive-app/canvas@2.31.5': {}
+  '@rive-app/canvas@2.31.6': {}
 
-  '@rive-app/react-canvas@4.23.3(react@19.1.1)':
+  '@rive-app/react-canvas@4.23.4(react@19.1.1)':
     dependencies:
-      '@rive-app/canvas': 2.31.5
+      '@rive-app/canvas': 2.31.6
       react: 19.1.1
 
   '@rolldown/pluginutils@1.0.0-beta.19': {}
