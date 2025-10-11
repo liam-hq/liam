@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.7.20
+
+### Patch Changes
+
+- [#3745](https://github.com/liam-hq/liam/pull/3745) - 🚸 Disable ERD resize handle when the left pane is closed to prevent accidental resizing and layout conflicts / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.7.19
 
 ### Patch Changes

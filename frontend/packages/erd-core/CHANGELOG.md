@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.6.14
+
+### Patch Changes
+
+- [#3745](https://github.com/liam-hq/liam/pull/3745) - 🚸 Disable ERD resize handle when the left pane is closed to prevent accidental resizing and layout conflicts / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.6.13
 
 ### Patch Changes
