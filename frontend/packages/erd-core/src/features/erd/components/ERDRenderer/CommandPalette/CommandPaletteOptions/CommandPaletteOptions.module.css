@@ -14,10 +14,10 @@
 .item.indent:before {
   content: '';
   position: absolute;
-  top: calc(var(--spacing-1) / 2);
+  top: 0;
   left: var(--spacing-4);
   width: 1px;
-  height: calc(100% - var(--spacing-1));
+  height: 100%;
   background-color: var(--overlay-10);
 }
 
