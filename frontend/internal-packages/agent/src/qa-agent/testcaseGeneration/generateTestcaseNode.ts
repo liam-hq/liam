@@ -5,7 +5,7 @@ import {
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
-import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { yamlSchemaDeparser } from '@liam-hq/schema'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 import { saveTestcaseTool } from '../tools/saveTestcaseTool'
@@ -36,7 +36,11 @@ export async function generateTestcaseNode(
 ): Promise<{ messages: BaseMessage[] }> {
   const { currentTestcase, schemaData, goal, messages } = state
 
-  const schemaContext = convertSchemaToText(schemaData)
+  const schemaContextResult = yamlSchemaDeparser(schemaData)
+  if (schemaContextResult.isErr()) {
+    throw schemaContextResult.error
+  }
+  const schemaContext = schemaContextResult.value
 
   const contextMessage = await humanPromptTemplateForTestcaseGeneration.format({
     schemaContext,

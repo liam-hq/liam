@@ -53,7 +53,7 @@ import {
   isReplaceTableCommentOperation,
   isReplaceTableNameOperation,
 } from '../../operation/schema/table.js'
-import type { OperationDeparser } from '../type.js'
+import type { LegacyOperationDeparser } from '../type.js'
 import {
   generateAddCheckConstraintStatement,
   generateAddColumnStatement,
@@ -605,7 +605,12 @@ function generateAlterConstraintUpdateFromOperation(
   )
 }
 
-export const postgresqlOperationDeparser: OperationDeparser = (
+/**
+ * PostgreSQL operation deparser
+ * @deprecated This implementation uses LegacyOperationDeparser type.
+ * TODO: Migrate to new OperationDeparser type (Result<string, Error>) for better error handling.
+ */
+export const postgresqlOperationDeparser: LegacyOperationDeparser = (
   operation: Operation,
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 ) => {

@@ -1,5 +1,6 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { yamlSchemaDeparser } from '@liam-hq/schema'
+import { Result } from 'neverthrow'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { getConfigurable } from '../../utils/getConfigurable'
 import { invokePmAnalysisAgent } from '../invokePmAnalysisAgent'
@@ -13,20 +14,24 @@ export async function analyzeRequirementsNode(
   state: PmAgentState,
   config: RunnableConfig,
 ): Promise<Partial<PmAgentState>> {
-  const configurableResult = getConfigurable(config)
-  if (configurableResult.isErr()) {
+  const combinedResult = Result.combine([
+    getConfigurable(config),
+    yamlSchemaDeparser(state.schemaData),
+  ])
+
+  if (combinedResult.isErr()) {
     throw new WorkflowTerminationError(
-      configurableResult.error,
+      combinedResult.error,
       'analyzeRequirementsNode',
     )
   }
 
-  const schemaText = convertSchemaToText(state.schemaData)
+  const [configurable, schemaText] = combinedResult.value
 
   const analysisResult = await invokePmAnalysisAgent(
     { schemaText },
     state.messages,
-    configurableResult.value,
+    configurable,
   )
 
   if (analysisResult.isErr()) {

@@ -2,8 +2,8 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { Command, END } from '@langchain/langgraph'
 import { ChatOpenAI } from '@langchain/openai'
 import { fromPromise } from '@liam-hq/neverthrow'
+import { yamlSchemaDeparser } from '@liam-hq/schema'
 import * as v from 'valibot'
-import { convertSchemaToText } from '../../utils/convertSchemaToText'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
@@ -47,7 +47,11 @@ export async function validateSchemaRequirementsNode(
 ): Promise<Command> {
   const { currentTestcase, schemaData, goal } = state
 
-  const schemaContext = convertSchemaToText(schemaData)
+  const schemaContextResult = yamlSchemaDeparser(schemaData)
+  if (schemaContextResult.isErr()) {
+    throw schemaContextResult.error
+  }
+  const schemaContext = schemaContextResult.value
 
   const contextMessage = `
 # Database Schema Context

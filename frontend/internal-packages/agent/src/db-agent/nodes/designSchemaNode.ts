@@ -1,5 +1,6 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { convertSchemaToText } from '../../utils/convertSchemaToText'
+import { yamlSchemaDeparser } from '@liam-hq/schema'
+import { Result } from 'neverthrow'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { getConfigurable } from '../../utils/getConfigurable'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
@@ -14,16 +15,15 @@ export async function designSchemaNode(
   state: DbAgentState,
   config: RunnableConfig,
 ): Promise<DbAgentState> {
-  const configurableResult = getConfigurable(config)
-  if (configurableResult.isErr()) {
-    throw new WorkflowTerminationError(
-      configurableResult.error,
-      'designSchemaNode',
-    )
-  }
-  const { repositories } = configurableResult.value
+  const combinedResult = Result.combine([
+    getConfigurable(config),
+    yamlSchemaDeparser(state.schemaData),
+  ])
 
-  const schemaText = convertSchemaToText(state.schemaData)
+  if (combinedResult.isErr()) {
+    throw new WorkflowTerminationError(combinedResult.error, 'designSchemaNode')
+  }
+  const [{ repositories }, schemaText] = combinedResult.value
 
   // Remove reasoning field from AIMessages to avoid API issues
   // This prevents the "reasoning without required following item" error
