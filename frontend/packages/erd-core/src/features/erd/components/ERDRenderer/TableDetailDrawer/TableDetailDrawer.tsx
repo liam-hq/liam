@@ -52,7 +52,11 @@ export const TableDetailDrawer: FC = () => {
     <DrawerPortal>
       {table !== undefined && (
         <DrawerContent className={styles.content} {...ariaDescribedBy}>
-          <TableDetail table={table} />
+          <TableDetail
+            // rerender TableDetail when target table changes
+            key={table.name}
+            table={table}
+          />
         </DrawerContent>
       )}
     </DrawerPortal>
