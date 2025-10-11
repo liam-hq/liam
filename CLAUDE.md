@@ -111,6 +111,10 @@ function saveUser(data: UserData, userId: string) {
 - Generate CSS type definitions with `pnpm gen:css`
 - Use CSS variables according to their intended purpose. Spacing variables should be used exclusively for margins and padding, while height and width specifications should use appropriate units (rem, px, etc.)
 
+### Testing
+
+- Follow principles in @docs/test-principles.md
+
 ## Pull Requests
 
 When creating pull requests, refer to @.github/pull_request_template.md for the required information and format.
