@@ -170,10 +170,21 @@ benchmark-workspace/
 
 ## Environment Setup
 
-For OpenAI executor, set your API key:
+### Required Environment Variables
+
+For **LiamDB executor**, you need Supabase connection details:
+```bash
+export NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+export SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+export OPENAI_API_KEY="your-api-key"  # Also required by LiamDB for AI operations
+```
+
+For **OpenAI executor**, you only need:
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
+
+These variables should be set in a `.env` file at the repository root.
 
 ## Example Workflow
 

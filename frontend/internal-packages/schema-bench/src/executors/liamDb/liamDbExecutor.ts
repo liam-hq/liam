@@ -1,7 +1,8 @@
-import { deepModeling, InMemoryRepository } from '@liam-hq/agent'
+import { deepModeling } from '@liam-hq/agent'
 import { aSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
 import { handleExecutionResult, logInputProcessing } from '../utils.ts'
+import { setupRepositories } from './setupRepositories.ts'
 import type { LiamDbExecutorInput, LiamDbExecutorOutput } from './types.ts'
 
 export async function execute(
@@ -9,31 +10,37 @@ export async function execute(
 ): Promise<Result<LiamDbExecutorOutput, Error>> {
   logInputProcessing(input.input)
 
-  // Setup InMemory repository
-  const repositories = {
-    schema: new InMemoryRepository({
-      schemas: {
-        'demo-design-session': aSchema({
-          tables: {},
-        }),
-      },
-    }),
+  // Setup Supabase repositories
+  const setupResult = await setupRepositories()
+  if (setupResult.isErr()) {
+    return err(
+      new Error(`Failed to setup repositories: ${setupResult.error.message}`),
+    )
   }
+
+  const {
+    repositories,
+    organizationId,
+    buildingSchemaId,
+    designSessionId,
+    userId,
+  } = setupResult.value
 
   // Create workflow params
   const workflowParams = {
     userInput: input.input,
     schemaData: aSchema({ tables: {} }),
-    organizationId: 'demo-org-id',
-    designSessionId: 'demo-design-session',
-    userId: 'demo-user-id',
+    organizationId,
+    buildingSchemaId,
+    designSessionId,
+    userId,
     signal: new AbortController().signal,
   }
 
   const config = {
     configurable: {
       repositories,
-      thread_id: 'demo-design-session',
+      thread_id: designSessionId,
     },
   }
 
