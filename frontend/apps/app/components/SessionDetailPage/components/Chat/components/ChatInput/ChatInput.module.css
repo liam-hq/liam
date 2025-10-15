@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: 0;
   padding: var(--spacing-2);
 }
 
@@ -12,6 +12,8 @@
   padding: var(--spacing-2);
   border: var(--border-width-base) solid var(--global-border);
   border-radius: var(--border-radius-base);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   background-color: var(--global-background);
   transition:
     border 0.3s var(--default-timing-function),

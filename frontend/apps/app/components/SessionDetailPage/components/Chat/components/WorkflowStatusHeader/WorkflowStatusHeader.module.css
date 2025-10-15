@@ -1,18 +1,40 @@
 .wrapper {
-  position: sticky;
-  top: 0;
-  z-index: 10;
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-3) var(--spacing-4);
-  background-color: var(--surface-layer-1);
-  border-bottom: 1px solid var(--border-normal);
-  backdrop-filter: blur(8px);
+  background-color: var(--global-background);
+  border: var(--border-width-base) solid var(--global-border);
+  border-radius: var(--border-radius-base);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
 }
 
 .statusText {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-normal);
+  background: linear-gradient(
+    90deg,
+    var(--overlay-30) 0%,
+    var(--overlay-60) 50%,
+    var(--overlay-30) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 2s var(--default-timing-function) infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
