@@ -41,6 +41,7 @@ type Props = {
   initialMessage?: string
   schema: Schema
   onSendMessage: (message: string) => void
+  hasMessages?: boolean
 }
 
 export const ChatInput: FC<Props> = ({
@@ -49,6 +50,7 @@ export const ChatInput: FC<Props> = ({
   initialMessage = '',
   schema,
   onSendMessage,
+  hasMessages = false,
 }) => {
   const { isPublic } = useViewMode()
   const mentionSuggestorRef = useRef<MentionSuggestorHandle>(null)
@@ -165,7 +167,10 @@ export const ChatInput: FC<Props> = ({
   return (
     <div className={styles.container}>
       {isPublic && <CtaBar onSignUpClick={openSignUp} />}
-      <WorkflowStatusHeader isRunning={isWorkflowRunning} />
+      <WorkflowStatusHeader
+        isRunning={isWorkflowRunning}
+        hasMessages={hasMessages}
+      />
       <form
         className={clsx(
           styles.inputContainer,
