@@ -15,7 +15,12 @@ const reasoningSchema = v.object({
 
 const additionalKwargsSchema = v.object({
   reasoning: v.optional(reasoningSchema),
+  reasoning_duration_ms: v.optional(v.number()),
 })
+
+export type ReasoningMetadata = {
+  durationMs: number | null
+}
 
 export const extractReasoningFromMessage = (
   message: BaseMessage,
@@ -28,4 +33,19 @@ export const extractReasoningFromMessage = (
     .map((s) => s.text || '')
     .filter(Boolean)
     .join('\n\n')
+}
+
+export const extractReasoningMetadataFromMessage = (
+  message: BaseMessage,
+): ReasoningMetadata | null => {
+  const parsed = v.safeParse(additionalKwargsSchema, message.additional_kwargs)
+  if (!parsed.success) return null
+
+  const durationMs = parsed.output.reasoning_duration_ms ?? null
+
+  if (durationMs === null) return null
+
+  return {
+    durationMs,
+  }
 }
