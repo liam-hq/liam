@@ -153,7 +153,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   const hasTriggeredInitialWorkflow = useRef(false)
 
   const handleSendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, isDeepModelingEnabled: boolean) => {
       const tempId = `optimistic-${crypto.randomUUID()}`
       const optimisticMessage = new HumanMessage({
         content,
@@ -174,7 +174,7 @@ export const SessionDetailPageClient: FC<Props> = ({
         setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
       }
     },
-    [setMessages, start, senderName, designSessionId, isDeepModelingEnabled],
+    [setMessages, start, senderName, designSessionId],
   )
 
   // Auto-trigger workflow on page load if there's an unanswered user message
@@ -235,6 +235,7 @@ export const SessionDetailPageClient: FC<Props> = ({
                 onSendMessage={handleSendMessage}
                 onNavigate={setActiveTab}
                 error={combinedError}
+                initialIsDeepModelingEnabled={isDeepModelingEnabled}
               />
             </div>
           </div>

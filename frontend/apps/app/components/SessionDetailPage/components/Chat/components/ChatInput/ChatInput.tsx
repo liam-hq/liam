@@ -19,6 +19,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { DeepModelingToggle } from '../../../../../../features/sessions/components/shared/DeepModelingToggle'
 import { useAuthModal } from '../../../../../../hooks/useAuthModal'
 import { AuthModals } from '../../../../../AuthModals'
 import { useViewMode } from '../../../../hooks/viewMode'
@@ -42,6 +43,8 @@ type Props = {
   schema: Schema
   onSendMessage: (message: string) => void
   hasMessages?: boolean
+  isDeepModelingEnabled: boolean
+  onDeepModelingToggle: (enabled: boolean) => void
 }
 
 export const ChatInput: FC<Props> = ({
@@ -51,6 +54,8 @@ export const ChatInput: FC<Props> = ({
   schema,
   onSendMessage,
   hasMessages = false,
+  isDeepModelingEnabled,
+  onDeepModelingToggle,
 }) => {
   const { isPublic } = useViewMode()
   const mentionSuggestorRef = useRef<MentionSuggestorHandle>(null)
@@ -245,6 +250,16 @@ export const ChatInput: FC<Props> = ({
           onClick={handleSubmit}
         />
       </form>
+      <div className={styles.toolsContainer}>
+        <DeepModelingToggle
+          name="isDeepModelingEnabled"
+          defaultChecked={isDeepModelingEnabled}
+          disabled={isWorkflowRunning || isPublic}
+          onClick={() => onDeepModelingToggle(!isDeepModelingEnabled)}
+        >
+          Deep Modeling
+        </DeepModelingToggle>
+      </div>
 
       <AuthModals
         authModalType={authModalType}

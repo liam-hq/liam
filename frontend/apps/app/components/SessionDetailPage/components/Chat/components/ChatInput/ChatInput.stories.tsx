@@ -102,6 +102,8 @@ export const Default: Story = {
     isWorkflowRunning: false,
     error: false,
     schema: dummySchema,
+    isDeepModelingEnabled: true,
+    onDeepModelingToggle: () => {},
   },
   parameters: {
     docs: {
@@ -119,6 +121,8 @@ export const WorkflowRunning: Story = {
     isWorkflowRunning: true,
     error: false,
     schema: dummySchema,
+    isDeepModelingEnabled: true,
+    onDeepModelingToggle: () => {},
   },
   parameters: {
     docs: {
@@ -137,6 +141,8 @@ export const WorkflowRunningWithContent: Story = {
     error: false,
     initialMessage: 'This message is being processed...',
     schema: dummySchema,
+    isDeepModelingEnabled: true,
+    onDeepModelingToggle: () => {},
   },
   parameters: {
     docs: {
@@ -156,6 +162,8 @@ export const WithError: Story = {
     error: true,
     initialMessage: 'This message has an error that needs to be fixed.',
     schema: dummySchema,
+    isDeepModelingEnabled: true,
+    onDeepModelingToggle: () => {},
   },
   parameters: {
     docs: {
@@ -174,6 +182,8 @@ export const Filled: Story = {
     error: false,
     initialMessage: 'Proposed schema changes for adding a chat function.',
     schema: dummySchema,
+    isDeepModelingEnabled: true,
+    onDeepModelingToggle: () => {},
   },
   parameters: {
     docs: {
@@ -194,6 +204,8 @@ export const Interactive: Story = {
     error: false,
     initialMessage: '',
     schema: dummySchema,
+    isDeepModelingEnabled: true,
+    onDeepModelingToggle: () => {},
   },
   parameters: {
     docs: {
