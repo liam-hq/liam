@@ -11,6 +11,7 @@ import { ErrorDisplay } from './components/ErrorDisplay'
 import { Messages } from './components/Messages'
 import { ScrollToBottomButton } from './components/ScrollToBottomButton'
 import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
+import { WorkflowStatusHeader } from './components/WorkflowStatusHeader'
 import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
@@ -62,6 +63,7 @@ export const Chat: FC<Props> = ({
 
   return (
     <div className={styles.wrapper}>
+      <WorkflowStatusHeader isRunning={isWorkflowRunning} />
       <div className={styles.messageListWrapper}>
         <div className={styles.messageList} ref={containerRef}>
           <Messages

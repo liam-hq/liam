@@ -1,0 +1,18 @@
+.wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--surface-layer-1);
+  border-bottom: 1px solid var(--border-normal);
+  backdrop-filter: blur(8px);
+}
+
+.statusText {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
