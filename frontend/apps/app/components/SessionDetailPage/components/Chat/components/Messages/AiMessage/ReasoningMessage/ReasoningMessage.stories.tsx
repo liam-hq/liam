@@ -16,6 +16,10 @@ const meta = {
       description: 'Whether the workflow is currently running',
       control: 'boolean',
     },
+    durationMs: {
+      description: 'Duration of reasoning in milliseconds',
+      control: 'number',
+    },
   },
 } satisfies Meta<typeof ReasoningMessage>
 
@@ -64,7 +68,23 @@ export const Finished: Story = {
     docs: {
       description: {
         story:
-          'Shows the "Reasoning finished" state after content has been fully received.',
+          'Shows the "Reasoning finished" state after content has been fully received (backward compatibility for messages without duration).',
+      },
+    },
+  },
+}
+
+export const WithDuration: Story = {
+  args: {
+    content: sampleContent,
+    isWorkflowRunning: false,
+    durationMs: 65000, // 1 minute 5 seconds
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Shows "Reasoned for 1m 5s" when the reasoning completed with duration tracking.',
       },
     },
   },

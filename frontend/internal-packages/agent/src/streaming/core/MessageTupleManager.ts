@@ -57,6 +57,12 @@ export class MessageTupleManager {
       this.chunks[id].chunk.name = chunk.name
     }
 
+    // NOTE: reasoning metadata needs to be updated with each chunk
+    if (chunk.additional_kwargs?.['reasoning_duration_ms'] !== undefined) {
+      this.chunks[id].chunk.additional_kwargs['reasoning_duration_ms'] =
+        chunk.additional_kwargs['reasoning_duration_ms']
+    }
+
     return id
   }
 
