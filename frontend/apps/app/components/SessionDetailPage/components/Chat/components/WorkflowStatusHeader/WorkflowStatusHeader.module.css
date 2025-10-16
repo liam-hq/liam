@@ -2,18 +2,26 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-3) var(--spacing-2);
-  background-color: var(--overlay-5);
+  padding: var(--spacing-2);
+  background-color: var(--global-background);
   border: var(--border-width-base) solid var(--global-border);
   border-radius: var(--border-radius-base);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: none;
-  transition: background-color 0.2s ease;
+  transition:
+    border 0.3s var(--default-timing-function),
+    box-shadow 0.3s var(--default-timing-function);
 }
 
 .wrapper:hover {
-  background-color: var(--overlay-10);
+  border-color: #459a72;
+  box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
+}
+
+.wrapper:has(+ form:hover) {
+  border-color: #459a72;
+  box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
 }
 
 .statusTextRunning {
