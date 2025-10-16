@@ -64,7 +64,10 @@ export async function loginByGithub(formData: FormData) {
   const provider = 'github'
   const { error, data } = await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo },
+    options: {
+      redirectTo,
+      scopes: 'read:user',
+    },
   })
 
   if (error) {
