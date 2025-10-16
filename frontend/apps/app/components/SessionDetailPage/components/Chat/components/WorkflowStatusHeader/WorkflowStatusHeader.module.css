@@ -5,6 +5,7 @@
   padding: var(--spacing-2);
   background-color: var(--global-background);
   border: var(--border-width-base) solid var(--global-border);
+  border-bottom: none;
   border-radius: var(--border-radius-base);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
@@ -13,21 +14,8 @@
     box-shadow 0.3s var(--default-timing-function);
 }
 
-.wrapper:not(.loading):hover {
-  border-color: #459a72;
-  box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
-  border-bottom-color: #459a72;
-}
-
-.wrapper:not(.loading):has(+ form:hover) {
-  border-color: #459a72;
-  box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
-  border-bottom-color: #459a72;
-}
-
-.wrapper.loading {
-  border-color: var(--global-border);
-  box-shadow: none;
+.loading {
+  /* Loading state is handled by parent container */
 }
 
 .statusTextRunning {
