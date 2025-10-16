@@ -49,19 +49,36 @@ export class MessageTupleManager {
     }
 
     const prev = this.chunks[id].chunk
-    this.chunks[id].chunk =
-      (isBaseMessageChunk(prev) ? prev : null)?.concat(chunk) ?? chunk
+
+    // NOTE: Create a new chunk without reasoning_duration_ms for concat to avoid "field already exists" warning
+    const savedDurationMs = chunk.additional_kwargs?.['reasoning_duration_ms']
+
+    let chunkForConcat = chunk
+    if (savedDurationMs !== undefined && isAIMessageChunk(chunk)) {
+      // biome-ignore lint/correctness/noUnusedVariables: Intentionally extracting to exclude from spread
+      const { reasoning_duration_ms, ...otherKwargs } = chunk.additional_kwargs
+      chunkForConcat = new AIMessageChunk({
+        ...chunk,
+        additional_kwargs: otherKwargs,
+      })
+    }
+
+    const concatenated =
+      (isBaseMessageChunk(prev) ? prev : null)?.concat(chunkForConcat) ?? chunk
 
     // NOTE: chunk.concat() always makes name undefined, so override it separately
     if (chunk.name !== undefined) {
-      this.chunks[id].chunk.name = chunk.name
+      concatenated.name = chunk.name
     }
 
-    // NOTE: reasoning metadata needs to be updated with each chunk
-    if (chunk.additional_kwargs?.['reasoning_duration_ms'] !== undefined) {
-      this.chunks[id].chunk.additional_kwargs['reasoning_duration_ms'] =
-        chunk.additional_kwargs['reasoning_duration_ms']
+    if (savedDurationMs !== undefined) {
+      concatenated.additional_kwargs = {
+        ...concatenated.additional_kwargs,
+        reasoning_duration_ms: savedDurationMs,
+      }
     }
+
+    this.chunks[id].chunk = concatenated
 
     return id
   }

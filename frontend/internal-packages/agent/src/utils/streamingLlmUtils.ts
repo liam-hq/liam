@@ -44,7 +44,30 @@ async function processStreamWithImmediateDispatch(
 
     await dispatchCustomEvent(eventType, chunk)
 
-    accumulatedChunk = accumulatedChunk ? accumulatedChunk.concat(chunk) : chunk
+    // NOTE: Create a new chunk without reasoning_duration_ms for concat to avoid "field already exists" warning
+    const savedDurationMs = chunk.additional_kwargs?.['reasoning_duration_ms']
+
+    let chunkForConcat = chunk
+    if (savedDurationMs !== undefined) {
+      // biome-ignore lint/correctness/noUnusedVariables: Intentionally extracting to exclude from spread
+      const { reasoning_duration_ms, ...otherKwargs } = chunk.additional_kwargs
+      chunkForConcat = new AIMessageChunk({
+        ...chunk,
+        additional_kwargs: otherKwargs,
+      })
+    }
+
+    accumulatedChunk = accumulatedChunk
+      ? accumulatedChunk.concat(chunkForConcat)
+      : chunk
+
+    // NOTE: Set the latest reasoning_duration_ms after concat
+    if (savedDurationMs !== undefined) {
+      accumulatedChunk.additional_kwargs = {
+        ...accumulatedChunk.additional_kwargs,
+        reasoning_duration_ms: savedDurationMs,
+      }
+    }
   }
 
   const finalReasoningDurationMs =
