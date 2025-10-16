@@ -149,6 +149,9 @@ importers:
       emoji-regex:
         specifier: 10.4.0
         version: 10.4.0
+      js-tiktoken:
+        specifier: 1.0.21
+        version: 1.0.21
       lucide-react:
         specifier: 0.511.0
         version: 0.511.0(react@19.1.1)
