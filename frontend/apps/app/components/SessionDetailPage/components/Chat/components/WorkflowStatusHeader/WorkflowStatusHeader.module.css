@@ -8,20 +8,26 @@
   border-radius: var(--border-radius-base);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  border-bottom: none;
   transition:
     border 0.3s var(--default-timing-function),
     box-shadow 0.3s var(--default-timing-function);
 }
 
-.wrapper:hover {
+.wrapper:not(.loading):hover {
   border-color: #459a72;
   box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
+  border-bottom-color: #459a72;
 }
 
-.wrapper:has(+ form:hover) {
+.wrapper:not(.loading):has(+ form:hover) {
   border-color: #459a72;
   box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
+  border-bottom-color: #459a72;
+}
+
+.wrapper.loading {
+  border-color: var(--global-border);
+  box-shadow: none;
 }
 
 .statusTextRunning {

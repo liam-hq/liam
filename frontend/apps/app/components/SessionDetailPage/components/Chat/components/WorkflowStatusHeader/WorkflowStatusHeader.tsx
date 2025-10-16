@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import type { FC } from 'react'
 import styles from './WorkflowStatusHeader.module.css'
 
@@ -13,7 +14,7 @@ export const WorkflowStatusHeader: FC<Props> = ({
   if (!hasMessages) return null
 
   return (
-    <div className={styles.wrapper}>
+    <div className={clsx(styles.wrapper, isRunning && styles.loading)}>
       <span
         className={
           isRunning ? styles.statusTextRunning : styles.statusTextCompleted

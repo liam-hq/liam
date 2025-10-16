@@ -14,6 +14,7 @@
   border-radius: var(--border-radius-base);
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  border-top: none;
   background-color: var(--global-background);
   transition:
     border 0.3s var(--default-timing-function),
