@@ -55,6 +55,7 @@ const meta = {
     onSelectedVersionChange: () => {},
     designSessionId: 'test-session-id',
     initialIsPublic: false,
+    hasInitialSchemaSnapshot: false,
   },
   render: (args) => <HeaderDemo {...args} />,
 } satisfies Meta<typeof Header>
@@ -67,6 +68,7 @@ export const Default: Story = {}
 export const WithArtifactDoc: Story = {
   args: {
     tabValue: OUTPUT_TABS.ARTIFACT,
+    hasInitialSchemaSnapshot: true,
     analyzedRequirements: {
       goal: 'Create database schema for user management and content system',
       testcases: {

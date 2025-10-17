@@ -41,18 +41,20 @@ type Props = {
   initialWorkflowError?: string | null
   senderName: string
   panelSizes: number[]
+  hasInitialSchemaSnapshot: boolean
 }
 
 // Determine the initial active tab based on available data
 const determineInitialTab = (
   versions: Version[],
   analyzedRequirements: AnalyzedRequirements | null,
+  hasInitialSchemaSnapshot: boolean,
 ): OutputTabValue | undefined => {
   const hasVersions = versions.length > 0
   const hasAnalyzedRequirements = analyzedRequirements !== null
 
-  // Show ERD tab when versions exist
-  if (hasVersions) {
+  // Show ERD tab when versions exist or initial schema snapshot exists (linked schema)
+  if (hasVersions || hasInitialSchemaSnapshot) {
     return OUTPUT_TABS.ERD
   }
 
@@ -77,9 +79,14 @@ export const SessionDetailPageClient: FC<Props> = ({
   initialWorkflowError,
   senderName,
   panelSizes,
+  hasInitialSchemaSnapshot,
 }) => {
   const [activeTab, setActiveTab] = useState<OutputTabValue | undefined>(
-    determineInitialTab(initialVersions, initialAnalyzedRequirements),
+    determineInitialTab(
+      initialVersions,
+      initialAnalyzedRequirements,
+      hasInitialSchemaSnapshot,
+    ),
   )
   const [isResizing, setIsResizing] = useState(false)
   const [hasReceivedAnalyzedRequirements, setHasReceivedAnalyzedRequirements] =
@@ -138,7 +145,10 @@ export const SessionDetailPageClient: FC<Props> = ({
   }, [analyzedRequirements, hasReceivedAnalyzedRequirements])
 
   const shouldShowOutputSection =
-    (selectedVersion !== null || analyzedRequirements !== null) && activeTab
+    (selectedVersion !== null ||
+      analyzedRequirements !== null ||
+      hasInitialSchemaSnapshot) &&
+    activeTab
 
   const handleLayoutChange = useCallback((sizes: number[]) => {
     setCookieJson(PANEL_LAYOUT_COOKIE_NAME, sizes, {
@@ -262,6 +272,7 @@ export const SessionDetailPageClient: FC<Props> = ({
                   onTabChange={setActiveTab}
                   initialIsPublic={initialIsPublic}
                   analyzedRequirements={analyzedRequirements}
+                  hasInitialSchemaSnapshot={hasInitialSchemaSnapshot}
                 />
               </div>
             </ResizablePanel>

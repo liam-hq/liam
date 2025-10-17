@@ -24,6 +24,7 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   analyzedRequirements?: AnalyzedRequirements | null
   designSessionId: string
   initialIsPublic: boolean
+  hasInitialSchemaSnapshot: boolean
 }
 
 const generateCumulativeOperations = (
@@ -54,10 +55,13 @@ export const Header: FC<Props> = ({
   analyzedRequirements,
   designSessionId,
   initialIsPublic,
+  hasInitialSchemaSnapshot,
   ...propsForVersionDropdown
 }) => {
   const { versions, selectedVersion } = propsForVersionDropdown
-  const disabled = !versions || versions.length === 0 || !selectedVersion
+  const disabled =
+    !hasInitialSchemaSnapshot &&
+    (!versions || versions.length === 0 || !selectedVersion)
   const cumulativeOperations = generateCumulativeOperations(
     versions,
     selectedVersion,
