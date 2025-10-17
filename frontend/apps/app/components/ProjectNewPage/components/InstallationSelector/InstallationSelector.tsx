@@ -16,6 +16,7 @@ import {
   useTransition,
 } from 'react'
 import { match, P } from 'ts-pattern'
+import { InstallationEmpty } from '../InstallationEmpty'
 import { RepositoryItem } from '../RepositoryItem'
 import { addProject } from './actions/addProject'
 import { getRepositories } from './actions/getRepositories'
@@ -72,6 +73,10 @@ export const InstallationSelector: FC<Props> = ({
     },
     [selectedInstallation, organizationId],
   )
+
+  if (installations.length === 0) {
+    return <InstallationEmpty githubAppUrl={githubAppUrl} />
+  }
 
   return (
     <>

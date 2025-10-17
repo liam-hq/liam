@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: var(--spacing-8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-6);
+  max-width: 480px;
+  text-align: center;
+}
+
+.illustration {
+  margin-bottom: var(--spacing-4);
+}
+
+.message {
+  color: var(--global-text-default);
+  font-size: var(--font-size-3);
+  line-height: var(--line-height-3);
+  margin: 0;
+}
