@@ -23,6 +23,7 @@ import { DeepModelingToggle } from '../../../../../../features/sessions/componen
 import { useAuthModal } from '../../../../../../hooks/useAuthModal'
 import { AuthModals } from '../../../../../AuthModals'
 import { useViewMode } from '../../../../hooks/viewMode'
+import { WorkflowStatusHeader } from '../WorkflowStatusHeader'
 import styles from './ChatInput.module.css'
 import { CtaBar } from './CtaBar'
 import {
@@ -41,6 +42,7 @@ type Props = {
   initialMessage?: string
   schema: Schema
   onSendMessage: (message: string) => void
+  hasMessages?: boolean
   isDeepModelingEnabled: boolean
   onDeepModelingToggle: (enabled: boolean) => void
 }
@@ -51,6 +53,7 @@ export const ChatInput: FC<Props> = ({
   initialMessage = '',
   schema,
   onSendMessage,
+  hasMessages = false,
   isDeepModelingEnabled,
   onDeepModelingToggle,
 }) => {
@@ -169,6 +172,10 @@ export const ChatInput: FC<Props> = ({
   return (
     <div className={styles.container}>
       {isPublic && <CtaBar onSignUpClick={openSignUp} />}
+      <WorkflowStatusHeader
+        isRunning={isWorkflowRunning}
+        hasMessages={hasMessages}
+      />
       <form
         className={clsx(
           styles.inputContainer,

@@ -101,6 +101,7 @@ export const Chat: FC<Props> = ({
         onSendMessage={handleSendMessage}
         isWorkflowRunning={isWorkflowRunning}
         schema={schemaData}
+        hasMessages={messages.length > 0}
         isDeepModelingEnabled={isDeepModelingEnabled}
         onDeepModelingToggle={handleDeepModelingToggle}
       />

@@ -1,8 +1,19 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2);
+  gap: 0;
+  padding: 0;
+}
+
+.container:has(.inputContainer:not(.loading):not(.error):hover) > :first-child,
+.container:has(.inputContainer:not(.loading):not(.error):focus-within)
+  > :first-child {
+  border-color: #459a72;
+}
+
+.container:has(.inputContainer.error:hover) > :first-child,
+.container:has(.inputContainer.error:focus-within) > :first-child {
+  border-color: #9c5b5a;
 }
 
 .inputContainer {
@@ -12,18 +23,21 @@
   padding: var(--spacing-2);
   border: var(--border-width-base) solid var(--global-border);
   border-radius: var(--border-radius-base);
-  background-color: var(--global-background);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: none;
+  background-color: var(--overlay-5);
   transition:
     border 0.3s var(--default-timing-function),
     box-shadow 0.3s var(--default-timing-function);
 }
 
-.inputContainer:hover {
+.inputContainer:not(.loading):not(.error):hover {
   border-color: #459a72;
   box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
 }
 
-.inputContainer:focus-within {
+.inputContainer:not(.loading):not(.error):focus-within {
   border-color: #459a72;
   box-shadow: 0px 0px 20px 0px rgba(29, 237, 131, 0.4);
 }

@@ -1,0 +1,54 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2);
+  background-color: var(--overlay-5);
+  border: var(--border-width-base) solid var(--global-border);
+  border-bottom: none;
+  border-radius: var(--border-radius-base);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  transition:
+    border 0.3s var(--default-timing-function),
+    box-shadow 0.3s var(--default-timing-function);
+  box-shadow: none;
+}
+
+.loading {
+  /* Loading state is handled by parent container */
+}
+
+.statusTextRunning {
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-normal);
+  background: linear-gradient(
+    90deg,
+    var(--overlay-30) 0%,
+    var(--overlay-60) 50%,
+    var(--overlay-30) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 2s var(--default-timing-function) infinite;
+}
+
+.statusTextCompleted {
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-normal);
+  color: var(--global-body-text);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
