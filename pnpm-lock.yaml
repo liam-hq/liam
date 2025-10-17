@@ -107,6 +107,9 @@ importers:
       '@liam-hq/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@liam-hq/security':
+        specifier: workspace:*
+        version: link:../../packages/security
       '@liam-hq/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -532,12 +535,12 @@ importers:
       '@octokit/rest':
         specifier: 21.1.1
         version: 21.1.1
-      '@supabase/supabase-js':
-        specifier: 2.49.8
-        version: 2.49.8
       neverthrow:
         specifier: 8.2.0
         version: 8.2.0
+      valibot:
+        specifier: 1.1.0
+        version: 1.1.0(typescript@5.9.2)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.4
@@ -970,6 +973,31 @@ importers:
       json-schema-to-zod:
         specifier: 2.6.1
         version: 2.6.1
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@22.18.6)(happy-dom@20.0.0)(jiti@2.6.1)(lightningcss@1.30.1)(msw@2.11.3(@types/node@22.18.6)(typescript@5.9.2))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+
+  frontend/packages/security:
+    dependencies:
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../../internal-packages/neverthrow
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.2.4
+        version: 2.2.4
+      '@liam-hq/configs':
+        specifier: workspace:*
+        version: link:../../internal-packages/configs
+      '@types/node':
+        specifier: 22.18.6
+        version: 22.18.6
+      eslint:
+        specifier: 9.36.0
+        version: 9.36.0(jiti@2.6.1)
       typescript:
         specifier: 5.9.2
         version: 5.9.2

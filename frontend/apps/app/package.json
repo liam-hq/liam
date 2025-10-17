@@ -18,6 +18,7 @@
     "@liam-hq/github": "workspace:*",
     "@liam-hq/neverthrow": "workspace:*",
     "@liam-hq/schema": "workspace:*",
+    "@liam-hq/security": "workspace:*",
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.5",
     "@sentry/nextjs": "9",

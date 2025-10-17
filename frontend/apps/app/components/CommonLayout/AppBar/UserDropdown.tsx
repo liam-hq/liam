@@ -1,5 +1,6 @@
 'use client'
 
+import { fromPromise } from '@liam-hq/neverthrow'
 import {
   Avatar,
   AvatarWithImage,
@@ -62,6 +63,19 @@ export const UserDropdown: FC<Props> = ({ avatarUrl, userName, userEmail }) => {
     if (!error) {
       // Delete organizationId cookie
       deleteCookie('organizationId')
+
+      // Best-effort call to logout endpoint to clear OAuth cookies
+      type HttpResponse = {
+        ok: boolean
+        headers: { get(name: string): string | null }
+        json: () => Promise<unknown>
+      }
+      await fromPromise<HttpResponse>(
+        fetch('/api/auth/logout', { method: 'POST', cache: 'no-store' }),
+      ).match(
+        () => {},
+        () => {},
+      )
 
       // Redirect with success parameter
       router.push('/login?logout=success')

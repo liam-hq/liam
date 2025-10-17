@@ -8,6 +8,7 @@ import type { AppDatabaseOverrides } from './types'
 export type {
   EmailOtpType,
   QueryData,
+  Session,
   SupabaseClient,
 } from '@supabase/supabase-js'
 export type { Database, Json, Tables } from '../supabase/database.types'

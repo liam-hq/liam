@@ -1,0 +1,48 @@
+{
+  "name": "@liam-hq/security",
+  "description": "Security utilities for token hashing and encryption at the application layer.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liam-hq/liam.git"
+  },
+  "license": "Apache-2.0",
+  "private": false,
+  "version": "0.1.0",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./cryptoBox": "./dist/cryptoBox.js"
+  },
+  "dependencies": {
+    "@liam-hq/neverthrow": "workspace:*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.4",
+    "@liam-hq/configs": "workspace:*",
+    "@types/node": "22.18.6",
+    "eslint": "9.36.0",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
+  },
+  "scripts": {
+    "build": "tsc",
+    "fmt": "concurrently \"pnpm:fmt:*\"",
+    "fmt:biome": "biome check --write --unsafe .",
+    "fmt:eslint": "eslint --fix .",
+    "lint": "concurrently \"pnpm:lint:*\"",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "package.json",
+    "LICENSE"
+  ],
+  "types": "dist/index.d.ts"
+}

@@ -24,16 +24,17 @@ import styles from './InstallationSelector.module.css'
 type Props = {
   installations: Installation[]
   organizationId: string
+  disabled?: boolean
 }
 
 export const InstallationSelector: FC<Props> = ({
   installations,
   organizationId,
+  disabled = false,
 }) => {
   const [selectedInstallation, setSelectedInstallation] =
     useState<Installation | null>(null)
   const [isAddingProject, startAddingProjectTransition] = useTransition()
-  const [, startTransition] = useTransition()
 
   const [repositoriesState, repositoriesAction, isRepositoriesLoading] =
     useActionState(getRepositories, { repositories: [], loading: false })
@@ -42,11 +43,9 @@ export const InstallationSelector: FC<Props> = ({
 
   const handleSelectInstallation = (installation: Installation) => {
     setSelectedInstallation(installation)
-    startTransition(() => {
-      const formData = new FormData()
-      formData.append('installationId', installation.id.toString())
-      repositoriesAction(formData)
-    })
+    const formData = new FormData()
+    formData.append('installationId', installation.id.toString())
+    repositoriesAction(formData)
   }
 
   const handleClick = useCallback(
@@ -84,8 +83,8 @@ export const InstallationSelector: FC<Props> = ({
       </div>
       <div className={styles.installationSelector}>
         <DropdownMenuRoot>
-          <DropdownMenuTrigger asChild>
-            <Button size="lg" variant="ghost-secondary">
+          <DropdownMenuTrigger asChild disabled={disabled}>
+            <Button size="lg" variant="ghost-secondary" disabled={disabled}>
               {selectedInstallation
                 ? match(selectedInstallation.account)
                     .with({ login: P.string }, (item) => item.login)
@@ -104,7 +103,7 @@ export const InstallationSelector: FC<Props> = ({
               return (
                 <DropdownMenuItem
                   key={item.id}
-                  onSelect={() => handleSelectInstallation(item)}
+                  onSelect={() => !disabled && handleSelectInstallation(item)}
                 >
                   {login}
                 </DropdownMenuItem>
