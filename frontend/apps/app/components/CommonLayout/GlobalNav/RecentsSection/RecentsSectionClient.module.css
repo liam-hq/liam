@@ -29,16 +29,19 @@
   gap: var(--spacing-1);
 }
 
-.recentsHeader {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-2);
-  gap: var(--spacing-2half);
+.filterItem {
+  width: 100%;
+  margin-bottom: var(--spacing-2);
 }
 
-.recentsTitle {
-  font-weight: 600;
-  color: var(--global-foreground);
+.chevronIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--overlay-70);
+}
+
+.dropdownContent {
+  min-width: 200px;
 }
 
 .sessionsList {
@@ -102,10 +105,25 @@
   background-color: var(--primary-overlay-20);
 }
 
+.sessionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  overflow: hidden;
+}
+
 .sessionName {
   font-size: var(--font-size-4);
   font-weight: 500;
   color: var(--global-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionOwner {
+  font-size: var(--font-size-2);
+  color: var(--overlay-60);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
