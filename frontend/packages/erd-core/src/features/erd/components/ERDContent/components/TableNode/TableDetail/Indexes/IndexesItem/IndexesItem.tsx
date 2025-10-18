@@ -1,5 +1,5 @@
 import type { Index } from '@liam-hq/schema'
-import { GridTableRoot, Link } from '@liam-hq/ui'
+import { GridTableRoot } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
 import {
@@ -8,7 +8,10 @@ import {
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableIndexElementId } from '../../../../../../../utils'
-import { CollapsibleHeaderItem } from '../../CollapsibleHeader'
+import {
+  CollapsibleHeaderItem,
+  CollapsibleHeaderItemHeading,
+} from '../../CollapsibleHeader'
 import { Columns } from './Columns'
 import { getChangeStatus } from './getChangeStatus'
 import styles from './IndexesItem.module.css'
@@ -52,12 +55,9 @@ export const IndexesItem: FC<Props> = ({
       className={clsx(styles.wrapper, diffStyle)}
       isFocused={isFocused}
     >
-      <h3 className={styles.heading}>
-        <a className={styles.link} href={`#${elementId}`}>
-          {index.name}
-        </a>
-        <Link className={styles.linkIcon} />
-      </h3>
+      <CollapsibleHeaderItemHeading href={`#${elementId}`}>
+        {index.name}
+      </CollapsibleHeaderItemHeading>
       <GridTableRoot>
         {index.type && index.type.toLowerCase() !== HIDE_INDEX_TYPE && (
           <Type tableId={tableId} index={index} />

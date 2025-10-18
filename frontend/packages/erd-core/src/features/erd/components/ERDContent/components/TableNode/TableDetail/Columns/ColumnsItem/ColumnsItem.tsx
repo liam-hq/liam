@@ -1,5 +1,5 @@
 import type { Column, Constraints } from '@liam-hq/schema'
-import { GridTableRoot, Link } from '@liam-hq/ui'
+import { GridTableRoot } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
 import {
@@ -8,7 +8,10 @@ import {
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableColumnElementId } from '../../../../../../../utils/url/getTableColumnElementId'
-import { CollapsibleHeaderItem } from '../../CollapsibleHeader'
+import {
+  CollapsibleHeaderItem,
+  CollapsibleHeaderItemHeading,
+} from '../../CollapsibleHeader'
 import styles from './ColumnsItem.module.css'
 import { Comment } from './Comment'
 import { Default } from './Default'
@@ -64,12 +67,9 @@ export const ColumnsItem: FC<Props> = ({
       className={clsx(styles.wrapper, diffStyle)}
       isFocused={isFocused}
     >
-      <h3 className={styles.heading}>
-        <a className={styles.link} href={`#${elementId}`}>
-          {column.name}
-        </a>
-        <Link className={styles.linkIcon} />
-      </h3>
+      <CollapsibleHeaderItemHeading href={`#${elementId}`}>
+        {column.name}
+      </CollapsibleHeaderItemHeading>
       {column.comment && <Comment tableId={tableId} column={column} />}
       <GridTableRoot>
         <Type tableId={tableId} column={column} />

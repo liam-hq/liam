@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, IconButton } from '@liam-hq/ui'
+import { ChevronDown, ChevronUp, IconButton, Link } from '@liam-hq/ui'
 import clsx from 'clsx'
 import {
   type ComponentProps,
@@ -98,4 +98,15 @@ export const CollapsibleHeaderItem: FC<CollapsibleHeaderItemProps> = ({
       {...props}
     />
   </>
+)
+
+type CollapsibleHeaderItemHeadingProps = ComponentProps<'a'>
+
+export const CollapsibleHeaderItemHeading: FC<
+  CollapsibleHeaderItemHeadingProps
+> = (props) => (
+  <h3 className={styles.itemHeading}>
+    <a className={styles.link} {...props} />
+    <Link className={styles.linkIcon} />
+  </h3>
 )
