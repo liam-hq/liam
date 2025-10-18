@@ -1,5 +1,7 @@
 import { ChevronDown, ChevronUp, IconButton } from '@liam-hq/ui'
+import clsx from 'clsx'
 import {
+  type ComponentProps,
   type FC,
   type KeyboardEvent,
   type MouseEvent,
@@ -73,3 +75,10 @@ export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
     </>
   )
 }
+
+type CollapsibleHeaderItemProps = ComponentProps<'div'>
+
+export const CollapsibleHeaderItem: FC<CollapsibleHeaderItemProps> = ({
+  className,
+  ...props
+}) => <div className={clsx(styles.item, className)} {...props} />

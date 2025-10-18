@@ -1,12 +1,12 @@
-.wrapper {
+.container {
   display: grid;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
-  scroll-margin-top: 41px;
+  border-bottom: 1px solid var(--global-border);
 }
 
-.focused {
-  outline: 1px solid var(--button-primary-background);
+.container.focused {
+  outline: 1px solid var(--primary-color);
   outline-offset: -1px;
 }
 
