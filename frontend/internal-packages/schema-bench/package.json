@@ -10,7 +10,7 @@
     "@liam-hq/neverthrow": "workspace:*",
     "@liam-hq/schema": "workspace:*",
     "dotenv": "16.5.0",
-    "langsmith": "0.3.71",
+    "langsmith": "0.3.72",
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "tsx": "4.20.6",
