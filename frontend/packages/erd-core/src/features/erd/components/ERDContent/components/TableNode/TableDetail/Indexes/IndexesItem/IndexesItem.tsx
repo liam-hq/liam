@@ -8,7 +8,6 @@ import {
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableIndexElementId } from '../../../../../../../utils'
-import { BlinkCircle } from '../../BlinkCircle/BlinkCircle'
 import { CollapsibleHeaderItem } from '../../CollapsibleHeader'
 import { Columns } from './Columns'
 import { getChangeStatus } from './getChangeStatus'
@@ -48,35 +47,24 @@ export const IndexesItem: FC<Props> = ({
   const isFocused = focusedElementId === elementId
 
   return (
-    <>
-      {isFocused && (
-        <div
-          className={styles.blinkCircleWrapper}
-          data-testid="blink-circle-indicator"
-        >
-          <BlinkCircle />
-        </div>
-      )}
-      <CollapsibleHeaderItem
-        id={elementId}
-        className={clsx(styles.wrapper, diffStyle, isFocused && styles.focused)}
-      >
-        <h3 className={styles.heading}>
-          <a className={styles.link} href={`#${elementId}`}>
-            {index.name}
-          </a>
-          <Link className={styles.linkIcon} />
-        </h3>
-        <GridTableRoot>
-          {index.type && index.type.toLowerCase() !== HIDE_INDEX_TYPE && (
-            <Type tableId={tableId} index={index} />
-          )}
-          {!!index.columns.length && (
-            <Columns tableId={tableId} index={index} />
-          )}
-          <Unique tableId={tableId} index={index} />
-        </GridTableRoot>
-      </CollapsibleHeaderItem>
-    </>
+    <CollapsibleHeaderItem
+      id={elementId}
+      className={clsx(styles.wrapper, diffStyle)}
+      isFocused={isFocused}
+    >
+      <h3 className={styles.heading}>
+        <a className={styles.link} href={`#${elementId}`}>
+          {index.name}
+        </a>
+        <Link className={styles.linkIcon} />
+      </h3>
+      <GridTableRoot>
+        {index.type && index.type.toLowerCase() !== HIDE_INDEX_TYPE && (
+          <Type tableId={tableId} index={index} />
+        )}
+        {!!index.columns.length && <Columns tableId={tableId} index={index} />}
+        <Unique tableId={tableId} index={index} />
+      </GridTableRoot>
+    </CollapsibleHeaderItem>
   )
 }

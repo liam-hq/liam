@@ -8,6 +8,7 @@ import {
   type ReactNode,
   useState,
 } from 'react'
+import { BlinkCircle } from '../BlinkCircle/BlinkCircle'
 import styles from './CollapsibleHeader.module.css'
 
 type CollapsibleHeaderProps = {
@@ -76,9 +77,25 @@ export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
   )
 }
 
-type CollapsibleHeaderItemProps = ComponentProps<'div'>
+type CollapsibleHeaderItemProps = ComponentProps<'div'> & { isFocused: boolean }
 
 export const CollapsibleHeaderItem: FC<CollapsibleHeaderItemProps> = ({
+  isFocused,
   className,
   ...props
-}) => <div className={clsx(styles.item, className)} {...props} />
+}) => (
+  <>
+    {isFocused && (
+      <div
+        className={styles.blinkCircleWrapper}
+        data-testid="blink-circle-indicator"
+      >
+        <BlinkCircle />
+      </div>
+    )}
+    <div
+      className={clsx(styles.item, className, isFocused && styles.focused)}
+      {...props}
+    />
+  </>
+)

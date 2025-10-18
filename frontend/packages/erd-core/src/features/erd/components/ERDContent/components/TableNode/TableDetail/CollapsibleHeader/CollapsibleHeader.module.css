@@ -55,6 +55,17 @@
   border-bottom: 1px solid var(--global-border);
 }
 
+.item.focused {
+  outline: 1px solid var(--primary-color);
+  outline-offset: -1px;
+}
+
+.blinkCircleWrapper {
+  position: relative;
+  top: 22px;
+  left: 9px;
+}
+
 /* enable to scroll to the top children element */
 /* 41px (= 41px * 1) for the first CollapsibleHeader component */
 .header + .content {

@@ -8,7 +8,6 @@ import {
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableColumnElementId } from '../../../../../../../utils/url/getTableColumnElementId'
-import { BlinkCircle } from '../../BlinkCircle/BlinkCircle'
 import { CollapsibleHeaderItem } from '../../CollapsibleHeader'
 import styles from './ColumnsItem.module.css'
 import { Comment } from './Comment'
@@ -60,39 +59,30 @@ export const ColumnsItem: FC<Props> = ({
   const isFocused = focusedElementId === elementId
 
   return (
-    <>
-      {isFocused && (
-        <div
-          className={styles.blinkCircleWrapper}
-          data-testid="blink-circle-indicator"
-        >
-          <BlinkCircle />
-        </div>
-      )}
-      <CollapsibleHeaderItem
-        id={elementId}
-        className={clsx(styles.wrapper, diffStyle, isFocused && styles.focused)}
-      >
-        <h3 className={styles.heading}>
-          <a className={styles.link} href={`#${elementId}`}>
-            {column.name}
-          </a>
-          <Link className={styles.linkIcon} />
-        </h3>
-        {column.comment && <Comment tableId={tableId} column={column} />}
-        <GridTableRoot>
-          <Type tableId={tableId} column={column} />
-          <Default tableId={tableId} column={column} />
-          {constraint && (
-            <PrimaryKey
-              tableId={tableId}
-              columnName={column.name}
-              constraintName={constraint.name}
-            />
-          )}
-          <NotNull tableId={tableId} column={column} />
-        </GridTableRoot>
-      </CollapsibleHeaderItem>
-    </>
+    <CollapsibleHeaderItem
+      id={elementId}
+      className={clsx(styles.wrapper, diffStyle)}
+      isFocused={isFocused}
+    >
+      <h3 className={styles.heading}>
+        <a className={styles.link} href={`#${elementId}`}>
+          {column.name}
+        </a>
+        <Link className={styles.linkIcon} />
+      </h3>
+      {column.comment && <Comment tableId={tableId} column={column} />}
+      <GridTableRoot>
+        <Type tableId={tableId} column={column} />
+        <Default tableId={tableId} column={column} />
+        {constraint && (
+          <PrimaryKey
+            tableId={tableId}
+            columnName={column.name}
+            constraintName={constraint.name}
+          />
+        )}
+        <NotNull tableId={tableId} column={column} />
+      </GridTableRoot>
+    </CollapsibleHeaderItem>
   )
 }
