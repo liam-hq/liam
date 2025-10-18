@@ -1,6 +1,5 @@
 import type { Index } from '@liam-hq/schema'
 import { GridTableRoot } from '@liam-hq/ui'
-import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
 import {
   useSchemaOrThrow,
@@ -14,7 +13,6 @@ import {
 } from '../../CollapsibleHeader'
 import { Columns } from './Columns'
 import { getChangeStatus } from './getChangeStatus'
-import styles from './IndexesItem.module.css'
 import { Type } from './Type'
 import { Unique } from './Unique'
 
@@ -52,7 +50,7 @@ export const IndexesItem: FC<Props> = ({
   return (
     <CollapsibleHeaderItem
       id={elementId}
-      className={clsx(styles.wrapper, diffStyle)}
+      className={diffStyle}
       isFocused={isFocused}
     >
       <CollapsibleHeaderItemHeading href={`#${elementId}`}>

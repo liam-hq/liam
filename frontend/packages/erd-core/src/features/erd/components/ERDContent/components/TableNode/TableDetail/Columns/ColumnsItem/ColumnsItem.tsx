@@ -1,6 +1,5 @@
 import type { Column, Constraints } from '@liam-hq/schema'
 import { GridTableRoot } from '@liam-hq/ui'
-import clsx from 'clsx'
 import { type FC, useMemo } from 'react'
 import {
   useSchemaOrThrow,
@@ -12,7 +11,6 @@ import {
   CollapsibleHeaderItem,
   CollapsibleHeaderItemHeading,
 } from '../../CollapsibleHeader'
-import styles from './ColumnsItem.module.css'
 import { Comment } from './Comment'
 import { Default } from './Default'
 import { getChangeStatus } from './getChangeStatus'
@@ -64,7 +62,7 @@ export const ColumnsItem: FC<Props> = ({
   return (
     <CollapsibleHeaderItem
       id={elementId}
-      className={clsx(styles.wrapper, diffStyle)}
+      className={diffStyle}
       isFocused={isFocused}
     >
       <CollapsibleHeaderItemHeading href={`#${elementId}`}>
