@@ -2,6 +2,7 @@ import { Link } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ComponentProps, FC } from 'react'
 import { BlinkCircle } from '../../BlinkCircle/BlinkCircle'
+import collapsibleHeaderStyles from '../CollapsibleHeader.module.css'
 import styles from './DetailItem.module.css'
 
 type Props = ComponentProps<'div'> & { isFocused: boolean }
@@ -17,7 +18,12 @@ export const DetailItem: FC<Props> = ({ isFocused, className, ...props }) => (
       </div>
     )}
     <div
-      className={clsx(styles.container, className, isFocused && styles.focused)}
+      className={clsx(
+        collapsibleHeaderStyles.item,
+        styles.container,
+        className,
+        isFocused && styles.focused,
+      )}
       {...props}
     />
   </>
