@@ -67,11 +67,6 @@
     var(--default-timing-function);
 }
 
-.inputSection.dragActive {
-  background-color: var(--primary-overlay-5);
-  border-color: var(--primary-color);
-}
-
 .textareaWrapper {
   display: flex;
   flex-direction: column;

@@ -1,11 +1,9 @@
 import type { SchemaStatus } from '../../../GitHubSessionForm/SchemaInfoSection'
-import type { FileAttachment } from '../../../shared/hooks/useFileAttachments'
 
 type HasContentParams = {
   selectedFile: File | null
   schemaStatus: SchemaStatus
   textContent: string
-  attachments: FileAttachment[]
 }
 
 /**
@@ -22,15 +20,11 @@ export const calculateHasContent = ({
   selectedFile,
   schemaStatus,
   textContent,
-  attachments,
 }: HasContentParams): boolean => {
   const hasValidSchemaFile = !!selectedFile && schemaStatus === 'valid'
   const hasTextContent = textContent.trim().length > 0
-  const hasAttachments = attachments.length > 0
-
-  // Case 1: Valid schema file with either text or attachments
-  const validFileWithContent =
-    hasValidSchemaFile && (hasTextContent || hasAttachments)
+  // Case 1: Valid schema file with text
+  const validFileWithContent = hasValidSchemaFile && hasTextContent
 
   // Case 2: Text message only (no file required)
   const textOnly = hasTextContent && !selectedFile

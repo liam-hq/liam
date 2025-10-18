@@ -21,12 +21,6 @@
   box-shadow: 0px 0px 20px 0px var(--danger-overlay-40);
 }
 
-.container.dragActive {
-  border-color: var(--primary-color);
-  box-shadow: 0px 0px 20px 0px var(--primary-overlay-20);
-  background-color: var(--primary-overlay-5);
-}
-
 /* Form uses flex layout for better compatibility and accessibility */
 .form {
   display: flex;
@@ -52,11 +46,6 @@
   background-color: var(--overlay-5);
   border-bottom: 1px solid var(--pane-border);
   gap: var(--spacing-3);
-}
-
-.inputSection.dragActive {
-  background-color: var(--primary-overlay-5);
-  border-color: var(--primary-color);
 }
 
 .buttonContainer {

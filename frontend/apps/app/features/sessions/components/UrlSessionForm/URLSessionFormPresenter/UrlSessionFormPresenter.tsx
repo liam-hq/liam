@@ -7,11 +7,8 @@ import {
   SchemaInfoSection,
   type SchemaStatus,
 } from '../../GitHubSessionForm/SchemaInfoSection'
-import { AttachmentsContainer } from '../../shared/AttachmentsContainer'
 import { useAutoResizeTextarea } from '../../shared/hooks/useAutoResizeTextarea'
 import { useEnterKeySubmission } from '../../shared/hooks/useEnterKeySubmission'
-import { useFileAttachments } from '../../shared/hooks/useFileAttachments'
-import { useFileDragAndDrop } from '../../shared/hooks/useFileDragAndDrop'
 import { SessionFormActions } from '../../shared/SessionFormActions'
 import {
   fetchSchemaFromUrl,
@@ -302,21 +299,8 @@ export const URLSessionFormPresenter: FC<Props> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  const {
-    attachments,
-    handleFileSelect,
-    handleRemoveAttachment,
-    clearAttachments,
-  } = useFileAttachments()
-
-  const handlers = useUrlFormHandlers(state, clearAttachments)
+  const handlers = useUrlFormHandlers(state, () => {})
   const schemaFetch = useSchemaFetch(state, handlers)
-
-  const {
-    dragActive: attachmentDragActive,
-    handleDrag: handleAttachmentDrag,
-    handleDrop: handleAttachmentDrop,
-  } = useFileDragAndDrop(handleFileSelect)
 
   const { handleChange } = useAutoResizeTextarea(textareaRef)
   const handleTextareaChange = handleChange(
@@ -326,9 +310,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
   )
 
   const hasContent =
-    state.schemaContent !== null ||
-    state.textContent.trim().length > 0 ||
-    attachments.length > 0
+    state.schemaContent !== null || state.textContent.trim().length > 0
 
   const handleEnterKeySubmission = useEnterKeySubmission(
     hasContent,
@@ -342,7 +324,6 @@ export const URLSessionFormPresenter: FC<Props> = ({
         styles.container,
         isPending && styles.pending,
         formError && styles.error,
-        attachmentDragActive && styles.dragActive,
       )}
     >
       <form
@@ -366,20 +347,7 @@ export const URLSessionFormPresenter: FC<Props> = ({
           isPending,
           schemaUrlId,
         )}
-        <div
-          className={clsx(
-            styles.inputSection ?? '',
-            attachmentDragActive && (styles.dragActive ?? ''),
-          )}
-          onDragEnter={handleAttachmentDrag}
-          onDragLeave={handleAttachmentDrag}
-          onDragOver={handleAttachmentDrag}
-          onDrop={handleAttachmentDrop}
-        >
-          <AttachmentsContainer
-            attachments={attachments}
-            onRemove={handleRemoveAttachment}
-          />
+        <div className={clsx(styles.inputSection ?? '')}>
           <div className={styles.textareaWrapper ?? ''}>
             <textarea
               ref={textareaRef}
@@ -399,7 +367,6 @@ export const URLSessionFormPresenter: FC<Props> = ({
             <SessionFormActions
               isPending={isPending}
               hasContent={hasContent}
-              onFileSelect={handleFileSelect}
               onCancel={handlers.handleResetForm}
             />
           </div>

@@ -32,7 +32,6 @@
     "dotenv": "16.5.0",
     "emoji-regex": "10.4.0",
     "lucide-react": "0.511.0",
-    "nanoid": "5.1.6",
     "neverthrow": "8.2.0",
     "next": "15.4.7",
     "react": "19.1.1",

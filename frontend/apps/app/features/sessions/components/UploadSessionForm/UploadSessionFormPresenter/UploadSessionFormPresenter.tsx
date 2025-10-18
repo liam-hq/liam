@@ -6,10 +6,8 @@ import {
   SchemaInfoSection,
   type SchemaStatus,
 } from '../../GitHubSessionForm/SchemaInfoSection'
-import { AttachmentsContainer } from '../../shared/AttachmentsContainer'
 import { useAutoResizeTextarea } from '../../shared/hooks/useAutoResizeTextarea'
 import { useEnterKeySubmission } from '../../shared/hooks/useEnterKeySubmission'
-import { useFileAttachments } from '../../shared/hooks/useFileAttachments'
 import { useFileDragAndDrop } from '../../shared/hooks/useFileDragAndDrop'
 import { SessionFormActions } from '../../shared/SessionFormActions'
 import { DropZone } from './DropZone'
@@ -81,7 +79,6 @@ const useUploadFormState = () => {
 const useUploadFormHandlers = (
   state: ReturnType<typeof useUploadFormState>,
   fileInputRef: React.RefObject<HTMLInputElement | null>,
-  clearAttachments: () => void,
 ) => {
   const {
     setSelectedFile,
@@ -129,7 +126,6 @@ const useUploadFormHandlers = (
     setSelectedFormat(null)
     setTextContent('')
     setSchemaStatus('idle')
-    clearAttachments()
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -220,20 +216,12 @@ export const UploadSessionFormPresenter: FC<Props> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  const {
-    attachments,
-    handleFileSelect,
-    handleRemoveAttachment,
-    clearAttachments,
-  } = useFileAttachments()
-
-  const handlers = useUploadFormHandlers(state, fileInputRef, clearAttachments)
+  const handlers = useUploadFormHandlers(state, fileInputRef)
 
   const hasContent = calculateHasContent({
     selectedFile: state.selectedFile,
     schemaStatus: state.schemaStatus,
     textContent: state.textContent,
-    attachments,
   })
 
   const handleEnterKeySubmission = useEnterKeySubmission(
@@ -248,12 +236,6 @@ export const UploadSessionFormPresenter: FC<Props> = ({
     handleDrop: handleSchemaDrop,
   } = useFileDragAndDrop(handlers.handleSchemaFileDrop)
 
-  const {
-    dragActive: attachmentDragActive,
-    handleDrag: handleAttachmentDrag,
-    handleDrop: handleAttachmentDrop,
-  } = useFileDragAndDrop(handleFileSelect)
-
   const { handleChange } = useAutoResizeTextarea(textareaRef)
   const handleTextareaChange = handleChange((e) => {
     state.setTextContent(e.target.value)
@@ -265,7 +247,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
         styles.container,
         isPending && (styles.pending ?? ''),
         formError && styles.error,
-        (attachmentDragActive || schemaDragActive) && (styles.dragActive ?? ''),
+        schemaDragActive && (styles.dragActive ?? ''),
       )}
     >
       <form
@@ -300,20 +282,7 @@ export const UploadSessionFormPresenter: FC<Props> = ({
           handleSchemaDrop,
         )}
         <div className={styles.divider} />
-        <div
-          className={clsx(
-            styles.inputSection ?? '',
-            attachmentDragActive ? (styles.dragActive ?? '') : '',
-          )}
-          onDragEnter={handleAttachmentDrag}
-          onDragLeave={handleAttachmentDrag}
-          onDragOver={handleAttachmentDrag}
-          onDrop={handleAttachmentDrop}
-        >
-          <AttachmentsContainer
-            attachments={attachments}
-            onRemove={handleRemoveAttachment}
-          />
+        <div className={clsx(styles.inputSection ?? '')}>
           <div className={styles.textareaWrapper ?? ''}>
             <textarea
               ref={textareaRef}
@@ -332,7 +301,6 @@ export const UploadSessionFormPresenter: FC<Props> = ({
             <SessionFormActions
               isPending={isPending}
               hasContent={hasContent}
-              onFileSelect={handleFileSelect}
               onCancel={handlers.handleReset}
             />
           </div>
