@@ -9,6 +9,7 @@ import {
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableIndexElementId } from '../../../../../../../utils'
 import { BlinkCircle } from '../../BlinkCircle/BlinkCircle'
+import { CollapsibleHeaderItem } from '../../CollapsibleHeader'
 import { Columns } from './Columns'
 import { getChangeStatus } from './getChangeStatus'
 import styles from './IndexesItem.module.css'
@@ -56,7 +57,7 @@ export const IndexesItem: FC<Props> = ({
           <BlinkCircle />
         </div>
       )}
-      <div
+      <CollapsibleHeaderItem
         id={elementId}
         className={clsx(styles.wrapper, diffStyle, isFocused && styles.focused)}
       >
@@ -75,7 +76,7 @@ export const IndexesItem: FC<Props> = ({
           )}
           <Unique tableId={tableId} index={index} />
         </GridTableRoot>
-      </div>
+      </CollapsibleHeaderItem>
     </>
   )
 }

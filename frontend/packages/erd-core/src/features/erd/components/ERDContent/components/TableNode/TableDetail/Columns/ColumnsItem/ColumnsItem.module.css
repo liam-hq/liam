@@ -2,7 +2,6 @@
   display: grid;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
-  scroll-margin-top: 41px;
 }
 
 .focused {

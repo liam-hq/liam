@@ -2,7 +2,6 @@ import type { Table } from '@liam-hq/schema'
 import { Rows3 as Rows3Icon } from '@liam-hq/ui'
 import { type FC, useEffect, useState } from 'react'
 import { CollapsibleHeader } from '../CollapsibleHeader'
-import styles from './Columns.module.css'
 import { ColumnsItem } from './ColumnsItem'
 
 type Props = {
@@ -37,14 +36,13 @@ export const Columns: FC<Props> = ({ table }) => {
       contentMaxHeight={contentMaxHeight}
     >
       {Object.entries(table.columns).map(([key, column]) => (
-        <div className={styles.itemWrapper} key={key}>
-          <ColumnsItem
-            tableId={table.name}
-            column={column}
-            constraints={table.constraints}
-            focusedElementId={focusedElementId}
-          />
-        </div>
+        <ColumnsItem
+          key={key}
+          tableId={table.name}
+          column={column}
+          constraints={table.constraints}
+          focusedElementId={focusedElementId}
+        />
       ))}
     </CollapsibleHeader>
   )

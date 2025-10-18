@@ -9,6 +9,7 @@ import {
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableColumnElementId } from '../../../../../../../utils/url/getTableColumnElementId'
 import { BlinkCircle } from '../../BlinkCircle/BlinkCircle'
+import { CollapsibleHeaderItem } from '../../CollapsibleHeader'
 import styles from './ColumnsItem.module.css'
 import { Comment } from './Comment'
 import { Default } from './Default'
@@ -68,7 +69,7 @@ export const ColumnsItem: FC<Props> = ({
           <BlinkCircle />
         </div>
       )}
-      <div
+      <CollapsibleHeaderItem
         id={elementId}
         className={clsx(styles.wrapper, diffStyle, isFocused && styles.focused)}
       >
@@ -91,7 +92,7 @@ export const ColumnsItem: FC<Props> = ({
           )}
           <NotNull tableId={tableId} column={column} />
         </GridTableRoot>
-      </div>
+      </CollapsibleHeaderItem>
     </>
   )
 }
