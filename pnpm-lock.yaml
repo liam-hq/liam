@@ -332,8 +332,8 @@ importers:
   frontend/internal-packages/agent:
     dependencies:
       '@langchain/community':
-        specifier: 0.3.56
-        version: 0.3.56(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(zod@3.25.76))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@supabase/supabase-js@2.58.0)(axios@1.12.2)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(playwright@1.55.0)(weaviate-client@3.9.0)(ws@8.18.3)
+        specifier: 0.3.57
+        version: 0.3.57(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(zod@3.25.76))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@supabase/supabase-js@2.58.0)(axios@1.12.2)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(playwright@1.55.0)(weaviate-client@3.9.0)(ws@8.18.3)
       '@langchain/core':
         specifier: 0.3.77
         version: 0.3.77(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76))
@@ -2656,8 +2656,8 @@ packages:
     peerDependencies:
       tslib: '2'
 
-  '@langchain/community@0.3.56':
-    resolution: {integrity: sha512-lDjUnRfHAX7aMXyEB2EWbe5qOmdQdz8n+0CNQ4ExpLy3NOFQhEVkWclhsucaX04zh0r/VH5Pkk9djpnhPBDH7g==}
+  '@langchain/community@0.3.57':
+    resolution: {integrity: sha512-xUe5UIlh1yZjt/cMtdSVlCoC5xm/RMN/rp+KZGLbquvjQeONmQ2rvpCqWjAOgQ6SPLqKiXvoXaKSm20r+LHISw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@arcjet/redact': ^v1.0.0-alpha.23
@@ -13172,7 +13172,7 @@ snapshots:
       '@jsonjoy.com/codegen': 1.0.0(tslib@2.8.1)
       tslib: 2.8.1
 
-  '@langchain/community@0.3.56(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(zod@3.25.76))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@supabase/supabase-js@2.58.0)(axios@1.12.2)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(playwright@1.55.0)(weaviate-client@3.9.0)(ws@8.18.3)':
+  '@langchain/community@0.3.57(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(zod@3.25.76))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@supabase/supabase-js@2.58.0)(axios@1.12.2)(cheerio@1.0.0)(handlebars@4.7.8)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(playwright@1.55.0)(weaviate-client@3.9.0)(ws@8.18.3)':
     dependencies:
       '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@16.5.0)(openai@5.12.2(ws@8.18.3)(zod@3.25.76))(zod@3.25.76)
       '@ibm-cloud/watsonx-ai': 1.6.13
@@ -18991,7 +18991,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.12.2)
+      retry-axios: 2.6.0(axios@1.12.2(debug@4.4.3))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -21671,7 +21671,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.12.2):
+  retry-axios@2.6.0(axios@1.12.2(debug@4.4.3)):
     dependencies:
       axios: 1.12.2(debug@4.4.3)
 
