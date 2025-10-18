@@ -7,6 +7,9 @@ it('should pass valid texts', () => {
   expect(parse(hashSchema, 'user_posts__columns__post_id')).toBe(
     'user_posts__columns__post_id',
   )
+  expect(parse(hashSchema, 'posts__indexes__index_post_on_user_id')).toBe(
+    'posts__indexes__index_post_on_user_id',
+  )
 })
 
 it('should throw error with invalid texts', () => {

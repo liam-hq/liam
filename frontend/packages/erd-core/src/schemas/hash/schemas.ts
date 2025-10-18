@@ -1,9 +1,15 @@
 import { custom } from 'valibot'
 
-export const hashSchema = custom<`${string}__columns__${string}`>(
-  (input): input is `${string}__columns__${string}` => {
+type HashType = 'columns' | 'indexes'
+const hashTypes = ['columns', 'indexes'] as const satisfies HashType[]
+
+export const hashSchema = custom<`${string}__${HashType}__${string}`>(
+  (input): input is `${string}__${HashType}__${string}` => {
     if (typeof input !== 'string') return false
-    const parts = input.split('__columns__')
-    return parts.length === 2
+
+    return hashTypes.some((hashType) => {
+      const parts = input.split(`__${hashType}__`)
+      return parts.length === 2 && parts[0] && parts[1]
+    })
   },
 )
