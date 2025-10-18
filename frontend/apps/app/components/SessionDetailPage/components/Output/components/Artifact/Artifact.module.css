@@ -530,3 +530,15 @@
   margin: 0;
   padding-left: 0;
 }
+
+/* Responsive adjustments for narrow screens */
+@media screen and (max-width: 767px) {
+  .contentWrapper {
+    gap: 0; /* Remove gap on mobile since ToC is hidden */
+  }
+
+  .bodyWrapper {
+    flex: 1; /* Take full width on mobile */
+    max-width: 100%;
+  }
+}

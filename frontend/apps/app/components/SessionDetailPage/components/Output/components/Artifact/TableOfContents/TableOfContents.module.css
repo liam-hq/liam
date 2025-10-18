@@ -1,3 +1,51 @@
+/* Toggle button for mobile - hidden on desktop */
+.toggleButton {
+  display: none;
+  position: fixed;
+  bottom: var(--spacing-4);
+  right: var(--spacing-4);
+  z-index: 100;
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--global-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--shadow-level-2);
+  color: var(--global-foreground);
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.toggleButton:hover {
+  background-color: var(--global-background-subtle);
+  box-shadow: var(--shadow-level-3);
+}
+
+.toggleButton:focus-visible {
+  outline: 2px solid var(--primary-accent);
+  outline-offset: 2px;
+}
+
+/* Overlay for mobile */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
 .toc {
   position: sticky;
   top: var(--spacing-8);
@@ -10,11 +58,39 @@
   align-self: flex-start;
 }
 
+.tocHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.closeButton {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--global-foreground);
+  cursor: pointer;
+  padding: var(--spacing-1);
+  border-radius: var(--border-radius-small);
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: var(--global-background-subtle);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--primary-accent);
+  outline-offset: 2px;
+}
+
 .title {
   font-size: var(--font-size-6); /* 16px */
   font-weight: 400;
   padding: var(--spacing-1half) 0;
   color: var(--global-foreground);
+  margin: 0;
 }
 
 .list {
@@ -84,4 +160,51 @@
   color: var(--global-foreground) !important;
   font-weight: 500 !important;
   font-style: normal !important;
+}
+
+/* Responsive styles for mobile and tablet */
+@media screen and (max-width: 767px) {
+  /* Show toggle button on mobile */
+  .toggleButton {
+    display: flex;
+  }
+
+  /* Show overlay when ToC is open */
+  .overlay {
+    display: block;
+  }
+
+  /* Hide ToC by default on mobile */
+  .toc {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    bottom: 0;
+    z-index: 300;
+    min-width: 280px;
+    max-width: 280px;
+    width: 280px;
+    max-height: 100vh;
+    background-color: var(--global-background);
+    border-left: 1px solid var(--global-border);
+    box-shadow: var(--shadow-level-3);
+    padding: var(--spacing-6) var(--spacing-4);
+    transition: right 0.3s ease-in-out;
+    overflow-y: auto;
+  }
+
+  /* Show ToC when open */
+  .tocOpen {
+    right: 0;
+  }
+
+  /* Show close button on mobile */
+  .closeButton {
+    display: block;
+  }
+
+  /* Adjust title padding on mobile */
+  .title {
+    padding: 0;
+  }
 }
