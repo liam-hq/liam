@@ -7,10 +7,7 @@ import {
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableIndexElementId } from '../../../../../../../utils'
-import {
-  CollapsibleHeaderItem,
-  CollapsibleHeaderItemHeading,
-} from '../../CollapsibleHeader'
+import { DetailItem, DetailItemHeading } from '../../CollapsibleHeader'
 import { Columns } from './Columns'
 import { getChangeStatus } from './getChangeStatus'
 import { Type } from './Type'
@@ -48,14 +45,8 @@ export const IndexesItem: FC<Props> = ({
   const isFocused = focusedElementId === elementId
 
   return (
-    <CollapsibleHeaderItem
-      id={elementId}
-      className={diffStyle}
-      isFocused={isFocused}
-    >
-      <CollapsibleHeaderItemHeading href={`#${elementId}`}>
-        {index.name}
-      </CollapsibleHeaderItemHeading>
+    <DetailItem id={elementId} className={diffStyle} isFocused={isFocused}>
+      <DetailItemHeading href={`#${elementId}`}>{index.name}</DetailItemHeading>
       <GridTableRoot>
         {index.type && index.type.toLowerCase() !== HIDE_INDEX_TYPE && (
           <Type tableId={tableId} index={index} />
@@ -63,6 +54,6 @@ export const IndexesItem: FC<Props> = ({
         {!!index.columns.length && <Columns tableId={tableId} index={index} />}
         <Unique tableId={tableId} index={index} />
       </GridTableRoot>
-    </CollapsibleHeaderItem>
+    </DetailItem>
   )
 }

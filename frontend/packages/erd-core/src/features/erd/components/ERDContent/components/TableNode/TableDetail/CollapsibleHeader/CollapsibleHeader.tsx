@@ -1,14 +1,11 @@
-import { ChevronDown, ChevronUp, IconButton, Link } from '@liam-hq/ui'
-import clsx from 'clsx'
+import { ChevronDown, ChevronUp, IconButton } from '@liam-hq/ui'
 import {
-  type ComponentProps,
   type FC,
   type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
   useState,
 } from 'react'
-import { BlinkCircle } from '../BlinkCircle/BlinkCircle'
 import styles from './CollapsibleHeader.module.css'
 
 type CollapsibleHeaderProps = {
@@ -76,37 +73,3 @@ export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
     </>
   )
 }
-
-type CollapsibleHeaderItemProps = ComponentProps<'div'> & { isFocused: boolean }
-
-export const CollapsibleHeaderItem: FC<CollapsibleHeaderItemProps> = ({
-  isFocused,
-  className,
-  ...props
-}) => (
-  <>
-    {isFocused && (
-      <div
-        className={styles.blinkCircleWrapper}
-        data-testid="blink-circle-indicator"
-      >
-        <BlinkCircle />
-      </div>
-    )}
-    <div
-      className={clsx(styles.item, className, isFocused && styles.focused)}
-      {...props}
-    />
-  </>
-)
-
-type CollapsibleHeaderItemHeadingProps = ComponentProps<'a'>
-
-export const CollapsibleHeaderItemHeading: FC<
-  CollapsibleHeaderItemHeadingProps
-> = (props) => (
-  <h3 className={styles.itemHeading}>
-    <a className={styles.link} {...props} />
-    <Link className={styles.linkIcon} />
-  </h3>
-)

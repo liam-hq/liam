@@ -7,10 +7,7 @@ import {
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableColumnElementId } from '../../../../../../../utils/url/getTableColumnElementId'
-import {
-  CollapsibleHeaderItem,
-  CollapsibleHeaderItemHeading,
-} from '../../CollapsibleHeader'
+import { DetailItem, DetailItemHeading } from '../../CollapsibleHeader'
 import { Comment } from './Comment'
 import { Default } from './Default'
 import { getChangeStatus } from './getChangeStatus'
@@ -60,14 +57,10 @@ export const ColumnsItem: FC<Props> = ({
   const isFocused = focusedElementId === elementId
 
   return (
-    <CollapsibleHeaderItem
-      id={elementId}
-      className={diffStyle}
-      isFocused={isFocused}
-    >
-      <CollapsibleHeaderItemHeading href={`#${elementId}`}>
+    <DetailItem id={elementId} className={diffStyle} isFocused={isFocused}>
+      <DetailItemHeading href={`#${elementId}`}>
         {column.name}
-      </CollapsibleHeaderItemHeading>
+      </DetailItemHeading>
       {column.comment && <Comment tableId={tableId} column={column} />}
       <GridTableRoot>
         <Type tableId={tableId} column={column} />
@@ -81,6 +74,6 @@ export const ColumnsItem: FC<Props> = ({
         )}
         <NotNull tableId={tableId} column={column} />
       </GridTableRoot>
-    </CollapsibleHeaderItem>
+    </DetailItem>
   )
 }
