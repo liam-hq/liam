@@ -4,9 +4,9 @@ import { Command, defaultFilter as cmdkBaseFilter } from 'cmdk'
 import { type FC, useMemo, useState } from 'react'
 import {
   CommandPaletteCommandOptions,
+  TableDetailOptions,
   TableOptions,
 } from '../CommandPaletteOptions'
-import { TableColumnOptions } from '../CommandPaletteOptions/TableColumnOptions'
 import { CommandPreview, TablePreview } from '../CommandPalettePreview'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { CommandPaletteInputMode } from '../types'
@@ -101,7 +101,7 @@ export const CommandPaletteContent: FC<Props> = ({
             <TableOptions suggestion={suggestion} />
           )}
           {inputMode.type === 'table' && (
-            <TableColumnOptions
+            <TableDetailOptions
               tableName={inputMode.tableName}
               suggestion={suggestion}
             />

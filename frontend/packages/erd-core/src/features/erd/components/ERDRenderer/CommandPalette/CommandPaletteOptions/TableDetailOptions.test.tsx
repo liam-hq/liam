@@ -14,7 +14,7 @@ import {
 import * as UseTableSelection from '../../../../hooks'
 import { CommandPaletteProvider } from '../CommandPaletteProvider'
 import * as UseCommandPalette from '../CommandPaletteProvider/hooks'
-import { TableColumnOptions } from './TableColumnOptions'
+import { TableDetailOptions } from './TableDetailOptions'
 
 beforeEach(() => {
   window.location.hash = ''
@@ -81,7 +81,7 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 )
 
 it('displays selected table option and its columns', () => {
-  render(<TableColumnOptions tableName="users" suggestion={null} />, {
+  render(<TableDetailOptions tableName="users" suggestion={null} />, {
     wrapper,
   })
 
@@ -117,7 +117,7 @@ describe('mouse interactions', () => {
   describe('table option', () => {
     it('moves to clicked table in ERD and closes the dialog', async () => {
       const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
+      render(<TableDetailOptions tableName="users" suggestion={null} />, {
         wrapper,
       })
 
@@ -129,7 +129,7 @@ describe('mouse interactions', () => {
 
     it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
       const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
+      render(<TableDetailOptions tableName="users" suggestion={null} />, {
         wrapper,
       })
 
@@ -145,7 +145,7 @@ describe('mouse interactions', () => {
   describe('column options', () => {
     it('moves to clicked table column in ERD and closes the dialog', async () => {
       const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
+      render(<TableDetailOptions tableName="users" suggestion={null} />, {
         wrapper,
       })
 
@@ -158,7 +158,7 @@ describe('mouse interactions', () => {
 
     it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
       const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
+      render(<TableDetailOptions tableName="users" suggestion={null} />, {
         wrapper,
       })
 
@@ -181,7 +181,7 @@ describe('keyboard interactions', () => {
     it('moves to suggested table in ERD and closes the dialog on Enter', async () => {
       const user = userEvent.setup()
       render(
-        <TableColumnOptions
+        <TableDetailOptions
           tableName="users"
           suggestion={{ type: 'table', name: 'users' }}
         />,
@@ -204,7 +204,7 @@ describe('keyboard interactions', () => {
     it('opens suggested table in another tab on ⌘Enter', async () => {
       const user = userEvent.setup()
       render(
-        <TableColumnOptions
+        <TableDetailOptions
           tableName="users"
           suggestion={{ type: 'table', name: 'users' }}
         />,
@@ -225,7 +225,7 @@ describe('keyboard interactions', () => {
     it('moves to suggested table column in ERD and closes the dialog on Enter', async () => {
       const user = userEvent.setup()
       render(
-        <TableColumnOptions
+        <TableDetailOptions
           tableName="users"
           suggestion={{
             type: 'column',
@@ -252,7 +252,7 @@ describe('keyboard interactions', () => {
     it('opens suggested table column in another tab on ⌘Enter', async () => {
       const user = userEvent.setup()
       render(
-        <TableColumnOptions
+        <TableDetailOptions
           tableName="users"
           suggestion={{
             type: 'column',
@@ -278,7 +278,7 @@ describe('keyboard interactions', () => {
   it('does nothing on Enter when suggestion is not table', async () => {
     const user = userEvent.setup()
     render(
-      <TableColumnOptions
+      <TableDetailOptions
         tableName="users"
         suggestion={{ type: 'command', name: 'copy link' }}
       />,

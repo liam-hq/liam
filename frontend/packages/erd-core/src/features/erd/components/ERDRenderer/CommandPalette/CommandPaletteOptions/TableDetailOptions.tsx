@@ -40,7 +40,7 @@ const ColumnIcon: FC<ComponentProps<'svg'> & { columnType: ColumnType }> = ({
   }
 }
 
-export const TableColumnOptions: FC<Props> = ({ tableName, suggestion }) => {
+export const TableDetailOptions: FC<Props> = ({ tableName, suggestion }) => {
   const schema = useSchemaOrThrow()
 
   const { optionSelectHandler } = useTableOptionSelect(suggestion)
