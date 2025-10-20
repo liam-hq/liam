@@ -49,13 +49,18 @@ export class MessageTupleManager {
     }
 
     const prev = this.chunks[id].chunk
-    this.chunks[id].chunk =
+
+    // Simply concat chunks - additional_kwargs (including reasoning_duration_ms)
+    // are merged automatically by the concat method
+    const concatenated =
       (isBaseMessageChunk(prev) ? prev : null)?.concat(chunk) ?? chunk
 
     // NOTE: chunk.concat() always makes name undefined, so override it separately
     if (chunk.name !== undefined) {
-      this.chunks[id].chunk.name = chunk.name
+      concatenated.name = chunk.name
     }
+
+    this.chunks[id].chunk = concatenated
 
     return id
   }

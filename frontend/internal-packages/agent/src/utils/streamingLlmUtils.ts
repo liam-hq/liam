@@ -7,6 +7,11 @@ type StreamLLMOptions = {
   eventType?: string
 }
 
+type ProcessStreamResult = {
+  chunk: AIMessageChunk | null
+  reasoningDurationMs: number | null
+}
+
 /**
  * Dispatch each chunk as soon as it arrives while also accumulating
  * the content into a single `AIMessageChunk` for final post-processing.
@@ -18,17 +23,49 @@ async function processStreamWithImmediateDispatch(
   id: string,
   agentName: string,
   eventType: string,
-): Promise<AIMessageChunk | null> {
+): Promise<ProcessStreamResult> {
   let accumulatedChunk: AIMessageChunk | null = null
+  let reasoningStartTime: number | null = null
+  let reasoningEndTime: number | null = null
 
   for await (const _chunk of stream) {
     const chunk = new AIMessageChunk({ ..._chunk, id, name: agentName })
+
+    // NOTE: Track reasoning duration internally but DON'T set it on chunks
+    // to avoid "field already exists" errors when LangGraph internally merges chunks
+    if (chunk.additional_kwargs?.['reasoning']) {
+      if (!reasoningStartTime) {
+        reasoningStartTime = Date.now()
+      }
+      reasoningEndTime = Date.now()
+    }
+
     await dispatchCustomEvent(eventType, chunk)
 
     accumulatedChunk = accumulatedChunk ? accumulatedChunk.concat(chunk) : chunk
   }
 
-  return accumulatedChunk
+  const finalReasoningDurationMs =
+    reasoningStartTime && reasoningEndTime
+      ? reasoningEndTime - reasoningStartTime
+      : null
+
+  if (finalReasoningDurationMs !== null) {
+    const durationChunk = new AIMessageChunk({
+      id,
+      name: agentName,
+      content: '',
+      additional_kwargs: {
+        reasoning_duration_ms: finalReasoningDurationMs,
+      },
+    })
+    await dispatchCustomEvent(eventType, durationChunk)
+  }
+
+  return {
+    chunk: accumulatedChunk,
+    reasoningDurationMs: finalReasoningDurationMs,
+  }
 }
 
 /**
@@ -47,18 +84,19 @@ export async function streamLLMResponse(
   // All agents currently use immediate dispatch. If a provider streams
   // tool_calls incrementally, the final message is reconstructed from
   // the accumulated chunk below.
-  const accumulatedChunk = await processStreamWithImmediateDispatch(
-    stream,
-    id,
-    agentName,
-    eventType,
-  )
+  const { chunk: accumulatedChunk, reasoningDurationMs } =
+    await processStreamWithImmediateDispatch(stream, id, agentName, eventType)
 
   const response = accumulatedChunk
     ? new AIMessage({
         id,
         content: accumulatedChunk.content,
-        additional_kwargs: accumulatedChunk.additional_kwargs,
+        additional_kwargs: {
+          ...accumulatedChunk.additional_kwargs,
+          ...(reasoningDurationMs !== null && {
+            reasoning_duration_ms: reasoningDurationMs,
+          }),
+        },
         name: agentName,
         ...(accumulatedChunk.tool_calls && {
           tool_calls: accumulatedChunk.tool_calls,

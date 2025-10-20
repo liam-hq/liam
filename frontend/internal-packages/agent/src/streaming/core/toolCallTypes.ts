@@ -2,7 +2,7 @@ import * as v from 'valibot'
 
 const toolNames = [
   'runTestTool',
-  'saveRequirementsToArtifactTool',
+  'processAnalyzedRequirementsTool',
   'saveTestcase',
   'schemaDesignTool',
 ] as const

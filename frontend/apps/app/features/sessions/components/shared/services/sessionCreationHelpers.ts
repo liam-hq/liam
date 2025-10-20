@@ -173,13 +173,7 @@ export const createSessionWithSchema = async (
     return buildingSchemaResult
   }
 
-  // Just redirect without starting the workflow
-  // Pass isDeepModelingEnabled as query parameter
-  const queryParams = new URLSearchParams({
-    deepModeling: params.isDeepModelingEnabled.toString(),
-  })
-
-  const redirectTo = `/design_sessions/${designSessionId}?${queryParams.toString()}`
+  const redirectTo = `/design_sessions/${designSessionId}`
 
   return {
     success: true,

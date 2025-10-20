@@ -3,7 +3,6 @@ import {
   type AgentWorkflowParams,
   createSupabaseRepositories,
   deepModelingStream,
-  invokeDbAgentStream,
 } from '@liam-hq/agent'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
 import * as Sentry from '@sentry/nextjs'
@@ -20,7 +19,6 @@ const TIMEOUT_MS = 700000
 const chatRequestSchema = v.object({
   userInput: v.pipe(v.string(), v.minLength(1, 'Message is required')),
   designSessionId: v.pipe(v.string(), v.uuid('Invalid design session ID')),
-  isDeepModelingEnabled: v.optional(v.boolean(), true),
 })
 
 export async function POST(request: Request) {
@@ -94,9 +92,7 @@ export async function POST(request: Request) {
       signal,
     }
 
-    const events = validationResult.output.isDeepModelingEnabled
-      ? await deepModelingStream(params, config)
-      : await invokeDbAgentStream(params, config)
+    const events = await deepModelingStream(params, config)
 
     for await (const ev of events) {
       // Check if request was aborted during iteration

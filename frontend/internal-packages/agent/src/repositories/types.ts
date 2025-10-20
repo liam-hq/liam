@@ -1,6 +1,4 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import type { Artifact } from '@liam-hq/artifact'
-import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/schema'
 import type { Operation } from 'fast-json-patch'
 import type { ResultAsync } from 'neverthrow'
@@ -21,26 +19,6 @@ export type VersionResult =
   | { success: true; newSchema: Schema }
   | { success: false; error?: string | null }
 
-export type CreateArtifactParams = {
-  designSessionId: string
-  artifact: Artifact
-}
-
-export type UpdateArtifactParams = {
-  designSessionId: string
-  artifact: Artifact
-}
-
-export type ArtifactResult =
-  | {
-      success: true
-      artifact: Tables<'artifacts'>
-    }
-  | {
-      success: false
-      error: string
-    }
-
 export type UserInfo = {
   id: string
   email?: string | null
@@ -60,31 +38,6 @@ export type SchemaRepository = {
    * Create a new schema version with optimistic locking (atomic operation)
    */
   createVersion(params: CreateVersionParams): Promise<VersionResult>
-
-  /**
-   * Create a new artifact for a design session
-   */
-  createArtifact(params: CreateArtifactParams): Promise<ArtifactResult>
-
-  /**
-   * Update an existing artifact for a design session
-   */
-  updateArtifact(params: UpdateArtifactParams): Promise<ArtifactResult>
-
-  /**
-   * Upsert an artifact for a design session (insert or update)
-   */
-  upsertArtifact(
-    params: CreateArtifactParams,
-  ): ResultAsync<Tables<'artifacts'>, Error>
-
-  /**
-   * Create a new workflow run record
-   */
-
-  /**
-   * Update workflow run status
-   */
 
   /**
    * Get user information by user ID

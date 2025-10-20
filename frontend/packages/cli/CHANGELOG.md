@@ -1,5 +1,13 @@
 # @liam-hq/cli
 
+## 0.7.20
+
+### Patch Changes
+
+- [#3757](https://github.com/liam-hq/liam/pull/3757) - - 🐛 Fix TableDetail not resetting when switching target tables in the ERD drawer / Thanks [@tnyo43](https://github.com/tnyo43)!
+  - Remount TableDetail using a key derived from table.name to avoid stale state; wire CommandPalette to allow table-mode activation
+- [#3745](https://github.com/liam-hq/liam/pull/3745) - 🚸 Disable ERD resize handle when the left pane is closed to prevent accidental resizing and layout conflicts / Thanks [@junkisai](https://github.com/junkisai)!
+
 ## 0.7.19
 
 ### Patch Changes

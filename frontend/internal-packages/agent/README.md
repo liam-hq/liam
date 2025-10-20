@@ -151,10 +151,10 @@ graph TD;
 
 #### 2. invokeSaveArtifactTool Node
 
-- **Purpose**: Saves analyzed requirements as artifacts to database
-- **Performed by**: saveRequirementsToArtifactTool
+- **Purpose**: Processes and streams analyzed requirements to the frontend
+- **Performed by**: processAnalyzedRequirementsTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
-- **Tool Integration**: Direct database artifact storage
+- **Tool Integration**: Normalizes LLM output and dispatches streaming events for real-time UI updates
 
 ### PM Agent Flow Patterns
 

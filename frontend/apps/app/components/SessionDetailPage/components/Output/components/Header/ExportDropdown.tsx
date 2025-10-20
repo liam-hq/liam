@@ -1,7 +1,13 @@
 'use client'
 
+import { fromPromise } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
-import { type Operation, postgresqlOperationDeparser } from '@liam-hq/schema'
+import {
+  type Operation,
+  postgresqlOperationDeparser,
+  postgresqlSchemaDeparser,
+  yamlSchemaDeparser,
+} from '@liam-hq/schema'
 import {
   Button,
   ChevronDown,
@@ -14,9 +20,7 @@ import {
   FileText,
   useToast,
 } from '@liam-hq/ui'
-import { fromPromise } from 'neverthrow'
-import { type FC, useCallback, useState } from 'react'
-import { schemaToDdl } from '../SQL/utils/schemaToDdl'
+import { type FC, useState } from 'react'
 import styles from './ExportDropdown.module.css'
 
 type Props = {
@@ -72,17 +76,14 @@ export const ExportDropdown: FC<Props> = ({
   const toast = useToast()
 
   const [open, setOpen] = useState(false)
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (disabled) {
-        setOpen(false)
-        return
-      }
+  const handleOpenChange = (open: boolean) => {
+    if (disabled) {
+      setOpen(false)
+      return
+    }
 
-      setOpen(open)
-    },
-    [disabled],
-  )
+    setOpen(open)
+  }
 
   const handleCopyAIPrompt = async () => {
     if (!artifactDoc) return
@@ -90,8 +91,6 @@ export const ExportDropdown: FC<Props> = ({
     const prompt = generateAIPrompt(artifactDoc, cumulativeOperations)
     const clipboardResult = await fromPromise(
       navigator.clipboard.writeText(prompt),
-      (error) =>
-        error instanceof Error ? error : new Error('Clipboard write failed'),
     )
 
     clipboardResult.match(
@@ -102,7 +101,7 @@ export const ExportDropdown: FC<Props> = ({
           status: 'success',
         })
       },
-      (error) => {
+      (error: Error) => {
         console.error('Failed to copy AI prompt to clipboard:', error)
         toast({
           title: 'Copy failed',
@@ -114,12 +113,11 @@ export const ExportDropdown: FC<Props> = ({
   }
 
   const handleCopyPostgreSQL = async () => {
-    const ddlResult = schemaToDdl(schema)
+    const result = postgresqlSchemaDeparser(schema)
+    const ddl = result.value ? `${result.value}\n` : ''
 
     const clipboardResult = await fromPromise(
-      navigator.clipboard.writeText(ddlResult.ddl),
-      (error) =>
-        error instanceof Error ? error : new Error('Clipboard write failed'),
+      navigator.clipboard.writeText(ddl),
     )
 
     clipboardResult.match(
@@ -130,11 +128,49 @@ export const ExportDropdown: FC<Props> = ({
           status: 'success',
         })
       },
-      (error) => {
+      (error: Error) => {
         console.error('Failed to copy PostgreSQL DDL to clipboard:', error)
         toast({
           title: 'Copy failed',
           description: `Failed to copy DDL to clipboard: ${error.message}`,
+          status: 'error',
+        })
+      },
+    )
+  }
+
+  const handleCopyYaml = async () => {
+    const yamlResult = yamlSchemaDeparser(schema)
+
+    if (yamlResult.isErr()) {
+      const error = yamlResult.error
+      console.error('Failed to generate YAML:', error)
+      toast({
+        title: 'Export failed',
+        description: `Failed to generate YAML: ${error.message}`,
+        status: 'error',
+      })
+      return
+    }
+
+    const yamlContent = yamlResult.value
+    const clipboardResult = await fromPromise(
+      navigator.clipboard.writeText(yamlContent),
+    )
+
+    clipboardResult.match(
+      () => {
+        toast({
+          title: 'YAML copied!',
+          description: 'Schema YAML has been copied to clipboard',
+          status: 'success',
+        })
+      },
+      (error: Error) => {
+        console.error('Failed to copy YAML to clipboard:', error)
+        toast({
+          title: 'Copy failed',
+          description: `Failed to copy YAML to clipboard: ${error.message}`,
           status: 'error',
         })
       },
@@ -169,6 +205,12 @@ export const ExportDropdown: FC<Props> = ({
             onSelect={handleCopyPostgreSQL}
           >
             Copy PostgreSQL
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            leftIcon={<Copy size={16} />}
+            onSelect={handleCopyYaml}
+          >
+            Copy YAML
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenuPortal>

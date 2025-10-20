@@ -1,3 +1,5 @@
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
+import { ToolMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { type StructuredTool, tool } from '@langchain/core/tools'
 import { executeQuery } from '@liam-hq/pglite-server'
@@ -8,10 +10,15 @@ import {
   postgresqlSchemaDeparser,
   type Schema,
 } from '@liam-hq/schema'
+import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
+import { SSE_EVENTS } from '../../client'
+import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
 import { getToolConfigurable } from '../getToolConfigurable'
+
+const TOOL_NAME = 'schemaDesignTool'
 
 const schemaDesignToolSchema = v.object({
   operations: operationsSchema,
@@ -68,12 +75,51 @@ const validateAndExecuteDDL = async (
   return { results }
 }
 
+const configSchema = v.object({
+  toolCall: v.object({
+    id: v.string(),
+  }),
+})
+const getConfigData = (config: RunnableConfig): { toolCallId: string } => {
+  const configParseResult = v.safeParse(configSchema, config)
+  if (!configParseResult.success) {
+    throw new WorkflowTerminationError(
+      new Error('Tool call ID not found in config'),
+      TOOL_NAME,
+    )
+  }
+  return {
+    toolCallId: configParseResult.output.toolCall.id,
+  }
+}
+
+const sendToolMessage = async (
+  toolCallId: string,
+  status: 'success' | 'error',
+  content: string,
+) => {
+  const toolMessage = new ToolMessage({
+    id: uuidv4(),
+    name: TOOL_NAME,
+    status,
+    content,
+    tool_call_id: toolCallId,
+  })
+  await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+  return toolMessage
+}
+
 export const schemaDesignTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<string> => {
     return withSentryCaptureException(async () => {
+      const { toolCallId } = getConfigData(config)
+
       const toolConfigurableResult = getToolConfigurable(config)
       if (toolConfigurableResult.isErr()) {
-        return `Configuration error: ${toolConfigurableResult.error.message}. Please check the tool configuration and try again.`
+        const errorMessage = `Configuration error: ${toolConfigurableResult.error.message}. Please check the tool configuration and try again.`
+        await sendToolMessage(toolCallId, 'error', errorMessage)
+
+        return errorMessage
       }
       const { repositories, designSessionId } = toolConfigurableResult.value
       const parsed = v.safeParse(schemaDesignToolSchema, input)
@@ -81,16 +127,20 @@ export const schemaDesignTool: StructuredTool = tool(
         const errorDetails = parsed.issues
           .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
           .join(', ')
-        return `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
+        const errorMessage = `Input validation failed: ${errorDetails}. Please check your operations format and ensure all required fields are provided correctly.`
+        await sendToolMessage(toolCallId, 'error', errorMessage)
+
+        return errorMessage
       }
 
       const schemaResult = await repositories.schema.getSchema(designSessionId)
       if (schemaResult.isErr()) {
+        const errorMessage =
+          'Could not retrieve current schema for DDL validation. Please check the schema ID and try again.'
+        await sendToolMessage(toolCallId, 'error', errorMessage)
         // LangGraph tool nodes require throwing errors to trigger retry mechanism
         // eslint-disable-next-line no-throw-error/no-throw-error
-        throw new Error(
-          'Could not retrieve current schema for DDL validation. Please check the schema ID and try again.',
-        )
+        throw new Error(errorMessage)
       }
 
       const applyResult = applyPatchOperations(
@@ -99,11 +149,11 @@ export const schemaDesignTool: StructuredTool = tool(
       )
 
       if (applyResult.isErr()) {
+        const errorMessage = `Failed to apply patch operations before DDL validation: ${applyResult.error.message}`
+        await sendToolMessage(toolCallId, 'error', errorMessage)
         // LangGraph tool nodes require throwing errors to trigger retry mechanism
         // eslint-disable-next-line no-throw-error/no-throw-error
-        throw new Error(
-          `Failed to apply patch operations before DDL validation: ${applyResult.error.message}`,
-        )
+        throw new Error(errorMessage)
       }
 
       const { results } = await validateAndExecuteDDL(applyResult.value)
@@ -120,19 +170,22 @@ export const schemaDesignTool: StructuredTool = tool(
       })
 
       if (!versionResult.success) {
-        const errorMessage = versionResult.error ?? 'Unknown error occurred'
+        const errorContent = versionResult.error ?? 'Unknown error occurred'
+        const errorMessage = `Failed to create schema version after DDL validation: ${errorContent}. Please try again.`
+        await sendToolMessage(toolCallId, 'error', errorMessage)
         // LangGraph tool nodes require throwing errors to trigger retry mechanism
         // eslint-disable-next-line no-throw-error/no-throw-error
-        throw new Error(
-          `Failed to create schema version after DDL validation: ${errorMessage}. Please try again.`,
-        )
+        throw new Error(errorMessage)
       }
 
-      return `Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (${successfulStatements}/${totalStatements} statements executed successfully), and new version created.`
+      const successMessage = `Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (${successfulStatements}/${totalStatements} statements executed successfully), and new version created.`
+      await sendToolMessage(toolCallId, 'success', successMessage)
+
+      return successMessage
     })
   },
   {
-    name: 'schemaDesignTool',
+    name: TOOL_NAME,
     description:
       'Use to design database schemas, recommend table structures, and help with database modeling. This tool applies JSON Patch operations to modify schema elements including tables, columns, indexes, constraints, and enums. When operations fail, the tool provides detailed error messages with specific guidance for correction. Always include all required schema properties (columns, constraints, indexes) when creating tables.',
     schema: toolSchema,

@@ -21,7 +21,6 @@
     "@liam-hq/storybook",
     "@liam-hq/schema-bench",
     "@liam-hq/github",
-    "@liam-hq/artifact",
     "@liam-hq/pglite-server"
   ]
 }

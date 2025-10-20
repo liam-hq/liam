@@ -8,7 +8,7 @@
     "@octokit/auth-app": "7.2.2",
     "@octokit/openapi-types": "25.1.0",
     "@octokit/rest": "21.1.1",
-    "@supabase/supabase-js": "2.49.8",
+    "@supabase/supabase-js": "2.58.0",
     "neverthrow": "8.2.0"
   },
   "devDependencies": {

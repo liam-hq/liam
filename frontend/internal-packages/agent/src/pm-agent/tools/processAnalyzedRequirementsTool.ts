@@ -3,16 +3,19 @@ import { ToolMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { type StructuredTool, tool } from '@langchain/core/tools'
 import { Command } from '@langchain/langgraph'
-import { type AnalyzedRequirements, testCaseSchema } from '@liam-hq/artifact'
 import { fromValibotSafeParse } from '@liam-hq/neverthrow'
-import { err, ok, type Result } from 'neverthrow'
+import { ok, type Result } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import type { Repositories } from '../../repositories'
+import {
+  type AnalyzedRequirements,
+  testCaseSchema,
+} from '../../schemas/analyzedRequirements'
 import { SSE_EVENTS } from '../../streaming/constants'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
-import { getConfigurable } from '../../utils/getConfigurable'
 import { toJsonSchema } from '../../utils/jsonSchema'
+
+const TOOL_NAME = 'processAnalyzedRequirementsTool'
 
 const testCaseInputSchema = v.omit(testCaseSchema, ['id', 'sql', 'testResults'])
 
@@ -27,37 +30,27 @@ const configSchema = v.object({
   toolCall: v.object({
     id: v.string(),
   }),
-  configurable: v.object({
-    designSessionId: v.string(),
-  }),
 })
 
 type ToolConfigurable = {
-  repositories: Repositories
-  designSessionId: string
   toolCallId: string
 }
 
 const getToolConfigurable = (
   config: RunnableConfig,
 ): Result<ToolConfigurable, Error> => {
-  const baseConfigResult = getConfigurable(config)
-  if (baseConfigResult.isErr()) {
-    return err(baseConfigResult.error)
-  }
   return fromValibotSafeParse(configSchema, config).andThen((value) =>
     ok({
-      repositories: baseConfigResult.value.repositories,
-      designSessionId: value.configurable.designSessionId,
       toolCallId: value.toolCall.id,
     }),
   )
 }
 
 /**
- * Tool for saving analyzed requirements to artifact and updating workflow state
+ * Tool for processing and streaming analyzed requirements to the frontend.
+ * Normalizes LLM output by adding IDs and empty fields, then dispatches streaming events for real-time UI updates.
  */
-export const saveRequirementsToArtifactTool: StructuredTool = tool(
+export const processAnalyzedRequirementsTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<Command> => {
     // Parse input and add id, sql, testResults to each testcase
     const inputData = v.parse(analyzedRequirementsInputSchema, input)
@@ -81,7 +74,7 @@ export const saveRequirementsToArtifactTool: StructuredTool = tool(
     if (toolConfigurableResult.isErr()) {
       throw new WorkflowTerminationError(
         toolConfigurableResult.error,
-        'saveRequirementsToArtifactTool',
+        TOOL_NAME,
       )
     }
 
@@ -89,8 +82,9 @@ export const saveRequirementsToArtifactTool: StructuredTool = tool(
 
     const toolMessage = new ToolMessage({
       id: uuidv4(),
+      name: TOOL_NAME,
       status: 'success',
-      content: 'Requirements saved successfully to artifact',
+      content: 'Requirements processed and streamed successfully',
       tool_call_id: toolCallId,
     })
     await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
@@ -108,9 +102,9 @@ export const saveRequirementsToArtifactTool: StructuredTool = tool(
     })
   },
   {
-    name: 'saveRequirementsToArtifactTool',
+    name: TOOL_NAME,
     description:
-      'Save the analyzed requirements to the database as an artifact. Accepts business requirements and functional requirements.',
+      'Process analyzed requirements and update workflow state. This tool normalizes LLM output and dispatches streaming events for real-time UI updates.',
     schema: toolSchema,
   },
 )

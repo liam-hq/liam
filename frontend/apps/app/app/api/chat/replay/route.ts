@@ -1,9 +1,7 @@
 import { awaitAllCallbacks } from '@langchain/core/callbacks/promises'
 import {
-  createDbAgentGraph,
   createGraph,
   createSupabaseRepositories,
-  dbAgentReplayStream,
   deepModelingReplayStream,
 } from '@liam-hq/agent'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
@@ -22,7 +20,6 @@ const REPLAY_TIMEOUT_MS = 700000
 
 const requestSchema = v.object({
   designSessionId: v.pipe(v.string(), v.uuid('Invalid design session ID')),
-  isDeepModelingEnabled: v.optional(v.boolean(), true),
 })
 
 export async function POST(request: Request) {
@@ -36,7 +33,7 @@ export async function POST(request: Request) {
       { status: 400 },
     )
   }
-  const { designSessionId, isDeepModelingEnabled } = parsed.value
+  const { designSessionId } = parsed.value
 
   const authResult = await fromAsyncThrowable(() =>
     supabase.auth.getUser(),
@@ -82,9 +79,7 @@ export async function POST(request: Request) {
   const checkpointer = repositories.schema.checkpointer
 
   const findLatestCheckpointId = async (): Promise<string | null> => {
-    const graph = isDeepModelingEnabled
-      ? createGraph(checkpointer)
-      : createDbAgentGraph(checkpointer)
+    const graph = createGraph(checkpointer)
 
     const state = await graph.getState({
       configurable: { thread_id: designSessionId },
@@ -118,9 +113,7 @@ export async function POST(request: Request) {
       checkpointId,
     }
 
-    const events = isDeepModelingEnabled
-      ? await deepModelingReplayStream(checkpointer, replayParams)
-      : await dbAgentReplayStream(checkpointer, replayParams)
+    const events = await deepModelingReplayStream(checkpointer, replayParams)
 
     for await (const ev of events) {
       if (signal.aborted) {

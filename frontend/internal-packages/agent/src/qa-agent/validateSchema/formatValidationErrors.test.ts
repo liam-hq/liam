@@ -1,5 +1,5 @@
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import { describe, expect, it } from 'vitest'
+import type { AnalyzedRequirements } from '../../schemas/analyzedRequirements'
 import { formatValidationErrors } from './formatValidationErrors'
 
 describe('formatValidationErrors', () => {

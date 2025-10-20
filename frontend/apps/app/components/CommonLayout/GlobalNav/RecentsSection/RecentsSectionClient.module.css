@@ -45,6 +45,27 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-1);
+  overflow-y: auto;
+  max-height: calc(100vh - 280px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--overlay-40) transparent;
+}
+
+.sessionsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sessionsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sessionsList::-webkit-scrollbar-thumb {
+  background-color: var(--overlay-40);
+  border-radius: 3px;
+}
+
+.sessionsList::-webkit-scrollbar-thumb:hover {
+  background-color: var(--overlay-60);
 }
 
 .sessionItem {
@@ -98,10 +119,24 @@
 .loadingState,
 .emptyState {
   padding: var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
 }
 
-.loadingText,
+.skeletonItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-2half);
+}
+
 .emptyText {
   font-size: var(--font-size-4);
   color: var(--overlay-60);
+}
+
+.loadMoreTrigger {
+  height: 1px;
+  width: 100%;
 }

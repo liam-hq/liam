@@ -43,6 +43,6 @@ export type Reasoning = v.InferOutput<typeof reasoningSchema>
  */
 export type ToolName =
   | 'runTestTool'
-  | 'saveRequirementsToArtifactTool'
+  | 'processAnalyzedRequirementsTool'
   | 'saveTestcase'
   | 'schemaDesignTool'

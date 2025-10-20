@@ -11,6 +11,12 @@ import type { Repositories } from '../../repositories'
 import { InMemoryRepository } from '../../repositories/InMemoryRepository'
 import { schemaDesignTool } from './schemaDesignTool'
 
+type ToolCall = {
+  id: string
+  name: string
+  args: Record<string, unknown>
+}
+
 vi.mock('@liam-hq/pglite-server', () => ({
   executeQuery: vi.fn(),
 }))
@@ -24,12 +30,19 @@ describe('schemaDesignTool', () => {
     buildingSchemaId: string,
     designSessionId: string,
     repositories: Repositories,
-  ): RunnableConfig => ({
+  ): RunnableConfig & {
+    toolCall: ToolCall
+  } => ({
     configurable: {
       buildingSchemaId,
       designSessionId,
       repositories,
       thread_id: 'test-thread-id',
+    },
+    toolCall: {
+      id: 'test-tool-call-id',
+      name: 'schemaDesignTool',
+      args: {},
     },
   })
 
@@ -94,11 +107,17 @@ describe('schemaDesignTool', () => {
       ],
     }
 
-    const result = await schemaDesignTool.invoke(input, config)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const result = await schemaDesignTool.invoke(input, config as never)
 
-    expect(result).toBe(
-      'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (1/1 statements executed successfully), and new version created.',
-    )
+    // Tool returns a ToolMessage with the success message
+    expect(result).toMatchObject({
+      content:
+        'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (1/1 statements executed successfully), and new version created.',
+      name: 'schemaDesignTool',
+      tool_call_id: 'test-tool-call-id',
+      status: 'success',
+    })
 
     // Verify DDL was executed with correct statements
     expect(vi.mocked(executeQuery)).toHaveBeenCalledWith(
@@ -143,7 +162,7 @@ describe('schemaDesignTool', () => {
     }
 
     await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
-      'Could not retrieve current schema for DDL validation',
+      /Could not retrieve current schema for DDL validation/,
     )
   })
 
@@ -193,11 +212,16 @@ describe('schemaDesignTool', () => {
     }
 
     // With actual PGlite, empty operations on empty schema should succeed
-    const result = await schemaDesignTool.invoke(input, config)
-
-    expect(result).toBe(
-      'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (0/0 statements executed successfully), and new version created.',
-    )
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const result2 = await schemaDesignTool.invoke(input, config as never)
+    // Tool returns a ToolMessage with the success message
+    expect(result2).toMatchObject({
+      content:
+        'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (0/0 statements executed successfully), and new version created.',
+      name: 'schemaDesignTool',
+      tool_call_id: 'test-tool-call-id',
+      status: 'success',
+    })
   })
 
   it('should throw error when DDL execution fails', async () => {
@@ -276,7 +300,7 @@ describe('schemaDesignTool', () => {
     }
 
     await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
-      'DDL execution validation failed',
+      /DDL execution validation failed/,
     )
 
     // Verify DDL was attempted
@@ -354,7 +378,7 @@ ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_fkey" FOREIGN KEY ("user_id") 
     }
 
     await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
-      'Failed to create schema version after DDL validation: Version creation failed due to conflict',
+      /Failed to create schema version after DDL validation: Version creation failed due to conflict/,
     )
 
     // Verify DDL was executed successfully before version creation failed

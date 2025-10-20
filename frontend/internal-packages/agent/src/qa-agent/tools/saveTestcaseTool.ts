@@ -4,12 +4,15 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { type StructuredTool, tool } from '@langchain/core/tools'
 import { Command, getCurrentTaskInput } from '@langchain/langgraph'
 import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
+import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../streaming/constants'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
 import type { testcaseAnnotation } from '../testcaseGeneration/testcaseAnnotation'
+
+const TOOL_NAME = 'saveTestcase'
 
 const saveSqlToolSchema = v.object({
   sql: v.string(),
@@ -24,17 +27,25 @@ const configSchema = v.object({
 })
 
 /**
- * Validate SQL syntax using pgParse
+ * Validate SQL syntax using pgParse. On error, notify UI via SSE then throw to trigger retry.
  */
-const validateSqlSyntax = async (sql: string): Promise<void> => {
+const validateSqlSyntax = async (
+  sql: string,
+  toolCallId: string,
+): Promise<void> => {
   const parseResult: PgParseResult = await pgParse(sql)
 
   if (parseResult.error) {
-    // LangGraph tool nodes require throwing errors to trigger retry mechanism
-    // eslint-disable-next-line no-throw-error/no-throw-error
-    throw new Error(
-      `SQL syntax error: ${parseResult.error.message}. Fix the SQL and retry.`,
-    )
+    const message = `SQL syntax error: ${parseResult.error.message}. Fix the SQL and retry.`
+    const toolMessage = new ToolMessage({
+      id: uuidv4(),
+      name: TOOL_NAME,
+      status: 'error',
+      content: message,
+      tool_call_id: toolCallId,
+    })
+    await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+    return Promise.reject(new Error(message))
   }
 }
 
@@ -46,7 +57,7 @@ const getConfigData = (config: RunnableConfig): { toolCallId: string } => {
   if (!configParseResult.success) {
     throw new WorkflowTerminationError(
       new Error('Tool call ID not found in config'),
-      'saveTestcaseTool',
+      TOOL_NAME,
     )
   }
   return {
@@ -57,24 +68,27 @@ const getConfigData = (config: RunnableConfig): { toolCallId: string } => {
 export const saveTestcaseTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<Command> => {
     return withSentryCaptureException(async () => {
+      const { toolCallId } = getConfigData(config)
+
       const parsed = v.safeParse(saveSqlToolSchema, input)
       if (!parsed.success) {
-        throw new WorkflowTerminationError(
-          new Error(
-            `Invalid tool input: ${parsed.issues
-              .map((issue) => issue.message)
-              .join(', ')}`,
-          ),
-          'saveTestcaseTool',
-        )
+        const errorMessage = `Invalid tool input: ${parsed.issues
+          .map((issue) => issue.message)
+          .join(', ')}`
+        const toolMessage = new ToolMessage({
+          id: uuidv4(),
+          name: TOOL_NAME,
+          status: 'error',
+          content: errorMessage,
+          tool_call_id: toolCallId,
+        })
+        await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+        throw new WorkflowTerminationError(new Error(errorMessage), TOOL_NAME)
       }
 
       const { sql } = parsed.output
 
-      // Validate SQL syntax before saving
-      await validateSqlSyntax(sql)
-
-      const { toolCallId } = getConfigData(config)
+      await validateSqlSyntax(sql, toolCallId)
 
       // Get current state to retrieve testcase info
       const state = getCurrentTaskInput<typeof testcaseAnnotation.State>()
@@ -85,6 +99,9 @@ export const saveTestcaseTool: StructuredTool = tool(
       } = state.currentTestcase
 
       const toolMessage = new ToolMessage({
+        id: uuidv4(),
+        name: TOOL_NAME,
+        status: 'success',
         content: `Successfully saved SQL for test case "${title}" in category "${category}"`,
         tool_call_id: toolCallId,
       })
@@ -99,7 +116,7 @@ export const saveTestcaseTool: StructuredTool = tool(
     })
   },
   {
-    name: 'saveTestcase',
+    name: TOOL_NAME,
     description:
       'Save SQL for the current test case. Only provide the generated SQL.',
     schema: toolSchema,

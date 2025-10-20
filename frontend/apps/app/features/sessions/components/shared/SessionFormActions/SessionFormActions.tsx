@@ -3,7 +3,6 @@
 import type { FC } from 'react'
 import { ActionButton } from '../ActionButton'
 import { AttachButton } from '../AttachButton'
-import { DeepModelingToggle } from '../DeepModelingToggle'
 import { MicButton } from '../MicButton'
 import styles from './SessionFormActions.module.css'
 
@@ -28,9 +27,6 @@ export const SessionFormActions: FC<Props> = ({
 }) => {
   return (
     <div className={styles.container}>
-      <DeepModelingToggle name="isDeepModelingEnabled" disabled={isPending}>
-        Deep Modeling
-      </DeepModelingToggle>
       {/* Temporarily hidden - Issue #5166: Hide voice input and file attachment UI */}
       <div className={styles.hidden}>
         <MicButton onClick={onMicClick || (() => {})} disabled={isPending} />

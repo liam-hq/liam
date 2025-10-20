@@ -1,10 +1,10 @@
 import type { StateSnapshot } from '@langchain/langgraph'
+import { safeParse } from 'valibot'
+import { createGraph } from './createGraph'
 import {
   type AnalyzedRequirements,
   analyzedRequirementsSchema,
-} from '@liam-hq/artifact'
-import { safeParse } from 'valibot'
-import { createGraph } from './createGraph'
+} from './schemas/analyzedRequirements'
 import type { WorkflowConfigurable } from './types'
 
 /**

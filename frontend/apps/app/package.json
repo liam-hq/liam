@@ -13,7 +13,6 @@
     "@langchain/core": "0.3.77",
     "@lezer/highlight": "1.2.1",
     "@liam-hq/agent": "workspace:*",
-    "@liam-hq/artifact": "workspace:*",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
     "@liam-hq/github": "workspace:*",
@@ -49,7 +48,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
     "@liam-hq/configs": "workspace:*",
-    "@storybook/nextjs": "9.1.8",
+    "@storybook/nextjs": "9.1.10",
     "@types/node": "22.18.6",
     "@types/react": "19.1.13",
     "@types/react-dom": "19.1.9",

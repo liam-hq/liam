@@ -5,7 +5,7 @@ import {
   mapStoredMessagesToChatMessages,
   type StoredMessage,
 } from '@langchain/core/messages'
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
+import type { AnalyzedRequirements } from '@liam-hq/agent/client'
 import type { Schema } from '@liam-hq/schema'
 import {
   ResizableHandle,
@@ -36,7 +36,6 @@ type Props = {
   initialDisplayedSchema: Schema
   initialPrevSchema: Schema
   initialVersions: Version[]
-  isDeepModelingEnabled: boolean
   initialIsPublic: boolean
   initialWorkflowError?: string | null
   senderName: string
@@ -72,7 +71,6 @@ export const SessionDetailPageClient: FC<Props> = ({
   initialDisplayedSchema,
   initialPrevSchema,
   initialVersions,
-  isDeepModelingEnabled,
   initialIsPublic,
   initialWorkflowError,
   senderName,
@@ -153,7 +151,7 @@ export const SessionDetailPageClient: FC<Props> = ({
   const hasTriggeredInitialWorkflow = useRef(false)
 
   const handleSendMessage = useCallback(
-    async (content: string, isDeepModelingEnabled: boolean) => {
+    async (content: string) => {
       const tempId = `optimistic-${crypto.randomUUID()}`
       const optimisticMessage = new HumanMessage({
         content,
@@ -167,7 +165,6 @@ export const SessionDetailPageClient: FC<Props> = ({
       const result = await start({
         userInput: content,
         designSessionId,
-        isDeepModelingEnabled,
       })
 
       if (result.isErr()) {
@@ -197,20 +194,18 @@ export const SessionDetailPageClient: FC<Props> = ({
         // Trigger replay for interrupted workflow
         await replay({
           designSessionId,
-          isDeepModelingEnabled,
         })
       } else if (action.type === 'start') {
         // Trigger the workflow for the initial user message
         await start({
           designSessionId,
           userInput: action.userInput,
-          isDeepModelingEnabled,
         })
       }
     }
 
     triggerInitialWorkflow()
-  }, [messages, designSessionId, isDeepModelingEnabled, start, replay])
+  }, [messages, designSessionId, start, replay])
 
   return (
     <div className={styles.container}>
@@ -235,7 +230,6 @@ export const SessionDetailPageClient: FC<Props> = ({
                 onSendMessage={handleSendMessage}
                 onNavigate={setActiveTab}
                 error={combinedError}
-                initialIsDeepModelingEnabled={isDeepModelingEnabled}
               />
             </div>
           </div>

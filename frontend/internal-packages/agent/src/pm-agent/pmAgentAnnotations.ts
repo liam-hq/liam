@@ -1,6 +1,6 @@
 import { Annotation, MessagesAnnotation } from '@langchain/langgraph'
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
+import type { AnalyzedRequirements } from '../schemas/analyzedRequirements'
 
 /**
  * PM Agent subgraph specific state annotation

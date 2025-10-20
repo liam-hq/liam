@@ -14,11 +14,6 @@
       "count": 1
     }
   },
-  "components/CommonLayout/GlobalNav/RecentsSection/RecentsSection.module.css": {
-    "css-modules-kit/no-unused-class-names": {
-      "count": 21
-    }
-  },
   "components/GeneralPage/GeneralPage.module.css": {
     "css-modules-kit/no-unused-class-names": {
       "count": 17

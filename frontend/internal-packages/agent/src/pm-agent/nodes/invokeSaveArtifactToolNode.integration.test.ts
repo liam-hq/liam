@@ -26,7 +26,7 @@ describe('invokeSaveArtifactToolNode Integration', () => {
       tool_calls: [
         {
           id: 'test-tool-call-id',
-          name: 'saveRequirementsToArtifactTool',
+          name: 'processAnalyzedRequirementsTool',
           args: {
             goal: 'Create a task management system for teams to collaborate effectively',
             testcases: {

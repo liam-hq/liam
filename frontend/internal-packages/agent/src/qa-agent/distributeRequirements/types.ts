@@ -1,4 +1,4 @@
-import type { TestCase } from '@liam-hq/artifact'
+import type { TestCase } from '../../schemas/analyzedRequirements'
 
 /**
  * Test case data structure for parallel SQL generation

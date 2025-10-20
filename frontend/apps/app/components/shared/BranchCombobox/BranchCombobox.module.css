@@ -12,7 +12,7 @@
   border-radius: 6px;
   background: var(--background);
   cursor: pointer;
-  min-height: 36px;
+  height: 32px;
   max-width: 100%;
   transition: border-color 0.2s ease;
 }

@@ -6,7 +6,7 @@ const MAX_ANALYSIS_RETRY_COUNT = 3
 
 /**
  * Determines the next node after analyzeRequirements based on whether
- * the last message contains tool calls (saveRequirementsToArtifactTool)
+ * the last message contains tool calls (processAnalyzedRequirementsTool)
  * and handles retry logic for failed requirements analysis
  */
 export const routeAfterAnalyzeRequirements = (

@@ -43,6 +43,31 @@ export const CommandPaletteSearchInput: FC<Props> = ({
     }
   }, [mode])
 
+  const suggestionValue = useMemo(() => {
+    // TODO: remove this statement when releasing the feature
+    if (!isTableModeActivatable) return null
+
+    if (!suggestion) return null
+
+    // no need to show completion cases
+    if (mode.type === 'table' && suggestion.type === 'table') {
+      return null
+    }
+    return suggestion.type === 'column'
+      ? suggestion.columnName
+      : suggestion.name
+  }, [mode, suggestion, isTableModeActivatable])
+
+  const completionSuffix = useMemo(() => {
+    if (!suggestionValue) return
+
+    if (suggestionValue.startsWith(value)) {
+      return suggestionValue.slice(value.length)
+    }
+
+    return ` - ${suggestionValue}`
+  }, [value, suggestionValue])
+
   const handleKeydown: KeyboardEventHandler<HTMLInputElement> = useCallback(
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: refactor this function to reduce cognitive complexity
     (event) => {
@@ -81,8 +106,25 @@ export const CommandPaletteSearchInput: FC<Props> = ({
           break
         }
       }
+
+      // TODO: remove this condition and always activate table mode when releasing the feature
+      if (isTableModeActivatable) {
+        // it completes input value with suggestion when Tab key is pressed but the the input mode is not "default" or the suggestion type is not "table"
+        if (event.key === 'Tab' && suggestionValue) {
+          event.preventDefault()
+          setValue(suggestionValue)
+          return
+        }
+      }
     },
-    [mode.type, value, setMode, suggestion, isTableModeActivatable],
+    [
+      mode.type,
+      value,
+      setMode,
+      suggestion,
+      isTableModeActivatable,
+      suggestionValue,
+    ],
   )
 
   return (
@@ -90,15 +132,28 @@ export const CommandPaletteSearchInput: FC<Props> = ({
       <Search className={styles.searchIcon} />
       <div className={styles.inputContainer}>
         {modePrefix && <span className={styles.modePrefix}>{modePrefix}</span>}
-        <Command.Input
-          {...inputProps}
-          value={value}
-          onValueChange={setValue}
-          className={styles.input}
-          placeholder="Search"
-          autoFocus
-          onKeyDown={handleKeydown}
-        />
+        <div className={styles.inputWithSuggestion}>
+          <Command.Input
+            {...inputProps}
+            value={value}
+            onValueChange={setValue}
+            className={styles.input}
+            placeholder={completionSuffix ? '' : 'Search'} // display completion suffix instead when suggested
+            autoFocus
+            onKeyDown={handleKeydown}
+          />
+          {completionSuffix && (
+            <div className={styles.suggestion}>
+              <span className={styles.inputValue}>{value}</span>
+              <span
+                className={styles.completionSuffix}
+                data-testid="command-palette-search-input-suggestion-suffix"
+              >
+                {completionSuffix}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

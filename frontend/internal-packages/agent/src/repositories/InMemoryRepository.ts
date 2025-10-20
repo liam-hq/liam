@@ -1,26 +1,20 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { MemorySaver } from '@langchain/langgraph-checkpoint'
-import type { Artifact } from '@liam-hq/artifact'
-import type { Tables } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/schema'
 import { schemaSchema } from '@liam-hq/schema'
 import { applyPatch } from 'fast-json-patch'
 import { errAsync, okAsync, type ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import type {
-  ArtifactResult,
-  CreateArtifactParams,
   CreateVersionParams,
   SchemaData,
   SchemaRepository,
-  UpdateArtifactParams,
   UserInfo,
   VersionResult,
 } from './types'
 
 type InMemoryRepositoryState = {
   schemas: Map<string, SchemaData>
-  artifacts: Map<string, Tables<'artifacts'>>
   versions: Map<string, { id: string; schema: Schema; versionNumber: number }>
   buildingSchemas: Map<
     string,
@@ -37,7 +31,6 @@ type InMemoryRepositoryState = {
 
 type InMemoryRepositoryOptions = {
   schemas?: Record<string, Schema>
-  artifacts?: Record<string, Artifact>
 }
 
 export class InMemoryRepository implements SchemaRepository {
@@ -49,7 +42,6 @@ export class InMemoryRepository implements SchemaRepository {
     this.checkpointer = new MemorySaver()
     this.state = {
       schemas: new Map(),
-      artifacts: new Map(),
       versions: new Map(),
       buildingSchemas: new Map(),
     }
@@ -71,20 +63,6 @@ export class InMemoryRepository implements SchemaRepository {
         updatedAt: new Date().toISOString(),
       })
     })
-
-    Object.entries(options.artifacts || {}).forEach(
-      ([designSessionId, artifact]) => {
-        const id = this.generateId()
-        this.state.artifacts.set(designSessionId, {
-          id,
-          design_session_id: designSessionId,
-          organization_id: 'test-org-id',
-          artifact,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-      },
-    )
   }
 
   private generateId(): string {
@@ -170,73 +148,6 @@ export class InMemoryRepository implements SchemaRepository {
     })
 
     return { success: true, versionId }
-  }
-
-  async createArtifact(params: CreateArtifactParams): Promise<ArtifactResult> {
-    const id = this.generateId()
-    const now = new Date().toISOString()
-
-    const artifact: Tables<'artifacts'> = {
-      id,
-      design_session_id: params.designSessionId,
-      organization_id: 'test-org-id',
-      artifact: params.artifact,
-      created_at: now,
-      updated_at: now,
-    }
-
-    this.state.artifacts.set(params.designSessionId, artifact)
-
-    return { success: true, artifact }
-  }
-
-  async updateArtifact(params: UpdateArtifactParams): Promise<ArtifactResult> {
-    const existing = this.state.artifacts.get(params.designSessionId)
-
-    if (!existing) {
-      return { success: false, error: 'Artifact not found' }
-    }
-
-    const updated = {
-      ...existing,
-      artifact: params.artifact,
-      updated_at: new Date().toISOString(),
-    }
-
-    this.state.artifacts.set(params.designSessionId, updated)
-
-    return { success: true, artifact: updated }
-  }
-
-  upsertArtifact(
-    params: CreateArtifactParams,
-  ): ResultAsync<Tables<'artifacts'>, Error> {
-    const { designSessionId, artifact } = params
-    const now = new Date().toISOString()
-
-    const existingArtifact = this.state.artifacts.get(designSessionId)
-
-    if (existingArtifact) {
-      const updatedArtifact: Tables<'artifacts'> = {
-        ...existingArtifact,
-        artifact: artifact,
-        updated_at: now,
-      }
-      this.state.artifacts.set(designSessionId, updatedArtifact)
-      return okAsync(updatedArtifact)
-    }
-
-    const newArtifact: Tables<'artifacts'> = {
-      id: this.generateId(),
-      design_session_id: designSessionId,
-      organization_id: 'test-org-id',
-      artifact: artifact,
-      created_at: now,
-      updated_at: now,
-    }
-
-    this.state.artifacts.set(designSessionId, newArtifact)
-    return okAsync(newArtifact)
   }
 
   // Helper methods for testing

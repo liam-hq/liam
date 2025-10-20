@@ -91,10 +91,10 @@ export function useRealtimeVersionsWithSchema({
 
   useEffect(() => {
     const targetVersion = versions[0] ?? null
-    setSelectedVersion(targetVersion)
 
     // Call onChangeSelectedVersion only when a new version is added
     if (versions.length > prevVersionsLengthRef.current && targetVersion) {
+      setSelectedVersion(targetVersion)
       onChangeSelectedVersion(targetVersion)
     }
 

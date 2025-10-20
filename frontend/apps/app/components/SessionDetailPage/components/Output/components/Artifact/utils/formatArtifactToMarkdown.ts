@@ -1,4 +1,4 @@
-import type { Artifact, TestCase } from '@liam-hq/artifact'
+import type { AnalyzedRequirements, TestCase } from '@liam-hq/agent/client'
 import {
   FAILURE_ICON,
   SUCCESS_ICON,
@@ -50,8 +50,9 @@ function formatTestCase(
   return sections.join('\n')
 }
 
-export function formatArtifactToMarkdown(artifact: Artifact): string {
-  const { requirement } = artifact
+export function formatArtifactToMarkdown(
+  analyzedRequirements: AnalyzedRequirements,
+): string {
   const sections: string[] = []
 
   // Header
@@ -66,22 +67,22 @@ export function formatArtifactToMarkdown(artifact: Artifact): string {
 
   sections.push('## 📋 Goal')
   sections.push('')
-  sections.push(requirement.goal)
+  sections.push(analyzedRequirements.goal)
   sections.push('')
 
-  const categories = Object.keys(requirement.testcases)
+  const categories = Object.keys(analyzedRequirements.testcases)
   if (categories.length > 0) {
     sections.push('## 🔧 Test cases')
     sections.push('')
 
     categories.forEach((category, reqIndex) => {
-      const testcases = requirement.testcases[category]
+      const testcases = analyzedRequirements.testcases[category]
 
       sections.push(`### ${reqIndex + 1}. ${category}`)
       sections.push('')
 
       if (testcases && testcases.length > 0) {
-        testcases.forEach((testCase, tcIndex) => {
+        testcases.forEach((testCase: TestCase, tcIndex: number) => {
           sections.push(formatTestCase(testCase, tcIndex, reqIndex))
           sections.push('')
         })

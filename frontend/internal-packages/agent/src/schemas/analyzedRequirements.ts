@@ -30,13 +30,3 @@ export const analyzedRequirementsSchema = v.object({
 export type AnalyzedRequirements = v.InferOutput<
   typeof analyzedRequirementsSchema
 >
-
-/**
- * Artifact schema - wraps AnalyzedRequirements in a structured format
- * This is the format stored in the database
- */
-export const artifactSchema = v.object({
-  requirement: analyzedRequirementsSchema,
-})
-
-export type Artifact = v.InferOutput<typeof artifactSchema>

@@ -1,126 +1,124 @@
-import type { Artifact } from '@liam-hq/artifact'
+import type { AnalyzedRequirements } from '@liam-hq/agent/client'
 import { describe, expect, it } from 'vitest'
 import { formatArtifactToMarkdown } from '../formatArtifactToMarkdown'
 
 describe('formatArtifactToMarkdown', () => {
   describe('main function', () => {
     it('should format complete artifact with all sections', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Define database requirements for consistently managing airline-owned aircraft, operated flights, and pilots (captains and first officers) involved in operations, while maintaining scheduled and actual times for flights. This enables consistent tracking of aircraft used and personnel assigned for each flight.',
-          testcases: {
-            'Aircraft Management': [
-              {
-                id: '1',
-                title: 'Aircraft Registration and Update',
-                type: 'INSERT',
-                sql: `BEGIN;
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Define database requirements for consistently managing airline-owned aircraft, operated flights, and pilots (captains and first officers) involved in operations, while maintaining scheduled and actual times for flights. This enables consistent tracking of aircraft used and personnel assigned for each flight.',
+        testcases: {
+          'Aircraft Management': [
+            {
+              id: '1',
+              title: 'Aircraft Registration and Update',
+              type: 'INSERT',
+              sql: `BEGIN;
 INSERT INTO airplanes (airplane_number, model, capacity) VALUES
   ('JA100A', 'ATR42-600', 48),
   ('JA200B', 'Bombardier CRJ900', 90),
   ('JA330C', 'Flying Car Alpha', 5);
 COMMIT;`,
-                testResults: [
-                  {
-                    executedAt: '2024-06-01T08:00:00Z',
-                    success: true,
-                    message: '3 rows inserted',
-                  },
-                ],
-              },
-              {
-                id: '2',
-                title: 'View Flights by Aircraft',
-                type: 'SELECT',
-                sql: `SELECT f.flight_name, f.scheduled_departure, f.scheduled_arrival, f.origin, f.destination
+              testResults: [
+                {
+                  executedAt: '2024-06-01T08:00:00Z',
+                  success: true,
+                  message: '3 rows inserted',
+                },
+              ],
+            },
+            {
+              id: '2',
+              title: 'View Flights by Aircraft',
+              type: 'SELECT',
+              sql: `SELECT f.flight_name, f.scheduled_departure, f.scheduled_arrival, f.origin, f.destination
 FROM flights f
 WHERE f.airplane_number = 'JA100A'
   AND f.scheduled_departure >= '2024-06-01 00:00:00+09'
   AND f.scheduled_arrival <= '2024-06-02 23:59:59+09'
 ORDER BY f.scheduled_departure;`,
-                testResults: [
-                  {
-                    executedAt: '2024-06-02T10:00:00Z',
-                    success: true,
-                    message: '2 rows returned',
-                  },
-                ],
-              },
-            ],
-            'Flight Information Management': [
-              {
-                id: '3',
-                title: 'Flight Schedule Creation',
-                type: 'INSERT',
-                sql: `INSERT INTO flights (id, flight_name, origin, destination, scheduled_departure, scheduled_arrival, airplane_number, captain_id, first_officer_id)
+              testResults: [
+                {
+                  executedAt: '2024-06-02T10:00:00Z',
+                  success: true,
+                  message: '2 rows returned',
+                },
+              ],
+            },
+          ],
+          'Flight Information Management': [
+            {
+              id: '3',
+              title: 'Flight Schedule Creation',
+              type: 'INSERT',
+              sql: `INSERT INTO flights (id, flight_name, origin, destination, scheduled_departure, scheduled_arrival, airplane_number, captain_id, first_officer_id)
 VALUES ('fc70279f-04d3-41ea-97e9-3a1bb7ee358f', 'JAL101', 'Tokyo', 'Osaka', '2024-06-01 08:00:00+09', '2024-06-01 09:10:00+09', 'JA100A', 'P0001', 'P0002');`,
-                testResults: [
-                  {
-                    executedAt: '2024-05-30T14:00:00Z',
-                    success: true,
-                    message: '1 row inserted',
-                  },
-                ],
-              },
-              {
-                id: '4',
-                title: 'Recording Actual Flight Times',
-                type: 'UPDATE',
-                sql: `UPDATE flights SET actual_start = '2024-06-01 08:05:00+09', actual_end = '2024-06-01 09:12:00+09'
+              testResults: [
+                {
+                  executedAt: '2024-05-30T14:00:00Z',
+                  success: true,
+                  message: '1 row inserted',
+                },
+              ],
+            },
+            {
+              id: '4',
+              title: 'Recording Actual Flight Times',
+              type: 'UPDATE',
+              sql: `UPDATE flights SET actual_start = '2024-06-01 08:05:00+09', actual_end = '2024-06-01 09:12:00+09'
 WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
-                testResults: [
-                  {
-                    executedAt: '2024-06-01T09:15:00Z',
-                    success: true,
-                    message: '1 row updated',
-                  },
-                ],
-              },
-            ],
-            'Pilot Management': [
-              {
-                id: '5',
-                title: 'Pilot (Captain/First Officer) Registration',
-                type: 'INSERT',
-                sql: `INSERT INTO pilots (pilot_id, name, phone) VALUES
+              testResults: [
+                {
+                  executedAt: '2024-06-01T09:15:00Z',
+                  success: true,
+                  message: '1 row updated',
+                },
+              ],
+            },
+          ],
+          'Pilot Management': [
+            {
+              id: '5',
+              title: 'Pilot (Captain/First Officer) Registration',
+              type: 'INSERT',
+              sql: `INSERT INTO pilots (pilot_id, name, phone) VALUES
   ('P0001', 'Taro Sato', '+81-90-1234-5678'),
   ('P0002', 'Hanako Yamada', '+81-90-2345-6789');`,
-                testResults: [
-                  {
-                    executedAt: '2024-05-25T10:00:00Z',
-                    success: false,
-                    message:
-                      'ERROR: duplicate key value violates unique constraint "pk_pilots"',
-                  },
-                  {
-                    executedAt: '2024-05-25T10:05:00Z',
-                    success: true,
-                    message: '2 rows inserted',
-                  },
-                ],
-              },
-            ],
-            'Data Integrity and Validation': [
-              {
-                id: '6',
-                title: 'Referential Integrity Verification',
-                type: 'DELETE',
-                sql: `DELETE FROM airplanes WHERE airplane_number = 'JA330C';`,
-                testResults: [
-                  {
-                    executedAt: '2024-06-03T11:00:00Z',
-                    success: false,
-                    message:
-                      'ERROR: update or delete on table "airplanes" violates foreign key constraint "fk_flights_airplane"',
-                  },
-                ],
-              },
-            ],
-          },
+              testResults: [
+                {
+                  executedAt: '2024-05-25T10:00:00Z',
+                  success: false,
+                  message:
+                    'ERROR: duplicate key value violates unique constraint "pk_pilots"',
+                },
+                {
+                  executedAt: '2024-05-25T10:05:00Z',
+                  success: true,
+                  message: '2 rows inserted',
+                },
+              ],
+            },
+          ],
+          'Data Integrity and Validation': [
+            {
+              id: '6',
+              title: 'Referential Integrity Verification',
+              type: 'DELETE',
+              sql: `DELETE FROM airplanes WHERE airplane_number = 'JA330C';`,
+              testResults: [
+                {
+                  executedAt: '2024-06-03T11:00:00Z',
+                  success: false,
+                  message:
+                    'ERROR: update or delete on table "airplanes" violates foreign key constraint "fk_flights_airplane"',
+                },
+              ],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
       expect(result).toMatchInlineSnapshot(`
         "# Requirements Document
 
@@ -253,14 +251,12 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
     })
 
     it('should handle artifact with empty testcases', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Task management system',
-          testcases: {},
-        },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Task management system',
+        testcases: {},
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain('## 📋 Goal')
       expect(result).toContain('Task management system')
@@ -268,19 +264,17 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
     })
 
     it('should format multiple categories with proper numbering', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Multi-requirement system',
-          testcases: {
-            'Feature A': [],
-            'Feature B': [],
-            'Requirement X': [],
-            'Requirement Y': [],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Multi-requirement system',
+        testcases: {
+          'Feature A': [],
+          'Feature B': [],
+          'Requirement X': [],
+          'Requirement Y': [],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toMatch(/### 1\. Feature A[\s\S]*### 2\. Feature B/)
       expect(result).toMatch(
@@ -289,17 +283,15 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
     })
 
     it('should add separators between functional requirements', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test',
-          testcases: {
-            First: [],
-            Second: [],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test',
+        testcases: {
+          First: [],
+          Second: [],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
       const lines = result.split('\n')
 
       const firstIndex = lines.indexOf('### 1. First')
@@ -316,30 +308,28 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
   describe('test case formatting', () => {
     it('should format successful execution results', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test',
-          testcases: {
-            'Test Feature': [
-              {
-                id: '1',
-                title: 'Test Case',
-                type: 'SELECT',
-                sql: 'SELECT * FROM users',
-                testResults: [
-                  {
-                    executedAt: '2024-03-20T14:45:30Z',
-                    success: true,
-                    message: '25 rows returned',
-                  },
-                ],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test',
+        testcases: {
+          'Test Feature': [
+            {
+              id: '1',
+              title: 'Test Case',
+              type: 'SELECT',
+              sql: 'SELECT * FROM users',
+              testResults: [
+                {
+                  executedAt: '2024-03-20T14:45:30Z',
+                  success: true,
+                  message: '25 rows returned',
+                },
+              ],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain('**Test Results:**')
       expect(result).toContain('✅ **03/20/2024, 02:45:30 PM**')
@@ -347,65 +337,61 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
     })
 
     it('should format failed execution results', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test',
-          testcases: {
-            'Test Feature': [
-              {
-                id: '1',
-                title: 'Test Case',
-                type: 'INSERT',
-                sql: 'INSERT INTO users (email) VALUES ($1)',
-                testResults: [
-                  {
-                    executedAt: '2024-03-20T14:45:30Z',
-                    success: false,
-                    message: 'Unique constraint violation',
-                  },
-                ],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test',
+        testcases: {
+          'Test Feature': [
+            {
+              id: '1',
+              title: 'Test Case',
+              type: 'INSERT',
+              sql: 'INSERT INTO users (email) VALUES ($1)',
+              testResults: [
+                {
+                  executedAt: '2024-03-20T14:45:30Z',
+                  success: false,
+                  message: 'Unique constraint violation',
+                },
+              ],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain('❌ **03/20/2024, 02:45:30 PM**')
       expect(result).toContain('> Unique constraint violation')
     })
 
     it('should format multiple execution results', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test',
-          testcases: {
-            'Test Feature': [
-              {
-                id: '1',
-                title: 'Test Case',
-                type: 'INSERT',
-                sql: 'INSERT INTO orders (user_id, total) VALUES ($1, $2)',
-                testResults: [
-                  {
-                    executedAt: '2024-03-20T10:00:00Z',
-                    success: false,
-                    message: 'Connection timeout',
-                  },
-                  {
-                    executedAt: '2024-03-20T10:01:00Z',
-                    success: true,
-                    message: '1 row inserted',
-                  },
-                ],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test',
+        testcases: {
+          'Test Feature': [
+            {
+              id: '1',
+              title: 'Test Case',
+              type: 'INSERT',
+              sql: 'INSERT INTO orders (user_id, total) VALUES ($1, $2)',
+              testResults: [
+                {
+                  executedAt: '2024-03-20T10:00:00Z',
+                  success: false,
+                  message: 'Connection timeout',
+                },
+                {
+                  executedAt: '2024-03-20T10:01:00Z',
+                  success: true,
+                  message: '1 row inserted',
+                },
+              ],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain('❌ **03/20/2024, 10:00:00 AM**')
       expect(result).toContain('> Connection timeout')
@@ -414,71 +400,65 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
     })
 
     it('should not show execution section when no results exist', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test',
-          testcases: {
-            'Test Feature': [
-              {
-                id: '1',
-                title: 'Test Case',
-                type: 'SELECT',
-                sql: 'SELECT * FROM products',
-                testResults: [],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test',
+        testcases: {
+          'Test Feature': [
+            {
+              id: '1',
+              title: 'Test Case',
+              type: 'SELECT',
+              sql: 'SELECT * FROM products',
+              testResults: [],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).not.toContain('**Test Results:**')
     })
 
     it('should trim SQL whitespace', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test',
-          testcases: {
-            'Test Feature': [
-              {
-                id: '1',
-                title: 'Test Case',
-                type: 'SELECT',
-                sql: '  \n  SELECT * FROM users  \n  ',
-                testResults: [],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test',
+        testcases: {
+          'Test Feature': [
+            {
+              id: '1',
+              title: 'Test Case',
+              type: 'SELECT',
+              sql: '  \n  SELECT * FROM users  \n  ',
+              testResults: [],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain('```sql\nSELECT * FROM users\n```')
       expect(result).not.toContain('  SELECT')
     })
 
     it('should show placeholder message when SQL is empty', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test',
-          testcases: {
-            'Test Feature': [
-              {
-                id: '1',
-                title: 'Test Case',
-                type: 'INSERT',
-                sql: '',
-                testResults: [],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test',
+        testcases: {
+          'Test Feature': [
+            {
+              id: '1',
+              title: 'Test Case',
+              type: 'INSERT',
+              sql: '',
+              testResults: [],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain(
         '```sql\n-- SQL statement not yet generated\n```',
@@ -488,45 +468,43 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
   describe('edge cases', () => {
     it('should handle all operation types', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Test all operations',
-          testcases: {
-            'Test Feature': [
-              {
-                id: '1',
-                title: 'INSERT Operation',
-                type: 'INSERT',
-                sql: 'INSERT INTO test',
-                testResults: [],
-              },
-              {
-                id: '2',
-                title: 'UPDATE Operation',
-                type: 'UPDATE',
-                sql: 'UPDATE test',
-                testResults: [],
-              },
-              {
-                id: '3',
-                title: 'DELETE Operation',
-                type: 'DELETE',
-                sql: 'DELETE FROM test',
-                testResults: [],
-              },
-              {
-                id: '4',
-                title: 'SELECT Operation',
-                type: 'SELECT',
-                sql: 'SELECT * FROM test',
-                testResults: [],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Test all operations',
+        testcases: {
+          'Test Feature': [
+            {
+              id: '1',
+              title: 'INSERT Operation',
+              type: 'INSERT',
+              sql: 'INSERT INTO test',
+              testResults: [],
+            },
+            {
+              id: '2',
+              title: 'UPDATE Operation',
+              type: 'UPDATE',
+              sql: 'UPDATE test',
+              testResults: [],
+            },
+            {
+              id: '3',
+              title: 'DELETE Operation',
+              type: 'DELETE',
+              sql: 'DELETE FROM test',
+              testResults: [],
+            },
+            {
+              id: '4',
+              title: 'SELECT Operation',
+              type: 'SELECT',
+              sql: 'SELECT * FROM test',
+              testResults: [],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain('**INSERT**')
       expect(result).toContain('**UPDATE**')
@@ -538,54 +516,50 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
       const longDescription = 'A'.repeat(500)
       const longSQL = `SELECT ${'column,'.repeat(50)} FROM table`
 
-      const artifact: Artifact = {
-        requirement: {
-          goal: longDescription,
-          testcases: {
-            'Long Feature': [
-              {
-                id: '1',
-                title: 'Long Test Case',
-                type: 'SELECT',
-                sql: longSQL,
-                testResults: [
-                  {
-                    executedAt: '2024-01-01T00:00:00Z',
-                    success: true,
-                    message: longDescription,
-                  },
-                ],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: longDescription,
+        testcases: {
+          'Long Feature': [
+            {
+              id: '1',
+              title: 'Long Test Case',
+              type: 'SELECT',
+              sql: longSQL,
+              testResults: [
+                {
+                  executedAt: '2024-01-01T00:00:00Z',
+                  success: true,
+                  message: longDescription,
+                },
+              ],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain(longDescription)
       expect(result).toContain(longSQL)
     })
 
     it('should preserve markdown-safe characters in content', () => {
-      const artifact: Artifact = {
-        requirement: {
-          goal: 'Special chars: * _ ` # [ ] ( ) ! < >',
-          testcases: {
-            'Special & Characters': [
-              {
-                id: '1',
-                title: 'Use Case [with brackets]',
-                type: 'SELECT',
-                sql: 'SELECT * FROM users WHERE name = "John\'s"',
-                testResults: [],
-              },
-            ],
-          },
+      const analyzedRequirements: AnalyzedRequirements = {
+        goal: 'Special chars: * _ ` # [ ] ( ) ! < >',
+        testcases: {
+          'Special & Characters': [
+            {
+              id: '1',
+              title: 'Use Case [with brackets]',
+              type: 'SELECT',
+              sql: 'SELECT * FROM users WHERE name = "John\'s"',
+              testResults: [],
+            },
+          ],
         },
       }
 
-      const result = formatArtifactToMarkdown(artifact)
+      const result = formatArtifactToMarkdown(analyzedRequirements)
 
       expect(result).toContain('Special chars: * _ ` # [ ] ( ) ! < >')
       expect(result).toContain('Special & Characters')

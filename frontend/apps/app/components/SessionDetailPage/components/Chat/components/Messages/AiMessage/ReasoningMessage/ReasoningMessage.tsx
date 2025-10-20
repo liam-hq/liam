@@ -7,6 +7,7 @@ import {
 } from '@liam-hq/ui'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
+import { formatDuration } from '../../../../../../../../utils/formatDuration'
 import { MarkdownContent } from '../../../../../../../MarkdownContent'
 import { WorkflowRunningIndicator } from '../../../WorkflowRunningIndicator'
 import styles from './ReasoningMessage.module.css'
@@ -14,11 +15,13 @@ import styles from './ReasoningMessage.module.css'
 type Props = {
   content: string
   isWorkflowRunning?: boolean
+  durationMs?: number
 }
 
 export const ReasoningMessage: FC<Props> = ({
   content,
   isWorkflowRunning = false,
+  durationMs,
 }) => {
   const [isExpanded, setIsExpanded] = useState(isWorkflowRunning)
   const [isContentStreaming, setIsContentStreaming] =
@@ -37,7 +40,7 @@ export const ReasoningMessage: FC<Props> = ({
     const timer = setTimeout(() => {
       setIsContentStreaming(false)
       setIsExpanded(false)
-    }, 500)
+    }, 5000)
 
     return () => clearTimeout(timer)
   }, [content, isWorkflowRunning])
@@ -63,8 +66,12 @@ export const ReasoningMessage: FC<Props> = ({
                 <span className={styles.workedForText}>Reasoning</span>
                 <WorkflowRunningIndicator size={4} />
               </>
+            ) : durationMs !== undefined ? (
+              <span className={styles.workedForText}>
+                Reasoned for {formatDuration(durationMs)}
+              </span>
             ) : (
-              <span className={styles.workedForText}>Reasoning finished</span>
+              <span className={styles.workedForText}>Reasoned</span>
             )}
           </span>
         </button>

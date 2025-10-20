@@ -48,7 +48,7 @@ describe('routeAfterAnalyzeRequirements', () => {
         content: 'Analysis complete',
         tool_calls: [
           {
-            name: 'saveRequirementsToArtifactTool',
+            name: 'processAnalyzedRequirementsTool',
             args: {},
             id: 'test-id',
           },
@@ -109,7 +109,7 @@ describe('routeAfterAnalyzeRequirements', () => {
         content: 'I need to save requirements',
         tool_calls: [
           {
-            name: 'saveRequirementsToArtifactTool',
+            name: 'processAnalyzedRequirementsTool',
             args: {
               goal: 'Test',
               testcases: {},
@@ -133,12 +133,12 @@ describe('routeAfterAnalyzeRequirements', () => {
         content: 'Multiple operations',
         tool_calls: [
           {
-            name: 'saveRequirementsToArtifactTool',
+            name: 'processAnalyzedRequirementsTool',
             args: {},
             id: 'test-id-1',
           },
           {
-            name: 'saveRequirementsToArtifactTool',
+            name: 'processAnalyzedRequirementsTool',
             args: {},
             id: 'test-id-2',
           },
@@ -215,7 +215,7 @@ describe('routeAfterAnalyzeRequirements', () => {
         content: 'First message',
         tool_calls: [
           {
-            name: 'saveRequirementsToArtifactTool',
+            name: 'processAnalyzedRequirementsTool',
             args: {},
             id: 'test-id',
           },

@@ -132,7 +132,6 @@ export const PublicSessionDetailPage = async ({
               patch: v.patch ?? {},
               reverse_patch: v.reverse_patch ?? {},
             }))}
-          isDeepModelingEnabled={false}
           initialIsPublic={true}
           senderName="Guest"
           panelSizes={DEFAULT_PANEL_SIZES}

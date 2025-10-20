@@ -84,7 +84,6 @@ export const Default: Story = {
     messages: MESSAGES,
     onSendMessage: () => {},
     onNavigate: () => {},
-    initialIsDeepModelingEnabled: true,
   },
 }
 
@@ -94,7 +93,6 @@ export const AnimatedDemo: Story = {
     messages: MESSAGES,
     onSendMessage: () => {},
     onNavigate: () => {},
-    initialIsDeepModelingEnabled: true,
   },
   render: (props) => <AnimatedChatDemo {...props} />,
 }
@@ -124,6 +122,5 @@ export const WithComplexMessages: Story = {
     ],
     onSendMessage: () => {},
     onNavigate: () => {},
-    initialIsDeepModelingEnabled: true,
   },
 }

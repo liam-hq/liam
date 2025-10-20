@@ -1,6 +1,5 @@
 import type { MergeDeep } from 'type-fest'
 import type { Database as DatabaseGenerated } from '../../../supabase/database.types'
-import type { ArtifactsOverride } from './artifacts'
 import type { BuildingSchemasOverride } from './buildingSchemas'
 import type { CheckpointBlobsOverride } from './checkpointBlobs'
 import type { CheckpointsOverride } from './checkpoints'
@@ -15,7 +14,6 @@ export type AppDatabaseOverrides = MergeDeep<
     ProjectRepositoryMappingsOverride &
     DesignSessionsOverride &
     BuildingSchemasOverride &
-    ArtifactsOverride &
     CheckpointsOverride &
     CheckpointBlobsOverride &
     CheckpointWritesOverride

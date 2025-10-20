@@ -1,11 +1,11 @@
 import type { BaseMessage, StoredMessage } from '@langchain/core/messages'
+import type { AnalyzedRequirements } from '@liam-hq/agent'
 import {
   createSupabaseRepositories,
   getAnalyzedRequirements,
   getCheckpointErrors,
   getMessages,
 } from '@liam-hq/agent'
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
 import { schemaSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
@@ -24,7 +24,6 @@ import type { Version } from './types'
 
 type Props = {
   designSessionId: string
-  isDeepModelingEnabled: boolean
 }
 
 // NOTE: Server Components can only pass plain objects to Client Components, not class instances
@@ -103,10 +102,7 @@ async function loadSessionData(designSessionId: string): Promise<
   })
 }
 
-export const SessionDetailPage: FC<Props> = async ({
-  designSessionId,
-  isDeepModelingEnabled,
-}) => {
+export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
   const result = await loadSessionData(designSessionId)
 
   if (result.isErr()) {
@@ -156,7 +152,6 @@ export const SessionDetailPage: FC<Props> = async ({
         initialDisplayedSchema={initialSchema}
         initialPrevSchema={initialPrevSchema}
         initialVersions={versions}
-        isDeepModelingEnabled={isDeepModelingEnabled}
         initialIsPublic={initialIsPublic}
         initialWorkflowError={workflowError}
         senderName={senderName}

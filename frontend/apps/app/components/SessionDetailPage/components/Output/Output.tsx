@@ -1,6 +1,6 @@
 'use client'
 
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
+import type { AnalyzedRequirements } from '@liam-hq/agent/client'
 import type { Schema } from '@liam-hq/schema'
 import { TabsContent, TabsRoot } from '@liam-hq/ui'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'

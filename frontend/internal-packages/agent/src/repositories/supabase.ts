@@ -1,8 +1,6 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
-import type { Artifact } from '@liam-hq/artifact'
-import { artifactSchema } from '@liam-hq/artifact'
-import { type SupabaseClientType, toResultAsync } from '@liam-hq/db'
-import type { Json, Tables } from '@liam-hq/db/supabase/database.types'
+import type { SupabaseClientType } from '@liam-hq/db'
+import type { Json } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/schema'
 import {
   applyPatchOperations,
@@ -15,22 +13,12 @@ import * as v from 'valibot'
 import { SupabaseCheckpointSaver } from '../checkpoint/SupabaseCheckpointSaver'
 import { ensurePathStructure } from '../utils/pathPreparation'
 import type {
-  ArtifactResult,
-  CreateArtifactParams,
   CreateVersionParams,
   SchemaData,
   SchemaRepository,
-  UpdateArtifactParams,
   UserInfo,
   VersionResult,
 } from './types'
-
-/**
- * Convert Artifact to Json safely without type casting
- */
-const artifactToJson = (artifact: Artifact): Json => {
-  return JSON.parse(JSON.stringify(artifact))
-}
 
 /**
  * Supabase implementation of SchemaRepository with checkpoint functionality
@@ -322,106 +310,6 @@ export class SupabaseSchemaRepository implements SchemaRepository {
       success: true,
       newSchema: newSchemaValidationResult.output,
     }
-  }
-
-  async createArtifact(params: CreateArtifactParams): Promise<ArtifactResult> {
-    const { designSessionId, artifact } = params
-    const validationResult = v.safeParse(artifactSchema, artifact)
-    if (!validationResult.success) {
-      const errorMessages = validationResult.issues
-        .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
-        .join(', ')
-      return {
-        success: false,
-        error: `Invalid artifact data: ${errorMessages}`,
-      }
-    }
-
-    const { data: artifactData, error } = await this.client
-      .from('artifacts')
-      .insert({
-        design_session_id: designSessionId,
-        artifact: artifactToJson(artifact),
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error(
-        'Failed to create artifact:',
-        JSON.stringify(error, null, 2),
-      )
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    return {
-      success: true,
-      artifact: artifactData,
-    }
-  }
-
-  async updateArtifact(params: UpdateArtifactParams): Promise<ArtifactResult> {
-    const { designSessionId, artifact } = params
-    const validationResult = v.safeParse(artifactSchema, artifact)
-    if (!validationResult.success) {
-      const errorMessages = validationResult.issues
-        .map((issue) => `${issue.path?.join('.')} ${issue.message}`)
-        .join(', ')
-      return {
-        success: false,
-        error: `Invalid artifact data: ${errorMessages}`,
-      }
-    }
-
-    const { data: artifactData, error } = await this.client
-      .from('artifacts')
-      .update({
-        artifact: artifactToJson(artifact),
-      })
-      .eq('design_session_id', designSessionId)
-      .select()
-      .single()
-
-    if (error) {
-      console.error(
-        'Failed to update artifact:',
-        JSON.stringify(error, null, 2),
-      )
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
-    return {
-      success: true,
-      artifact: artifactData,
-    }
-  }
-
-  upsertArtifact(
-    params: CreateArtifactParams,
-  ): ResultAsync<Tables<'artifacts'>, Error> {
-    const { designSessionId, artifact } = params
-
-    return toResultAsync(
-      this.client
-        .from('artifacts')
-        .upsert(
-          {
-            design_session_id: designSessionId,
-            artifact: artifactToJson(artifact),
-          },
-          {
-            onConflict: 'design_session_id',
-          },
-        )
-        .select()
-        .single(),
-    )
   }
 
   async getUserInfo(userId: string): Promise<UserInfo | null> {

@@ -35,6 +35,7 @@ const baseExtensions: Extension[] = [
   lintGutter(),
   syntaxHighlighting(sqlHighlightStyle),
   customTheme,
+  EditorState.readOnly.of(true),
 ]
 
 type Props = {

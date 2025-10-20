@@ -1,7 +1,7 @@
 import type { StateSnapshot } from '@langchain/langgraph'
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import { describe, expect, it } from 'vitest'
 import { extractAnalyzedRequirementsFromState } from './getAnalyzedRequirements'
+import type { AnalyzedRequirements } from './schemas/analyzedRequirements'
 
 const createMockStateSnapshot = (
   values: StateSnapshot['values'],

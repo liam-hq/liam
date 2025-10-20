@@ -1,4 +1,4 @@
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
+import type { AnalyzedRequirements } from '@liam-hq/agent/client'
 import type { Schema } from '@liam-hq/schema'
 import { type Operation, operationsSchema } from '@liam-hq/schema'
 import { TabsList, TabsTrigger } from '@liam-hq/ui'
@@ -65,7 +65,7 @@ export const Header: FC<Props> = ({
 
   // Phase 6.4: Convert analyzedRequirements to markdown
   const artifactDoc = analyzedRequirements
-    ? formatArtifactToMarkdown({ requirement: analyzedRequirements })
+    ? formatArtifactToMarkdown(analyzedRequirements)
     : undefined
 
   return (

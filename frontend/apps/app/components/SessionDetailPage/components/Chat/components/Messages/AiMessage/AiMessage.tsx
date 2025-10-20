@@ -5,6 +5,7 @@ import type {
 } from '@langchain/core/messages'
 import {
   extractReasoningFromMessage,
+  extractReasoningMetadataFromMessage,
   extractToolCallsFromMessage,
 } from '@liam-hq/agent/client'
 import type { FC } from 'react'
@@ -54,6 +55,7 @@ export const AiMessage: FC<Props> = ({
   const { avatar, name } = getAgentInfo(message.name)
   const messageContentString = message.text
   const reasoningText = extractReasoningFromMessage(message)
+  const reasoningMetadata = extractReasoningMetadataFromMessage(message)
   const toolCalls = extractToolCallsFromMessage(message)
 
   // Combine toolCalls with their corresponding toolMessages
@@ -76,6 +78,7 @@ export const AiMessage: FC<Props> = ({
             <ReasoningMessage
               content={reasoningText}
               isWorkflowRunning={isWorkflowRunning}
+              durationMs={reasoningMetadata?.durationMs ?? undefined}
             />
           )}
           {messageContentString !== '' && (

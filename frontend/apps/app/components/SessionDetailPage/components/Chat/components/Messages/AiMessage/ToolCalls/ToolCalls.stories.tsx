@@ -336,7 +336,7 @@ const schemaDesignCall: ToolCall = {
 
 const saveRequirementsCall: ToolCall = {
   id: 'call_2',
-  name: 'saveRequirementsToArtifactTool',
+  name: 'processAnalyzedRequirementsTool',
   type: 'tool_call',
   args: {
     businessRequirement:

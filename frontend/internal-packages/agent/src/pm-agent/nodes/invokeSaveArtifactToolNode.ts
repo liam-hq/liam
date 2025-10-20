@@ -1,17 +1,17 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { ToolNode } from '@langchain/langgraph/prebuilt'
 import type { PmAgentState } from '../pmAgentAnnotations'
-import { saveRequirementsToArtifactTool } from '../tools/saveRequirementsToArtifactTool'
+import { processAnalyzedRequirementsTool } from '../tools/processAnalyzedRequirementsTool'
 
 /**
- * Invoke Save Artifact Tool Node - Uses ToolNode to save artifacts
+ * Invoke Save Artifact Tool Node - Uses ToolNode to process analyzed requirements
  * This follows the same pattern as invokeSchemaDesignToolNode
  */
 export const invokeSaveArtifactToolNode = async (
   state: PmAgentState,
   config: RunnableConfig,
 ) => {
-  const toolNode = new ToolNode([saveRequirementsToArtifactTool])
+  const toolNode = new ToolNode([processAnalyzedRequirementsTool])
 
   const stream = await toolNode.stream(state, {
     configurable: {

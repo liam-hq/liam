@@ -17,7 +17,7 @@ import {
   type PmAnalysisPromptVariables,
   pmAnalysisPrompt,
 } from './prompts/pmAnalysisPrompts'
-import { saveRequirementsToArtifactTool } from './tools/saveRequirementsToArtifactTool'
+import { processAnalyzedRequirementsTool } from './tools/processAnalyzedRequirementsTool'
 
 const AGENT_NAME = 'pm' as const
 
@@ -26,7 +26,7 @@ const model = new ChatOpenAI({
   reasoning: { effort: 'medium', summary: 'detailed' },
   useResponsesApi: true,
   streaming: true,
-}).bindTools([saveRequirementsToArtifactTool], {
+}).bindTools([processAnalyzedRequirementsTool], {
   parallel_tool_calls: false,
   strict: true,
   tool_choice: 'required',

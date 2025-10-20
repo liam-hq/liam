@@ -1,6 +1,6 @@
 import { Annotation, END, MessagesAnnotation } from '@langchain/langgraph'
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import type { Schema } from '@liam-hq/schema'
+import type { AnalyzedRequirements } from '../../schemas/analyzedRequirements'
 import {
   generatedSqlsAnnotation,
   qaSchemaIssuesAnnotation,

@@ -1,5 +1,5 @@
-import type { AnalyzedRequirements } from '@liam-hq/artifact'
 import { describe, expect, test } from 'vitest'
+import type { AnalyzedRequirements } from '../../schemas/analyzedRequirements'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
 import { getUnprocessedRequirements } from './getUnprocessedRequirements'
 

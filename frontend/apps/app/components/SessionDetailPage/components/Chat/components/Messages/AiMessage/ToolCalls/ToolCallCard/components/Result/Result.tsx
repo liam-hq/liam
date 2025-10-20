@@ -1,5 +1,5 @@
 import type { ToolMessage } from '@langchain/core/messages'
-import type { ToolName } from '@liam-hq/agent'
+import type { ToolName } from '@liam-hq/agent/client'
 import { Button } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { Check, X } from 'lucide-react'
