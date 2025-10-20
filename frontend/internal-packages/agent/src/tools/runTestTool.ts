@@ -13,65 +13,178 @@ import type {
   TestCase,
 } from '../schemas/analyzedRequirements'
 import { SSE_EVENTS } from '../streaming/constants'
+import { classifyTestFailure } from '../utils/classifyError'
 import { WorkflowTerminationError } from '../utils/errorHandling'
+import { parseTapOutput } from '../utils/tapParser'
 import { getToolConfigurable } from './getToolConfigurable'
 
 /**
- * Build combined SQL for DDL and testcase
+ * Extract TAP output from SQL query results
+ *
+ * pgTAP functions return TAP-formatted strings in their result rows.
+ * This function extracts and combines them into a complete TAP output.
  */
-const buildCombinedSql = (
-  ddlStatements: string,
-  testcase: TestCase,
-): string => {
-  const sqlParts = []
+const extractTapOutput = (sqlResults: Awaited<ReturnType<typeof executeQuery>>): string => {
+  const tapLines: string[] = []
 
-  if (ddlStatements.trim()) {
-    sqlParts.push('-- DDL Statements', ddlStatements, '')
+  for (const result of sqlResults) {
+    if (!result.success) continue
+
+    // Handle different result formats
+    if (typeof result.result === 'string') {
+      tapLines.push(result.result)
+    } else if (
+      result.result &&
+      typeof result.result === 'object' &&
+      'rows' in result.result
+    ) {
+      const rows = (result.result as { rows: unknown[] }).rows
+      for (const row of rows) {
+        if (row && typeof row === 'object') {
+          // Extract all string values from the row object
+          for (const value of Object.values(row)) {
+            if (typeof value === 'string' && value.trim()) {
+              tapLines.push(value)
+            }
+          }
+        }
+      }
+    }
   }
 
-  sqlParts.push(
-    `-- Test Case: ${testcase.id}`,
-    `-- ${testcase.title}`,
-    `-- ${testcase.type} operation\n${testcase.sql};`,
-  )
+  return tapLines.join('\n')
+}
 
-  return sqlParts.filter(Boolean).join('\n')
+/**
+ * Execute pgTAP test with automatic transaction wrapping
+ *
+ * Wraps the test SQL in BEGIN/ROLLBACK to ensure test isolation
+ * and prevent database state pollution.
+ */
+const executePgTapTest = async (
+  ddlStatements: string,
+  testSql: string,
+  requiredExtensions: string[],
+) => {
+  const startTime = new Date()
+
+  // Ensure pgtap extension is in required extensions
+  const extensions = requiredExtensions.includes('pgtap')
+    ? requiredExtensions
+    : [...requiredExtensions, 'pgtap']
+
+  try {
+    // Build complete SQL with DDL and test
+    const sqlParts: string[] = []
+
+    // Add DDL statements if provided
+    if (ddlStatements.trim()) {
+      sqlParts.push(ddlStatements)
+    }
+
+    // Enable pgTAP extension
+    sqlParts.push('CREATE EXTENSION IF NOT EXISTS pgtap;')
+    // Wrap test SQL in transaction
+    sqlParts.push('BEGIN;')
+    sqlParts.push(testSql)
+    sqlParts.push('ROLLBACK;')
+
+    const combinedSql = sqlParts.join('\n')
+
+    // Execute the combined SQL
+    const sqlResults = await executeQuery(combinedSql, extensions)
+
+    // Extract TAP output from results
+    const tapOutput = extractTapOutput(sqlResults)
+
+    // Check for execution errors
+    const firstFailed = sqlResults.find((r) => !r.success)
+    if (firstFailed) {
+      const isErrorResult = (value: unknown): value is { error: unknown } =>
+        typeof value === 'object' && value !== null && 'error' in value
+
+      const errorMessage = isErrorResult(firstFailed.result)
+        ? String(firstFailed.result.error)
+        : String(firstFailed.result)
+
+      // Classify the error
+      const errorClassification = classifyTestFailure(errorMessage)
+
+      return {
+        executedAt: startTime.toISOString(),
+        success: false as const,
+        message: errorMessage,
+        tapOutput,
+        errorCategory: errorClassification.category,
+        errorCode: errorClassification.errorCode,
+      }
+    }
+
+    // Parse TAP output
+    const tapSummary = parseTapOutput(tapOutput)
+
+    // Determine overall success based on TAP results
+    const allTestsPassed = tapSummary.failed === 0
+
+    if (!allTestsPassed) {
+      // Extract error messages from failed tests
+      const failedTests = tapSummary.tests.filter((t) => !t.ok)
+      const errorMessages = failedTests
+        .map((t) => {
+          const diagnostics = t.diagnostics
+            ? JSON.stringify(t.diagnostics)
+            : ''
+          return `Test ${t.testNumber}: ${t.description}${diagnostics ? `\n  ${diagnostics}` : ''}`
+        })
+        .join('\n')
+
+      return {
+        executedAt: startTime.toISOString(),
+        success: false as const,
+        message: `${tapSummary.failed} test(s) failed:\n${errorMessages}`,
+        tapOutput,
+        tapSummary,
+      }
+    }
+
+    return {
+      executedAt: startTime.toISOString(),
+      success: true as const,
+      message: `All ${tapSummary.passed} test(s) passed`,
+      tapOutput,
+      tapSummary,
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorClassification = classifyTestFailure(errorMessage)
+
+    return {
+      executedAt: startTime.toISOString(),
+      success: false as const,
+      message: errorMessage,
+      errorCategory: errorClassification.category,
+      errorCode: errorClassification.errorCode,
+    }
+  }
 }
 
 /**
  * Execute a single testcase with DDL statements
+ *
+ * This function now uses pgTAP for test execution,
+ * automatically wrapping tests in transactions for isolation.
  */
 const executeTestCase = async (
   ddlStatements: string,
   testcase: TestCase,
   requiredExtensions: string[],
 ) => {
-  const combinedSql = buildCombinedSql(ddlStatements, testcase)
-  const startTime = new Date()
-
-  const sqlResults = await executeQuery(combinedSql, requiredExtensions)
-  const firstFailed = sqlResults.find((r) => !r.success)
-
-  if (firstFailed) {
-    const isErrorResult = (value: unknown): value is { error: unknown } =>
-      typeof value === 'object' && value !== null && 'error' in value
-
-    const error = isErrorResult(firstFailed.result)
-      ? String(firstFailed.result.error)
-      : String(firstFailed.result)
-
-    return {
-      executedAt: startTime.toISOString(),
-      success: false as const,
-      message: error,
-    }
-  }
-
-  return {
-    executedAt: startTime.toISOString(),
-    success: true as const,
-    message: 'Operations completed successfully',
-  }
+  // Use pgTAP test execution
+  return await executePgTapTest(
+    ddlStatements,
+    testcase.sql,
+    requiredExtensions,
+  )
 }
 
 /**

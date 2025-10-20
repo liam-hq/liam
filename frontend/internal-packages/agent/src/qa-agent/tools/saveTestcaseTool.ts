@@ -27,12 +27,89 @@ const configSchema = v.object({
 })
 
 /**
+ * Check if SQL contains pgTAP test code
+ */
+const isPgTapTest = (sql: string): boolean => {
+  const lowerSql = sql.toLowerCase()
+  // Check for pgTAP-specific functions
+  return (
+    lowerSql.includes('plan(') ||
+    lowerSql.includes('finish()') ||
+    lowerSql.includes('lives_ok(') ||
+    lowerSql.includes('throws_ok(') ||
+    lowerSql.includes('has_table(') ||
+    lowerSql.includes('has_column(')
+  )
+}
+
+/**
+ * Validate pgTAP test structure
+ */
+const validatePgTapTest = (
+  sql: string,
+  toolCallId: string,
+): Promise<void> => {
+  const lowerSql = sql.toLowerCase()
+  const errors: string[] = []
+
+  // Check for plan()
+  if (!lowerSql.includes('plan(')) {
+    errors.push('Missing plan() declaration - pgTAP tests must declare the number of tests')
+  }
+
+  // Check for finish()
+  if (!lowerSql.includes('finish()')) {
+    errors.push('Missing finish() call - pgTAP tests must call finish() at the end')
+  }
+
+  // Check for BEGIN/ROLLBACK (should not be included)
+  if (lowerSql.includes('begin;') || lowerSql.includes('rollback;')) {
+    errors.push('Do not include BEGIN/ROLLBACK - the system automatically wraps tests in transactions')
+  }
+
+  // Check for at least one assertion
+  const hasAssertion =
+    lowerSql.includes('lives_ok(') ||
+    lowerSql.includes('throws_ok(') ||
+    lowerSql.includes('is(') ||
+    lowerSql.includes('ok(') ||
+    lowerSql.includes('results_eq(') ||
+    lowerSql.includes('has_table(') ||
+    lowerSql.includes('has_column(')
+
+  if (!hasAssertion) {
+    errors.push('No pgTAP assertions found - test must include at least one assertion (lives_ok, throws_ok, is, ok, etc.)')
+  }
+
+  if (errors.length > 0) {
+    const message = `pgTAP test validation failed:\n${errors.map((e, i) => `${i + 1}. ${e}`).join('\n')}\n\nFix these issues and retry.`
+    const toolMessage = new ToolMessage({
+      id: uuidv4(),
+      name: TOOL_NAME,
+      status: 'error',
+      content: message,
+      tool_call_id: toolCallId,
+    })
+    dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+    return Promise.reject(new Error(message))
+  }
+
+  return Promise.resolve()
+}
+
+/**
  * Validate SQL syntax using pgParse. On error, notify UI via SSE then throw to trigger retry.
  */
 const validateSqlSyntax = async (
   sql: string,
   toolCallId: string,
 ): Promise<void> => {
+  // Check if this is a pgTAP test
+  if (isPgTapTest(sql)) {
+    return validatePgTapTest(sql, toolCallId)
+  }
+
+  // For non-pgTAP SQL, use pgParse validation
   const parseResult: PgParseResult = await pgParse(sql)
 
   if (parseResult.error) {

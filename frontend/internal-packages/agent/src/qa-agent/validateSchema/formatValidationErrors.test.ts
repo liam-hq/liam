@@ -28,8 +28,20 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "### ❌ **Test Case:** Test Insert Operation
-      #### Error: \`duplicate key value violates unique constraint\`
+      "## Summary
+      - Schema problems: 1
+      - SQL quality problems: 0
+      - Unknown problems: 0
+      - **Total failures: 1**
+
+      ## 🔧 Schema Issues (DB Agent should fix these)
+
+      ### ❌ **Test Insert Operation**
+      **Error:**
+      \`\`\`
+      duplicate key value violates unique constraint
+      \`\`\`
+      **Test code:**
       \`\`\`sql
       INSERT INTO users (id, name) VALUES (1, 'John')
       \`\`\`"
@@ -61,8 +73,20 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "### ❌ **Test Case:** Complex Transaction Test
-      #### Error: \`invalid input syntax for type uuid\`
+      "## Summary
+      - Schema problems: 0
+      - SQL quality problems: 0
+      - Unknown problems: 1
+      - **Total failures: 1**
+
+      ## ⚠️ Unknown Issues (Need investigation)
+
+      ### ❌ **Complex Transaction Test**
+      **Error:**
+      \`\`\`
+      invalid input syntax for type uuid
+      \`\`\`
+      **Test code:**
       \`\`\`sql
       INSERT INTO accounts (id) VALUES ('invalid-uuid')
       \`\`\`"
@@ -122,14 +146,31 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "### ❌ **Test Case:** First Test Case
-      #### Error: \`table1 does not exist\`
+      "## Summary
+      - Schema problems: 1
+      - SQL quality problems: 0
+      - Unknown problems: 1
+      - **Total failures: 2**
+
+      ## 🔧 Schema Issues (DB Agent should fix these)
+
+      ### ❌ **First Test Case**
+      **Error:**
+      \`\`\`
+      table1 does not exist
+      \`\`\`
+      **Test code:**
       \`\`\`sql
       INSERT INTO table1 VALUES (1)
       \`\`\`
+      ## ⚠️ Unknown Issues (Need investigation)
 
-      ### ❌ **Test Case:** Third Test Case
-      #### Error: \`permission denied\`
+      ### ❌ **Third Test Case**
+      **Error:**
+      \`\`\`
+      permission denied
+      \`\`\`
+      **Test code:**
       \`\`\`sql
       UPDATE table2 SET col = 1
       \`\`\`"
@@ -214,8 +255,20 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "### ❌ **Test Case:** Long SQL Test
-      #### Error: \`syntax error\`
+      "## Summary
+      - Schema problems: 0
+      - SQL quality problems: 1
+      - Unknown problems: 0
+      - **Total failures: 1**
+
+      ## 📝 SQL Quality Issues (QA Agent should fix these)
+
+      ### ❌ **Long SQL Test**
+      **Error:**
+      \`\`\`
+      syntax error
+      \`\`\`
+      **Test code:**
       \`\`\`sql
       INSERT INTO very_long_table_name_with_many_columns (
             column1, column2, column3, column4, column5, column6, column7, column8,
@@ -261,8 +314,20 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "### ❌ **Test Case:** SQL with Comments
-      #### Error: \`some error\`
+      "## Summary
+      - Schema problems: 0
+      - SQL quality problems: 0
+      - Unknown problems: 1
+      - **Total failures: 1**
+
+      ## ⚠️ Unknown Issues (Need investigation)
+
+      ### ❌ **SQL with Comments**
+      **Error:**
+      \`\`\`
+      some error
+      \`\`\`
+      **Test code:**
       \`\`\`sql
       -- This is a comment
           INSERT INTO users (id, name) VALUES (1, 'John');
@@ -297,8 +362,20 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "### ❌ **Test Case:** Test with minimal error info
-      #### Error: \`Unknown error occurred\`
+      "## Summary
+      - Schema problems: 0
+      - SQL quality problems: 0
+      - Unknown problems: 1
+      - **Total failures: 1**
+
+      ## ⚠️ Unknown Issues (Need investigation)
+
+      ### ❌ **Test with minimal error info**
+      **Error:**
+      \`\`\`
+      Unknown error occurred
+      \`\`\`
+      **Test code:**
       \`\`\`sql
 
       \`\`\`"
@@ -331,8 +408,20 @@ describe('formatValidationErrors', () => {
     const formatted = formatValidationErrors(analyzedRequirements)
 
     expect(formatted).toMatchInlineSnapshot(`
-      "### ❌ **Test Case:** Test with Special Characters
-      #### Error: \`Error with \`backticks\` and "quotes" and 'single quotes'\`
+      "## Summary
+      - Schema problems: 0
+      - SQL quality problems: 0
+      - Unknown problems: 1
+      - **Total failures: 1**
+
+      ## ⚠️ Unknown Issues (Need investigation)
+
+      ### ❌ **Test with Special Characters**
+      **Error:**
+      \`\`\`
+      Error with \`backticks\` and "quotes" and 'single quotes'
+      \`\`\`
+      **Test code:**
       \`\`\`sql
       INSERT INTO test VALUES ('data')
       \`\`\`"
