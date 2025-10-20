@@ -9,11 +9,15 @@
 .container:has(.inputContainer:not(.loading):not(.error):focus-within)
   > :first-child {
   border-color: #459a72;
+  /* Keep the top border (toward messages) unchanged to avoid hover glow */
+  border-top-color: var(--global-border);
 }
 
 .container:has(.inputContainer.error:hover) > :first-child,
 .container:has(.inputContainer.error:focus-within) > :first-child {
   border-color: #9c5b5a;
+  /* Keep the top border (toward messages) unchanged to avoid hover glow */
+  border-top-color: var(--global-border);
 }
 
 .inputContainer {
