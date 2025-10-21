@@ -9,6 +9,12 @@ export {
   supportedFormatSchema,
 } from './supportedFormat/index.js'
 
+// Export PostgreSQL-specific parser
+export {
+  type PgParseResult,
+  parse as pgParse,
+} from './sql/postgresql/parser.js'
+
 export const parse = async (
   str: string,
   format: SupportedFormat,
