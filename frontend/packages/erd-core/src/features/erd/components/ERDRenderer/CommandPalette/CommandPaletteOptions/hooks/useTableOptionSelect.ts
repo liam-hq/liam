@@ -3,6 +3,8 @@ import { useTableSelection } from '../../../../../../erd/hooks'
 import {
   getTableColumnElementId,
   getTableColumnLinkHref,
+  getTableIndexElementId,
+  getTableIndexLinkHref,
   getTableLinkHref,
 } from '../../../../../utils'
 import { useCommandPaletteOrThrow } from '../../CommandPaletteProvider'
@@ -26,7 +28,7 @@ export const useTableOptionSelect = (
           option.columnName,
         )
       } else if (option?.indexName) {
-        window.location.hash = getTableColumnElementId(
+        window.location.hash = getTableIndexElementId(
           tableName,
           option.indexName,
         )
@@ -112,7 +114,7 @@ export const useTableOptionSelect = (
         event.preventDefault()
 
         if (event.metaKey || event.ctrlKey) {
-          window.open(getTableColumnLinkHref(tableName, indexName))
+          window.open(getTableIndexLinkHref(tableName, indexName))
         } else {
           goToERD(tableName, { indexName })
         }
