@@ -15,10 +15,21 @@ export const useTableOptionSelect = (
 
   const { selectTable } = useTableSelection()
   const goToERD = useCallback(
-    (tableName: string, columnName?: string) => {
+    (
+      tableName: string,
+      option?: { columnName?: string; indexName?: string },
+    ) => {
       selectTable({ tableId: tableName, displayArea: 'main' })
-      if (columnName) {
-        window.location.hash = getTableColumnElementId(tableName, columnName)
+      if (option?.columnName) {
+        window.location.hash = getTableColumnElementId(
+          tableName,
+          option.columnName,
+        )
+      } else if (option?.indexName) {
+        window.location.hash = getTableColumnElementId(
+          tableName,
+          option.indexName,
+        )
       }
 
       setOpen(false)
@@ -27,14 +38,18 @@ export const useTableOptionSelect = (
   )
 
   const optionSelectHandler = useCallback(
-    (event: React.MouseEvent, tableName: string, columnName?: string) => {
+    (
+      event: React.MouseEvent,
+      tableName: string,
+      option?: { columnName?: string; indexName?: string },
+    ) => {
       // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
       if (event.ctrlKey || event.metaKey) {
         return
       }
 
       event.preventDefault()
-      goToERD(tableName, columnName)
+      goToERD(tableName, option)
     },
     [goToERD],
   )
@@ -76,7 +91,30 @@ export const useTableOptionSelect = (
         if (event.metaKey || event.ctrlKey) {
           window.open(getTableColumnLinkHref(tableName, columnName))
         } else {
-          goToERD(tableName, columnName)
+          goToERD(tableName, { columnName })
+        }
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [suggestion, goToERD])
+
+  // Select index option by pressing [Enter] key (with/without ⌘ key)
+  useEffect(() => {
+    // It doesn't subscribe a keydown event listener if the suggestion type is not "index"
+    if (suggestion?.type !== 'index') return
+
+    const down = (event: KeyboardEvent) => {
+      const { tableName, indexName } = suggestion
+
+      if (event.key === 'Enter') {
+        event.preventDefault()
+
+        if (event.metaKey || event.ctrlKey) {
+          window.open(getTableColumnLinkHref(tableName, indexName))
+        } else {
+          goToERD(tableName, { indexName })
         }
       }
     }

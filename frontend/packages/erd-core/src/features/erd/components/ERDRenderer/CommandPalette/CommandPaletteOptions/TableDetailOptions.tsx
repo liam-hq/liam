@@ -1,6 +1,7 @@
 import {
   DiamondFillIcon,
   DiamondIcon,
+  Hash,
   KeyRound,
   Link,
   Table2,
@@ -13,6 +14,7 @@ import {
   getTableLinkHref,
 } from '../../../../../../features'
 import { useSchemaOrThrow } from '../../../../../../stores'
+import { getTableIndexLinkHref } from '../../../../utils/url/getTableIndexLinkHref'
 import type { CommandPaletteSuggestion } from '../types'
 import { getSuggestionText } from '../utils'
 import styles from './CommandPaletteOptions.module.css'
@@ -82,7 +84,9 @@ export const TableDetailOptions: FC<Props> = ({ tableName, suggestion }) => {
             className={clsx(styles.item, styles.indent)}
             href={getTableColumnLinkHref(table.name, column.name)}
             onClick={(event) =>
-              optionSelectHandler(event, table.name, column.name)
+              optionSelectHandler(event, table.name, {
+                columnName: column.name,
+              })
             }
           >
             {columnTypeMap[column.name] && (
@@ -93,6 +97,27 @@ export const TableDetailOptions: FC<Props> = ({ tableName, suggestion }) => {
               />
             )}
             <span className={styles.itemText}>{column.name}</span>
+          </a>
+        </Command.Item>
+      ))}
+      {Object.values(table.indexes).map((index) => (
+        <Command.Item
+          key={index.name}
+          value={getSuggestionText({
+            type: 'index',
+            tableName: table.name,
+            indexName: index.name,
+          })}
+        >
+          <a
+            className={clsx(styles.item, styles.indent)}
+            href={getTableIndexLinkHref(table.name, index.name)}
+            onClick={(event) =>
+              optionSelectHandler(event, table.name, { indexName: index.name })
+            }
+          >
+            <Hash className={styles.itemIcon} />
+            <span className={styles.itemText}>{index.name}</span>
           </a>
         </Command.Item>
       ))}

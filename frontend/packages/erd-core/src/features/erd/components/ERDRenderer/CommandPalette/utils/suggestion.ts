@@ -15,6 +15,9 @@ export const getSuggestionText = (suggestion: CommandPaletteSuggestion) => {
 export const textToSuggestion = (
   text: string,
 ): CommandPaletteSuggestion | null => {
+  // biome-ignore lint/suspicious/noConsole: <explanation>
+  console.log(text)
+
   const words = text.split(SEPARATOR)
 
   const [suggestionType, name1, name2] = words

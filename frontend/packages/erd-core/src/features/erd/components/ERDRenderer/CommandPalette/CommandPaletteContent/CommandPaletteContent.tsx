@@ -119,7 +119,7 @@ export const CommandPaletteContent: FC<Props> = ({
           {suggestion?.type === 'table' && (
             <TablePreview tableName={suggestion.name} />
           )}
-          {suggestion?.type === 'column' && (
+          {(suggestion?.type === 'column' || suggestion?.type === 'index') && (
             <TablePreview tableName={suggestion.tableName} />
           )}
           {suggestion?.type === 'command' && (
