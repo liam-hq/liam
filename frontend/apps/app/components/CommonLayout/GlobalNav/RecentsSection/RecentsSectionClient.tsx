@@ -2,13 +2,12 @@
 
 import { fromPromise } from '@liam-hq/neverthrow'
 import clsx from 'clsx'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { urlgen } from '../../../../libs/routes'
-import { formatDateShort } from '../../../../libs/utils'
 import itemStyles from '../Item.module.css'
 import { loadMoreSessions } from './actions'
+import { RecentSessionItem } from './RecentSessionItem'
 import styles from './RecentsSectionClient.module.css'
 import { Skeleton } from './Skeleton'
 import type { RecentSession } from './types'
@@ -112,23 +111,12 @@ export const RecentsSectionClient = ({
                   id: session.id,
                 })
                 const isActive = pathname === sessionUrl
-                const sessionDate = formatDateShort(session.created_at)
                 return (
-                  <Link
+                  <RecentSessionItem
                     key={session.id}
-                    href={sessionUrl}
-                    className={clsx(
-                      styles.sessionItem,
-                      isActive && styles.sessionItemActive,
-                    )}
-                    aria-label={`${session.name}, created on ${sessionDate}`}
-                    aria-current={isActive ? 'page' : undefined}
-                  >
-                    <span className={styles.sessionName}>{session.name}</span>
-                    <span className={styles.sessionDate} aria-hidden="true">
-                      {sessionDate}
-                    </span>
-                  </Link>
+                    session={session}
+                    isActive={isActive}
+                  />
                 )
               })}
               {hasMore && (

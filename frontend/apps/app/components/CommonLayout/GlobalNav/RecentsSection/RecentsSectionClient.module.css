@@ -68,9 +68,12 @@
   background-color: var(--overlay-60);
 }
 
+/* eslint-disable css-modules-kit/no-unused-class-names */
+/* Classes are used in RecentSessionItem.tsx */
 .sessionItem {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   padding: var(--spacing-2) var(--spacing-2half);
   border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
   text-decoration: none;
@@ -100,6 +103,14 @@
 
 .sessionItemActive:hover {
   background-color: var(--primary-overlay-20);
+}
+
+.sessionContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  flex: 1;
+  min-width: 0;
 }
 
 .sessionName {
