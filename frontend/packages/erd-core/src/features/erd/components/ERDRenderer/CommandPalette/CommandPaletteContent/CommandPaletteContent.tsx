@@ -39,6 +39,8 @@ const tableInputModeFilter: typeof cmdkBaseFilter = (value, ...rest) => {
   if (suggestion.type === 'table') return 1
   if (suggestion.type === 'column')
     return cmdkBaseFilter(suggestion.columnName, ...rest)
+  if (suggestion.type === 'index')
+    return cmdkBaseFilter(suggestion.indexName, ...rest)
 
   // it displays only 'table' and 'column' type suggestions in the "table" input mode
   return 0
