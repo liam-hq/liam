@@ -54,7 +54,7 @@
     "rollup-plugin-execute": "1.1.1",
     "typed-css-modules": "0.9.1",
     "typescript": "5.9.3",
-    "vite": "6.3.6",
+    "vite": "6.4.1",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.2.4"
   },
