@@ -15,7 +15,7 @@ export const fetchRecentSessions = async (
 
   const { data: sessions, error } = await supabase
     .from('design_sessions')
-    .select('id, name, created_at, project_id')
+    .select('id, name, created_at, project_id, building_schemas(id)')
     .eq('organization_id', organizationId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
@@ -25,5 +25,13 @@ export const fetchRecentSessions = async (
     return []
   }
 
-  return sessions
+  return sessions.map((session) => ({
+    id: session.id,
+    name: session.name,
+    created_at: session.created_at,
+    project_id: session.project_id,
+    has_schema:
+      Array.isArray(session.building_schemas) &&
+      session.building_schemas.length > 0,
+  }))
 }

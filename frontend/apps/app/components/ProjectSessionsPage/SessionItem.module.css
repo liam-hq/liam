@@ -1,3 +1,5 @@
+/* eslint-disable css-modules-kit/no-unused-class-names */
+/* Classes are used in SessionItemClient.tsx */
 .sessionItem {
   display: flex;
   align-items: center;

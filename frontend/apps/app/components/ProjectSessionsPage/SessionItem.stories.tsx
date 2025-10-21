@@ -29,6 +29,7 @@ const sampleSession: ProjectSession = {
   name: 'Database Schema Design',
   created_at: '2024-01-15T10:30:00Z',
   project_id: 'project-123',
+  has_schema: false,
 }
 
 export const Default: Story = {
@@ -44,6 +45,7 @@ export const RecentSession: Story = {
       name: 'User Authentication Flow',
       created_at: new Date().toISOString(),
       project_id: 'project-123',
+      has_schema: true,
     },
   },
 }
@@ -55,6 +57,7 @@ export const LongName: Story = {
       name: 'Very Long Session Name That Might Need Truncation or Wrapping',
       created_at: '2024-02-20T14:45:00Z',
       project_id: 'project-123',
+      has_schema: false,
     },
   },
 }
