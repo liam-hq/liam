@@ -725,6 +725,52 @@ describe('postgresqlSchemaDeparser', () => {
 
       await expectGeneratedSQLToBeParseable(result.value)
     })
+
+    it('should collect error for CHECK constraint with empty detail', () => {
+      const invalidSchema = {
+        tables: {
+          products: {
+            name: 'products',
+            columns: {
+              id: {
+                name: 'id',
+                type: 'bigint',
+                notNull: true,
+                default: null,
+                check: null,
+                comment: null,
+              },
+              price: {
+                name: 'price',
+                type: 'decimal(10,2)',
+                notNull: true,
+                default: null,
+                check: null,
+                comment: null,
+              },
+            },
+            constraints: {
+              ck_products_price_empty: {
+                type: 'CHECK' as const,
+                name: 'ck_products_price_empty',
+                detail: '',
+              },
+            },
+            indexes: {},
+            comment: null,
+          },
+        },
+        enums: {},
+        extensions: {},
+      }
+
+      const result = postgresqlSchemaDeparser(invalidSchema)
+
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]?.message).toContain(
+        'CHECK constraint "ck_products_price_empty" has empty detail',
+      )
+    })
   })
 
   describe('complex schemas', () => {

@@ -110,4 +110,43 @@ describe('liam processor', () => {
     expect(errors.length).toBeGreaterThan(0)
     expect(value).toEqual({ tables: {}, enums: {}, extensions: {} })
   })
+
+  it('should return error for CHECK constraint with empty detail', async () => {
+    const input = JSON.stringify({
+      tables: {
+        products: {
+          name: 'products',
+          columns: {
+            id: {
+              name: 'id',
+              type: 'bigint',
+              notNull: true,
+              default: null,
+              check: null,
+              comment: null,
+            },
+          },
+          indexes: {},
+          constraints: {
+            ck_price_positive: {
+              type: 'CHECK',
+              name: 'ck_price_positive',
+              detail: '',
+            },
+          },
+          comment: null,
+        },
+      },
+      enums: {},
+      extensions: {},
+    })
+
+    const { value, errors } = await processor(input)
+
+    expect(errors.length).toBeGreaterThan(0)
+    expect(errors[0]?.message).toContain(
+      'CHECK constraint detail must not be empty',
+    )
+    expect(value).toEqual({ tables: {}, enums: {}, extensions: {} })
+  })
 })

@@ -359,6 +359,12 @@ export function generateAddConstraintStatement(
         .join(', ')});`
 
     case 'CHECK':
+      if (!constraint.detail || constraint.detail.trim() === '') {
+        // eslint-disable-next-line no-throw-error/no-throw-error
+        throw new Error(
+          `CHECK constraint "${constraint.name}" has empty detail. CHECK constraints must have a non-empty condition.`,
+        )
+      }
       return `ALTER TABLE ${tableNameEscaped} ADD CONSTRAINT ${constraintName} CHECK (${constraint.detail});`
 
     default:

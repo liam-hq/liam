@@ -61,16 +61,25 @@ export const postgresqlSchemaDeparser: LegacySchemaDeparser = (
   for (const table of Object.values(schema.tables) satisfies Table[]) {
     const constraints = Object.values(table.constraints)
     for (const constraint of constraints) {
-      const addConstraintDDL = generateAddConstraintStatement(
-        table.name,
-        constraint,
-      )
+      try {
+        const addConstraintDDL = generateAddConstraintStatement(
+          table.name,
+          constraint,
+        )
 
-      // Separate foreign key constraints to add them last
-      if (constraint.type === 'FOREIGN KEY') {
-        foreignKeyStatements.push(addConstraintDDL)
-      } else {
-        ddlStatements.push(addConstraintDDL)
+        // Separate foreign key constraints to add them last
+        if (constraint.type === 'FOREIGN KEY') {
+          foreignKeyStatements.push(addConstraintDDL)
+        } else {
+          ddlStatements.push(addConstraintDDL)
+        }
+      } catch (error) {
+        errors.push({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Unknown error generating constraint',
+        })
       }
     }
   }
