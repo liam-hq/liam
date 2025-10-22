@@ -53,7 +53,7 @@ RIGHT: lives_ok($$...$$, 'description');
 const INSERT_EXAMPLES = `
 ## INSERT Test Examples
 
-### Example 1: Valid INSERT (Success Case)
+### Example 1: Valid INSERT
 SELECT plan(1);
 SELECT lives_ok(
   $$INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com')$$,
@@ -61,7 +61,7 @@ SELECT lives_ok(
 );
 SELECT * FROM finish();
 
-### Example 2: NOT NULL Violation (Failure Case)
+### Example 2: NOT NULL Violation
 SELECT plan(1);
 -- throws_ok takes ONLY 2 arguments: SQL and error code
 SELECT throws_ok(
@@ -69,40 +69,12 @@ SELECT throws_ok(
   '23502'
 );
 SELECT * FROM finish();
-
-### Example 3: Foreign Key Constraint (Failure Case)
-SELECT plan(1);
-SELECT throws_ok(
-  $$INSERT INTO orders (user_id, product_id) VALUES (999, 1)$$,
-  '23503'
-);
-SELECT * FROM finish();
-
-### Example 4: UNIQUE Constraint (Failure Case)
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO products (sku, name) VALUES ('SKU001', 'Product A')$$,
-  'First insert should succeed'
-);
-SELECT throws_ok(
-  $$INSERT INTO products (sku, name) VALUES ('SKU001', 'Product B')$$,
-  '23505'
-);
-SELECT * FROM finish();
-
-### Example 5: CHECK Constraint (Failure Case)
-SELECT plan(1);
-SELECT throws_ok(
-  $$INSERT INTO products (name, price) VALUES ('Expensive Item', -10)$$,
-  '23514'
-);
-SELECT * FROM finish();
 `
 
 const UPDATE_EXAMPLES = `
 ## UPDATE Test Examples
 
-### Example 1: Valid UPDATE (Success Case)
+### Example 1: Valid UPDATE
 SELECT plan(2);
 SELECT lives_ok(
   $$INSERT INTO users (name, email) VALUES ('Charlie', 'charlie@example.com')$$,
@@ -114,8 +86,16 @@ SELECT lives_ok(
 );
 SELECT * FROM finish();
 
-### Example 2: Foreign Key Violation on UPDATE (Failure Case)
-SELECT plan(2);
+### Example 2: Foreign Key Violation on UPDATE
+SELECT plan(4);
+SELECT lives_ok(
+  $$INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com')$$,
+  'Setup: Insert test user'
+);
+SELECT lives_ok(
+  $$INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100)$$,
+  'Setup: Insert test product'
+);
 SELECT lives_ok(
   $$INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5)$$,
   'Setup: Insert test order'
@@ -125,49 +105,33 @@ SELECT throws_ok(
   '23503'
 );
 SELECT * FROM finish();
-
-### Example 3: CHECK Constraint on UPDATE (Failure Case)
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO products (name, price) VALUES ('Test Product', 100)$$,
-  'Setup: Insert product'
-);
-SELECT throws_ok(
-  $$UPDATE products SET price = -50 WHERE name = 'Test Product'$$,
-  '23514'
-);
-SELECT * FROM finish();
-
-### Example 4: Conditional UPDATE with Validation
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO inventory (product_id, quantity) VALUES (1, 100)$$,
-  'Setup: Insert inventory'
-);
-SELECT lives_ok(
-  $$UPDATE inventory SET quantity = quantity - 10 WHERE product_id = 1 AND quantity >= 10$$,
-  'Should successfully reduce inventory'
-);
-SELECT * FROM finish();
 `
 
 const DELETE_EXAMPLES = `
 ## DELETE Test Examples
 
-### Example 1: Valid DELETE (Success Case)
+### Example 1: Valid DELETE
 SELECT plan(2);
 SELECT lives_ok(
-  $$INSERT INTO temp_users (name, email) VALUES ('DeleteMe', 'delete@example.com')$$,
+  $$INSERT INTO users (name, email) VALUES ('DeleteMe', 'delete@example.com')$$,
   'Setup: Insert user to delete'
 );
 SELECT lives_ok(
-  $$DELETE FROM temp_users WHERE email = 'delete@example.com'$$,
+  $$DELETE FROM users WHERE email = 'delete@example.com'$$,
   'Should successfully delete user'
 );
 SELECT * FROM finish();
 
-### Example 2: Foreign Key Constraint on DELETE (Failure Case)
-SELECT plan(2);
+### Example 2: Foreign Key Constraint on DELETE
+SELECT plan(4);
+SELECT lives_ok(
+  $$INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com')$$,
+  'Setup: Insert test user'
+);
+SELECT lives_ok(
+  $$INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100)$$,
+  'Setup: Insert test product'
+);
 SELECT lives_ok(
   $$INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5)$$,
   'Setup: Insert order referencing user'
@@ -177,93 +141,24 @@ SELECT throws_ok(
   '23503'
 );
 SELECT * FROM finish();
-
-### Example 3: Conditional DELETE
-SELECT plan(3);
-SELECT lives_ok(
-  $$INSERT INTO expired_sessions (user_id, created_at) VALUES (1, NOW() - INTERVAL '2 days')$$,
-  'Setup: Insert expired session'
-);
-SELECT lives_ok(
-  $$DELETE FROM expired_sessions WHERE created_at < NOW() - INTERVAL '1 day'$$,
-  'Should delete expired sessions'
-);
-SELECT is(
-  (SELECT COUNT(*) FROM expired_sessions WHERE user_id = 1),
-  0::bigint,
-  'Expired session should be deleted'
-);
-SELECT * FROM finish();
-
-### Example 4: CASCADE DELETE Verification
-SELECT plan(3);
-SELECT lives_ok(
-  $$INSERT INTO users (name, email) VALUES ('CascadeTest', 'cascade@example.com')$$,
-  'Setup: Insert user'
-);
-SELECT lives_ok(
-  $$INSERT INTO user_profiles (user_id, bio)
-     VALUES ((SELECT id FROM users WHERE email = 'cascade@example.com'), 'Test bio')$$,
-  'Setup: Insert profile'
-);
-SELECT lives_ok(
-  $$DELETE FROM users WHERE email = 'cascade@example.com'$$,
-  'Should cascade delete user and profile'
-);
-SELECT * FROM finish();
 `
 
 const SELECT_EXAMPLES = `
 ## SELECT Test Examples
 
-### Example 1: Simple Data Verification
+### Example 1: Simple Query Execution
 SELECT plan(1);
-SELECT is(
-  (SELECT COUNT(*) FROM users WHERE email LIKE '%@example.com'),
-  5::bigint,
-  'Should find 5 users with example.com email'
+SELECT lives_ok(
+  $$SELECT COUNT(*) FROM users WHERE email LIKE '%@example.com'$$,
+  'Should successfully query users by email pattern'
 );
 SELECT * FROM finish();
 
-### Example 2: Join Query Validation
+### Example 2: Join Query Execution
 SELECT plan(1);
-SELECT is(
-  (SELECT COUNT(*)
-   FROM orders o
-   INNER JOIN users u ON o.user_id = u.id
-   WHERE u.email = 'alice@example.com'),
-  3::bigint,
-  'Alice should have 3 orders'
-);
-SELECT * FROM finish();
-
-### Example 3: Aggregate Function Test
-SELECT plan(1);
-SELECT ok(
-  (SELECT AVG(price) FROM products WHERE category = 'Electronics') > 100,
-  'Average electronics price should be over 100'
-);
-SELECT * FROM finish();
-
-### Example 4: Result Set Comparison
-SELECT plan(1);
-SELECT results_eq(
-  $$SELECT name FROM users WHERE active = true ORDER BY name$$,
-  $$VALUES ('Alice'), ('Bob'), ('Charlie')$$,
-  'Should return active users in alphabetical order'
-);
-SELECT * FROM finish();
-
-### Example 5: Complex Business Logic Validation
-SELECT plan(2);
-SELECT ok(
-  (SELECT COUNT(*) FROM orders WHERE status = 'pending' AND created_at < NOW() - INTERVAL '7 days') = 0,
-  'No orders should be pending for more than 7 days'
-);
-SELECT ok(
-  (SELECT SUM(quantity * price) FROM order_items WHERE order_id = 1) =
-  (SELECT total_amount FROM orders WHERE id = 1),
-  'Order total should match sum of item prices'
+SELECT lives_ok(
+  $$SELECT COUNT(*) FROM orders o INNER JOIN users u ON o.user_id = u.id WHERE u.email = 'alice@example.com'$$,
+  'Should successfully execute join query'
 );
 SELECT * FROM finish();
 `
