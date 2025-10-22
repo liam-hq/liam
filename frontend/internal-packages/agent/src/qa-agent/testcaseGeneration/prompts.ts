@@ -42,10 +42,6 @@ RIGHT: lives_ok($$...$$, 'description');
 - bag_eq(sql, expected_sql, description) - Compare result sets (unordered)
   * CRITICAL: Both queries must return the same column types and structure
 
-### UUID Generation
-- Use gen_random_uuid() for generating UUIDs (built-in, no extension needed)
-- NEVER use uuid_generate_v4() (requires uuid-ossp extension)
-
 ### Common PostgreSQL Error Codes
 - 23502: not_null_violation
 - 23503: foreign_key_violation
