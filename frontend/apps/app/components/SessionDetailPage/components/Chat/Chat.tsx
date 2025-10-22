@@ -5,6 +5,7 @@ import type { FC } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import type { OutputTabValue } from '../Output/constants'
 import styles from './Chat.module.css'
+import { AgentStatusBar } from './components/AgentStatusBar'
 import { ErrorDisplay } from './components/ErrorDisplay'
 import { Messages } from './components/Messages'
 import { ScrollToBottomButton } from './components/ScrollToBottomButton'
@@ -52,6 +53,7 @@ export const Chat: FC<Props> = ({
 
   return (
     <div className={styles.wrapper}>
+      <AgentStatusBar isRunning={isWorkflowRunning} />
       <div className={styles.messageListWrapper}>
         <div className={styles.messageList} ref={containerRef}>
           <Messages
