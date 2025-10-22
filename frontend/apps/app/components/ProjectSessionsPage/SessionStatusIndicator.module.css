@@ -1,13 +1,18 @@
-.indicator {
+.indicatorRunning {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-}
-
-.running {
   background-color: var(--color-gold-300);
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.indicatorIdle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-color: var(--overlay-40);
 }
 
 @keyframes pulse {
@@ -18,8 +23,4 @@
   50% {
     opacity: 0.5;
   }
-}
-
-.idle {
-  background-color: var(--overlay-40);
 }
