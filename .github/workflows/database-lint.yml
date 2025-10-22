@@ -1,0 +1,99 @@
+name: Database Lint
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/database-lint.yml"
+      - "frontend/internal-packages/db/supabase/schemas/**"
+      - "scripts/db-lint/**"
+  merge_group:
+  workflow_dispatch:
+  schedule:
+    # Run weekly on Sundays at 00:00 UTC for continuous monitoring
+    - cron: "0 0 * * 0"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  splinter-lint:
+    name: Splinter Database Linter
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # For commenting on PRs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@b60b5899c73b63a2d2d651b1e90db8d4c9392f51 # v1.6.0
+        with:
+          version: latest
+
+      - name: Start Supabase
+        run: supabase start
+
+      - name: Setup PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run Splinter Lints
+        id: splinter
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:54322/postgres
+        run: |
+          # Run the splinter script and capture output
+          set +e
+          OUTPUT=$(./scripts/db-lint/run-splinter.sh 2>&1)
+          EXIT_CODE=$?
+          set -e
+          
+          # Save output for later use
+          echo "${OUTPUT}"
+          echo "${OUTPUT}" > /tmp/splinter-output.txt
+          
+          # Save exit code
+          echo "exit_code=${EXIT_CODE}" >> $GITHUB_OUTPUT
+          
+          # Exit with the original exit code
+          exit ${EXIT_CODE}
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('/tmp/splinter-output.txt', 'utf8');
+            
+            const body = `## 🔍 Database Lint Results
+            
+            The Splinter database linter has detected issues with the database schema:
+            
+            \`\`\`
+            ${output}
+            \`\`\`
+            
+            Please review the issues above and make necessary corrections. For more information about each lint rule, visit the [Splinter documentation](https://supabase.github.io/splinter).
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Upload lint results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.0
+        with:
+          name: splinter-lint-results
+          path: /tmp/splinter-output.txt
+          if-no-files-found: ignore
