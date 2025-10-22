@@ -6,7 +6,7 @@ import { SessionFormContainer } from '../../features/sessions/components/Session
 import { urlgen } from '../../libs/routes'
 import { getProjects } from '../CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import styles from './ProjectSessionsPage.module.css'
-import { SessionItem } from './SessionItem'
+import { SessionItemClient } from './SessionItemClient'
 import { fetchProjectSessions } from './services/fetchProjectSessions'
 
 type Props = {
@@ -42,7 +42,7 @@ export const ProjectSessionsPage: FC<Props> = async ({ projectId }) => {
             <h2 className={styles.recentsTitle}>Session History</h2>
             <div className={styles.sessionsList}>
               {sessions.map((session) => (
-                <SessionItem key={session.id} session={session} />
+                <SessionItemClient key={session.id} session={session} />
               ))}
             </div>
           </div>

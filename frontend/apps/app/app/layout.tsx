@@ -5,6 +5,7 @@ import type React from 'react'
 import './globals.css'
 import { ToastProvider } from '@liam-hq/ui'
 import { GoogleTagManager } from '@next/third-parties/google'
+import { StreamingProvider } from '../contexts/StreamingContext'
 import { GTM_ID, GTMConsent, GtagScript } from '../libs/gtm'
 
 const inter = Inter({
@@ -45,7 +46,9 @@ export default function RootLayout({
       <GtagScript />
       <GTMConsent />
       <body className={clsx(inter.className, montserrat.variable)}>
-        <ToastProvider>{children}</ToastProvider>
+        <StreamingProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </StreamingProvider>
       </body>
     </html>
   )

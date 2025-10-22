@@ -1,32 +1,26 @@
-import { HumanMessage } from '@langchain/core/messages'
 import { useRouter } from 'next/navigation'
 import { useEffect, useTransition } from 'react'
-import { LG_INITIAL_MESSAGE_PREFIX } from '../../../../../constants/storageKeys'
+import { usePreNavigationStream } from '../../../../../hooks/usePreNavigationStream'
 import type { CreateSessionState } from '../validation/sessionFormValidation'
 
 export const useSessionNavigation = (state: CreateSessionState) => {
   const router = useRouter()
   const [isRouting, startRouting] = useTransition()
+  const { startStreamBeforeNavigation } = usePreNavigationStream()
 
   useEffect(() => {
     if (!state.success) return
 
-    startRouting(() => {
-      const humanMessage = new HumanMessage({
-        id: crypto.randomUUID(),
-        content: state.initialMessage,
-        additional_kwargs: {
-          userName: state.userName,
-        },
-      })
-      sessionStorage.setItem(
-        `${LG_INITIAL_MESSAGE_PREFIX}:${state.designSessionId}`,
-        JSON.stringify(humanMessage),
-      )
+    startStreamBeforeNavigation({
+      userInput: state.initialMessage,
+      designSessionId: state.designSessionId,
+      userName: state.userName,
+    })
 
+    startRouting(() => {
       router.push(state.redirectTo)
     })
-  }, [state, router])
+  }, [state, router, startStreamBeforeNavigation])
 
   return { isRouting }
 }
