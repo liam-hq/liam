@@ -21,26 +21,16 @@ const PGTAP_FUNCTIONS = `
 - finish() - Complete the test run (always call at the end)
 
 ### Success/Failure Testing
-- lives_ok(sql, description) - Test that SQL executes successfully (2 arguments only)
-- throws_ok(sql, error_code) - Test that SQL fails with specific error code (2 arguments only, NO description)
-
-CRITICAL: throws_ok takes ONLY 2 arguments: the SQL and the error code
-WRONG: throws_ok($$..$$, '23505', 'description')
-RIGHT: throws_ok($$..$$, '23505')
-
-CRITICAL: Never put semicolons inside pgTAP function calls
-WRONG: lives_ok($$...$$, 'description';)
-RIGHT: lives_ok($$...$$, 'description');
+- lives_ok(sql, description) - Test that SQL executes successfully
+- throws_ok(sql, error_code, description) - Test that SQL fails with specific error code
 
 ### Data Validation
 - is(got, expected, description) - Test equality (ensure types match!)
   * CRITICAL: PostgreSQL COUNT returns bigint, so use 5::bigint not 5
   * WRONG: is((SELECT COUNT(*) FROM users), 5, 'desc')
   * RIGHT: is((SELECT COUNT(*) FROM users), 5::bigint, 'desc')
-- ok(expression, description) - Test boolean expression
-- results_eq(sql, expected_sql, description) - Compare query results
-- bag_eq(sql, expected_sql, description) - Compare result sets (unordered)
-  * CRITICAL: Both queries must return the same column types and structure
+- results_eq(sql, expected_sql, description) - Compare query results (order matters)
+- bag_eq(sql, expected_sql, description) - Compare result sets (order ignored)
 
 ### Common PostgreSQL Error Codes
 - 22P02: invalid_text_representation (e.g., invalid ENUM value, type conversion error)
@@ -63,10 +53,10 @@ SELECT * FROM finish();
 
 ### Example 2: NOT NULL Violation
 SELECT plan(1);
--- throws_ok takes ONLY 2 arguments: SQL and error code
 SELECT throws_ok(
   $$INSERT INTO users (name) VALUES ('Bob')$$,
-  '23502'
+  '23502',
+  'Should reject INSERT without required email'
 );
 SELECT * FROM finish();
 `
@@ -102,7 +92,8 @@ SELECT lives_ok(
 );
 SELECT throws_ok(
   $$UPDATE orders SET user_id = 999 WHERE product_id = 1$$,
-  '23503'
+  '23503',
+  'Should reject UPDATE with non-existent user_id'
 );
 SELECT * FROM finish();
 `
@@ -138,7 +129,8 @@ SELECT lives_ok(
 );
 SELECT throws_ok(
   $$DELETE FROM users WHERE id = 1$$,
-  '23503'
+  '23503',
+  'Should reject DELETE of user with dependent orders'
 );
 SELECT * FROM finish();
 `
@@ -178,7 +170,7 @@ const BEST_PRACTICES = `
 
 3. **Test Both Success and Failure**
    - Use lives_ok(sql, description) for operations that should succeed
-   - Use throws_ok(sql, error_code) - ONLY 2 arguments, NO description!
+   - Use throws_ok(sql, error_code, description) for operations that should fail
    - Validate that constraints actually prevent invalid data
 
 4. **Setup Data When Needed**
@@ -191,10 +183,9 @@ const BEST_PRACTICES = `
    - Nested quotes work naturally: $$SELECT 'value'$$
 
 6. **Explicit Error Codes in throws_ok**
-   - throws_ok() takes ONLY 2 arguments: SQL and error code
-   - Common codes: 23502 (NOT NULL), 23503 (FK), 23505 (UNIQUE), 23514 (CHECK)
-   - WRONG: throws_ok($$...$$, '23505', 'description')
-   - RIGHT: throws_ok($$...$$, '23505')
+   - Always specify error codes: 23502 (NOT NULL), 23503 (FK), 23505 (UNIQUE), 23514 (CHECK)
+   - Include descriptive messages for clarity
+   - Example: throws_ok($$INSERT INTO...$$, '23505', 'Should reject duplicate email')
 
 7. **Type Matching in is()**
    - COUNT(*) returns bigint, so use is(count, 5::bigint, 'desc')
