@@ -43,12 +43,11 @@ RIGHT: lives_ok($$...$$, 'description');
   * CRITICAL: Both queries must return the same column types and structure
 
 ### Common PostgreSQL Error Codes
+- 22P02: invalid_text_representation (e.g., invalid ENUM value, type conversion error)
 - 23502: not_null_violation
 - 23503: foreign_key_violation
 - 23505: unique_violation
 - 23514: check_violation
-- 42P01: undefined_table
-- 42703: undefined_column
 `
 
 const INSERT_EXAMPLES = `
