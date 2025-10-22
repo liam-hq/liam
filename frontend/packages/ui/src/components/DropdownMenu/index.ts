@@ -4,15 +4,4 @@ export {
   RadioItem as DropdownMenuPrimitiveRadioItem,
 } from '@radix-ui/react-dropdown-menu'
 
-// Export all components
-export {
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-  DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuLabel,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-} from './DropdownMenu'
+export * from './DropdownMenu'
