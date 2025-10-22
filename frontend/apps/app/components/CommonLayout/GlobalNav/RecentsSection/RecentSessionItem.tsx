@@ -24,16 +24,9 @@ const getWorkflowInProgress = (designSessionId: string): boolean => {
   return value === 'in_progress'
 }
 
-const determineSessionStatus = (
-  session: RecentSession,
-  isWorkflowRunning: boolean,
-): SessionStatus => {
+const determineSessionStatus = (isWorkflowRunning: boolean): SessionStatus => {
   if (isWorkflowRunning) {
     return 'running'
-  }
-
-  if (session.has_schema) {
-    return 'completed'
   }
 
   return 'idle'
@@ -41,13 +34,13 @@ const determineSessionStatus = (
 
 export const RecentSessionItem: FC<Props> = ({ session, isActive }) => {
   const [status, setStatus] = useState<SessionStatus>(() =>
-    determineSessionStatus(session, getWorkflowInProgress(session.id)),
+    determineSessionStatus(getWorkflowInProgress(session.id)),
   )
 
   useEffect(() => {
     const checkStatus = () => {
       const isRunning = getWorkflowInProgress(session.id)
-      setStatus(determineSessionStatus(session, isRunning))
+      setStatus(determineSessionStatus(isRunning))
     }
 
     const interval = setInterval(checkStatus, 1000)
@@ -67,13 +60,13 @@ export const RecentSessionItem: FC<Props> = ({ session, isActive }) => {
       aria-label={`${session.name}, created on ${sessionDate}`}
       aria-current={isActive ? 'page' : undefined}
     >
+      <SessionStatusIndicator status={status} />
       <div className={styles.sessionContent}>
         <span className={styles.sessionName}>{session.name}</span>
         <span className={styles.sessionDate} aria-hidden="true">
           {sessionDate}
         </span>
       </div>
-      <SessionStatusIndicator status={status} />
     </Link>
   )
 }

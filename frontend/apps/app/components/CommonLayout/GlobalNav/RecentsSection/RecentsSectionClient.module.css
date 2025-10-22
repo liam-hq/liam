@@ -79,7 +79,7 @@
   text-decoration: none;
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
-  gap: var(--spacing-2);
+  gap: var(--spacing-2half);
 }
 
 .sessionItem:hover {

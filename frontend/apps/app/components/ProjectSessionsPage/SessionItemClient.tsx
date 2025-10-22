@@ -23,16 +23,9 @@ const getWorkflowInProgress = (designSessionId: string): boolean => {
   return value === 'in_progress'
 }
 
-const determineSessionStatus = (
-  session: ProjectSession,
-  isWorkflowRunning: boolean,
-): SessionStatus => {
+const determineSessionStatus = (isWorkflowRunning: boolean): SessionStatus => {
   if (isWorkflowRunning) {
     return 'running'
-  }
-
-  if (session.has_schema) {
-    return 'completed'
   }
 
   return 'idle'
@@ -40,13 +33,13 @@ const determineSessionStatus = (
 
 export const SessionItemClient: FC<Props> = ({ session }) => {
   const [status, setStatus] = useState<SessionStatus>(() =>
-    determineSessionStatus(session, getWorkflowInProgress(session.id)),
+    determineSessionStatus(getWorkflowInProgress(session.id)),
   )
 
   useEffect(() => {
     const checkStatus = () => {
       const isRunning = getWorkflowInProgress(session.id)
-      setStatus(determineSessionStatus(session, isRunning))
+      setStatus(determineSessionStatus(isRunning))
     }
 
     const interval = setInterval(checkStatus, 1000)
@@ -59,6 +52,7 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
       href={urlgen('design_sessions/[id]', { id: session.id })}
       className={styles.sessionItem}
     >
+      <SessionStatusIndicator status={status} />
       <div className={styles.iconContainer}>
         <MessagesSquare size={20} />
       </div>
@@ -68,7 +62,6 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
           Created {formatDate(session.created_at)}
         </p>
       </div>
-      <SessionStatusIndicator status={status} />
       <div className={styles.arrow}>→</div>
     </Link>
   )

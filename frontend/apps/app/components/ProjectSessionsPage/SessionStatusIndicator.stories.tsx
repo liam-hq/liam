@@ -6,7 +6,7 @@ const meta = {
   argTypes: {
     status: {
       control: 'select',
-      options: ['running', 'completed', 'error', 'idle'],
+      options: ['running', 'idle'],
       description: 'Status of the session',
     },
   },
@@ -18,18 +18,6 @@ type Story = StoryObj<typeof SessionStatusIndicator>
 export const Running: Story = {
   args: {
     status: 'running',
-  },
-}
-
-export const Completed: Story = {
-  args: {
-    status: 'completed',
-  },
-}
-
-export const ErrorStatus: Story = {
-  args: {
-    status: 'error',
   },
 }
 
