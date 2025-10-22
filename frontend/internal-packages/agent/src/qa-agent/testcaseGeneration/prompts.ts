@@ -10,7 +10,6 @@ CRITICAL INSTRUCTIONS:
 1. MUST use the saveTestcase tool to save your generated pgTAP test code
 2. DO NOT provide test code as text in the conversation
 3. Generate complete pgTAP test code with plan() and finish()
-4. One test case = One test type (INSERT, UPDATE, DELETE, or SELECT)
 `
 
 const PGTAP_FUNCTIONS = `
@@ -163,36 +162,14 @@ const BEST_PRACTICES = `
    - Call finish() at the end to validate test count
    - Mismatched counts indicate test logic errors
 
-2. **One Test = One Focus**
-   - Each test case validates ONE specific behavior
-   - Keep tests simple and focused
-   - Use descriptive test descriptions
+2. **Follow Arrange-Act-Assert (AAA) Pattern**
+   - Arrange: Setup test data with lives_ok() calls
+   - Act: Execute the operation being tested (INSERT/UPDATE/DELETE/SELECT)
+   - Assert: Verify with lives_ok/throws_ok/is/results_eq/bag_eq
+   - Each test validates ONE specific behavior
+   - Include all setup steps in plan() count
 
-3. **Test Both Success and Failure**
-   - Use lives_ok(sql, description) for operations that should succeed
-   - Use throws_ok(sql, error_code, description) for operations that should fail
-   - Validate that constraints actually prevent invalid data
-
-4. **Setup Data When Needed**
-   - Use multiple lives_ok() calls to setup test data
-   - Increment plan() count for setup steps
-   - Keep setup minimal and focused
-
-5. **Use Dollar Quoting**
-   - Use $$ for SQL strings to avoid escaping issues
-   - Nested quotes work naturally: $$SELECT 'value'$$
-
-6. **Explicit Error Codes in throws_ok**
-   - Always specify error codes: 23502 (NOT NULL), 23503 (FK), 23505 (UNIQUE), 23514 (CHECK)
-   - Include descriptive messages for clarity
-   - Example: throws_ok($$INSERT INTO...$$, '23505', 'Should reject duplicate email')
-
-7. **Type Matching in is()**
-   - COUNT(*) returns bigint, so use is(count, 5::bigint, 'desc')
-   - WRONG: is((SELECT COUNT(*) FROM t), 5, 'desc')
-   - RIGHT: is((SELECT COUNT(*) FROM t), 5::bigint, 'desc')
-
-8. **UUID Generation**
+3. **UUID Generation**
    - Use gen_random_uuid() for UUID columns (built-in)
    - NEVER use uuid_generate_v4() (requires uuid-ossp extension)
    - Example: INSERT INTO users (id) VALUES (gen_random_uuid())
