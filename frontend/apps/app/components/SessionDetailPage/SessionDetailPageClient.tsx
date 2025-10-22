@@ -119,10 +119,12 @@ export const SessionDetailPageClient: FC<Props> = ({
       analyzedRequirements !== initialAnalyzedRequirementsRef.current &&
       !hasReceivedAnalyzedRequirements
     ) {
-      setActiveTab(OUTPUT_TABS.ARTIFACT)
+      if (versions.length === 0) {
+        setActiveTab(OUTPUT_TABS.ARTIFACT)
+      }
       setHasReceivedAnalyzedRequirements(true)
     }
-  }, [analyzedRequirements, hasReceivedAnalyzedRequirements])
+  }, [analyzedRequirements, hasReceivedAnalyzedRequirements, versions.length])
 
   const shouldShowOutputSection =
     (selectedVersion !== null ||
