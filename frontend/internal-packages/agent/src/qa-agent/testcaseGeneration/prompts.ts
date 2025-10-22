@@ -64,11 +64,10 @@ const UPDATE_EXAMPLES = `
 ## UPDATE Test Examples
 
 ### Example 1: Valid UPDATE
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO users (name, email) VALUES ('Charlie', 'charlie@example.com')$$,
-  'Setup: Insert test user'
-);
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (name, email) VALUES ('Charlie', 'charlie@example.com');
+-- Act & Assert
 SELECT lives_ok(
   $$UPDATE users SET name = 'Charles' WHERE email = 'charlie@example.com'$$,
   'Should successfully update user name'
@@ -76,19 +75,12 @@ SELECT lives_ok(
 SELECT * FROM finish();
 
 ### Example 2: Foreign Key Violation on UPDATE
-SELECT plan(4);
-SELECT lives_ok(
-  $$INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com')$$,
-  'Setup: Insert test user'
-);
-SELECT lives_ok(
-  $$INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100)$$,
-  'Setup: Insert test product'
-);
-SELECT lives_ok(
-  $$INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5)$$,
-  'Setup: Insert test order'
-);
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com');
+INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100);
+INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5);
+-- Act & Assert
 SELECT throws_ok(
   $$UPDATE orders SET user_id = 999 WHERE product_id = 1$$,
   '23503',
@@ -101,11 +93,10 @@ const DELETE_EXAMPLES = `
 ## DELETE Test Examples
 
 ### Example 1: Valid DELETE
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO users (name, email) VALUES ('DeleteMe', 'delete@example.com')$$,
-  'Setup: Insert user to delete'
-);
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (name, email) VALUES ('DeleteMe', 'delete@example.com');
+-- Act & Assert
 SELECT lives_ok(
   $$DELETE FROM users WHERE email = 'delete@example.com'$$,
   'Should successfully delete user'
@@ -113,19 +104,12 @@ SELECT lives_ok(
 SELECT * FROM finish();
 
 ### Example 2: Foreign Key Constraint on DELETE
-SELECT plan(4);
-SELECT lives_ok(
-  $$INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com')$$,
-  'Setup: Insert test user'
-);
-SELECT lives_ok(
-  $$INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100)$$,
-  'Setup: Insert test product'
-);
-SELECT lives_ok(
-  $$INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5)$$,
-  'Setup: Insert order referencing user'
-);
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com');
+INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100);
+INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5);
+-- Act & Assert
 SELECT throws_ok(
   $$DELETE FROM users WHERE id = 1$$,
   '23503',
@@ -163,13 +147,16 @@ const BEST_PRACTICES = `
    - Mismatched counts indicate test logic errors
 
 2. **Follow Arrange-Act-Assert (AAA) Pattern**
-   - Arrange: Setup test data with lives_ok() calls
+   - Arrange: Setup test data with plain INSERT statements
    - Act: Execute the operation being tested (INSERT/UPDATE/DELETE/SELECT)
    - Assert: Verify with lives_ok/throws_ok/is/results_eq/bag_eq
-   - Each test validates ONE specific behavior
-   - Include all setup steps in plan() count
 
-3. **UUID Generation**
+3. **One Test = One Focus**
+   - Each test validates ONE specific behavior
+   - One test file tests ONE operation type (INSERT/UPDATE/DELETE/SELECT)
+   - Setup data (Arrange) doesn't count as "multiple focuses"
+
+4. **UUID Generation**
    - Use gen_random_uuid() for UUID columns (built-in)
    - NEVER use uuid_generate_v4() (requires uuid-ossp extension)
    - Example: INSERT INTO users (id) VALUES (gen_random_uuid())
