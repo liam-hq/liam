@@ -46,7 +46,7 @@ export const RecentSessionItem: FC<Props> = ({ session, isActive }) => {
     const interval = setInterval(checkStatus, 1000)
 
     return () => clearInterval(interval)
-  }, [session])
+  }, [session.id])
 
   const sessionUrl = urlgen('design_sessions/[id]', {
     id: session.id,

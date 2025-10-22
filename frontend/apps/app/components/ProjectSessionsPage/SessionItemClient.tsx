@@ -45,7 +45,7 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
     const interval = setInterval(checkStatus, 1000)
 
     return () => clearInterval(interval)
-  }, [session])
+  }, [session.id])
 
   return (
     <Link
