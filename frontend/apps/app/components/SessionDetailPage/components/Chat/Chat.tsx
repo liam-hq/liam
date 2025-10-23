@@ -6,9 +6,11 @@ import { useCallback, useEffect, useState } from 'react'
 import type { OutputTabValue } from '../Output/constants'
 import styles from './Chat.module.css'
 import { ErrorDisplay } from './components/ErrorDisplay'
+import { FixedWorkflowStatusIndicator } from './components/FixedWorkflowStatusIndicator'
 import { Messages } from './components/Messages'
 import { ScrollToBottomButton } from './components/ScrollToBottomButton'
 import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
+import { useWorkflowStatus } from './hooks/useWorkflowStatus'
 import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
@@ -28,6 +30,7 @@ export const Chat: FC<Props> = ({
     messages.length,
   )
   const [showScrollButton, setShowScrollButton] = useState(false)
+  const workflowStatus = useWorkflowStatus(messages, isWorkflowRunning)
 
   const recomputeScrollButton = useCallback(() => {
     const el = containerRef.current
@@ -66,6 +69,9 @@ export const Chat: FC<Props> = ({
           visible={showScrollButton}
           onClick={scrollToBottom}
         />
+        {isWorkflowRunning && workflowStatus && (
+          <FixedWorkflowStatusIndicator statusText={workflowStatus} />
+        )}
       </div>
     </div>
   )
