@@ -12,6 +12,10 @@ export async function buildPrevSchema({
   currentSchema,
   currentVersionId,
 }: Params) {
+  if (currentVersionId === 'initial') {
+    return currentSchema
+  }
+
   const supabase = await createClient()
   const version = await fetchVersionById(supabase, currentVersionId)
   if (!version) return null

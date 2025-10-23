@@ -43,6 +43,20 @@ export const VersionDropdown: FC<Props> = ({
     [disabled],
   )
 
+  const getVersionLabel = (version: Version) => {
+    if (version.number === 0) {
+      return 'v0 (Initial)'
+    }
+    return `v${version.number}`
+  }
+
+  const getVersionMenuLabel = (version: Version) => {
+    if (version.number === 0) {
+      return 'Version 0 (Initial)'
+    }
+    return `Version ${version.number}`
+  }
+
   return (
     <DropdownMenuRoot open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
@@ -53,7 +67,7 @@ export const VersionDropdown: FC<Props> = ({
           rightIcon={<ChevronDown size={16} />}
           className={styles.button}
         >
-          {selectedVersion ? `v${selectedVersion.number}` : '-'}
+          {selectedVersion ? getVersionLabel(selectedVersion) : '-'}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuPortal>
@@ -63,7 +77,7 @@ export const VersionDropdown: FC<Props> = ({
               key={version.id}
               onSelect={() => handleVersionSelect(version)}
             >
-              {`Version ${version.number}`}
+              {getVersionMenuLabel(version)}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

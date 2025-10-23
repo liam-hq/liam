@@ -38,6 +38,23 @@ export async function buildCurrentSchema(targetVersion: Version) {
     .eq('id', targetVersion.building_schema_id)
     .single()
 
+  const parsedInitialSchema = v.safeParse(
+    schemaSchema,
+    buildingSchema?.initial_schema_snapshot,
+  )
+
+  const baseSchema: Schema = parsedInitialSchema.success
+    ? parsedInitialSchema.output
+    : {
+        tables: {},
+        enums: {},
+        extensions: {},
+      }
+
+  if (targetVersion.number === 0) {
+    return baseSchema
+  }
+
   const previousVersions = await getPreviousVersions(
     buildingSchema?.id ?? '',
     targetVersion.number,
@@ -51,19 +68,6 @@ export async function buildCurrentSchema(targetVersion: Version) {
       return parsed.output
     })
     .filter((version) => version !== null)
-
-  const parsedInitialSchema = v.safeParse(
-    schemaSchema,
-    buildingSchema?.initial_schema_snapshot,
-  )
-
-  const baseSchema: Schema = parsedInitialSchema.success
-    ? parsedInitialSchema.output
-    : {
-        tables: {},
-        enums: {},
-        extensions: {},
-      }
 
   let currentSchema: Schema = structuredClone(baseSchema)
   for (const operations of operationsArray) {
