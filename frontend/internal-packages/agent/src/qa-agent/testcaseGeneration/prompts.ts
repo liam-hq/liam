@@ -42,11 +42,14 @@ const PGTAP_FUNCTIONS = `
 const INSERT_EXAMPLES = `
 ## INSERT Test Examples
 
-### Example 1: Valid INSERT
+### Example 1: Valid INSERT with FK Setup
 SELECT plan(1);
+-- Arrange: plain INSERT for FK data (use gen_random_uuid() for UUIDs)
+INSERT INTO roles (id, name) VALUES (gen_random_uuid(), 'user');
+-- Act & Assert
 SELECT lives_ok(
-  $$INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com')$$,
-  'Should successfully insert valid user'
+  $$INSERT INTO users (id, name, email, role_id) VALUES (gen_random_uuid(), 'Alice', 'alice@example.com', (SELECT id FROM roles WHERE name = 'user'))$$,
+  'Should successfully insert user with valid role_id'
 );
 SELECT * FROM finish();
 
@@ -121,18 +124,25 @@ SELECT * FROM finish();
 const SELECT_EXAMPLES = `
 ## SELECT Test Examples
 
-### Example 1: Simple Query Execution
+### Example 1: Simple Query with Setup
 SELECT plan(1);
+-- Arrange
+INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');
+-- Act & Assert
 SELECT lives_ok(
   $$SELECT COUNT(*) FROM users WHERE email LIKE '%@example.com'$$,
   'Should successfully query users by email pattern'
 );
 SELECT * FROM finish();
 
-### Example 2: Join Query Execution
+### Example 2: Join Query with Setup
 SELECT plan(1);
+-- Arrange
+INSERT INTO users (id, name, email) VALUES (1, 'Alice', 'alice@example.com');
+INSERT INTO orders (user_id, product_id) VALUES (1, 100);
+-- Act & Assert
 SELECT lives_ok(
-  $$SELECT COUNT(*) FROM orders o INNER JOIN users u ON o.user_id = u.id WHERE u.email = 'alice@example.com'$$,
+  $$SELECT COUNT(*) FROM orders o JOIN users u ON o.user_id = u.id WHERE u.email = 'alice@example.com'$$,
   'Should successfully execute join query'
 );
 SELECT * FROM finish();
@@ -147,9 +157,9 @@ const BEST_PRACTICES = `
    - Mismatched counts indicate test logic errors
 
 2. **Follow Arrange-Act-Assert (AAA) Pattern**
-   - Arrange: Setup test data with plain INSERT statements
-   - Act: Execute the operation being tested (INSERT/UPDATE/DELETE/SELECT)
-   - Assert: Verify with lives_ok/throws_ok/is/results_eq/bag_eq
+   - Arrange: Plain INSERT only - NO lives_ok/throws_ok wrapping
+   - Act & Assert: Wrap test operation in lives_ok/throws_ok/is
+   - Example: INSERT users (arrange), then SELECT lives_ok(test query)
 
 3. **One Test = One Focus**
    - Each test validates ONE specific behavior
@@ -172,6 +182,8 @@ ${CRITICAL_INSTRUCTIONS}
 
 ${PGTAP_FUNCTIONS}
 
+${BEST_PRACTICES}
+
 ## Type-Specific Examples
 
 Choose examples based on the test type you're generating:
@@ -183,8 +195,6 @@ ${UPDATE_EXAMPLES}
 ${DELETE_EXAMPLES}
 
 ${SELECT_EXAMPLES}
-
-${BEST_PRACTICES}
 `
 
 /**
