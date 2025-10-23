@@ -64,6 +64,7 @@ export function useRealtimeVersionsWithSchema({
           const newPrevSchema = await buildPrevSchema({
             currentSchema,
             targetVersionId: targetVersion.id,
+            buildingSchemaId,
           })
           setPrevSchema(newPrevSchema ?? currentSchema)
         } catch (error) {
@@ -71,7 +72,7 @@ export function useRealtimeVersionsWithSchema({
         }
       })
     },
-    [handleError],
+    [handleError, buildingSchemaId],
   )
 
   const handleAddOrUpdateVersion = useCallback((version: Version) => {

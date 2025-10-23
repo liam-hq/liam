@@ -1,36 +1,47 @@
 'use client'
 
-import {
-  applyPatchOperations,
-  operationsSchema,
-  type Schema,
-} from '@liam-hq/schema'
+import { type Schema, schemaSchema } from '@liam-hq/schema'
 import * as v from 'valibot'
 import { createClient } from '../../../../../libs/db/client'
 
 type Params = {
   currentSchema: Schema
   targetVersionId: string
+  buildingSchemaId: string
 }
 
 export async function buildPrevSchema({
   currentSchema,
   targetVersionId,
+  buildingSchemaId,
 }: Params) {
   const supabase = createClient()
-  const { data, error } = await supabase
+
+  const { data: targetVersion, error: versionError } = await supabase
     .from('building_schema_versions')
-    .select('reverse_patch')
+    .select('number')
     .eq('id', targetVersionId)
     .single()
 
-  if (error) return null
+  if (versionError || !targetVersion) return null
 
-  const parsed = v.safeParse(operationsSchema, data.reverse_patch)
+  if (targetVersion.number === 0) {
+    return currentSchema
+  }
+
+  const { data: buildingSchema, error } = await supabase
+    .from('building_schemas')
+    .select('initial_schema_snapshot')
+    .eq('id', buildingSchemaId)
+    .single()
+
+  if (error || !buildingSchema) return null
+
+  const parsed = v.safeParse(
+    schemaSchema,
+    buildingSchema.initial_schema_snapshot,
+  )
   if (!parsed.success) return null
 
-  const prevSchemaResult = applyPatchOperations(currentSchema, parsed.output)
-  if (prevSchemaResult.isErr()) return null
-
-  return prevSchemaResult.value
+  return parsed.output
 }
