@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@liam-hq/ui'
 import type { FC } from 'react'
 import styles from './InstallationEmpty.module.css'
