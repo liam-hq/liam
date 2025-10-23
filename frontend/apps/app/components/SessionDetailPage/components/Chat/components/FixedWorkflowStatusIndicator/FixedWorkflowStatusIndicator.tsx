@@ -1,15 +1,18 @@
+import { clsx } from 'clsx'
 import type { FC } from 'react'
 import styles from './FixedWorkflowStatusIndicator.module.css'
 
 type Props = {
   statusText?: string
+  hasOutput?: boolean
 }
 
 export const FixedWorkflowStatusIndicator: FC<Props> = ({
   statusText = 'Updating schema...',
+  hasOutput = false,
 }) => {
   return (
-    <div className={styles.container}>
+    <div className={clsx(styles.container, hasOutput && styles.hasOutput)}>
       <div className={styles.content}>
         <div className={styles.spinner}>
           <svg
@@ -30,7 +33,12 @@ export const FixedWorkflowStatusIndicator: FC<Props> = ({
             />
           </svg>
         </div>
-        <span className={styles.text}>{statusText}</span>
+        <div className={styles.textContainer}>
+          <div className={styles.title}>{statusText}</div>
+          <div className={styles.description}>
+            Wait while schema is being updated
+          </div>
+        </div>
       </div>
     </div>
   )

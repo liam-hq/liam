@@ -1,18 +1,27 @@
 .container {
+  position: absolute;
+  bottom: var(--spacing-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.container.hasOutput {
   position: fixed;
   bottom: var(--spacing-6);
   left: var(--spacing-6);
-  z-index: 100;
-  pointer-events: none;
+  transform: none;
 }
 
 .content {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  padding: var(--spacing-3) var(--spacing-4);
-  background-color: var(--surface-primary);
-  border: 1px solid var(--border-primary);
+  padding: var(--spacing-4);
+  background-color: var(--surface-secondary);
+  border: 1px solid #22c55e;
+  border-left: 4px solid #22c55e;
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
@@ -31,17 +40,29 @@
 }
 
 .spinnerCircle {
-  stroke: var(--accent-primary);
+  stroke: #22c55e;
   stroke-linecap: round;
   stroke-dasharray: 50, 200;
   stroke-dashoffset: 0;
   animation: dash 1.5s ease-in-out infinite;
 }
 
-.text {
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: #22c55e;
+  white-space: nowrap;
+}
+
+.description {
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 

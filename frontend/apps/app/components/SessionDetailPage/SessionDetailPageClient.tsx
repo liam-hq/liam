@@ -196,6 +196,7 @@ export const SessionDetailPageClient: FC<Props> = ({
                 isWorkflowRunning={isStreaming}
                 onNavigate={setActiveTab}
                 error={combinedError}
+                hasOutput={!!shouldShowOutputSection}
               />
             </div>
           </div>

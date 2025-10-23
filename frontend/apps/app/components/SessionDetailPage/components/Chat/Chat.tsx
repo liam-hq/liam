@@ -18,6 +18,7 @@ type Props = {
   isWorkflowRunning?: boolean
   error?: string | null
   onNavigate: (tab: OutputTabValue) => void
+  hasOutput?: boolean
 }
 
 export const Chat: FC<Props> = ({
@@ -25,6 +26,7 @@ export const Chat: FC<Props> = ({
   isWorkflowRunning = false,
   onNavigate,
   error,
+  hasOutput = false,
 }) => {
   const { containerRef, scrollToBottom } = useScrollToBottom<HTMLDivElement>(
     messages.length,
@@ -56,7 +58,13 @@ export const Chat: FC<Props> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.messageListWrapper}>
-        <div className={styles.messageList} ref={containerRef}>
+        <div
+          className={styles.messageList}
+          ref={containerRef}
+          style={{
+            maxHeight: isWorkflowRunning ? 'calc(100% - 80px)' : '100%',
+          }}
+        >
           <Messages
             messages={messages}
             onNavigate={onNavigate}
@@ -70,7 +78,10 @@ export const Chat: FC<Props> = ({
           onClick={scrollToBottom}
         />
         {isWorkflowRunning && workflowStatus && (
-          <FixedWorkflowStatusIndicator statusText={workflowStatus} />
+          <FixedWorkflowStatusIndicator
+            statusText={workflowStatus}
+            hasOutput={hasOutput}
+          />
         )}
       </div>
     </div>
