@@ -36,6 +36,18 @@ describe('getSuggestionText', () => {
 
     expect(result).toBe('column|users|id')
   })
+
+  it('should return "index|users|users_on_status_id" when suggestion is "users_on_status_id" index in "users" table', () => {
+    const suggestion: CommandPaletteSuggestion = {
+      type: 'index',
+      tableName: 'users',
+      indexName: 'users_on_status_id',
+    }
+
+    const result = getSuggestionText(suggestion)
+
+    expect(result).toBe('index|users|users_on_status_id')
+  })
 })
 
 describe('textToSuggestion', () => {
@@ -64,6 +76,18 @@ describe('textToSuggestion', () => {
       type: 'column',
       tableName: 'posts',
       columnName: 'created_at',
+    })
+  })
+
+  it('should return the "posts_on_user_id" index in "posts" table suggestion when suggestion text is "index|posts|posts_on_user_id"', () => {
+    const suggestionText = 'index|posts|posts_on_user_id'
+
+    const result = textToSuggestion(suggestionText)
+
+    expect(result).toEqual({
+      type: 'index',
+      tableName: 'posts',
+      indexName: 'posts_on_user_id',
     })
   })
 
@@ -100,6 +124,7 @@ describe('integration test, (value) => textToSuggestion(getSuggestionText(value)
       { type: 'table', name: 'user_posts' },
       { type: 'command', name: 'export as CSV' },
       { type: 'column', tableName: 'users', columnName: 'email' },
+      { type: 'index', tableName: 'posts', indexName: 'post_on_status_id' },
     ])('in case: %p', (suggestion) => {
       const result = textToSuggestion(getSuggestionText(suggestion))
 
