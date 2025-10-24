@@ -30,6 +30,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 type Props = {
   buildingSchemaId: string
   designSessionId: string
+  sessionTitle: string | null
   initialMessages: StoredMessage[]
   initialAnalyzedRequirements: AnalyzedRequirements | null
   initialDisplayedSchema: Schema
@@ -56,6 +57,7 @@ const determineInitialTab = (
 export const SessionDetailPageClient: FC<Props> = ({
   buildingSchemaId,
   designSessionId,
+  sessionTitle,
   initialMessages,
   initialAnalyzedRequirements,
   initialDisplayedSchema,
@@ -176,6 +178,7 @@ export const SessionDetailPageClient: FC<Props> = ({
           <div className={styles.chatSection}>
             <div className={styles.chatWrapper}>
               <Chat
+                sessionTitle={sessionTitle ?? undefined}
                 messages={messages}
                 isWorkflowRunning={isStreaming}
                 onNavigate={setActiveTab}

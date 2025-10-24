@@ -1,0 +1,63 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+}
+
+.label {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.agentList {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  flex-wrap: wrap;
+}
+
+.agentItem {
+  display: flex;
+  align-items: center;
+}
+
+.agentName {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.agentName[data-status='completed'] {
+  color: var(--text-primary);
+  background-color: var(--overlay-10);
+}
+
+.agentName[data-status='running'] {
+  color: var(--text-primary);
+  background-color: var(--overlay-20);
+  font-weight: var(--font-weight-semibold);
+}
+
+.agentName[data-status='pending'] {
+  color: var(--text-tertiary);
+}
+
+.checkmark {
+  color: var(--text-success);
+  font-weight: var(--font-weight-bold);
+}
+
+.runningIndicator {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--spacing-1);
+}
+
+.arrow {
+  color: var(--text-tertiary);
+  margin: 0 var(--spacing-1);
+}
