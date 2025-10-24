@@ -62,19 +62,35 @@ export class PGliteInstanceManager {
    * Execute SQL statements and return results with metadata
    * Uses PostgreSQL parser to properly handle complex statements including dollar-quoted strings
    */
+  private isParseError(
+    result: PgParseResult,
+  ): result is { error: { message: string } } {
+    return (result as any).error !== null
+  }
+
+  private isParseSuccess(
+    result: PgParseResult,
+  ): result is { parse_tree: { stmts: any[] } } {
+    return (result as any).parse_tree?.stmts != null
+  }
+
   private async executeSql(sqlText: string, db: PGlite): Promise<SqlResult[]> {
     try {
       const parseResult: PgParseResult = await pgParse(sqlText)
 
-      if (parseResult.error) {
+      if (this.isParseError(parseResult)) {
         return [this.createParseErrorResult(sqlText, parseResult.error.message)]
       }
 
-      const statements = this.extractStatements(
-        sqlText,
-        parseResult.parse_tree.stmts,
-      )
-      return await this.executeStatements(statements, db)
+      if (this.isParseSuccess(parseResult)) {
+        const statements = this.extractStatements(
+          sqlText,
+          parseResult.parse_tree.stmts,
+        )
+        return await this.executeStatements(statements, db)
+      }
+
+      return [this.createParseErrorResult(sqlText, 'No statements found')]
     } catch (error) {
       return await this.executeFallback(sqlText, db, error)
     }
