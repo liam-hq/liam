@@ -39,6 +39,7 @@ async function loadSessionData(designSessionId: string): Promise<
       baselineSchema: Schema
       initialAnalyzedRequirements: AnalyzedRequirements | null
       workflowError: string | null
+      sessionTitle: string | null
     },
     Error
   >
@@ -49,6 +50,13 @@ async function loadSessionData(designSessionId: string): Promise<
   }
 
   const supabase = await createClient()
+  const { data: sessionData } = await supabase
+    .from('design_sessions')
+    .select('name')
+    .eq('id', designSessionId)
+    .single()
+  const sessionTitle = sessionData?.name ?? null
+
   const organizationId = buildingSchema.organization_id
   const repositories = createSupabaseRepositories(supabase, organizationId)
   const config = {
@@ -91,6 +99,7 @@ async function loadSessionData(designSessionId: string): Promise<
     baselineSchema,
     initialAnalyzedRequirements,
     workflowError,
+    sessionTitle,
   })
 }
 
@@ -108,6 +117,7 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
     baselineSchema,
     workflowError,
     initialAnalyzedRequirements,
+    sessionTitle,
   } = result.value
 
   const versions = await getVersions(buildingSchema.id)
@@ -132,6 +142,7 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
       <SessionDetailPageClient
         buildingSchemaId={buildingSchema.id}
         designSessionId={designSessionId}
+        sessionTitle={sessionTitle}
         initialMessages={messages}
         initialAnalyzedRequirements={initialAnalyzedRequirements}
         initialDisplayedSchema={initialSchema}

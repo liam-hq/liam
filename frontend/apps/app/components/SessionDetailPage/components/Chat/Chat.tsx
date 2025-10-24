@@ -5,6 +5,7 @@ import type { FC } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import type { OutputTabValue } from '../Output/constants'
 import styles from './Chat.module.css'
+import { ChatHeader } from './components/ChatHeader'
 import { ErrorDisplay } from './components/ErrorDisplay'
 import { Messages } from './components/Messages'
 import { ScrollToBottomButton } from './components/ScrollToBottomButton'
@@ -12,6 +13,7 @@ import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
 import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
+  sessionTitle?: string
   messages: BaseMessage[]
   isWorkflowRunning?: boolean
   error?: string | null
@@ -19,6 +21,7 @@ type Props = {
 }
 
 export const Chat: FC<Props> = ({
+  sessionTitle,
   messages,
   isWorkflowRunning = false,
   onNavigate,
@@ -52,6 +55,11 @@ export const Chat: FC<Props> = ({
 
   return (
     <div className={styles.wrapper}>
+      <ChatHeader
+        sessionTitle={sessionTitle}
+        messages={messages}
+        isWorkflowRunning={isWorkflowRunning}
+      />
       <div className={styles.messageListWrapper}>
         <div className={styles.messageList} ref={containerRef}>
           <Messages
