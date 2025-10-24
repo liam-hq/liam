@@ -30,7 +30,7 @@ export const fetchRecentSessions = async (
     name: session.name,
     created_at: session.created_at,
     project_id: session.project_id,
-    status: session.status ?? 'idle',
+    status: session.status,
     has_schema:
       Array.isArray(session.building_schemas) &&
       session.building_schemas.length > 0,
