@@ -10,7 +10,6 @@ CRITICAL INSTRUCTIONS:
 1. MUST use the saveTestcase tool to save your generated pgTAP test code
 2. DO NOT provide test code as text in the conversation
 3. Generate complete pgTAP test code with plan() and finish()
-4. One test case = One test type (INSERT, UPDATE, DELETE, or SELECT)
 `
 
 const PGTAP_FUNCTIONS = `
@@ -21,85 +20,45 @@ const PGTAP_FUNCTIONS = `
 - finish() - Complete the test run (always call at the end)
 
 ### Success/Failure Testing
-- lives_ok(sql, description) - Test that SQL executes successfully (2 arguments only)
-- throws_ok(sql, error_code) - Test that SQL fails with specific error code (2 arguments only, NO description)
-
-CRITICAL: throws_ok takes ONLY 2 arguments: the SQL and the error code
-WRONG: throws_ok($$..$$, '23505', 'description')
-RIGHT: throws_ok($$..$$, '23505')
-
-CRITICAL: Never put semicolons inside pgTAP function calls
-WRONG: lives_ok($$...$$, 'description';)
-RIGHT: lives_ok($$...$$, 'description');
+- lives_ok(sql, description) - Test that SQL executes successfully
+- throws_ok(sql, error_code, description) - Test that SQL fails with specific error code
 
 ### Data Validation
 - is(got, expected, description) - Test equality (ensure types match!)
   * CRITICAL: PostgreSQL COUNT returns bigint, so use 5::bigint not 5
   * WRONG: is((SELECT COUNT(*) FROM users), 5, 'desc')
   * RIGHT: is((SELECT COUNT(*) FROM users), 5::bigint, 'desc')
-- ok(expression, description) - Test boolean expression
-- results_eq(sql, expected_sql, description) - Compare query results
-- bag_eq(sql, expected_sql, description) - Compare result sets (unordered)
-  * CRITICAL: Both queries must return the same column types and structure
-
-### UUID Generation
-- Use gen_random_uuid() for generating UUIDs (built-in, no extension needed)
-- NEVER use uuid_generate_v4() (requires uuid-ossp extension)
+- results_eq(sql, expected_sql, description) - Compare query results (order matters)
+- bag_eq(sql, expected_sql, description) - Compare result sets (order ignored)
 
 ### Common PostgreSQL Error Codes
+- 22P02: invalid_text_representation (e.g., invalid ENUM value, type conversion error)
 - 23502: not_null_violation
 - 23503: foreign_key_violation
 - 23505: unique_violation
 - 23514: check_violation
-- 42P01: undefined_table
-- 42703: undefined_column
 `
 
 const INSERT_EXAMPLES = `
 ## INSERT Test Examples
 
-### Example 1: Valid INSERT (Success Case)
+### Example 1: Valid INSERT with FK Setup
 SELECT plan(1);
+-- Arrange: plain INSERT for FK data (use gen_random_uuid() for UUIDs)
+INSERT INTO roles (id, name) VALUES (gen_random_uuid(), 'user');
+-- Act & Assert
 SELECT lives_ok(
-  $$INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com')$$,
-  'Should successfully insert valid user'
+  $$INSERT INTO users (id, name, email, role_id) VALUES (gen_random_uuid(), 'Alice', 'alice@example.com', (SELECT id FROM roles WHERE name = 'user'))$$,
+  'Should successfully insert user with valid role_id'
 );
 SELECT * FROM finish();
 
-### Example 2: NOT NULL Violation (Failure Case)
+### Example 2: NOT NULL Violation
 SELECT plan(1);
--- throws_ok takes ONLY 2 arguments: SQL and error code
 SELECT throws_ok(
   $$INSERT INTO users (name) VALUES ('Bob')$$,
-  '23502'
-);
-SELECT * FROM finish();
-
-### Example 3: Foreign Key Constraint (Failure Case)
-SELECT plan(1);
-SELECT throws_ok(
-  $$INSERT INTO orders (user_id, product_id) VALUES (999, 1)$$,
-  '23503'
-);
-SELECT * FROM finish();
-
-### Example 4: UNIQUE Constraint (Failure Case)
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO products (sku, name) VALUES ('SKU001', 'Product A')$$,
-  'First insert should succeed'
-);
-SELECT throws_ok(
-  $$INSERT INTO products (sku, name) VALUES ('SKU001', 'Product B')$$,
-  '23505'
-);
-SELECT * FROM finish();
-
-### Example 5: CHECK Constraint (Failure Case)
-SELECT plan(1);
-SELECT throws_ok(
-  $$INSERT INTO products (name, price) VALUES ('Expensive Item', -10)$$,
-  '23514'
+  '23502',
+  'Should reject INSERT without required email'
 );
 SELECT * FROM finish();
 `
@@ -107,51 +66,28 @@ SELECT * FROM finish();
 const UPDATE_EXAMPLES = `
 ## UPDATE Test Examples
 
-### Example 1: Valid UPDATE (Success Case)
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO users (name, email) VALUES ('Charlie', 'charlie@example.com')$$,
-  'Setup: Insert test user'
-);
+### Example 1: Valid UPDATE
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (name, email) VALUES ('Charlie', 'charlie@example.com');
+-- Act & Assert
 SELECT lives_ok(
   $$UPDATE users SET name = 'Charles' WHERE email = 'charlie@example.com'$$,
   'Should successfully update user name'
 );
 SELECT * FROM finish();
 
-### Example 2: Foreign Key Violation on UPDATE (Failure Case)
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5)$$,
-  'Setup: Insert test order'
-);
+### Example 2: Foreign Key Violation on UPDATE
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com');
+INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100);
+INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5);
+-- Act & Assert
 SELECT throws_ok(
   $$UPDATE orders SET user_id = 999 WHERE product_id = 1$$,
-  '23503'
-);
-SELECT * FROM finish();
-
-### Example 3: CHECK Constraint on UPDATE (Failure Case)
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO products (name, price) VALUES ('Test Product', 100)$$,
-  'Setup: Insert product'
-);
-SELECT throws_ok(
-  $$UPDATE products SET price = -50 WHERE name = 'Test Product'$$,
-  '23514'
-);
-SELECT * FROM finish();
-
-### Example 4: Conditional UPDATE with Validation
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO inventory (product_id, quantity) VALUES (1, 100)$$,
-  'Setup: Insert inventory'
-);
-SELECT lives_ok(
-  $$UPDATE inventory SET quantity = quantity - 10 WHERE product_id = 1 AND quantity >= 10$$,
-  'Should successfully reduce inventory'
+  '23503',
+  'Should reject UPDATE with non-existent user_id'
 );
 SELECT * FROM finish();
 `
@@ -159,61 +95,28 @@ SELECT * FROM finish();
 const DELETE_EXAMPLES = `
 ## DELETE Test Examples
 
-### Example 1: Valid DELETE (Success Case)
-SELECT plan(2);
+### Example 1: Valid DELETE
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (name, email) VALUES ('DeleteMe', 'delete@example.com');
+-- Act & Assert
 SELECT lives_ok(
-  $$INSERT INTO temp_users (name, email) VALUES ('DeleteMe', 'delete@example.com')$$,
-  'Setup: Insert user to delete'
-);
-SELECT lives_ok(
-  $$DELETE FROM temp_users WHERE email = 'delete@example.com'$$,
+  $$DELETE FROM users WHERE email = 'delete@example.com'$$,
   'Should successfully delete user'
 );
 SELECT * FROM finish();
 
-### Example 2: Foreign Key Constraint on DELETE (Failure Case)
-SELECT plan(2);
-SELECT lives_ok(
-  $$INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5)$$,
-  'Setup: Insert order referencing user'
-);
+### Example 2: Foreign Key Constraint on DELETE
+SELECT plan(1);
+-- Arrange
+INSERT INTO users (id, name, email) VALUES (1, 'Test User', 'test@example.com');
+INSERT INTO products (id, name, price) VALUES (1, 'Test Product', 100);
+INSERT INTO orders (user_id, product_id, quantity) VALUES (1, 1, 5);
+-- Act & Assert
 SELECT throws_ok(
   $$DELETE FROM users WHERE id = 1$$,
-  '23503'
-);
-SELECT * FROM finish();
-
-### Example 3: Conditional DELETE
-SELECT plan(3);
-SELECT lives_ok(
-  $$INSERT INTO expired_sessions (user_id, created_at) VALUES (1, NOW() - INTERVAL '2 days')$$,
-  'Setup: Insert expired session'
-);
-SELECT lives_ok(
-  $$DELETE FROM expired_sessions WHERE created_at < NOW() - INTERVAL '1 day'$$,
-  'Should delete expired sessions'
-);
-SELECT is(
-  (SELECT COUNT(*) FROM expired_sessions WHERE user_id = 1),
-  0::bigint,
-  'Expired session should be deleted'
-);
-SELECT * FROM finish();
-
-### Example 4: CASCADE DELETE Verification
-SELECT plan(3);
-SELECT lives_ok(
-  $$INSERT INTO users (name, email) VALUES ('CascadeTest', 'cascade@example.com')$$,
-  'Setup: Insert user'
-);
-SELECT lives_ok(
-  $$INSERT INTO user_profiles (user_id, bio)
-     VALUES ((SELECT id FROM users WHERE email = 'cascade@example.com'), 'Test bio')$$,
-  'Setup: Insert profile'
-);
-SELECT lives_ok(
-  $$DELETE FROM users WHERE email = 'cascade@example.com'$$,
-  'Should cascade delete user and profile'
+  '23503',
+  'Should reject DELETE of user with dependent orders'
 );
 SELECT * FROM finish();
 `
@@ -221,54 +124,26 @@ SELECT * FROM finish();
 const SELECT_EXAMPLES = `
 ## SELECT Test Examples
 
-### Example 1: Simple Data Verification
+### Example 1: Simple Query with Setup
 SELECT plan(1);
-SELECT is(
-  (SELECT COUNT(*) FROM users WHERE email LIKE '%@example.com'),
-  5::bigint,
-  'Should find 5 users with example.com email'
+-- Arrange
+INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');
+-- Act & Assert
+SELECT lives_ok(
+  $$SELECT COUNT(*) FROM users WHERE email LIKE '%@example.com'$$,
+  'Should successfully query users by email pattern'
 );
 SELECT * FROM finish();
 
-### Example 2: Join Query Validation
+### Example 2: Join Query with Setup
 SELECT plan(1);
-SELECT is(
-  (SELECT COUNT(*)
-   FROM orders o
-   INNER JOIN users u ON o.user_id = u.id
-   WHERE u.email = 'alice@example.com'),
-  3::bigint,
-  'Alice should have 3 orders'
-);
-SELECT * FROM finish();
-
-### Example 3: Aggregate Function Test
-SELECT plan(1);
-SELECT ok(
-  (SELECT AVG(price) FROM products WHERE category = 'Electronics') > 100,
-  'Average electronics price should be over 100'
-);
-SELECT * FROM finish();
-
-### Example 4: Result Set Comparison
-SELECT plan(1);
-SELECT results_eq(
-  $$SELECT name FROM users WHERE active = true ORDER BY name$$,
-  $$VALUES ('Alice'), ('Bob'), ('Charlie')$$,
-  'Should return active users in alphabetical order'
-);
-SELECT * FROM finish();
-
-### Example 5: Complex Business Logic Validation
-SELECT plan(2);
-SELECT ok(
-  (SELECT COUNT(*) FROM orders WHERE status = 'pending' AND created_at < NOW() - INTERVAL '7 days') = 0,
-  'No orders should be pending for more than 7 days'
-);
-SELECT ok(
-  (SELECT SUM(quantity * price) FROM order_items WHERE order_id = 1) =
-  (SELECT total_amount FROM orders WHERE id = 1),
-  'Order total should match sum of item prices'
+-- Arrange
+INSERT INTO users (id, name, email) VALUES (1, 'Alice', 'alice@example.com');
+INSERT INTO orders (user_id, product_id) VALUES (1, 100);
+-- Act & Assert
+SELECT lives_ok(
+  $$SELECT COUNT(*) FROM orders o JOIN users u ON o.user_id = u.id WHERE u.email = 'alice@example.com'$$,
+  'Should successfully execute join query'
 );
 SELECT * FROM finish();
 `
@@ -281,37 +156,17 @@ const BEST_PRACTICES = `
    - Call finish() at the end to validate test count
    - Mismatched counts indicate test logic errors
 
-2. **One Test = One Focus**
-   - Each test case validates ONE specific behavior
-   - Keep tests simple and focused
-   - Use descriptive test descriptions
+2. **Follow Arrange-Act-Assert (AAA) Pattern**
+   - Arrange: Plain INSERT only - NO lives_ok/throws_ok wrapping
+   - Act & Assert: Wrap test operation in lives_ok/throws_ok/is
+   - Example: INSERT users (arrange), then SELECT lives_ok(test query)
 
-3. **Test Both Success and Failure**
-   - Use lives_ok(sql, description) for operations that should succeed
-   - Use throws_ok(sql, error_code) - ONLY 2 arguments, NO description!
-   - Validate that constraints actually prevent invalid data
+3. **One Test = One Focus**
+   - Each test validates ONE specific behavior
+   - One test file tests ONE operation type (INSERT/UPDATE/DELETE/SELECT)
+   - Setup data (Arrange) doesn't count as "multiple focuses"
 
-4. **Setup Data When Needed**
-   - Use multiple lives_ok() calls to setup test data
-   - Increment plan() count for setup steps
-   - Keep setup minimal and focused
-
-5. **Use Dollar Quoting**
-   - Use $$ for SQL strings to avoid escaping issues
-   - Nested quotes work naturally: $$SELECT 'value'$$
-
-6. **Explicit Error Codes in throws_ok**
-   - throws_ok() takes ONLY 2 arguments: SQL and error code
-   - Common codes: 23502 (NOT NULL), 23503 (FK), 23505 (UNIQUE), 23514 (CHECK)
-   - WRONG: throws_ok($$...$$, '23505', 'description')
-   - RIGHT: throws_ok($$...$$, '23505')
-
-7. **Type Matching in is()**
-   - COUNT(*) returns bigint, so use is(count, 5::bigint, 'desc')
-   - WRONG: is((SELECT COUNT(*) FROM t), 5, 'desc')
-   - RIGHT: is((SELECT COUNT(*) FROM t), 5::bigint, 'desc')
-
-8. **UUID Generation**
+4. **UUID Generation**
    - Use gen_random_uuid() for UUID columns (built-in)
    - NEVER use uuid_generate_v4() (requires uuid-ossp extension)
    - Example: INSERT INTO users (id) VALUES (gen_random_uuid())
@@ -327,6 +182,8 @@ ${CRITICAL_INSTRUCTIONS}
 
 ${PGTAP_FUNCTIONS}
 
+${BEST_PRACTICES}
+
 ## Type-Specific Examples
 
 Choose examples based on the test type you're generating:
@@ -338,8 +195,6 @@ ${UPDATE_EXAMPLES}
 ${DELETE_EXAMPLES}
 
 ${SELECT_EXAMPLES}
-
-${BEST_PRACTICES}
 `
 
 /**
