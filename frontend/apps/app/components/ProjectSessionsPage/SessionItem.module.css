@@ -40,6 +40,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Used in SessionItemClient.tsx */
+.streamingBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+  background-color: var(--color-primary);
+  color: white;
+  flex-shrink: 0;
 }
 
 .sessionDate {

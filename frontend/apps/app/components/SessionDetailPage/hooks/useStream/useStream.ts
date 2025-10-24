@@ -11,8 +11,9 @@ import {
   SSE_EVENTS,
 } from '@liam-hq/agent/client'
 import { err, ok, type Result } from 'neverthrow'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
+import { useStreamingContext } from '../../../../contexts/StreamingContext'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import {
@@ -72,6 +73,7 @@ export const useStream = ({
 }: Props) => {
   const messageManagerRef = useRef(new MessageTupleManager())
   const storedMessage = useSessionStorageOnce(designSessionId)
+  const { getSession, updateSession, createSession } = useStreamingContext()
 
   const processedInitialMessages = useMemo(() => {
     if (storedMessage) {
@@ -79,64 +81,120 @@ export const useStream = ({
     }
     return initialMessages
   }, [storedMessage, initialMessages])
+
+  const globalSession = getSession(designSessionId)
+
   const [messages, setMessages] = useState<BaseMessage[]>(
-    processedInitialMessages,
+    globalSession?.messages ?? processedInitialMessages,
   )
   const [analyzedRequirements, setAnalyzedRequirements] =
-    useState<AnalyzedRequirements | null>(initialAnalyzedRequirements ?? null)
+    useState<AnalyzedRequirements | null>(
+      globalSession?.analyzedRequirements ??
+        initialAnalyzedRequirements ??
+        null,
+    )
 
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+  const [isStreaming, setIsStreaming] = useState(
+    globalSession?.isStreaming ?? false,
+  )
+  const [error, setError] = useState<string | null>(
+    globalSession?.error ?? null,
+  )
+  const abortRef = useRef<AbortController | null>(
+    globalSession?.abortController ?? null,
+  )
   const retryCountRef = useRef(0)
 
-  const completeWorkflow = useCallback((sessionId: string) => {
-    setIsStreaming(false)
-    abortRef.current = null
-    retryCountRef.current = 0
-    clearWorkflowInProgress(sessionId)
-  }, [])
+  useEffect(() => {
+    if (!globalSession) {
+      createSession(
+        designSessionId,
+        processedInitialMessages,
+        initialAnalyzedRequirements ?? null,
+      )
+    }
+  }, [
+    designSessionId,
+    globalSession,
+    createSession,
+    processedInitialMessages,
+    initialAnalyzedRequirements,
+  ])
+
+  useEffect(() => {
+    if (globalSession) {
+      setMessages(globalSession.messages)
+      setAnalyzedRequirements(globalSession.analyzedRequirements)
+      setIsStreaming(globalSession.isStreaming)
+      setError(globalSession.error)
+      abortRef.current = globalSession.abortController
+    }
+  }, [globalSession])
+
+  const completeWorkflow = useCallback(
+    (sessionId: string) => {
+      setIsStreaming(false)
+      abortRef.current = null
+      retryCountRef.current = 0
+      clearWorkflowInProgress(sessionId)
+      updateSession(sessionId, {
+        isStreaming: false,
+        abortController: null,
+      })
+    },
+    [updateSession],
+  )
 
   const abortWorkflow = useCallback(() => {
     abortRef.current?.abort()
     setIsStreaming(false)
     abortRef.current = null
     retryCountRef.current = 0
-    // Do NOT clear workflow flag - allow reconnection
-  }, [])
+    updateSession(designSessionId, {
+      isStreaming: false,
+      abortController: null,
+    })
+  }, [designSessionId, updateSession])
 
   const clearError = useCallback(() => {
     setError(null)
-  }, [])
+    updateSession(designSessionId, {
+      error: null,
+    })
+  }, [designSessionId, updateSession])
 
   useNavigationGuard((_event) => {
-    if (isStreaming) {
-      abortWorkflow()
-    }
     return true
   })
 
-  const handleMessageEvent = useCallback(async (ev: { data: string }) => {
-    const messageId = await messageManagerRef.current.add(ev.data)
-    if (!messageId) return
+  const handleMessageEvent = useCallback(
+    async (ev: { data: string }) => {
+      const messageId = await messageManagerRef.current.add(ev.data)
+      if (!messageId) return
 
-    setMessages((prev) => {
-      const newMessages = [...prev]
-      const result = messageManagerRef.current.get(messageId, prev.length)
-      if (!result?.chunk) return newMessages
+      setMessages((prev) => {
+        const newMessages = [...prev]
+        const result = messageManagerRef.current.get(messageId, prev.length)
+        if (!result?.chunk) return newMessages
 
-      const { chunk, index } = result
-      const message = coerceMessageLikeToMessage(chunk)
+        const { chunk, index } = result
+        const message = coerceMessageLikeToMessage(chunk)
 
-      if (index === undefined) {
-        newMessages.push(message)
-      } else {
-        newMessages[index] = message
-      }
+        if (index === undefined) {
+          newMessages.push(message)
+        } else {
+          newMessages[index] = message
+        }
 
-      return newMessages
-    })
-  }, [])
+        updateSession(designSessionId, {
+          messages: newMessages,
+        })
+
+        return newMessages
+      })
+    },
+    [designSessionId, updateSession],
+  )
 
   const handleAnalyzedRequirementsEvent = useCallback(
     (ev: { data: string }) => {
@@ -145,15 +203,26 @@ export const useStream = ({
       const result = safeParse(analyzedRequirementsSchema, serialized)
       if (result.success) {
         setAnalyzedRequirements(result.output)
+        updateSession(designSessionId, {
+          analyzedRequirements: result.output,
+        })
       }
     },
-    [],
+    [designSessionId, updateSession],
   )
 
-  const handleErrorEvent = useCallback((ev: { data: string }) => {
-    setIsStreaming(false)
-    setError(extractStreamErrorMessage(ev.data))
-  }, [])
+  const handleErrorEvent = useCallback(
+    (ev: { data: string }) => {
+      const errorMessage = extractStreamErrorMessage(ev.data)
+      setIsStreaming(false)
+      setError(errorMessage)
+      updateSession(designSessionId, {
+        isStreaming: false,
+        error: errorMessage,
+      })
+    },
+    [designSessionId, updateSession],
+  )
 
   const handleStreamEvent = useCallback(
     (ev: { event: string; data: string }): 'end' | 'error' | 'continue' => {
@@ -213,6 +282,12 @@ export const useStream = ({
       setIsStreaming(true)
       setError(null)
 
+      updateSession(params.designSessionId, {
+        isStreaming: true,
+        error: null,
+        abortController: controller,
+      })
+
       try {
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -267,7 +342,7 @@ export const useStream = ({
         })
       }
     },
-    [completeWorkflow, abortWorkflow, processStreamEvents],
+    [completeWorkflow, abortWorkflow, processStreamEvents, updateSession],
   )
 
   const replay = useCallback(
