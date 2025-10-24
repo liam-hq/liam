@@ -2,13 +2,6 @@
 
 import type { Installation, Repository } from '@liam-hq/github'
 import {
-  Button,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-} from '@liam-hq/ui'
-import {
   type FC,
   useActionState,
   useCallback,
@@ -16,21 +9,25 @@ import {
   useTransition,
 } from 'react'
 import { match, P } from 'ts-pattern'
-import { RepositoryItem } from '../RepositoryItem'
 import { addProject } from './actions/addProject'
 import { getRepositories } from './actions/getRepositories'
+import { EmptyStateCard } from './components/EmptyStateCard'
+import { HeaderActions } from './components/HeaderActions'
+import { RepositoryList } from './components/RepositoryList'
 import styles from './InstallationSelector.module.css'
 
 type Props = {
   installations: Installation[]
   organizationId: string
-  disabled?: boolean
+  needsRefresh?: boolean
 }
+
+type EmptyStateVariant = 'connect' | 'reauth'
 
 export const InstallationSelector: FC<Props> = ({
   installations,
   organizationId,
-  disabled = false,
+  needsRefresh = false,
 }) => {
   const [selectedInstallation, setSelectedInstallation] =
     useState<Installation | null>(null)
@@ -42,20 +39,34 @@ export const InstallationSelector: FC<Props> = ({
 
   const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL
 
-  const handleSelectInstallation = (installation: Installation) => {
-    setSelectedInstallation(installation)
-    startTransition(() => {
-      if (disabled) return
-      startAddingProjectTransition(() => {
-        setSelectedInstallation(installation)
-        const formData = new FormData()
-        formData.append('installationId', installation.id.toString())
-        repositoriesAction(formData)
-      })
-    })
-  }
+  const hasInstallations = installations.length > 0
 
-  const handleClick = useCallback(
+  const handleInstallApp = useCallback(() => {
+    if (!githubAppUrl) return
+    window.open(githubAppUrl, '_blank', 'noopener,noreferrer')
+  }, [githubAppUrl])
+
+  const handleConnectGitHub = useCallback(() => {
+    handleInstallApp()
+  }, [handleInstallApp])
+
+  const handleSelectInstallation = useCallback(
+    (installation: Installation) => {
+      if (needsRefresh) return
+
+      setSelectedInstallation(installation)
+      startTransition(() => {
+        startAddingProjectTransition(() => {
+          const formData = new FormData()
+          formData.append('installationId', installation.id.toString())
+          repositoriesAction(formData)
+        })
+      })
+    },
+    [needsRefresh, repositoriesAction],
+  )
+
+  const handleSelectRepository = useCallback(
     async (repository: Repository) => {
       startAddingProjectTransition(async () => {
         try {
@@ -79,72 +90,52 @@ export const InstallationSelector: FC<Props> = ({
     [selectedInstallation, organizationId],
   )
 
+  const emptyStateVariant: EmptyStateVariant | null = needsRefresh
+    ? 'reauth'
+    : hasInstallations
+      ? null
+      : 'connect'
+
+  const dropdownLabel = selectedInstallation
+    ? match(selectedInstallation.account)
+        .with({ login: P.string }, (item) => item.login)
+        .otherwise(() => 'Select installation')
+    : 'Select installation'
+
   return (
-    <>
-      <div className={styles.installationSelector}>
-        <Button size="lg" variant="ghost-secondary">
-          <a href={githubAppUrl} target="_blank" rel="noopener noreferrer">
-            Install GitHub App
-          </a>
-        </Button>
-      </div>
-      <div className={styles.installationSelector}>
-        <DropdownMenuRoot>
-          <DropdownMenuTrigger asChild disabled={disabled}>
-            <Button size="lg" variant="ghost-secondary" disabled={disabled}>
-              {selectedInstallation
-                ? match(selectedInstallation.account)
-                    .with({ login: P.string }, (item) => item.login)
-                    .otherwise(() => 'Select installation')
-                : 'Select installation'}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {installations.map((item) => {
-              const login = match(item.account)
-                .with({ login: P.string }, (item) => item.login)
-                .otherwise(() => null)
+    <section className={styles.container}>
+      <HeaderActions
+        hasInstallations={hasInstallations}
+        needsRefresh={needsRefresh}
+        installations={installations}
+        selectedInstallationLabel={dropdownLabel}
+        onSelectInstallation={handleSelectInstallation}
+        onInstallApp={handleInstallApp}
+        onConnectGitHub={handleConnectGitHub}
+        hasGithubAppUrl={!!githubAppUrl}
+      />
 
-              if (login === null) return null
-
-              return (
-                <DropdownMenuItem
-                  key={item.id}
-                  onSelect={() => !disabled && handleSelectInstallation(item)}
-                >
-                  {login}
-                </DropdownMenuItem>
-              )
-            })}
-          </DropdownMenuContent>
-        </DropdownMenuRoot>
-      </div>
-
-      {isRepositoriesLoading && <div>Loading repositories...</div>}
-
-      {!isRepositoriesLoading && repositoriesState.repositories.length > 0 && (
-        <div className={styles.repositoriesList}>
-          <h3>Repositories</h3>
-          {repositoriesState.repositories.map((repo) => (
-            <RepositoryItem
-              key={repo.id}
-              name={repo.name}
-              onClick={() => handleClick(repo)}
-              isLoading={isAddingProject}
+      <div className={styles.panel}>
+        <div className={styles.panelContent}>
+          {isRepositoriesLoading ? (
+            <div className={styles.loading}>Loading repositories...</div>
+          ) : emptyStateVariant ? (
+            <EmptyStateCard
+              variant={emptyStateVariant}
+              onActionClick={handleConnectGitHub}
+              actionDisabled={!githubAppUrl}
             />
-          ))}
+          ) : (
+            <RepositoryList
+              repositories={repositoriesState.repositories}
+              error={repositoriesState.error}
+              isAddingProject={isAddingProject}
+              hasSelectedInstallation={Boolean(selectedInstallation)}
+              onSelectRepository={handleSelectRepository}
+            />
+          )}
         </div>
-      )}
-
-      {!isRepositoriesLoading &&
-        selectedInstallation &&
-        repositoriesState.repositories.length === 0 &&
-        repositoriesState.error && <div>Error: {repositoriesState.error}</div>}
-
-      {!isRepositoriesLoading &&
-        selectedInstallation &&
-        repositoriesState.repositories.length === 0 &&
-        !repositoriesState.error && <div>No repositories found</div>}
-    </>
+      </div>
+    </section>
   )
 }
