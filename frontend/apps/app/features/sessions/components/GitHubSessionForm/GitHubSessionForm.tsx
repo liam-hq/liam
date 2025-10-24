@@ -28,10 +28,8 @@ export const GitHubSessionForm: FC<Props> = ({
     { branches: [], loading: false },
   )
 
-  const [schemaPathState, schemaPathAction] = useActionState(
-    getSchemaFilePath,
-    { path: null },
-  )
+  const [schemaPathState, schemaPathAction, isSchemaPathLoading] =
+    useActionState(getSchemaFilePath, { path: null })
 
   const { isRouting } = useSessionNavigation(state)
 
@@ -63,13 +61,13 @@ export const GitHubSessionForm: FC<Props> = ({
       defaultProjectId={defaultProjectId}
       branches={branchesState.branches}
       isBranchesLoading={isBranchesLoading}
-      branchesError={branchesState.error}
+      isBranchesError={!!branchesState.error}
       formError={!state.success ? state.error : undefined}
       isPending={isPending || isRouting}
       onProjectChange={handleProjectChange}
       formAction={formAction}
       schemaFilePath={schemaPathState.path}
-      isTransitioning={false}
+      isSchemaPathLoading={isSchemaPathLoading}
     />
   )
 }

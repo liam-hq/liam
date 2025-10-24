@@ -12,10 +12,9 @@ function formatTestCase(
 ): string {
   const sections: string[] = []
 
-  sections.push(`#### ${reqIndex + 1}.${index + 1}. ${testCase.title}`)
-  sections.push('')
-
-  sections.push(`##### **${testCase.type}** - ${testCase.title}`)
+  sections.push(
+    `#### ${reqIndex + 1}.${index + 1}. ${testCase.type} - ${testCase.title}`,
+  )
   sections.push('')
 
   // SQL code block

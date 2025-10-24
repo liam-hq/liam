@@ -1,19 +1,19 @@
 import { notFound } from 'next/navigation'
 import { urlgen } from '../../libs/routes'
-import { EmptyProjectsState } from './components/EmptyProjectsState'
+import { NoProjects } from './components/NoProjects'
+import { ServerProjectsDataProvider } from './components/ServerProjectsDataProvider'
 import styles from './ProjectsPage.module.css'
-import { ServerProjectsDataProvider } from './ServerProjectsDataProvider'
 import {
   getCurrentOrganization,
   getUserOrganizations,
 } from './services/getCurrentOrganization'
 import { getProjects } from './services/getProjects'
 
-export async function ProjectsPage({
-  organizationId,
-}: {
+type Props = {
   organizationId: string
-}) {
+}
+
+export async function ProjectsPage({ organizationId }: Props) {
   const currentOrganization = await getCurrentOrganization(organizationId)
 
   if (!currentOrganization) {
@@ -29,8 +29,7 @@ export async function ProjectsPage({
       <div className={styles.contentContainer}>
         <h1 className={styles.heading}>Projects</h1>
         {projects === null || projects.length === 0 ? (
-          <EmptyProjectsState
-            projects={projects}
+          <NoProjects
             createProjectHref={
               currentOrganization
                 ? urlgen('projects/new')

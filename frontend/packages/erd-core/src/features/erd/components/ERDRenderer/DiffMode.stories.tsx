@@ -8,6 +8,7 @@ import {
   mockAddedIndex,
   mockAddedTableSchema,
   mockAddedUniqueConstraint,
+  mockBaselineSchema,
   mockCurrentSchema,
   mockModifiedColumnCommentSchema,
   mockModifiedColumnDefaultSchema,
@@ -17,7 +18,6 @@ import {
   mockModifiedIndexType,
   mockModifiedIndexUnique,
   mockModifiedTableSchema,
-  mockPreviousSchema,
   mockRemovedColumnSchema,
   mockRemovedConstraint,
   mockRemovedIndex,
@@ -74,7 +74,7 @@ export const Default: Story = {
       <Providers
         showDiff
         defaultShowMode="ALL_FIELDS"
-        schema={{ current: mockCurrentSchema, previous: mockPreviousSchema }}
+        schema={{ current: mockCurrentSchema, baseline: mockBaselineSchema }}
       >
         <div style={{ height: '100vh', width: '100vw' }}>
           <Story />
@@ -90,7 +90,7 @@ export const DiffModeTableNameOnly: Story = {
       <Providers
         showDiff
         defaultShowMode="TABLE_NAME"
-        schema={{ current: mockCurrentSchema, previous: mockPreviousSchema }}
+        schema={{ current: mockCurrentSchema, baseline: mockBaselineSchema }}
       >
         <div style={{ height: '100vh', width: '100vw' }}>
           <Story />
@@ -106,7 +106,7 @@ export const DiffModeKeyOnly: Story = {
       <Providers
         showDiff
         defaultShowMode="KEY_ONLY"
-        schema={{ current: mockCurrentSchema, previous: mockPreviousSchema }}
+        schema={{ current: mockCurrentSchema, baseline: mockBaselineSchema }}
       >
         <div style={{ height: '100vh', width: '100vw' }}>
           <Story />

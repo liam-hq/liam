@@ -134,9 +134,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
         ### 1. Aircraft Management
 
-        #### 1.1. Aircraft Registration and Update
-
-        ##### **INSERT** - Aircraft Registration and Update
+        #### 1.1. INSERT - Aircraft Registration and Update
 
         \`\`\`sql
         BEGIN;
@@ -153,9 +151,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
         > 3 rows inserted
 
 
-        #### 1.2. View Flights by Aircraft
-
-        ##### **SELECT** - View Flights by Aircraft
+        #### 1.2. SELECT - View Flights by Aircraft
 
         \`\`\`sql
         SELECT f.flight_name, f.scheduled_departure, f.scheduled_arrival, f.origin, f.destination
@@ -176,9 +172,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
         ### 2. Flight Information Management
 
-        #### 2.1. Flight Schedule Creation
-
-        ##### **INSERT** - Flight Schedule Creation
+        #### 2.1. INSERT - Flight Schedule Creation
 
         \`\`\`sql
         INSERT INTO flights (id, flight_name, origin, destination, scheduled_departure, scheduled_arrival, airplane_number, captain_id, first_officer_id)
@@ -191,9 +185,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
         > 1 row inserted
 
 
-        #### 2.2. Recording Actual Flight Times
-
-        ##### **UPDATE** - Recording Actual Flight Times
+        #### 2.2. UPDATE - Recording Actual Flight Times
 
         \`\`\`sql
         UPDATE flights SET actual_start = '2024-06-01 08:05:00+09', actual_end = '2024-06-01 09:12:00+09'
@@ -210,9 +202,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
         ### 3. Pilot Management
 
-        #### 3.1. Pilot (Captain/First Officer) Registration
-
-        ##### **INSERT** - Pilot (Captain/First Officer) Registration
+        #### 3.1. INSERT - Pilot (Captain/First Officer) Registration
 
         \`\`\`sql
         INSERT INTO pilots (pilot_id, name, phone) VALUES
@@ -233,9 +223,7 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
         ### 4. Data Integrity and Validation
 
-        #### 4.1. Referential Integrity Verification
-
-        ##### **DELETE** - Referential Integrity Verification
+        #### 4.1. DELETE - Referential Integrity Verification
 
         \`\`\`sql
         DELETE FROM airplanes WHERE airplane_number = 'JA330C';
@@ -506,10 +494,10 @@ WHERE id = 'fc70279f-04d3-41ea-97e9-3a1bb7ee358f';`,
 
       const result = formatArtifactToMarkdown(analyzedRequirements)
 
-      expect(result).toContain('**INSERT**')
-      expect(result).toContain('**UPDATE**')
-      expect(result).toContain('**DELETE**')
-      expect(result).toContain('**SELECT**')
+      expect(result).toContain('INSERT -')
+      expect(result).toContain('UPDATE -')
+      expect(result).toContain('DELETE -')
+      expect(result).toContain('SELECT -')
     })
 
     it('should handle very long text content gracefully', () => {

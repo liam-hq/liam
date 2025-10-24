@@ -4,7 +4,7 @@ import { schemaToDdl } from '../utils/schemaToDdl'
 
 type UseSQLProps = {
   currentSchema: Schema | null
-  prevSchema: Schema | null
+  baselineSchema: Schema | null
 }
 
 type UseSQLResult = {
@@ -14,7 +14,7 @@ type UseSQLResult = {
 
 export const useSql = ({
   currentSchema,
-  prevSchema,
+  baselineSchema,
 }: UseSQLProps): UseSQLResult => {
   // Generate DDL from schemas
   const cumulativeDdl = useMemo(() => {
@@ -24,10 +24,10 @@ export const useSql = ({
   }, [currentSchema])
 
   const prevCumulativeDdl = useMemo(() => {
-    if (!prevSchema) return ''
-    const result = schemaToDdl(prevSchema)
+    if (!baselineSchema) return ''
+    const result = schemaToDdl(baselineSchema)
     return result.ddl
-  }, [prevSchema])
+  }, [baselineSchema])
 
   return {
     cumulativeDdl,

@@ -19,17 +19,12 @@
   box-shadow: 0px 0px 20px 0px var(--severity-critical-40);
 }
 
-.formContent {
-  padding: var(--spacing-5);
+.form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
+  gap: var(--spacing-9);
+  padding: var(--spacing-5) var(--spacing-5) var(--spacing-4);
+  background-color: var(--global-background);
 }
 
 .inputWrapper {
@@ -73,8 +68,18 @@
   color: var(--overlay-30);
 }
 
-.buttonContainer {
-  padding: var(--spacing-4);
+.error {
+  color: var(--danger-high-contrast-text);
+  font-size: var(--font-size-5);
+}
+
+.buttonsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.buttons {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -88,10 +93,4 @@
   flex: 1;
   overflow-x: auto;
   padding: 2px;
-}
-
-.error {
-  color: var(--danger-high-contrast-text);
-  font-size: var(--font-size-5);
-  margin-top: var(--spacing-2);
 }

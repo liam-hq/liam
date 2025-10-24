@@ -1,1 +1,0 @@
-export { SchemaDisplay } from './SchemaDisplay'

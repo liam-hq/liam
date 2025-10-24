@@ -15,19 +15,19 @@ const version = parse(versionSchema, {
 
 type Props = {
   schema: Schema
-  prevSchema: Schema
+  baselineSchema: Schema
 }
 
-export const ERD: FC<Props> = ({ schema, prevSchema }) => {
+export const ERD: FC<Props> = ({ schema, baselineSchema }) => {
   const schemaKey = useMemo(() => {
-    return JSON.stringify({ current: schema, previous: prevSchema })
-  }, [schema, prevSchema])
+    return JSON.stringify({ current: schema, baselineSchema })
+  }, [schema, baselineSchema])
 
   return (
     <div className={styles.wrapper}>
       <VersionProvider version={version}>
         <ErdRendererProvider
-          schema={{ current: schema, previous: prevSchema }}
+          schema={{ current: schema, baseline: baselineSchema }}
           showDiff
           defaultShowMode="ALL_FIELDS"
         >

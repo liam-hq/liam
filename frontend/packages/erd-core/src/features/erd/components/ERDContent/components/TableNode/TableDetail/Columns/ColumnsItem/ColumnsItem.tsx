@@ -1,6 +1,5 @@
 import type { Column, Constraints } from '@liam-hq/schema'
-import { GridTableRoot, Link } from '@liam-hq/ui'
-import clsx from 'clsx'
+import { GridTableRoot } from '@liam-hq/ui'
 import { type FC, useMemo } from 'react'
 import {
   useSchemaOrThrow,
@@ -8,8 +7,7 @@ import {
 } from '../../../../../../../../../stores'
 import { useDiffStyle } from '../../../../../../../../diff/hooks/useDiffStyle'
 import { getTableColumnElementId } from '../../../../../../../utils/url/getTableColumnElementId'
-import { BlinkCircle } from '../../BlinkCircle/BlinkCircle'
-import styles from './ColumnsItem.module.css'
+import { DetailItem, DetailItemHeading } from '../../CollapsibleHeader'
 import { Comment } from './Comment'
 import { Default } from './Default'
 import { getChangeStatus } from './getChangeStatus'
@@ -59,39 +57,23 @@ export const ColumnsItem: FC<Props> = ({
   const isFocused = focusedElementId === elementId
 
   return (
-    <>
-      {isFocused && (
-        <div
-          className={styles.blinkCircleWrapper}
-          data-testid="blink-circle-indicator"
-        >
-          <BlinkCircle />
-        </div>
-      )}
-      <div
-        id={elementId}
-        className={clsx(styles.wrapper, diffStyle, isFocused && styles.focused)}
-      >
-        <h3 className={styles.heading}>
-          <a className={styles.link} href={`#${elementId}`}>
-            {column.name}
-          </a>
-          <Link className={styles.linkIcon} />
-        </h3>
-        {column.comment && <Comment tableId={tableId} column={column} />}
-        <GridTableRoot>
-          <Type tableId={tableId} column={column} />
-          <Default tableId={tableId} column={column} />
-          {constraint && (
-            <PrimaryKey
-              tableId={tableId}
-              columnName={column.name}
-              constraintName={constraint.name}
-            />
-          )}
-          <NotNull tableId={tableId} column={column} />
-        </GridTableRoot>
-      </div>
-    </>
+    <DetailItem id={elementId} className={diffStyle} isFocused={isFocused}>
+      <DetailItemHeading href={`#${elementId}`}>
+        {column.name}
+      </DetailItemHeading>
+      {column.comment && <Comment tableId={tableId} column={column} />}
+      <GridTableRoot>
+        <Type tableId={tableId} column={column} />
+        <Default tableId={tableId} column={column} />
+        {constraint && (
+          <PrimaryKey
+            tableId={tableId}
+            columnName={column.name}
+            constraintName={constraint.name}
+          />
+        )}
+        <NotNull tableId={tableId} column={column} />
+      </GridTableRoot>
+    </DetailItem>
   )
 }

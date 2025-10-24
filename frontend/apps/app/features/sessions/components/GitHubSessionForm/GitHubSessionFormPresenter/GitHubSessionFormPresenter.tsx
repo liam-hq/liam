@@ -3,27 +3,29 @@ import clsx from 'clsx'
 import type { ChangeEvent, FC } from 'react'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { Projects } from '../../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
+import {
+  type Branch,
+  BranchCombobox,
+} from '../../../../../components/shared/BranchCombobox'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import { useEnterKeySubmission } from '../../shared/hooks/useEnterKeySubmission'
 import { SessionFormActions } from '../../shared/SessionFormActions'
-import type { Branch } from '../BranchesDropdown'
-import { BranchesDropdown } from '../BranchesDropdown'
 import { ProjectsDropdown } from '../ProjectsDropdown'
-import { SchemaDisplay } from '../SchemaDisplay'
 import styles from './GitHubSessionFormPresenter.module.css'
+import { SchemaSetupNotice } from './SchemaSetupNotice'
 
 type Props = {
   projects: Projects
   defaultProjectId?: string
   branches: Branch[]
   isBranchesLoading: boolean
-  branchesError?: string
+  isBranchesError?: boolean
   formError?: string
   isPending: boolean
   onProjectChange: (projectId: string) => void
   formAction: (formData: FormData) => void
-  isTransitioning?: boolean
   schemaFilePath: string | null
+  isSchemaPathLoading?: boolean
 }
 
 export const GitHubSessionFormPresenter: FC<Props> = ({
@@ -31,13 +33,13 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
   defaultProjectId,
   branches,
   isBranchesLoading,
-  branchesError,
+  isBranchesError,
   formError,
   isPending,
   onProjectChange,
   formAction,
-  isTransitioning = false,
   schemaFilePath,
+  isSchemaPathLoading,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -75,7 +77,12 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
     }
   }, [isPending])
 
-  const hasError = !!formError || !!branchesError
+  const isSchemaFilePathUnset =
+    selectedProjectId !== '' &&
+    !isSchemaPathLoading &&
+    (schemaFilePath === null || schemaFilePath === '')
+
+  const hasError = !!formError || isBranchesError || isSchemaFilePathUnset
 
   return (
     <ArrowTooltipProvider>
@@ -89,71 +96,62 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
         <form
           ref={formRef}
           action={formAction}
-          style={createAccessibleOpacityTransition(!isTransitioning)}
+          className={styles.form}
+          style={createAccessibleOpacityTransition(true)}
         >
-          <div className={styles.formContent}>
-            <div className={styles.formGroup}>
-              <div className={styles.inputWrapper}>
-                <textarea
-                  id={initialMessageId}
-                  name="initialMessage"
-                  ref={textareaRef}
-                  onChange={handleTextareaChange}
-                  onKeyDown={handleEnterKeySubmission}
-                  placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
-                  disabled={isPending}
-                  className={styles.textarea}
-                  rows={6}
-                  aria-label="Initial message for database design"
-                />
-                {formError && <p className={styles.error}>{formError}</p>}
-                {branchesError && (
-                  <p className={styles.error}>{branchesError}</p>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className={styles.buttonContainer}>
-            <div className={styles.dropdowns}>
-              <input type="hidden" name="projectId" value={selectedProjectId} />
-              <ProjectsDropdown
-                projects={projects}
-                selectedProjectId={selectedProjectId}
-                onProjectChange={(projectId) => {
-                  setSelectedProjectId(projectId)
-                  onProjectChange(projectId)
-                }}
-                disabled={isPending}
-              />
-              {branches.length > 0 && (
-                <>
-                  <input
-                    type="hidden"
-                    name="gitSha"
-                    value={selectedBranchSha}
-                  />
-                  <BranchesDropdown
-                    branches={branches}
-                    selectedBranchSha={selectedBranchSha}
-                    onBranchChange={setSelectedBranchSha}
-                    disabled={isPending}
-                    isLoading={isBranchesLoading}
-                  />
-                  <SchemaDisplay
-                    schemaName={
-                      schemaFilePath
-                        ? schemaFilePath.split('/').pop() || 'database.sql'
-                        : 'database.sql'
-                    }
-                  />
-                </>
-              )}
-            </div>
-            <SessionFormActions
-              isPending={isPending}
-              hasContent={hasContent}
-              onCancel={() => window.location.reload()}
+          <div className={styles.inputWrapper}>
+            <textarea
+              id={initialMessageId}
+              name="initialMessage"
+              ref={textareaRef}
+              onChange={handleTextareaChange}
+              onKeyDown={handleEnterKeySubmission}
+              placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."
+              disabled={isPending}
+              className={styles.textarea}
+              rows={6}
+              aria-label="Initial message for database design"
             />
+            {formError && <p className={styles.error}>{formError}</p>}
+          </div>
+          <div className={styles.buttonsWrapper}>
+            {isSchemaFilePathUnset && (
+              <SchemaSetupNotice projectId={selectedProjectId} />
+            )}
+
+            <div className={styles.buttons}>
+              <div className={styles.dropdowns}>
+                <input
+                  type="hidden"
+                  name="projectId"
+                  value={selectedProjectId}
+                />
+                <ProjectsDropdown
+                  projects={projects}
+                  selectedProjectId={selectedProjectId}
+                  onProjectChange={(projectId) => {
+                    setSelectedProjectId(projectId)
+                    onProjectChange(projectId)
+                  }}
+                  disabled={isPending}
+                />
+
+                <input type="hidden" name="gitSha" value={selectedBranchSha} />
+                <BranchCombobox
+                  branches={branches}
+                  selectedBranchSha={selectedBranchSha}
+                  disabled={isPending}
+                  isLoading={isBranchesLoading}
+                  isError={isBranchesError}
+                  onBranchChange={setSelectedBranchSha}
+                />
+              </div>
+              <SessionFormActions
+                isPending={isPending}
+                hasContent={hasContent}
+                onCancel={() => window.location.reload()}
+              />
+            </div>
           </div>
         </form>
       </div>

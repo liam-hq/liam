@@ -1,7 +1,7 @@
 // biome-ignore lint/correctness/noNodejsModules: This import is server-side.
 import { exec } from 'node:child_process'
 // biome-ignore lint/correctness/noNodejsModules: This import is server-side.
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 // biome-ignore lint/correctness/noNodejsModules: This import is server-side.
 import { tmpdir } from 'node:os'
 // biome-ignore lint/correctness/noNodejsModules: This import is server-side.
@@ -28,6 +28,15 @@ async function main() {
 
     const command = `json-refs resolve ${tempFile} | json-schema-to-zod -o ${OUTPUT_PATH}`
     await execAsync(command)
+
+    // Post-process generated code for Zod v4 compatibility
+    // json-schema-to-zod doesn't support Zod v4 yet, so we need to fix z.record() calls
+    // Zod v4 requires two arguments: z.record(keySchema, valueSchema)
+    // @see https://github.com/StefanTerdell/json-schema-to-zod/issues/122
+    let generatedCode = await readFile(OUTPUT_PATH, 'utf-8')
+    generatedCode = generatedCode.replace(/\.record\(/g, '.record(z.string(), ')
+
+    await writeFile(OUTPUT_PATH, generatedCode)
 
     console.info(`Successfully generated Zod schema at ${OUTPUT_PATH}`)
   } catch (error) {

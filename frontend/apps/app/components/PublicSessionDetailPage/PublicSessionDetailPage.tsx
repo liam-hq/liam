@@ -11,7 +11,6 @@ import { PublicLayout } from '../PublicLayout'
 import { DEFAULT_PANEL_SIZES } from '../SessionDetailPage/constants'
 import { ViewModeProvider } from '../SessionDetailPage/contexts/ViewModeContext'
 import { SessionDetailPageClient } from '../SessionDetailPage/SessionDetailPageClient'
-import { buildPrevSchema } from '../SessionDetailPage/services/buildPrevSchema/server/buildPrevSchema'
 
 type Props = {
   designSessionId: string
@@ -87,11 +86,14 @@ export const PublicSessionDetailPage = async ({
     notFound()
   }
 
-  const initialPrevSchema =
-    (await buildPrevSchema({
-      currentSchema: initialSchema,
-      currentVersionId: latestVersion.id,
-    })) ?? initialSchema
+  const parsedBaselineSchema = safeParse(
+    schemaSchema,
+    buildingSchema.initial_schema_snapshot,
+  )
+  if (!parsedBaselineSchema.success) {
+    notFound()
+  }
+  const baselineSchema = parsedBaselineSchema.output
 
   const organizationId = buildingSchema.organization_id
 
@@ -113,7 +115,7 @@ export const PublicSessionDetailPage = async ({
           initialMessages={[]}
           initialAnalyzedRequirements={initialAnalyzedRequirements}
           initialDisplayedSchema={initialSchema}
-          initialPrevSchema={initialPrevSchema}
+          baselineSchema={baselineSchema}
           initialVersions={versions
             .filter(
               (

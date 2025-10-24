@@ -28,6 +28,28 @@ Our project uses Supabase Branching for database migration management. This syst
 - Regularly merge from main to prevent schema divergence.
 - Monitor PR comments for deployment status.
 
+## Schema Drift Prevention
+
+Schema drift occurs when production database changes don't match Git migration files (e.g., manual changes via Dashboard).
+
+**Prevention:**
+- ✅ Always use migration files for schema changes
+- ✅ Create migrations: `pnpm supabase:migration -f <name>`
+- ✅ Update types after: `pnpm supabase:gen`
+- ❌ Never modify schema directly in Dashboard/SQL console
+
+**Resolution:**
+If drift detected, sync production schema to Git:
+```bash
+cd frontend/internal-packages/db
+supabase link --project-ref <project_ref>
+supabase db pull --linked
+# Review generated migration, commit, and create PR
+```
+
+**Automated Detection:**
+Daily CI checks (9:00 JST) compare production with `main` branch, Slack alerts on drift. See `.github/workflows/check-schema-drift.yml`.
+
 ## Create migration
 
 This project uses the migrations provided by the Supabase CLI.
@@ -100,7 +122,7 @@ ADD COLUMN "new_column" uuid REFERENCES "public"."referenced_table"("id") ON UPD
 -- Update existing rows with values from a related table
 UPDATE "public"."table_name" tn
 SET "new_column" = (
-  SELECT rt."id" 
+  SELECT rt."id"
   FROM "public"."referenced_table" rt
   JOIN "public"."join_table" jt ON rt."id" = jt."referenced_id"
   WHERE jt."table_id" = tn."id"
@@ -134,6 +156,7 @@ pnpm supabase:reset
 After applying migrations, always run:
 
 1. Run the combined command to update both schema SQL file and TypeScript types:
+
    ```sh
    cd frontend/internal-packages/db && pnpm supabase:gen
    ```

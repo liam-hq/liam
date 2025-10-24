@@ -43,6 +43,12 @@
     {
       "dependencies": ["$LOCAL"],
       "isIgnored": true
+    },
+    {
+      "label": "Allow Storybook to use zod v3",
+      "dependencies": ["zod"],
+      "packages": ["@liam-hq/storybook"],
+      "isIgnored": true
     }
   ]
 }

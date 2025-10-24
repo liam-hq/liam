@@ -1,5 +1,15 @@
 # @liam-hq/erd-core
 
+## 0.6.15
+
+### Patch Changes
+
+- [#3805](https://github.com/liam-hq/liam/pull/3805) - - ✨ Add linkable anchors and hash-based focus for index items in TableDetail / Thanks [@tnyo43](https://github.com/tnyo43)!
+  - Support `#<table>__indexes__<index_name>` anchors and hashchange handling
+  - Show visual focus (blink indicator + outline) on the targeted index item
+  - Adjust scroll positioning for CollapsibleHeader and item scroll-margin
+  - Extend internal hash schema to accept `__indexes__` IDs
+
 ## 0.6.14
 
 ### Patch Changes

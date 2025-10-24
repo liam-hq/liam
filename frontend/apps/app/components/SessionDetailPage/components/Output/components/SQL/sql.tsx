@@ -10,18 +10,18 @@ import styles from './SQL.module.css'
 
 type Props = {
   currentSchema: Schema
-  prevSchema: Schema
+  baselineSchema: Schema
   comments?: ReviewComment[]
 }
 
 export const SQL: FC<Props> = ({
   currentSchema,
-  prevSchema,
+  baselineSchema,
   comments = [],
 }) => {
   const { cumulativeDdl, prevCumulativeDdl } = useSql({
     currentSchema,
-    prevSchema,
+    baselineSchema,
   })
 
   return (

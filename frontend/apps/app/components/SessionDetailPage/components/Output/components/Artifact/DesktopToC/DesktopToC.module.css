@@ -1,0 +1,84 @@
+.toc {
+  width: 288px;
+  height: 75%;
+  padding: var(--spacing-4);
+  overflow-y: auto;
+  border-radius: var(--border-radius-md);
+  background-color: var(--pane-background);
+}
+
+.title {
+  font-size: var(--font-size-6);
+  font-weight: 400;
+  padding: var(--spacing-1half) 0;
+  color: var(--global-foreground);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  margin: 0;
+  transition: all 0.2s ease;
+}
+
+.link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--spacing-1half) 0;
+  border: none;
+  background: none;
+  color: var(--global-mute-text);
+  font-size: var(--font-size-5);
+  line-height: 1.6;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+
+.link:hover {
+  color: var(--global-foreground);
+}
+
+/* Level-based indentation */
+.level1 .link {
+  font-weight: 400;
+}
+
+.level2 .link {
+  padding-left: var(--spacing-4);
+  font-weight: 400;
+}
+
+.level3 .link {
+  padding-left: var(--spacing-6);
+  font-weight: 400;
+}
+
+.level4 .link {
+  padding-left: var(--spacing-8);
+  font-weight: 400;
+  font-size: var(--font-size-4); /* 13px */
+}
+
+.level5 .link {
+  padding-left: var(--spacing-10);
+  font-weight: 400;
+  font-size: var(--font-size-4); /* 13px */
+}
+
+.level5 .link:hover {
+  color: var(--global-body-text);
+}
+
+/* Active state for button element */
+.active {
+  color: var(--global-foreground) !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+}

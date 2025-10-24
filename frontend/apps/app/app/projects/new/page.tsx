@@ -1,8 +1,10 @@
 import { getInstallations } from '@liam-hq/github'
+import { okAsync } from 'neverthrow'
 import { redirect } from 'next/navigation'
 import { ProjectNewPage } from '../../../components/ProjectNewPage'
 import { getOrganizationId } from '../../../features/organizations/services/getOrganizationId'
 import { createClient } from '../../../libs/db/server'
+import { getUserAccessToken } from '../../../libs/github/token'
 import { urlgen } from '../../../libs/routes'
 
 export default async function NewProjectPage() {
@@ -25,18 +27,34 @@ export default async function NewProjectPage() {
     redirect(urlgen('login'))
   }
 
-  const { data } = await supabase.auth.getSession()
+  const tokenResult = await getUserAccessToken()
 
-  if (data.session === null) {
-    redirect(urlgen('login'))
-  }
-
-  const { installations } = await getInstallations(data.session)
+  const { installations, needsRefresh } = await tokenResult
+    .asyncAndThen((token) => {
+      if (!token) {
+        return okAsync({
+          installations: [],
+          needsRefresh: true,
+        })
+      }
+      return getInstallations(token).map((result) => ({
+        installations: result.installations,
+        needsRefresh: false,
+      }))
+    })
+    .match(
+      (v) => v,
+      (e) => {
+        console.error('Failed to get token or installations:', e)
+        return { installations: [], needsRefresh: true }
+      },
+    )
 
   return (
     <ProjectNewPage
       installations={installations}
       organizationId={organizationId}
+      needsRefresh={needsRefresh}
     />
   )
 }

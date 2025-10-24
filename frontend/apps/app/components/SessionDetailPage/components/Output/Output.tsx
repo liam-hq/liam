@@ -20,7 +20,7 @@ import styles from './Output.module.css'
 type Props = ComponentProps<typeof VersionDropdown> & {
   designSessionId: string
   schema: Schema
-  prevSchema: Schema
+  baselineSchema: Schema
   sqlReviewComments: ReviewComment[]
   initialIsPublic: boolean
   activeTab: OutputTabValue
@@ -31,7 +31,7 @@ type Props = ComponentProps<typeof VersionDropdown> & {
 export const Output: FC<Props> = ({
   designSessionId,
   schema,
-  prevSchema,
+  baselineSchema,
   sqlReviewComments,
   activeTab,
   onTabChange,
@@ -80,17 +80,29 @@ export const Output: FC<Props> = ({
         initialIsPublic={initialIsPublic}
         {...propsForVersionDropdown}
       />
-      <TabsContent value={OUTPUT_TABS.ERD} className={styles.tabsContent}>
-        <ERD schema={schema} prevSchema={prevSchema} />
+      <TabsContent
+        value={OUTPUT_TABS.ERD}
+        className={styles.tabsContent}
+        forceMount
+      >
+        <ERD schema={schema} baselineSchema={baselineSchema} />
       </TabsContent>
-      <TabsContent value={OUTPUT_TABS.SQL} className={styles.tabsContent}>
+      <TabsContent
+        value={OUTPUT_TABS.SQL}
+        className={styles.tabsContent}
+        forceMount
+      >
         <SQL
           currentSchema={schema}
-          prevSchema={prevSchema}
+          baselineSchema={baselineSchema}
           comments={sqlReviewComments}
         />
       </TabsContent>
-      <TabsContent value={OUTPUT_TABS.ARTIFACT} className={styles.tabsContent}>
+      <TabsContent
+        value={OUTPUT_TABS.ARTIFACT}
+        className={styles.tabsContent}
+        forceMount
+      >
         <ArtifactContainer analyzedRequirements={analyzedRequirements} />
       </TabsContent>
     </TabsRoot>

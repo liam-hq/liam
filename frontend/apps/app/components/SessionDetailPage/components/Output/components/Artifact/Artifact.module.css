@@ -3,43 +3,69 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  gap: var(--spacing-2);
-  padding: var(--spacing-4);
   background-color: var(--global-background);
   border-radius: var(--border-radius-medium);
   box-shadow: var(--shadow-level-1);
   overflow: hidden;
+  container-type: inline-size;
+  container-name: artifact;
 }
 
 .head {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   width: 100%;
-  padding-bottom: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4) var(--spacing-2) var(--spacing-4);
   border-bottom: 1px solid var(--global-border);
 }
 
 .contentWrapper {
   display: flex;
-  gap: var(--spacing-8);
   width: 100%;
   justify-content: center;
   flex: 1;
+  padding-right: var(--spacing-4);
   overflow-y: auto;
 }
 
+.copyButton {
+  margin-left: auto;
+}
+
+.mobileToC {
+  display: block;
+}
+
+@container artifact (min-width: 768px) {
+  .mobileToC {
+    display: none;
+  }
+}
+
+.desktopToc {
+  display: none;
+}
+
+@container artifact (min-width: 768px) {
+  .desktopToc {
+    display: block;
+    position: sticky;
+    top: 64px;
+  }
+}
+
 .bodyWrapper {
-  flex: 0 1 clamp(320px, 100%, 720px); /* Responsive content width */
-  width: 100%;
+  flex: 1;
 }
 
 .body {
-  padding: var(--spacing-4);
+  width: 100%;
+  padding: var(--spacing-6) var(--spacing-8);
   font-family: var(--main-font);
   font-weight: 400;
-  font-size: var(--font-size-5); /* Consistent with design system */
+  font-size: var(--font-size-5);
   line-height: 1.75;
   color: var(--global-body-text);
   word-wrap: break-word;

@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, Code, GitBranch, Search } from '@liam-hq/ui'
+import { ChevronDown, Code, GitBranch, Search, Spinner } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { Command } from 'cmdk'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -18,7 +18,7 @@ type Props = {
   onBranchChange: (sha: string) => void
   disabled?: boolean
   isLoading?: boolean
-  placeholder?: string
+  isError?: boolean
   className?: string
 }
 
@@ -28,7 +28,7 @@ export const BranchCombobox: FC<Props> = ({
   onBranchChange,
   disabled = false,
   isLoading = false,
-  placeholder = 'Search branches...',
+  isError = false,
   className,
 }) => {
   const [open, setOpen] = useState(false)
@@ -67,7 +67,7 @@ export const BranchCombobox: FC<Props> = ({
   }, [])
 
   const handleTriggerClick = useCallback(() => {
-    if (!disabled && !isLoading) {
+    if (!disabled) {
       if (!open && triggerRef.current) {
         const rect = triggerRef.current.getBoundingClientRect()
         setDropdownPosition({
@@ -78,7 +78,7 @@ export const BranchCombobox: FC<Props> = ({
       }
       setOpen(!open)
     }
-  }, [disabled, isLoading, open])
+  }, [disabled, open])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -101,7 +101,11 @@ export const BranchCombobox: FC<Props> = ({
         <button
           ref={triggerRef}
           type="button"
-          className={clsx(styles.trigger, disabled && styles.disabled)}
+          className={clsx(
+            styles.trigger,
+            disabled && styles.disabled,
+            isError && styles.error,
+          )}
           onClick={handleTriggerClick}
           disabled={disabled}
         >
@@ -123,7 +127,7 @@ export const BranchCombobox: FC<Props> = ({
 
         {open && (
           <div
-            className={styles.dropdown}
+            className={clsx(styles.dropdown, isError && styles.error)}
             style={{
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
@@ -133,38 +137,46 @@ export const BranchCombobox: FC<Props> = ({
             <div className={styles.searchContainer}>
               <Search className={styles.searchIcon} />
               <Command.Input
-                placeholder={placeholder}
+                placeholder="Search branches..."
                 className={styles.searchInput}
                 autoFocus
                 onValueChange={handleInputChange}
               />
             </div>
-            <Command.List ref={listRef} className={styles.list}>
-              <Command.Empty className={styles.empty}>
-                No branches found.
-              </Command.Empty>
-              <Command.Group>
-                {branches.map((branch) => (
-                  <Command.Item
-                    key={`${branch.sha}-${branch.name}`}
-                    value={`${branch.name} ${branch.sha}`}
-                    onSelect={() => handleSelect(branch.sha)}
-                    className={clsx(
-                      styles.item,
-                      selectedBranchSha === branch.sha && styles.selected,
-                    )}
-                  >
-                    <GitBranch className={styles.itemIcon} />
-                    <span className={styles.itemLabel}>{branch.name}</span>
-                    {branch.isProduction && (
-                      <Code size="sm" style="fill">
-                        default
-                      </Code>
-                    )}
-                  </Command.Item>
-                ))}
-              </Command.Group>
-            </Command.List>
+            {isError ? (
+              <p className={styles.errorMessage}>Failed to load branches.</p>
+            ) : isLoading ? (
+              <div className={styles.loading}>
+                <Spinner />
+              </div>
+            ) : (
+              <Command.List ref={listRef} className={styles.list}>
+                <Command.Empty className={styles.empty}>
+                  No branches found.
+                </Command.Empty>
+                <Command.Group>
+                  {branches.map((branch) => (
+                    <Command.Item
+                      key={`${branch.sha}-${branch.name}`}
+                      value={`${branch.name} ${branch.sha}`}
+                      onSelect={() => handleSelect(branch.sha)}
+                      className={clsx(
+                        styles.item,
+                        selectedBranchSha === branch.sha && styles.selected,
+                      )}
+                    >
+                      <GitBranch className={styles.itemIcon} />
+                      <span className={styles.itemLabel}>{branch.name}</span>
+                      {branch.isProduction && (
+                        <Code size="sm" style="fill">
+                          default
+                        </Code>
+                      )}
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              </Command.List>
+            )}
           </div>
         )}
       </Command>

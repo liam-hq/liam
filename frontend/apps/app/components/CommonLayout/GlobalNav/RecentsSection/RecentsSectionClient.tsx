@@ -1,6 +1,7 @@
 'use client'
 
 import { fromPromise } from '@liam-hq/neverthrow'
+import * as Sentry from '@sentry/nextjs'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -8,13 +9,19 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { urlgen } from '../../../../libs/routes'
 import { formatDateShort } from '../../../../libs/utils'
 import itemStyles from '../Item.module.css'
-import { loadMoreSessions } from './actions'
+import { fetchFilteredSessions, loadMoreSessions } from './actions'
+import {
+  type OrganizationMember,
+  SessionFilterDropdown,
+} from './components/SessionFilterDropdown'
 import styles from './RecentsSectionClient.module.css'
 import { Skeleton } from './Skeleton'
-import type { RecentSession } from './types'
+import type { RecentSession, SessionFilterType } from './types'
 
 type RecentsSectionClientProps = {
   sessions: RecentSession[]
+  organizationMembers: OrganizationMember[]
+  currentUserId: string
 }
 
 const PAGE_SIZE = 20
@@ -22,13 +29,36 @@ const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
 export const RecentsSectionClient = ({
   sessions: initialSessions,
+  organizationMembers,
+  currentUserId,
 }: RecentsSectionClientProps) => {
   const pathname = usePathname()
   const [sessions, setSessions] = useState<RecentSession[]>(initialSessions)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialSessions.length >= PAGE_SIZE)
+  const [filterType, setFilterType] = useState<SessionFilterType>('me')
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const sessionsListRef = useRef<HTMLElement | null>(null)
+
+  const handleFilterChange = useCallback(async (newFilterType: string) => {
+    setFilterType(newFilterType)
+    setIsLoading(true)
+
+    const result = await fromPromise(fetchFilteredSessions(newFilterType))
+
+    result.match(
+      (newSessions) => {
+        setSessions(newSessions)
+        setHasMore(newSessions.length >= PAGE_SIZE)
+      },
+      (err) => {
+        Sentry.captureException(err)
+      },
+    )
+
+    setIsLoading(false)
+  }, [])
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return
@@ -39,31 +69,32 @@ export const RecentsSectionClient = ({
       loadMoreSessions({
         limit: PAGE_SIZE,
         offset: sessions.length,
+        filterType,
       }),
     )
 
-    if (result.isErr()) {
-      console.error('Error loading more sessions:', result.error)
-      setIsLoading(false)
-      return
-    }
-
-    const newSessions = result.value
-
-    if (newSessions.length === 0) {
-      setHasMore(false)
-    } else {
-      setSessions((prev) => [...prev, ...newSessions])
-      setHasMore(newSessions.length >= PAGE_SIZE)
-    }
+    result.match(
+      (newSessions) => {
+        if (newSessions.length === 0) {
+          setHasMore(false)
+        } else {
+          setSessions((prev) => [...prev, ...newSessions])
+          setHasMore(newSessions.length >= PAGE_SIZE)
+        }
+      },
+      (err) => {
+        Sentry.captureException(err)
+      },
+    )
 
     setIsLoading(false)
-  }, [isLoading, hasMore, sessions.length])
+  }, [isLoading, hasMore, sessions.length, filterType])
 
   useEffect(() => {
     const currentLoadMoreRef = loadMoreRef.current
+    const currentSessionsListRef = sessionsListRef.current
 
-    if (!currentLoadMoreRef) return
+    if (!currentLoadMoreRef || !currentSessionsListRef) return
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -73,7 +104,7 @@ export const RecentsSectionClient = ({
         }
       },
       {
-        root: null,
+        root: currentSessionsListRef,
         rootMargin: '100px',
         threshold: 0.1,
       },
@@ -97,22 +128,28 @@ export const RecentsSectionClient = ({
       </div>
       <div className={styles.recentsExpanded}>
         <div className={styles.recentsSection}>
-          <div className={styles.recentsHeader}>
-            <div className={itemStyles.labelArea}>
-              <span className={clsx(itemStyles.label, styles.recentsTitle)}>
-                Recents
-              </span>
-            </div>
-          </div>
+          <SessionFilterDropdown
+            filterType={filterType}
+            organizationMembers={organizationMembers}
+            currentUserId={currentUserId}
+            onFilterChange={handleFilterChange}
+          />
 
           {sessions.length > 0 ? (
-            <nav className={styles.sessionsList} aria-label="Recent sessions">
+            <nav
+              ref={sessionsListRef}
+              className={styles.sessionsList}
+              aria-label="Recent sessions"
+            >
               {sessions.map((session) => {
                 const sessionUrl = urlgen('design_sessions/[id]', {
                   id: session.id,
                 })
                 const isActive = pathname === sessionUrl
                 const sessionDate = formatDateShort(session.created_at)
+                const showOwner = filterType !== 'me'
+                const ownerName = session.created_by_user?.name || 'Unknown'
+
                 return (
                   <Link
                     key={session.id}
@@ -121,10 +158,15 @@ export const RecentsSectionClient = ({
                       styles.sessionItem,
                       isActive && styles.sessionItemActive,
                     )}
-                    aria-label={`${session.name}, created on ${sessionDate}`}
+                    aria-label={`${session.name}, created on ${sessionDate}${showOwner ? ` by ${ownerName}` : ''}`}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <span className={styles.sessionName}>{session.name}</span>
+                    <div className={styles.sessionInfo}>
+                      <span className={styles.sessionName}>{session.name}</span>
+                      {showOwner && (
+                        <span className={styles.sessionOwner}>{ownerName}</span>
+                      )}
+                    </div>
                     <span className={styles.sessionDate} aria-hidden="true">
                       {sessionDate}
                     </span>

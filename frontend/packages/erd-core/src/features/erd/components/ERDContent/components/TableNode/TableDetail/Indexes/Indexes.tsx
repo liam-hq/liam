@@ -1,6 +1,6 @@
 import type { Indexes as IndexesType } from '@liam-hq/schema'
 import { FileText } from '@liam-hq/ui'
-import type { FC } from 'react'
+import { type FC, useEffect, useState } from 'react'
 import { CollapsibleHeader } from '../CollapsibleHeader'
 import { IndexesItem } from './IndexesItem'
 
@@ -10,6 +10,22 @@ type Props = {
 }
 
 export const Indexes: FC<Props> = ({ tableId, indexes }) => {
+  const [focusedElementId, setFocusedElementId] = useState(
+    // location.hash starts with '#'; decode to match actual DOM id
+    location.hash.slice(1),
+  )
+
+  // update focusedElementId when hash changes
+  useEffect(() => {
+    const updateState = () => {
+      const elementId = location.hash.slice(1)
+      setFocusedElementId(elementId)
+    }
+
+    window.addEventListener('hashchange', updateState)
+    return () => window.removeEventListener('hashchange', updateState)
+  }, [])
+
   const contentMaxHeight = Object.keys(indexes).length * 400
 
   return (
@@ -23,7 +39,12 @@ export const Indexes: FC<Props> = ({ tableId, indexes }) => {
       contentMaxHeight={contentMaxHeight}
     >
       {Object.entries(indexes).map(([key, index]) => (
-        <IndexesItem key={key} tableId={tableId} index={index} />
+        <IndexesItem
+          key={key}
+          tableId={tableId}
+          index={index}
+          focusedElementId={focusedElementId}
+        />
       ))}
     </CollapsibleHeader>
   )

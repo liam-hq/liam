@@ -1,0 +1,96 @@
+name: Check Schema Drift
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Runs at 9:00 JST
+  workflow_dispatch:
+
+jobs:
+  check-drift:
+    name: Check Production Schema Drift
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@b60b5899c73b63a2d2d651b1e90db8d4c9392f51 # v1.6.0
+        with:
+          version: latest
+
+      - name: Start Supabase local environment
+        run: |
+          cd frontend/internal-packages/db
+          supabase start
+
+      - name: Link to production database
+        run: |
+          cd frontend/internal-packages/db
+          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Check for schema drift
+        id: check_drift
+        run: |
+          cd frontend/internal-packages/db
+
+          if supabase db diff --linked --use-migra > /tmp/schema_diff.sql 2>&1; then
+            if [ -s /tmp/schema_diff.sql ]; then
+              echo "drift_detected=true" >> $GITHUB_OUTPUT
+              echo "Schema drift detected!"
+              cat /tmp/schema_diff.sql
+            else
+              echo "drift_detected=false" >> $GITHUB_OUTPUT
+              echo "No schema drift detected."
+            fi
+          else
+            if [ -s /tmp/schema_diff.sql ]; then
+              echo "drift_detected=true" >> $GITHUB_OUTPUT
+              echo "Schema drift detected (with errors)!"
+              cat /tmp/schema_diff.sql
+            else
+              echo "drift_detected=false" >> $GITHUB_OUTPUT
+              echo "No schema drift detected."
+            fi
+          fi
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Notify Slack if drift detected
+        if: steps.check_drift.outputs.drift_detected == 'true'
+        uses: tokorom/action-slack-incoming-webhook@d57bf1eb618f3dae9509afefa70d5774ad3d42bf # v1.3.0
+        env:
+          INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_CLI_CI_WEBHOOK_URL }}
+        with:
+          text: "Supabase Schema Drift Detected"
+          attachments: |
+            [
+              {
+                "color": "warning",
+                "fields": [
+                  {
+                    "title": "Status",
+                    "value": "Schema drift detected between production DB and Git migrations (main branch)"
+                  },
+                  {
+                    "title": "Action Required",
+                    "value": "Sync the production schema using 'supabase db pull'. See documentation for details."
+                  },
+                  {
+                    "title": "Documentation",
+                    "value": "<https://github.com/${{ github.repository }}/blob/main/docs/migrationOpsContext.md#schema-drift-resolution|Migration Operations Context - Schema Drift Resolution>"
+                  },
+                  {
+                    "title": "Workflow Run",
+                    "value": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  }
+                ]
+              }
+            ]

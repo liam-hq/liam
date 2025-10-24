@@ -4,10 +4,13 @@ import { NextResponse } from 'next/server'
 import { ROUTE_PREFIXES } from './libs/routes/constants'
 
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname
+
   // Skip middleware for public routes, erd pages, and static files
   if (
-    request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.PUBLIC) ||
-    request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.ERD)
+    path.startsWith(ROUTE_PREFIXES.PUBLIC) ||
+    path.startsWith(ROUTE_PREFIXES.ERD) ||
+    path.startsWith('/api/logout')
   ) {
     return NextResponse.next()
   }
@@ -51,9 +54,9 @@ export async function updateSession(request: NextRequest) {
 
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.LOGIN) &&
-    !request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.AUTH) &&
-    !request.nextUrl.pathname.startsWith(ROUTE_PREFIXES.PUBLIC)
+    !path.startsWith(ROUTE_PREFIXES.LOGIN) &&
+    !path.startsWith(ROUTE_PREFIXES.AUTH) &&
+    !path.startsWith(ROUTE_PREFIXES.PUBLIC)
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()

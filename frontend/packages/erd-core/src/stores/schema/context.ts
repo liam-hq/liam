@@ -4,7 +4,7 @@ import * as v from 'valibot'
 
 const schemaStoreSchema = v.object({
   current: schemaSchema,
-  previous: v.optional(schemaSchema),
+  baseline: v.optional(schemaSchema),
   merged: v.optional(schemaSchema),
   operations: v.optional(operationsSchema),
 })

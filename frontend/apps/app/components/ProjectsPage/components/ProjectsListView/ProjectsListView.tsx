@@ -1,11 +1,12 @@
 'use client'
+
 import type { Tables } from '@liam-hq/db/supabase/database.types'
 import Link from 'next/link'
 import { useState } from 'react'
 import { urlgen } from '../../../../libs/routes'
 import styles from '../../ProjectsPage.module.css'
 import type { ProjectWithLastCommit } from '../../types'
-import { EmptyProjectsState } from '../EmptyProjectsState'
+import { NotFound } from './components/NotFound'
 import { ProjectItem } from './components/ProjectItem'
 import { SearchInput } from './components/SearchInput'
 import { SortDropdown, type SortOption } from './components/SortDropdown'
@@ -93,8 +94,8 @@ export function ProjectsListView({
         </Link>
       </div>
 
-      {projects === null || projects.length === 0 ? (
-        <EmptyProjectsState projects={projects} />
+      {projects.length === 0 ? (
+        <NotFound />
       ) : (
         <div className={styles.projectsGrid}>
           {projects.map((project) => (

@@ -18,9 +18,7 @@ import { DEFAULT_PANEL_SIZES, PANEL_LAYOUT_COOKIE_NAME } from './constants'
 import { ViewModeProvider } from './contexts/ViewModeContext'
 import { SessionDetailPageClient } from './SessionDetailPageClient'
 import { getBuildingSchema } from './services/buildingSchema/server/getBuildingSchema'
-import { buildPrevSchema } from './services/buildPrevSchema/server/buildPrevSchema'
 import { getVersions } from './services/getVersions'
-import type { Version } from './types'
 
 type Props = {
   designSessionId: string
@@ -38,6 +36,7 @@ async function loadSessionData(designSessionId: string): Promise<
       messages: StoredMessage[]
       buildingSchema: NonNullable<Awaited<ReturnType<typeof getBuildingSchema>>>
       initialSchema: Schema
+      baselineSchema: Schema
       initialAnalyzedRequirements: AnalyzedRequirements | null
       workflowError: string | null
     },
@@ -76,10 +75,20 @@ async function loadSessionData(designSessionId: string): Promise<
     return err(new Error('Invalid schema format'))
   }
 
+  const parsedBaselineSchema = safeParse(
+    schemaSchema,
+    buildingSchema.initial_schema_snapshot,
+  )
+  if (!parsedBaselineSchema.success) {
+    return err(new Error('Invalid schema format'))
+  }
+  const baselineSchema = parsedBaselineSchema.output
+
   return ok({
     messages,
     buildingSchema,
     initialSchema,
+    baselineSchema,
     initialAnalyzedRequirements,
     workflowError,
   })
@@ -96,18 +105,12 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
     messages,
     buildingSchema,
     initialSchema,
+    baselineSchema,
     workflowError,
     initialAnalyzedRequirements,
   } = result.value
 
   const versions = await getVersions(buildingSchema.id)
-  const latestVersion: Version | undefined = versions[0]
-  const initialPrevSchema = latestVersion
-    ? ((await buildPrevSchema({
-        currentSchema: initialSchema,
-        currentVersionId: latestVersion.id,
-      })) ?? initialSchema)
-    : initialSchema
 
   // Fetch initial public share status
   const { isPublic: initialIsPublic } =
@@ -132,7 +135,7 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
         initialMessages={messages}
         initialAnalyzedRequirements={initialAnalyzedRequirements}
         initialDisplayedSchema={initialSchema}
-        initialPrevSchema={initialPrevSchema}
+        baselineSchema={baselineSchema}
         initialVersions={versions}
         initialIsPublic={initialIsPublic}
         initialWorkflowError={workflowError}

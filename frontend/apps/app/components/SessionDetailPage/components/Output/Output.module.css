@@ -8,3 +8,7 @@
   min-height: 0;
   height: 100%;
 }
+
+.tabsContent[data-state='inactive'] {
+  display: none;
+}

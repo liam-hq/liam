@@ -49,8 +49,25 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.1s var(--default-timing-function);
+}
 
-  /* enable to scroll to the top children element, */
+/* enable to scroll to the top children element */
+/* 41px (= 41px * 1) for the first CollapsibleHeader component */
+.header + .content {
   padding-top: 41px;
   margin-top: -41px;
+}
+
+.header + .content .item {
+  scroll-margin-top: 41px;
+}
+
+/* 82px (= 41px * 2) for the second CollapsibleHeader component */
+.header + .content + .header + .content {
+  padding-top: 82px;
+  margin-top: -82px;
+}
+
+.header + .content + .header + .content .item {
+  scroll-margin-top: 82px;
 }

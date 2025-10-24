@@ -8,15 +8,15 @@
     "@octokit/auth-app": "7.2.2",
     "@octokit/openapi-types": "25.1.0",
     "@octokit/rest": "21.1.1",
-    "@supabase/supabase-js": "2.58.0",
-    "neverthrow": "8.2.0"
+    "neverthrow": "8.2.0",
+    "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.4",
+    "@biomejs/biome": "2.2.5",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.18.6",
-    "eslint": "9.36.0",
-    "typescript": "5.9.2",
+    "@types/node": "22.18.8",
+    "eslint": "9.37.0",
+    "typescript": "5.9.3",
     "vitest": "3.2.4"
   },
   "scripts": {

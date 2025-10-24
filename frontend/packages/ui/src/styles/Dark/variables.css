@@ -160,6 +160,7 @@
   --spacing-9: 36px;
   --spacing-10: 40px;
   --spacing-12: 48px;
+  --spacing-13: 52px;
   --spacing-14: 56px;
   --spacing-16: 64px;
   --spacing-20: 80px;
@@ -387,6 +388,7 @@
   --agent-build-60: rgba(29, 237, 131, 0.6);
   --agent-build-100: #1ded83;
   --severity-critical-5: rgba(247, 80, 73, 0.05);
+  --severity-critical-10: rgba(247, 80, 73, 0.1);
   --severity-critical-20: rgba(247, 80, 73, 0.2);
   --severity-critical-40: rgba(247, 80, 73, 0.4);
   --severity-critical-60: rgba(247, 80, 73, 0.6);

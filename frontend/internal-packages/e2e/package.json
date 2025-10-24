@@ -3,12 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "devDependencies": {
-    "@biomejs/biome": "2.2.4",
+    "@biomejs/biome": "2.2.5",
     "@liam-hq/configs": "workspace:*",
-    "@playwright/test": "1.55.0",
-    "@types/node": "22.18.6",
-    "eslint": "9.36.0",
-    "typescript": "5.9.2"
+    "@playwright/test": "1.56.0",
+    "@types/node": "22.18.8",
+    "eslint": "9.37.0",
+    "typescript": "5.9.3"
   },
   "scripts": {
     "fmt": "concurrently \"pnpm:fmt:*\"",

@@ -42,7 +42,6 @@ export const Content: FC<Props> = ({
       branches={branches}
       selectedBranchSha={currentBranch?.sha}
       onBranchChange={handleBranchChange}
-      placeholder="Search branches..."
       className={styles.trigger}
     />
   )
