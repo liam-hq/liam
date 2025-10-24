@@ -358,5 +358,15 @@ Category: {category}
 Title: {title}
 Type: {type}
 
+CRITICAL: Before generating the test, analyze the schema above to identify:
+1. Which columns have NOT NULL constraints
+2. Which columns are foreign keys and what parent tables they reference
+3. The correct order to create test data (parent tables first, then child tables)
+
+For example, if users.role_id is NOT NULL and references roles.id, you MUST:
+- Create a role record FIRST using lives_ok()
+- Then create the user record with role_id set to (SELECT id FROM roles WHERE name = 'RoleName')
+- NEVER insert NULL into NOT NULL columns
+
 Generate a complete pgTAP test for this test case.
 `)
