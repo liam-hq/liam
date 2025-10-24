@@ -77,6 +77,35 @@ export async function POST(request: Request) {
     },
   }
 
+  const supabaseServiceRole = await createClient({ useServiceRole: true })
+
+  const updateDesignSessionStatus = async (fields: Record<string, unknown>) => {
+    const { error } = await supabaseServiceRole
+      .from('design_sessions')
+      .update(fields)
+      .eq('id', designSessionId)
+
+    if (error) {
+      Sentry.captureException(error, {
+        tags: { designSessionId },
+        level: 'warning',
+        extra: { location: 'chat/stream status update', fields },
+      })
+    }
+  }
+
+  const markRunning = () =>
+    updateDesignSessionStatus({
+      status: 'running',
+      started_at: new Date().toISOString(),
+      finished_at: null,
+    })
+  const markIdle = () =>
+    updateDesignSessionStatus({
+      status: 'idle',
+      finished_at: new Date().toISOString(),
+    })
+
   const enc = new TextEncoder()
 
   const processEvents = async (
@@ -111,24 +140,28 @@ export async function POST(request: Request) {
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const result = await withTimeoutAndAbort(
-        (signal: AbortSignal) => processEvents(controller, signal),
-        TIMEOUT_MS,
-        request.signal,
-      )
-
-      if (result.isErr()) {
-        const err = result.error
-        Sentry.captureException(err, {
-          tags: { designSchemaId: designSessionId },
-        })
-
-        controller.enqueue(
-          enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
+      await markRunning()
+      try {
+        const result = await withTimeoutAndAbort(
+          (signal: AbortSignal) => processEvents(controller, signal),
+          TIMEOUT_MS,
+          request.signal,
         )
-      }
 
-      controller.close()
+        if (result.isErr()) {
+          const err = result.error
+          Sentry.captureException(err, {
+            tags: { designSchemaId: designSessionId },
+          })
+
+          controller.enqueue(
+            enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
+          )
+        }
+      } finally {
+        await markIdle()
+        controller.close()
+      }
     },
   })
 

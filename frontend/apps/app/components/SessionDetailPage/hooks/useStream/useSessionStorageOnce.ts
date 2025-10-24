@@ -16,6 +16,9 @@ export function useSessionStorageOnce(
   designSessionId: string,
 ): BaseMessage | null {
   const key = `${LG_INITIAL_MESSAGE_PREFIX}:${designSessionId}`
+  const snapshotRef = useRef<BaseMessage | null>(null)
+  const initializedRef = useRef(false)
+  const lastKeyRef = useRef(key)
 
   const subscribe = useCallback((_callback: () => void) => {
     // sessionStorage does not fire events within the same tab
@@ -23,17 +26,27 @@ export function useSessionStorageOnce(
   }, [])
 
   const getSnapshot = useCallback(() => {
-    if (typeof window === 'undefined') return null
-    const stored = sessionStorage.getItem(key)
-    if (!stored) return null
-
-    try {
-      const parsed = JSON.parse(stored)
-      const message = coerceMessageLikeToMessage(parsed)
-      return isHumanMessage(message) ? message : null
-    } catch {
-      return null
+    // Cache the snapshot to ensure stable identity across renders
+    if (!initializedRef.current) {
+      if (typeof window === 'undefined') {
+        snapshotRef.current = null
+      } else {
+        const stored = sessionStorage.getItem(key)
+        if (!stored) {
+          snapshotRef.current = null
+        } else {
+          try {
+            const parsed = JSON.parse(stored)
+            const message = coerceMessageLikeToMessage(parsed)
+            snapshotRef.current = isHumanMessage(message) ? message : null
+          } catch {
+            snapshotRef.current = null
+          }
+        }
+      }
+      initializedRef.current = true
     }
+    return snapshotRef.current
   }, [key])
 
   const getServerSnapshot = useCallback(() => null, [])
@@ -45,6 +58,16 @@ export function useSessionStorageOnce(
   )
 
   const wasDeleted = useRef(false)
+
+  // Reset cache if the key changes
+  useEffect(() => {
+    if (lastKeyRef.current !== key) {
+      lastKeyRef.current = key
+      initializedRef.current = false
+      snapshotRef.current = null
+      wasDeleted.current = false
+    }
+  }, [key])
   useEffect(() => {
     if (!wasDeleted.current && message !== null) {
       sessionStorage.removeItem(key)

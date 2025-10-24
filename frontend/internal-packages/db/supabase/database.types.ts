@@ -272,29 +272,38 @@ export type Database = {
         Row: {
           created_at: string
           created_by_user_id: string
+          finished_at: string | null
           id: string
           name: string
           organization_id: string
           parent_design_session_id: string | null
           project_id: string | null
+          started_at: string | null
+          status: Database['public']['Enums']['workflow_status']
         }
         Insert: {
           created_at?: string
           created_by_user_id: string
+          finished_at?: string | null
           id?: string
           name: string
           organization_id: string
           parent_design_session_id?: string | null
           project_id?: string | null
+          started_at?: string | null
+          status?: Database['public']['Enums']['workflow_status']
         }
         Update: {
           created_at?: string
           created_by_user_id?: string
+          finished_at?: string | null
           id?: string
           name?: string
           organization_id?: string
           parent_design_session_id?: string | null
           project_id?: string | null
+          started_at?: string | null
+          status?: Database['public']['Enums']['workflow_status']
         }
         Relationships: [
           {
@@ -720,7 +729,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { '': string } | { '': unknown } | { '': unknown }
-        Returns: unknown
+        Returns: string
       }
       put_checkpoint: {
         Args: { p_blobs: Json; p_checkpoint: Json }
@@ -782,6 +791,7 @@ export type Database = {
       assistant_role_enum: 'db' | 'pm' | 'qa'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       workflow_run_status: 'pending' | 'success' | 'error'
+      workflow_status: 'running' | 'idle'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -915,6 +925,7 @@ export const Constants = {
       assistant_role_enum: ['db', 'pm', 'qa'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       workflow_run_status: ['pending', 'success', 'error'],
+      workflow_status: ['running', 'idle'],
     },
   },
 } as const

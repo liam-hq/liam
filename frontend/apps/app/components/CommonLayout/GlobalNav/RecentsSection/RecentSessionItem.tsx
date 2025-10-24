@@ -17,36 +17,20 @@ type Props = {
   isActive: boolean
 }
 
-const getWorkflowInProgress = (designSessionId: string): boolean => {
-  if (typeof window === 'undefined') return false
-  const key = `liam:workflow:${designSessionId}`
-  const value = sessionStorage.getItem(key)
-  return value === 'in_progress'
-}
-
-const determineSessionStatus = (isWorkflowRunning: boolean): SessionStatus => {
-  if (isWorkflowRunning) {
-    return 'running'
-  }
-
-  return 'idle'
+const mapDbStatusToUi = (
+  status: RecentSession['status'] | undefined,
+): SessionStatus => {
+  return status === 'running' ? 'running' : 'idle'
 }
 
 export const RecentSessionItem: FC<Props> = ({ session, isActive }) => {
-  const [status, setStatus] = useState<SessionStatus>(() =>
-    determineSessionStatus(getWorkflowInProgress(session.id)),
+  const [status, setStatus] = useState<SessionStatus>(
+    mapDbStatusToUi(session.status),
   )
 
   useEffect(() => {
-    const checkStatus = () => {
-      const isRunning = getWorkflowInProgress(session.id)
-      setStatus(determineSessionStatus(isRunning))
-    }
-
-    const interval = setInterval(checkStatus, 1000)
-
-    return () => clearInterval(interval)
-  }, [session.id])
+    setStatus(mapDbStatusToUi(session.status))
+  }, [session.status])
 
   const sessionUrl = urlgen('design_sessions/[id]', {
     id: session.id,

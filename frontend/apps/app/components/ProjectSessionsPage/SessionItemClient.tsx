@@ -11,40 +11,47 @@ import {
   SessionStatusIndicator,
 } from './SessionStatusIndicator'
 import type { ProjectSession } from './services/fetchProjectSessions'
+import { createClient as createSupabaseClient } from '../../libs/db/client'
 
 type Props = {
   session: ProjectSession
 }
 
-const getWorkflowInProgress = (designSessionId: string): boolean => {
-  if (typeof window === 'undefined') return false
-  const key = `liam:workflow:${designSessionId}`
-  const value = sessionStorage.getItem(key)
-  return value === 'in_progress'
-}
-
-const determineSessionStatus = (isWorkflowRunning: boolean): SessionStatus => {
-  if (isWorkflowRunning) {
-    return 'running'
-  }
-
-  return 'idle'
+const mapDbStatusToUi = (
+  status: ProjectSession['status'] | undefined,
+): SessionStatus => {
+  return status === 'running' ? 'running' : 'idle'
 }
 
 export const SessionItemClient: FC<Props> = ({ session }) => {
-  const [status, setStatus] = useState<SessionStatus>(() =>
-    determineSessionStatus(getWorkflowInProgress(session.id)),
+  const [status, setStatus] = useState<SessionStatus>(
+    mapDbStatusToUi(session.status),
   )
 
   useEffect(() => {
-    const checkStatus = () => {
-      const isRunning = getWorkflowInProgress(session.id)
-      setStatus(determineSessionStatus(isRunning))
+    const supabase = createSupabaseClient()
+    const channel = supabase
+      .channel(`design_sessions_status_${session.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'design_sessions',
+          filter: `id=eq.${session.id}`,
+        },
+        (payload) => {
+          const next = (payload.new as any)?.status as
+            | ProjectSession['status']
+            | undefined
+          setStatus(mapDbStatusToUi(next))
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
     }
-
-    const interval = setInterval(checkStatus, 1000)
-
-    return () => clearInterval(interval)
   }, [session.id])
 
   return (

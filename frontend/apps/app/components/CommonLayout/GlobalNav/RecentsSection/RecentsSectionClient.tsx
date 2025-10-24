@@ -11,6 +11,7 @@ import { RecentSessionItem } from './RecentSessionItem'
 import styles from './RecentsSectionClient.module.css'
 import { Skeleton } from './Skeleton'
 import type { RecentSession } from './types'
+import { createClient as createSupabaseClient } from '../../../../libs/db/client'
 
 type RecentsSectionClientProps = {
   sessions: RecentSession[]
@@ -87,6 +88,41 @@ export const RecentsSectionClient = ({
     }
   }, [loadMore])
 
+
+  // Realtime: subscribe to status updates for sessions in view
+  useEffect(() => {
+    const ids = sessions.map((s) => s.id)
+    if (ids.length === 0) return
+
+    const supabase = createSupabaseClient()
+    const filter = `id=in.(${ids.join(',')})`
+    const channel = supabase
+      .channel('design_sessions_status_recents')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'design_sessions',
+          filter,
+        },
+        (payload) => {
+          const row = payload.new as { id: string; status?: string }
+          setSessions((prev) =>
+            prev.map((s) =>
+              s.id === row.id
+                ? { ...s, status: (row.status as any) ?? s.status }
+                : s,
+            ),
+          )
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [sessions])
   return (
     <>
       <div className={clsx(itemStyles.item, styles.recentsCollapsed)}>

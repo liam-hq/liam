@@ -103,6 +103,15 @@ CREATE TYPE "public"."workflow_run_status" AS ENUM (
 ALTER TYPE "public"."workflow_run_status" OWNER TO "postgres";
 
 
+CREATE TYPE "public"."workflow_status" AS ENUM (
+    'running',
+    'idle'
+);
+
+
+ALTER TYPE "public"."workflow_status" OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."accept_invitation"("p_token" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -909,11 +918,26 @@ CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
     "parent_design_session_id" "uuid",
     "name" "text" NOT NULL,
     "created_at" timestamp(3) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "status" "public"."workflow_status" DEFAULT 'running'::"public"."workflow_status" NOT NULL,
+    "started_at" timestamp with time zone,
+    "finished_at" timestamp with time zone,
     CONSTRAINT "design_sessions_project_or_org_check" CHECK ((("project_id" IS NOT NULL) OR ("organization_id" IS NOT NULL)))
 );
 
 
 ALTER TABLE "public"."design_sessions" OWNER TO "postgres";
+
+
+COMMENT ON COLUMN "public"."design_sessions"."status" IS 'Workflow runtime status: running|idle';
+
+
+
+COMMENT ON COLUMN "public"."design_sessions"."started_at" IS 'Timestamp when workflow started';
+
+
+
+COMMENT ON COLUMN "public"."design_sessions"."finished_at" IS 'Timestamp when workflow finished (idle state)';
+
 
 
 CREATE TABLE IF NOT EXISTS "public"."github_repositories" (
@@ -1188,6 +1212,14 @@ CREATE INDEX "idx_checkpoints_parent" ON "public"."checkpoints" USING "btree" ("
 
 
 CREATE INDEX "idx_checkpoints_thread_id" ON "public"."checkpoints" USING "btree" ("thread_id", "checkpoint_ns");
+
+
+
+CREATE INDEX "idx_design_sessions_org_created_at" ON "public"."design_sessions" USING "btree" ("organization_id", "created_at" DESC);
+
+
+
+CREATE INDEX "idx_design_sessions_status" ON "public"."design_sessions" USING "btree" ("status");
 
 
 
@@ -2064,11 +2096,19 @@ CREATE POLICY "users_same_organization_select_policy" ON "public"."users" FOR SE
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
+
+
+
+
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."building_schema_versions";
 
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."building_schemas";
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."design_sessions";
 
 
 

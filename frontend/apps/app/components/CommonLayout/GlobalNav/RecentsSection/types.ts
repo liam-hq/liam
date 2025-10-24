@@ -4,4 +4,5 @@ export type RecentSession = {
   created_at: string
   project_id: string | null
   has_schema: boolean
+  status: 'running' | 'idle'
 }

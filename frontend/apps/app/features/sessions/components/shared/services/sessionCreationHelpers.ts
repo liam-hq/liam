@@ -59,6 +59,7 @@ const createDesignSession = async (
   organizationId: string,
   currentUserId: string,
 ): Promise<{ id: string } | CreateSessionState> => {
+  const now = new Date().toISOString()
   const { data: designSession, error: insertError } = await supabase
     .from('design_sessions')
     .insert({
@@ -67,6 +68,9 @@ const createDesignSession = async (
       organization_id: organizationId,
       created_by_user_id: currentUserId,
       parent_design_session_id: params.parentDesignSessionId,
+      status: 'running',
+      started_at: now,
+      finished_at: null,
     })
     .select()
     .single()

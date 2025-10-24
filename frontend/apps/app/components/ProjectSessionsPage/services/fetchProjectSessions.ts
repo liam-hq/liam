@@ -6,6 +6,7 @@ export type ProjectSession = {
   created_at: string
   project_id: string | null
   has_schema: boolean
+  status: 'running' | 'idle'
 }
 
 export const fetchProjectSessions = async (
@@ -21,7 +22,7 @@ export const fetchProjectSessions = async (
 
   const { data: sessions, error } = await supabase
     .from('design_sessions')
-    .select('id, name, created_at, project_id, building_schemas(id)')
+    .select('id, name, created_at, project_id, status, building_schemas(id)')
     .eq('project_id', projectId)
     .eq('created_by_user_id', userData.user.id)
     .order('created_at', { ascending: false })
@@ -42,6 +43,7 @@ export const fetchProjectSessions = async (
       name: session.name,
       created_at: session.created_at,
       project_id: session.project_id,
+      status: session.status ?? 'idle',
       has_schema:
         Array.isArray(session.building_schemas) &&
         session.building_schemas.length > 0,
