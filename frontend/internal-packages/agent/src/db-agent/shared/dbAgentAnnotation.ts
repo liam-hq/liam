@@ -13,11 +13,6 @@ export const dbAgentAnnotation = Annotation.Root({
     default: () => END,
   }),
 
-  designSchemaRetryCount: Annotation<number>({
-    reducer: (current, update) => update ?? current ?? 0,
-    default: () => 0,
-  }),
-
   // Flag to indicate successful schema design tool execution
   schemaDesignSuccessful: Annotation<boolean>({
     reducer: (current, update) => update ?? current ?? false,

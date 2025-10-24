@@ -79,7 +79,6 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       organizationId: context.organizationId,
       prompt: 'Test schema design',
       next: END,
-      designSchemaRetryCount: 0,
       schemaDesignSuccessful: false,
     }
 
@@ -143,7 +142,6 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       organizationId: context.organizationId,
       prompt: 'Test invalid schema design',
       next: END,
-      designSchemaRetryCount: 0,
       schemaDesignSuccessful: false,
     }
 

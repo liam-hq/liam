@@ -79,8 +79,6 @@ export const invokeSchemaDesignToolNode = async (
   let updatedResult = {
     ...state,
     messages: [...state.messages, ...messages],
-    // Preserve retry counter - will be reset only on success
-    designSchemaRetryCount: state.designSchemaRetryCount,
     schemaDesignSuccessful: false, // Default to false
   }
 
@@ -94,7 +92,6 @@ export const invokeSchemaDesignToolNode = async (
       updatedResult = {
         ...updatedResult,
         schemaData: schemaResult.value.schema,
-        designSchemaRetryCount: 0,
         schemaDesignSuccessful: true,
       }
     } else {
