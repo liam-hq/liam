@@ -2,12 +2,24 @@ import { aColumn, aPrimaryKeyConstraint } from '@liam-hq/schema'
 import { render, screen } from '@testing-library/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import type { FC, PropsWithChildren } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import * as UseUserEditing from '../../../../../../../../../stores'
 import {
   SchemaProvider,
   UserEditingProvider,
 } from '../../../../../../../../../stores'
 import { ColumnsItem } from './ColumnsItem'
+
+const mockFocusedElementId = vi.fn()
+
+const originalUseCommandPaletteOrThrow = UseUserEditing.useUserEditingOrThrow
+vi.spyOn(UseUserEditing, 'useUserEditingOrThrow').mockImplementation(() => {
+  const original = originalUseCommandPaletteOrThrow()
+  return {
+    ...original,
+    focusedElementId: mockFocusedElementId(),
+  }
+})
 
 const wrapper: FC<PropsWithChildren> = ({ children }) => (
   <NuqsTestingAdapter>
@@ -24,7 +36,6 @@ describe('id', () => {
         tableId="users"
         column={aColumn({ name: 'id', type: 'bigserial' })}
         constraints={{}}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )
@@ -46,7 +57,6 @@ describe('type', () => {
         tableId="users"
         column={aColumn({ name: 'id', type: 'bigserial' })}
         constraints={{}}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )
@@ -63,7 +73,6 @@ describe('default value', () => {
         tableId="users"
         column={aColumn({ default: null })}
         constraints={{}}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )
@@ -77,7 +86,6 @@ describe('default value', () => {
         tableId="users"
         column={aColumn({ default: 100 })}
         constraints={{}}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )
@@ -99,7 +107,6 @@ describe('primary key constraint', () => {
             columnNames: ['id'],
           }),
         }}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )
@@ -115,7 +122,6 @@ describe('not null', () => {
         tableId="users"
         column={aColumn({ name: 'id', notNull: true })}
         constraints={{}}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )
@@ -129,7 +135,6 @@ describe('not null', () => {
         tableId="users"
         column={aColumn({ name: 'id', notNull: false })}
         constraints={{}}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )
@@ -140,12 +145,13 @@ describe('not null', () => {
 
 describe('blink circle indicator', () => {
   it('renders a blink circle indicator when the "focusedElementId" is same with its element id', () => {
+    mockFocusedElementId.mockImplementation(() => 'users__columns__id')
+
     render(
       <ColumnsItem
         tableId="users"
         column={aColumn({ name: 'id', type: 'bigserial' })}
         constraints={{}}
-        focusedElementId={'users__columns__id'}
       />,
       { wrapper },
     )
@@ -154,12 +160,13 @@ describe('blink circle indicator', () => {
   })
 
   it('does not render a blink circle indicator when the "focusedElementId" is different than its element id', () => {
+    mockFocusedElementId.mockImplementation(() => 'users__columns__created_at')
+
     render(
       <ColumnsItem
         tableId="users"
         column={aColumn({ name: 'id', type: 'bigserial' })}
         constraints={{}}
-        focusedElementId={'users__columns__created_at'}
       />,
       { wrapper },
     )

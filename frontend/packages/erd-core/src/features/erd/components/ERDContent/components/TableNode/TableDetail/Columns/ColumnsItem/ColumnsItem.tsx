@@ -19,19 +19,13 @@ type Props = {
   tableId: string
   column: Column
   constraints: Constraints
-  focusedElementId: string
 }
 
-export const ColumnsItem: FC<Props> = ({
-  tableId,
-  column,
-  constraints,
-  focusedElementId,
-}) => {
+export const ColumnsItem: FC<Props> = ({ tableId, column, constraints }) => {
   const elementId = getTableColumnElementId(tableId, column.name)
 
   const { operations } = useSchemaOrThrow()
-  const { showDiff } = useUserEditingOrThrow()
+  const { showDiff, focusedElementId } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined

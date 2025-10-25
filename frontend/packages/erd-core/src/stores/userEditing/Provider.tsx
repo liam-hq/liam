@@ -62,6 +62,24 @@ export const UserEditingProvider: FC<Props> = ({
     [_setActiveTableName],
   )
 
+  const [focusedElementId, setFocusedElementId] = useState(
+    typeof location === 'object'
+      ? // location.hash starts with '#'; decode to match actual DOM id
+        location.hash.slice(1)
+      : '',
+  )
+
+  // update focusedElementId when hash changes
+  useEffect(() => {
+    const updateState = () => {
+      const elementId = location.hash.slice(1)
+      setFocusedElementId(elementId)
+    }
+
+    window.addEventListener('hashchange', updateState)
+    return () => window.removeEventListener('hashchange', updateState)
+  }, [])
+
   const [showMode, setShowMode] = useQueryState(
     'showMode',
     parseAsStringEnum<ShowMode>(['ALL_FIELDS', 'KEY_ONLY', 'TABLE_NAME'])
@@ -210,6 +228,7 @@ export const UserEditingProvider: FC<Props> = ({
         // URL synchronized state
         activeTableName,
         setActiveTableName,
+        focusedElementId,
         showMode,
         setShowMode,
         hiddenNodeIds,

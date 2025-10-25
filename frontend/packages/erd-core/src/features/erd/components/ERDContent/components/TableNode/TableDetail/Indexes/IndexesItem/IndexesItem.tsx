@@ -18,18 +18,13 @@ const HIDE_INDEX_TYPE = 'btree'
 type Props = {
   tableId: string
   index: Index
-  focusedElementId: string
 }
 
-export const IndexesItem: FC<Props> = ({
-  tableId,
-  index,
-  focusedElementId,
-}) => {
+export const IndexesItem: FC<Props> = ({ tableId, index }) => {
   const elementId = getTableIndexElementId(tableId, index.name)
 
   const { operations } = useSchemaOrThrow()
-  const { showDiff } = useUserEditingOrThrow()
+  const { showDiff, focusedElementId } = useUserEditingOrThrow()
 
   const changeStatus = useMemo(() => {
     if (!showDiff) return undefined
