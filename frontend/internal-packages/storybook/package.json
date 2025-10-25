@@ -16,7 +16,7 @@
     "msw-storybook-addon": "2.0.6",
     "storybook": "9.1.10",
     "typescript": "5.9.3",
-    "zod": "3.23.8"
+    "zod": "3.25.76"
   },
   "scripts": {
     "build": "mkdir -p public && mkdir -p .storybook/public && storybook build",
