@@ -1,5 +1,11 @@
 # @liam-hq/cli
 
+## 0.7.22
+
+### Patch Changes
+
+- [#3833](https://github.com/liam-hq/liam/pull/3833) - - 🐛 Fix focus trap and enable click-outside-to-close for Table Detail Drawer / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+
 ## 0.7.21
 
 ### Patch Changes

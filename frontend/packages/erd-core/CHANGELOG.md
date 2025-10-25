@@ -1,5 +1,11 @@
 # @liam-hq/erd-core
 
+## 0.6.16
+
+### Patch Changes
+
+- [#3833](https://github.com/liam-hq/liam/pull/3833) - - 🐛 Fix focus trap and enable click-outside-to-close for Table Detail Drawer / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+
 ## 0.6.15
 
 ### Patch Changes
