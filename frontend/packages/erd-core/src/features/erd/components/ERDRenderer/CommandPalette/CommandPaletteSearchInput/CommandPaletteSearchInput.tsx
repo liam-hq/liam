@@ -32,14 +32,14 @@ export const CommandPaletteSearchInput: FC<Props> = ({
 }) => {
   const [value, setValue] = useState('')
 
-  const modePrefix = useMemo(() => {
+  const modePrefix = useMemo((): { text?: string; separator?: string } => {
     switch (mode.type) {
       case 'default':
-        return null
+        return {}
       case 'command':
-        return '>'
+        return { separator: '>' }
       case 'table':
-        return `${mode.tableName} /`
+        return { text: mode.tableName, separator: '/' }
     }
   }, [mode])
 
@@ -133,7 +133,14 @@ export const CommandPaletteSearchInput: FC<Props> = ({
     <div className={styles.container}>
       <Search className={styles.searchIcon} />
       <div className={styles.inputContainer}>
-        {modePrefix && <span className={styles.modePrefix}>{modePrefix}</span>}
+        {modePrefix.text && (
+          <span className={styles.modePrefix}>{modePrefix.text}</span>
+        )}
+        {modePrefix.separator && (
+          <span className={styles.modePrefixSeparator}>
+            {modePrefix.separator}
+          </span>
+        )}
         <div className={styles.inputWithSuggestion}>
           <Command.Input
             {...inputProps}

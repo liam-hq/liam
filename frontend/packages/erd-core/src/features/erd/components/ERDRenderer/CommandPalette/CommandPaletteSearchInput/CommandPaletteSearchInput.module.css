@@ -31,6 +31,15 @@
   flex-shrink: 0;
   margin-right: var(--spacing-1);
   padding: var(--spacing-2) 0;
+  max-width: 220px;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+.modePrefixSeparator {
+  flex-shrink: 0;
+  margin-right: var(--spacing-1);
+  padding: var(--spacing-2) 0;
 }
 
 .suggestion {
