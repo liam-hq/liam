@@ -5,7 +5,7 @@
     "url": "https://github.com/liam-hq/liam.git"
   },
   "license": "Apache-2.0",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "type": "module",
   "publishConfig": {
     "access": "public"

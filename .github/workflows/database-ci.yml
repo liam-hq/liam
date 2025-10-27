@@ -28,6 +28,14 @@ jobs:
           version: latest
       - name: Supabase Start
         run: supabase start
+
+      - uses: ./.github/actions/pnpm-setup
+      - name: Run Splinter Lint
+        run: pnpm -F @liam-hq/db db:lint
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:54322/postgres
+          SPLINTER_DEBUG: 1
+
       - name: Setup supabase testing
         run: |
           psql -v ON_ERROR_STOP=1 -U postgres -d postgres -h localhost -p 54322 -f frontend/internal-packages/db/supabase/setup-testing.sql

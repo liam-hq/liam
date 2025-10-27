@@ -20,7 +20,7 @@ import styles from './Output.module.css'
 type Props = ComponentProps<typeof VersionDropdown> & {
   designSessionId: string
   schema: Schema
-  prevSchema: Schema
+  baselineSchema: Schema
   sqlReviewComments: ReviewComment[]
   initialIsPublic: boolean
   activeTab: OutputTabValue
@@ -31,7 +31,7 @@ type Props = ComponentProps<typeof VersionDropdown> & {
 export const Output: FC<Props> = ({
   designSessionId,
   schema,
-  prevSchema,
+  baselineSchema,
   sqlReviewComments,
   activeTab,
   onTabChange,
@@ -85,7 +85,7 @@ export const Output: FC<Props> = ({
         className={styles.tabsContent}
         forceMount
       >
-        <ERD schema={schema} prevSchema={prevSchema} />
+        <ERD schema={schema} baselineSchema={baselineSchema} />
       </TabsContent>
       <TabsContent
         value={OUTPUT_TABS.SQL}
@@ -94,7 +94,7 @@ export const Output: FC<Props> = ({
       >
         <SQL
           currentSchema={schema}
-          prevSchema={prevSchema}
+          baselineSchema={baselineSchema}
           comments={sqlReviewComments}
         />
       </TabsContent>

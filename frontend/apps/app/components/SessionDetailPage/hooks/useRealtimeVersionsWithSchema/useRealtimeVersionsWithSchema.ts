@@ -8,13 +8,11 @@ import { createClient } from '../../../../libs/db/client'
 import { useViewMode } from '../../hooks/viewMode'
 import type { Version } from '../../types'
 import { buildCurrentSchema } from './services/buildCurrentSchema'
-import { buildPrevSchema } from './services/buildPrevSchema'
 
 type Params = {
   buildingSchemaId: string
   initialVersions: Version[]
   initialDisplayedSchema: Schema
-  initialPrevSchema: Schema
   onChangeSelectedVersion: (version: Version) => void
 }
 
@@ -22,7 +20,6 @@ export function useRealtimeVersionsWithSchema({
   buildingSchemaId,
   initialVersions,
   initialDisplayedSchema,
-  initialPrevSchema,
   onChangeSelectedVersion,
 }: Params) {
   const { isPublic } = useViewMode()
@@ -36,7 +33,6 @@ export function useRealtimeVersionsWithSchema({
   const [displayedSchema, setDisplayedSchema] = useState<Schema>(
     initialDisplayedSchema,
   )
-  const [prevSchema, setPrevSchema] = useState<Schema>(initialPrevSchema)
 
   const [error, setError] = useState<Error | null>(null)
   const handleError = useCallback((err: unknown) => {
@@ -47,7 +43,7 @@ export function useRealtimeVersionsWithSchema({
     )
   }, [])
 
-  const handleBuildCurrentAndPrevSchema = useCallback(
+  const handleBuildCurrentSchema = useCallback(
     (targetVersion: Version | null) => {
       if (targetVersion === null) return
 
@@ -61,11 +57,6 @@ export function useRealtimeVersionsWithSchema({
           }
           const currentSchema = parsed.output
           setDisplayedSchema(currentSchema)
-          const newPrevSchema = await buildPrevSchema({
-            currentSchema,
-            targetVersionId: targetVersion.id,
-          })
-          setPrevSchema(newPrevSchema ?? currentSchema)
         } catch (error) {
           handleError(error)
         }
@@ -102,8 +93,8 @@ export function useRealtimeVersionsWithSchema({
   }, [versions, onChangeSelectedVersion])
 
   useEffect(() => {
-    handleBuildCurrentAndPrevSchema(selectedVersion)
-  }, [selectedVersion, handleBuildCurrentAndPrevSchema])
+    handleBuildCurrentSchema(selectedVersion)
+  }, [selectedVersion, handleBuildCurrentSchema])
 
   useEffect(() => {
     // Skip realtime subscription for public view
@@ -155,7 +146,6 @@ export function useRealtimeVersionsWithSchema({
     selectedVersion,
     setSelectedVersion,
     displayedSchema,
-    prevSchema,
     error,
   }
 }

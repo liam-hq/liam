@@ -5,4 +5,12 @@ export type RecentSession = {
   project_id: string | null
   has_schema: boolean
   status: 'running' | 'idle'
+  created_by_user: {
+    id: string
+    name: string
+    email: string
+    avatar_url: string | null
+  } | null
 }
+
+export type SessionFilterType = 'all' | 'me' | string

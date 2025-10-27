@@ -1,17 +1,14 @@
 .toc {
-  position: sticky;
-  top: var(--spacing-8);
-  height: fit-content;
-  max-height: calc(100vh - var(--spacing-16));
+  width: 288px;
+  height: 75%;
+  padding: var(--spacing-4);
   overflow-y: auto;
-  padding: var(--spacing-4) var(--spacing-4); /* 16px */
-  min-width: 288px;
-  max-width: 288px;
-  align-self: flex-start;
+  border-radius: var(--border-radius-md);
+  background-color: var(--pane-background);
 }
 
 .title {
-  font-size: var(--font-size-6); /* 16px */
+  font-size: var(--font-size-6);
   font-weight: 400;
   padding: var(--spacing-1half) 0;
   color: var(--global-foreground);
@@ -36,7 +33,7 @@
   border: none;
   background: none;
   color: var(--global-mute-text);
-  font-size: var(--font-size-5); /* 14px */
+  font-size: var(--font-size-5);
   line-height: 1.6;
   cursor: pointer;
   transition: color 0.15s ease;

@@ -304,7 +304,7 @@ const code = true
         {
           "id": "using-code-in-heading",
           "level": 2,
-          "text": "Using \`code\` in heading",
+          "text": "Using code in heading",
         },
       ]
     `)
@@ -345,6 +345,50 @@ const code = true
           "id": "draft-work-in-progress",
           "level": 3,
           "text": "[Draft] Work in Progress",
+        },
+      ]
+    `)
+  })
+
+  it('strips bold/italic/strikethrough decorations from text and id', () => {
+    const content =
+      '## Section **Title**\n### This is _nice_\n#### ~~Deprecated~~ API'
+
+    expect(extractTocItems(content)).toMatchInlineSnapshot(`
+      [
+        {
+          "id": "section-title",
+          "level": 2,
+          "text": "Section Title",
+        },
+        {
+          "id": "this-is-nice",
+          "level": 3,
+          "text": "This is nice",
+        },
+        {
+          "id": "deprecated-api",
+          "level": 4,
+          "text": "Deprecated API",
+        },
+      ]
+    `)
+  })
+
+  it('removes HTML tags and stray angle brackets from headings', () => {
+    const content = '## Hello <em>world</em> & beyond\n### 1 < 2 and 3 > 2'
+
+    expect(extractTocItems(content)).toMatchInlineSnapshot(`
+      [
+        {
+          "id": "hello-world-beyond",
+          "level": 2,
+          "text": "Hello world & beyond",
+        },
+        {
+          "id": "1-2-and-3-2",
+          "level": 3,
+          "text": "1 2 and 3 2",
         },
       ]
     `)

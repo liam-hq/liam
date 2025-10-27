@@ -15,6 +15,7 @@ import type { RecentSession } from './types'
 type Props = {
   session: RecentSession
   isActive: boolean
+  showOwner?: boolean
 }
 
 const mapDbStatusToUi = (
@@ -23,7 +24,11 @@ const mapDbStatusToUi = (
   return status === 'running' ? 'running' : 'idle'
 }
 
-export const RecentSessionItem: FC<Props> = ({ session, isActive }) => {
+export const RecentSessionItem: FC<Props> = ({
+  session,
+  isActive,
+  showOwner = false,
+}) => {
   const [status, setStatus] = useState<SessionStatus>(
     mapDbStatusToUi(session.status),
   )
@@ -36,17 +41,24 @@ export const RecentSessionItem: FC<Props> = ({ session, isActive }) => {
     id: session.id,
   })
   const sessionDate = formatDateShort(session.created_at)
+  const ownerName = session.created_by_user?.name || 'Unknown'
+  const ariaLabel = `${session.name}, created on ${sessionDate}${
+    showOwner ? ` by ${ownerName}` : ''
+  }`
 
   return (
     <Link
       href={sessionUrl}
       className={clsx(styles.sessionItem, isActive && styles.sessionItemActive)}
-      aria-label={`${session.name}, created on ${sessionDate}`}
+      aria-label={ariaLabel}
       aria-current={isActive ? 'page' : undefined}
     >
       <SessionStatusIndicator status={status} />
-      <div className={styles.sessionContent}>
+      <div className={styles.sessionInfo}>
         <span className={styles.sessionName}>{session.name}</span>
+        {showOwner && (
+          <span className={styles.sessionOwner}>{ownerName}</span>
+        )}
         <span className={styles.sessionDate} aria-hidden="true">
           {sessionDate}
         </span>

@@ -16,13 +16,14 @@
     "@biomejs/biome": "2.2.5",
     "@liam-hq/configs": "workspace:*",
     "eslint": "9.37.0",
-    "supabase": "2.45.4",
+    "supabase": "2.50.5",
     "type-fest": "4.41.0",
     "typescript": "5.9.3",
     "vitest": "3.2.4"
   },
   "scripts": {
     "build": "tsc",
+    "db:lint": "bash -lc 'DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:54322/postgres} ./scripts/db-lint/run-splinter.sh'",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",

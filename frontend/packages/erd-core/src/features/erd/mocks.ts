@@ -59,7 +59,7 @@ export const mockCurrentSchema = aSchema({
   },
 })
 
-export const mockPreviousSchema = aSchema({
+export const mockBaselineSchema = aSchema({
   tables: {
     users: aTable({
       name: 'users',
@@ -95,11 +95,11 @@ export const mockPreviousSchema = aSchema({
 })
 
 export const mockAddedTableSchema: SchemaProviderValue = {
-  previous: mockPreviousSchema,
+  baseline: mockBaselineSchema,
   current: {
-    ...mockPreviousSchema,
+    ...mockBaselineSchema,
     tables: {
-      ...mockPreviousSchema.tables,
+      ...mockBaselineSchema.tables,
       posts: aTable({
         name: 'posts',
         comment: 'Blog posts table',
@@ -155,7 +155,7 @@ export const mockAddedTableSchema: SchemaProviderValue = {
 }
 
 export const mockRemovedTableSchema: SchemaProviderValue = {
-  previous: mockPreviousSchema,
+  baseline: mockBaselineSchema,
   current: aSchema({
     tables: {},
     extensions: {},
@@ -163,13 +163,13 @@ export const mockRemovedTableSchema: SchemaProviderValue = {
 }
 
 export const mockModifiedTableSchema: SchemaProviderValue = {
-  previous: mockPreviousSchema,
+  baseline: mockBaselineSchema,
   current: {
-    ...mockPreviousSchema,
+    ...mockBaselineSchema,
     tables: {
-      ...mockPreviousSchema.tables,
+      ...mockBaselineSchema.tables,
       users: aTable({
-        ...mockPreviousSchema.tables['users'],
+        ...mockBaselineSchema.tables['users'],
         comment: 'New user accounts table comment',
       }),
     },
@@ -209,7 +209,7 @@ export const mockAddedColumnSchema: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         name: 'users',
@@ -254,7 +254,7 @@ export const mockRemovedColumnSchema: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         name: 'users',
@@ -315,7 +315,7 @@ export const mockModifiedColumnTypeSchema: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         name: 'users',
@@ -373,7 +373,7 @@ export const mockModifiedColumnCommentSchema: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         name: 'users',
@@ -433,7 +433,7 @@ export const mockModifiedColumnDefaultSchema: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         name: 'users',
@@ -517,7 +517,7 @@ export const mockAddedIndex: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         ...usersTableWithIndexColumns,
@@ -550,7 +550,7 @@ export const mockRemovedIndex: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         ...usersTableWithIndexColumns,
@@ -598,7 +598,7 @@ export const mockModifiedIndexUnique: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         ...usersTableWithIndexColumns,
@@ -636,7 +636,7 @@ export const mockModifiedIndexColumns: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         ...usersTableWithIndexColumns,
@@ -670,7 +670,7 @@ export const mockModifiedIndexType: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         ...usersTableWithIndexColumns,
@@ -709,7 +709,7 @@ export const mockAddedForeignKeyConstraint: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: usersTable,
       posts: postsTable,
@@ -738,7 +738,7 @@ export const mockAddedUniqueConstraint: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: usersTable,
     },
@@ -754,7 +754,7 @@ export const mockRemovedConstraint: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: aTable({
         ...usersTable,
@@ -804,7 +804,7 @@ export const mockModifiedForeignKeyConstraint: SchemaProviderValue = {
     },
     enums: {},
   }),
-  previous: aSchema({
+  baseline: aSchema({
     tables: {
       users: usersTable,
       posts: aTable({

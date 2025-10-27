@@ -29,18 +29,6 @@
   gap: var(--spacing-1);
 }
 
-.recentsHeader {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-2);
-  gap: var(--spacing-2half);
-}
-
-.recentsTitle {
-  font-weight: 600;
-  color: var(--global-foreground);
-}
-
 .sessionsList {
   display: flex;
   flex-direction: column;
@@ -105,18 +93,28 @@
   background-color: var(--primary-overlay-20);
 }
 
+.sessionInfo,
 .sessionContent {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--spacing-1);
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .sessionName {
   font-size: var(--font-size-4);
   font-weight: 500;
   color: var(--global-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionOwner {
+  font-size: var(--font-size-2);
+  color: var(--overlay-60);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -6,7 +6,6 @@ import clsx from 'clsx'
 import type { ComponentProps, FC } from 'react'
 import * as v from 'valibot'
 import type { Version } from '../../../../types'
-import { isEmptySchema } from '../../../../utils/isEmptySchema'
 import {
   ARTIFACT_TAB,
   ERD_SCHEMA_TABS_LIST,
@@ -58,9 +57,7 @@ export const Header: FC<Props> = ({
   ...propsForVersionDropdown
 }) => {
   const { versions, selectedVersion } = propsForVersionDropdown
-  const disabled =
-    (!versions || versions.length === 0 || !selectedVersion) &&
-    isEmptySchema(schema)
+  const disabled = !versions || versions.length === 0 || !selectedVersion
   const cumulativeOperations = generateCumulativeOperations(
     versions,
     selectedVersion,

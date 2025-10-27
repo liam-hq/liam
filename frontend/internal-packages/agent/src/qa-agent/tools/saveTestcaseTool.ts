@@ -3,7 +3,6 @@ import { ToolMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { type StructuredTool, tool } from '@langchain/core/tools'
 import { Command, getCurrentTaskInput } from '@langchain/langgraph'
-import { type PgParseResult, pgParse } from '@liam-hq/schema/parser'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../streaming/constants'
@@ -11,6 +10,8 @@ import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
 import type { testcaseAnnotation } from '../testcaseGeneration/testcaseAnnotation'
+import { isPgTapTest, validatePgTapTest } from './validatePgTapTest'
+import { validateSqlSyntax } from './validateSqlSyntax'
 
 const TOOL_NAME = 'saveTestcase'
 
@@ -25,29 +26,6 @@ const configSchema = v.object({
     id: v.string(),
   }),
 })
-
-/**
- * Validate SQL syntax using pgParse. On error, notify UI via SSE then throw to trigger retry.
- */
-const validateSqlSyntax = async (
-  sql: string,
-  toolCallId: string,
-): Promise<void> => {
-  const parseResult: PgParseResult = await pgParse(sql)
-
-  if (parseResult.error) {
-    const message = `SQL syntax error: ${parseResult.error.message}. Fix the SQL and retry.`
-    const toolMessage = new ToolMessage({
-      id: uuidv4(),
-      name: TOOL_NAME,
-      status: 'error',
-      content: message,
-      tool_call_id: toolCallId,
-    })
-    await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
-    return Promise.reject(new Error(message))
-  }
-}
 
 /**
  * Extract tool call ID from config
@@ -88,9 +66,28 @@ export const saveTestcaseTool: StructuredTool = tool(
 
       const { sql } = parsed.output
 
-      await validateSqlSyntax(sql, toolCallId)
+      let validationError: string | undefined
+      if (isPgTapTest(sql)) {
+        validationError = validatePgTapTest(sql)
+      } else {
+        validationError = await validateSqlSyntax(sql)
+      }
 
-      // Get current state to retrieve testcase info
+      if (validationError) {
+        const toolMessage = new ToolMessage({
+          id: uuidv4(),
+          name: TOOL_NAME,
+          status: 'error',
+          content: validationError,
+          tool_call_id: toolCallId,
+        })
+        await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+        throw new WorkflowTerminationError(
+          new Error(validationError),
+          TOOL_NAME,
+        )
+      }
+
       const state = getCurrentTaskInput<typeof testcaseAnnotation.State>()
 
       const {

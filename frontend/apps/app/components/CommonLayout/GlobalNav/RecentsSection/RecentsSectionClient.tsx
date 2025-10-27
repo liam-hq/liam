@@ -1,20 +1,27 @@
 'use client'
 
 import { fromPromise } from '@liam-hq/neverthrow'
+import * as Sentry from '@sentry/nextjs'
 import clsx from 'clsx'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createClient as createSupabaseClient } from '../../../../libs/db/client'
 import { urlgen } from '../../../../libs/routes'
 import itemStyles from '../Item.module.css'
-import { loadMoreSessions } from './actions'
+import { fetchFilteredSessions, loadMoreSessions } from './actions'
+import {
+  type OrganizationMember,
+  SessionFilterDropdown,
+} from './components/SessionFilterDropdown'
 import { RecentSessionItem } from './RecentSessionItem'
 import styles from './RecentsSectionClient.module.css'
 import { Skeleton } from './Skeleton'
-import type { RecentSession } from './types'
-import { createClient as createSupabaseClient } from '../../../../libs/db/client'
+import type { RecentSession, SessionFilterType } from './types'
 
 type RecentsSectionClientProps = {
   sessions: RecentSession[]
+  organizationMembers: OrganizationMember[]
+  currentUserId: string
 }
 
 const PAGE_SIZE = 20
@@ -22,13 +29,36 @@ const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
 export const RecentsSectionClient = ({
   sessions: initialSessions,
+  organizationMembers,
+  currentUserId,
 }: RecentsSectionClientProps) => {
   const pathname = usePathname()
   const [sessions, setSessions] = useState<RecentSession[]>(initialSessions)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialSessions.length >= PAGE_SIZE)
+  const [filterType, setFilterType] = useState<SessionFilterType>('me')
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const sessionsListRef = useRef<HTMLElement | null>(null)
+
+  const handleFilterChange = useCallback(async (newFilterType: string) => {
+    setFilterType(newFilterType)
+    setIsLoading(true)
+
+    const result = await fromPromise(fetchFilteredSessions(newFilterType))
+
+    result.match(
+      (newSessions) => {
+        setSessions(newSessions)
+        setHasMore(newSessions.length >= PAGE_SIZE)
+      },
+      (err) => {
+        Sentry.captureException(err)
+      },
+    )
+
+    setIsLoading(false)
+  }, [])
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return
@@ -39,31 +69,32 @@ export const RecentsSectionClient = ({
       loadMoreSessions({
         limit: PAGE_SIZE,
         offset: sessions.length,
+        filterType,
       }),
     )
 
-    if (result.isErr()) {
-      console.error('Error loading more sessions:', result.error)
-      setIsLoading(false)
-      return
-    }
-
-    const newSessions = result.value
-
-    if (newSessions.length === 0) {
-      setHasMore(false)
-    } else {
-      setSessions((prev) => [...prev, ...newSessions])
-      setHasMore(newSessions.length >= PAGE_SIZE)
-    }
+    result.match(
+      (newSessions) => {
+        if (newSessions.length === 0) {
+          setHasMore(false)
+        } else {
+          setSessions((prev) => [...prev, ...newSessions])
+          setHasMore(newSessions.length >= PAGE_SIZE)
+        }
+      },
+      (err) => {
+        Sentry.captureException(err)
+      },
+    )
 
     setIsLoading(false)
-  }, [isLoading, hasMore, sessions.length])
+  }, [filterType, hasMore, isLoading, sessions.length])
 
   useEffect(() => {
     const currentLoadMoreRef = loadMoreRef.current
+    const currentSessionsListRef = sessionsListRef.current
 
-    if (!currentLoadMoreRef) return
+    if (!currentLoadMoreRef || !currentSessionsListRef) return
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -73,7 +104,7 @@ export const RecentsSectionClient = ({
         }
       },
       {
-        root: null,
+        root: currentSessionsListRef,
         rootMargin: '100px',
         threshold: 0.1,
       },
@@ -88,10 +119,8 @@ export const RecentsSectionClient = ({
     }
   }, [loadMore])
 
-
-  // Realtime: subscribe to status updates for sessions in view
   useEffect(() => {
-    const ids = sessions.map((s) => s.id)
+    const ids = sessions.map((session) => session.id)
     if (ids.length === 0) return
 
     const supabase = createSupabaseClient()
@@ -109,10 +138,14 @@ export const RecentsSectionClient = ({
         (payload) => {
           const row = payload.new as { id: string; status?: string }
           setSessions((prev) =>
-            prev.map((s) =>
-              s.id === row.id
-                ? { ...s, status: (row.status as any) ?? s.status }
-                : s,
+            prev.map((session) =>
+              session.id === row.id
+                ? {
+                    ...session,
+                    status:
+                      (row.status as RecentSession['status']) ?? session.status,
+                  }
+                : session,
             ),
           )
         },
@@ -123,6 +156,7 @@ export const RecentsSectionClient = ({
       supabase.removeChannel(channel)
     }
   }, [sessions])
+
   return (
     <>
       <div className={clsx(itemStyles.item, styles.recentsCollapsed)}>
@@ -132,26 +166,32 @@ export const RecentsSectionClient = ({
       </div>
       <div className={styles.recentsExpanded}>
         <div className={styles.recentsSection}>
-          <div className={styles.recentsHeader}>
-            <div className={itemStyles.labelArea}>
-              <span className={clsx(itemStyles.label, styles.recentsTitle)}>
-                Recents
-              </span>
-            </div>
-          </div>
+          <SessionFilterDropdown
+            filterType={filterType}
+            organizationMembers={organizationMembers}
+            currentUserId={currentUserId}
+            onFilterChange={handleFilterChange}
+          />
 
           {sessions.length > 0 ? (
-            <nav className={styles.sessionsList} aria-label="Recent sessions">
+            <nav
+              ref={sessionsListRef}
+              className={styles.sessionsList}
+              aria-label="Recent sessions"
+            >
               {sessions.map((session) => {
                 const sessionUrl = urlgen('design_sessions/[id]', {
                   id: session.id,
                 })
                 const isActive = pathname === sessionUrl
+                const showOwner = filterType !== 'me'
+
                 return (
                   <RecentSessionItem
                     key={session.id}
                     session={session}
                     isActive={isActive}
+                    showOwner={showOwner}
                   />
                 )
               })}

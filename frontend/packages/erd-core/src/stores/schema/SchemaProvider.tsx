@@ -10,30 +10,30 @@ import { SchemaContext, type SchemaContextValue } from './context'
 
 const schemaProviderSchema = v.object({
   current: schemaSchema,
-  previous: v.optional(schemaSchema),
+  baseline: v.optional(schemaSchema),
 })
 
 export type SchemaProviderValue = v.InferOutput<typeof schemaProviderSchema>
 
 type Props = PropsWithChildren & SchemaProviderValue
 
-export const SchemaProvider: FC<Props> = ({ children, current, previous }) => {
+export const SchemaProvider: FC<Props> = ({ children, current, baseline }) => {
   const computedSchema: SchemaContextValue = useMemo(() => {
     const emptySchema: Schema = {
       tables: {},
       enums: {},
       extensions: {},
     }
-    const operations = getOperations(previous ?? emptySchema, current)
-    const merged = previous ? mergeSchemas(previous, current) : current
+    const operations = getOperations(baseline ?? emptySchema, current)
+    const merged = baseline ? mergeSchemas(baseline, current) : current
 
     return {
       current,
-      previous,
+      baseline,
       merged,
       operations,
     }
-  }, [current, previous])
+  }, [current, baseline])
 
   return (
     <SchemaContext.Provider value={computedSchema}>

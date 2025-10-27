@@ -7,7 +7,7 @@ import {
   syntaxCustomStyle,
   syntaxTheme,
 } from '@liam-hq/ui'
-import type { FC, HTMLAttributes, ReactNode } from 'react'
+import { type FC, type HTMLAttributes, type ReactNode, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import rehypeRaw from 'rehype-raw'
@@ -21,13 +21,16 @@ import {
   SUCCESS_STATUS,
   TEST_RESULTS_SECTION_TITLE,
 } from './constants'
-import { TableOfContents } from './TableOfContents/TableOfContents'
+import { DesktopToC } from './DesktopToC'
+import { MobileToC } from './MobileToC'
+import { useActiveHeading } from './useActiveHeading'
 import { generateHeadingId } from './utils'
+import { extractTocItems } from './utils/extractTocItems'
 
 type CodeProps = {
   className?: string
   children?: ReactNode
-} & HTMLAttributes<HTMLElement>
+} & HTMLAttributes<HTMLElement> & { node?: unknown; inline?: boolean }
 
 type Props = {
   doc: string
@@ -35,43 +38,52 @@ type Props = {
 }
 
 export const Artifact: FC<Props> = ({ doc, error }) => {
+  const tocItems = useMemo(() => {
+    return extractTocItems(doc)
+  }, [doc])
+
+  const { activeId } = useActiveHeading({
+    elementIds: tocItems.map((h) => h.id),
+  })
+
+  const extractText = (node: unknown): string => {
+    if (typeof node === 'string') return node
+    if (Array.isArray(node)) return node.map(extractText).join('')
+    if (
+      node &&
+      typeof node === 'object' &&
+      'props' in node &&
+      // @ts-expect-error - React children can be any type
+      node.props?.children
+    )
+      // @ts-expect-error - React children can be any type
+      return extractText(node.props.children)
+    return ''
+  }
+
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-artifact-content>
       {error && (
         <Callout variant="warning" icon={<AlertTriangle size={20} />}>
           {error.message}
         </Callout>
       )}
       <div className={styles.head}>
-        <CopyButton textToCopy={doc} tooltipLabel="Copy Markdown" />
+        <div className={styles.mobileToC}>
+          <MobileToC items={tocItems} activeId={activeId} />
+        </div>
+        <div className={styles.copyButton}>
+          <CopyButton textToCopy={doc} tooltipLabel="Copy Markdown" />
+        </div>
       </div>
-      <div className={styles.contentWrapper} data-artifact-content>
+      <div className={styles.contentWrapper}>
         <div className={styles.bodyWrapper}>
           <div className={styles.body}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
               components={{
-                p(props) {
-                  const { children, ...rest } = props
-
-                  // Extract text content from children
-                  const extractText = (node: unknown): string => {
-                    if (typeof node === 'string') return node
-                    if (Array.isArray(node))
-                      return node.map(extractText).join('')
-                    if (
-                      node &&
-                      typeof node === 'object' &&
-                      'props' in node &&
-                      // @ts-expect-error - React children can be any type
-                      node.props?.children
-                    )
-                      // @ts-expect-error - React children can be any type
-                      return extractText(node.props.children)
-                    return ''
-                  }
-
+                p({ node: _node, children, ...rest }) {
                   const text = extractText(children)
 
                   // Check if this paragraph contains execution section title
@@ -85,26 +97,7 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
 
                   return <p {...rest}>{children}</p>
                 },
-                li(props) {
-                  const { children, ...rest } = props
-
-                  // Extract text content from children
-                  const extractText = (node: unknown): string => {
-                    if (typeof node === 'string') return node
-                    if (Array.isArray(node))
-                      return node.map(extractText).join('')
-                    if (
-                      node &&
-                      typeof node === 'object' &&
-                      'props' in node &&
-                      // @ts-expect-error - React children can be any type
-                      node.props?.children
-                    )
-                      // @ts-expect-error - React children can be any type
-                      return extractText(node.props.children)
-                    return ''
-                  }
-
+                li({ node: _node, children, ...rest }) {
                   const text = extractText(children)
 
                   // Check if this is an execution log entry
@@ -137,8 +130,13 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
 
                   return <li {...rest}>{children}</li>
                 },
-                code(props: CodeProps) {
-                  const { children, className, ...rest } = props
+                code({
+                  node: _node,
+                  inline: _inline,
+                  children,
+                  className,
+                  ...rest
+                }: CodeProps) {
                   const match = /language-(\w+)/.exec(className || '')
                   const isInline = !match && !className
 
@@ -160,8 +158,8 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
                     </code>
                   )
                 },
-                h1: ({ children, ...props }) => {
-                  const text = String(children)
+                h1: ({ node: _node, children, ...props }) => {
+                  const text = extractText(children)
                   const id = generateHeadingId(text)
                   return (
                     <h1 id={id} {...props}>
@@ -169,8 +167,8 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
                     </h1>
                   )
                 },
-                h2: ({ children, ...props }) => {
-                  const text = String(children)
+                h2: ({ node: _node, children, ...props }) => {
+                  const text = extractText(children)
                   const id = generateHeadingId(text)
                   return (
                     <h2 id={id} {...props}>
@@ -178,8 +176,8 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
                     </h2>
                   )
                 },
-                h3: ({ children, ...props }) => {
-                  const text = String(children)
+                h3: ({ node: _node, children, ...props }) => {
+                  const text = extractText(children)
                   const id = generateHeadingId(text)
                   return (
                     <h3 id={id} {...props}>
@@ -187,8 +185,8 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
                     </h3>
                   )
                 },
-                h4: ({ children, ...props }) => {
-                  const text = String(children)
+                h4: ({ node: _node, children, ...props }) => {
+                  const text = extractText(children)
                   const id = generateHeadingId(text)
                   return (
                     <h4 id={id} {...props}>
@@ -196,8 +194,8 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
                     </h4>
                   )
                 },
-                h5: ({ children, ...props }) => {
-                  const text = String(children)
+                h5: ({ node: _node, children, ...props }) => {
+                  const text = extractText(children)
                   const id = generateHeadingId(text)
                   return (
                     <h5 id={id} {...props}>
@@ -211,7 +209,9 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
             </ReactMarkdown>
           </div>
         </div>
-        <TableOfContents content={doc} />
+        <div className={styles.desktopToc}>
+          <DesktopToC items={tocItems} activeId={activeId} />
+        </div>
       </div>
     </div>
   )
