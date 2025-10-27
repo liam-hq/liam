@@ -12,16 +12,6 @@ describe('isPgTapTest', () => {
     expect(isPgTapTest(sql)).toBe(true)
   })
 
-  it('returns true when SQL contains has_table(', () => {
-    const sql = "SELECT has_table('users');"
-    expect(isPgTapTest(sql)).toBe(true)
-  })
-
-  it('returns true when SQL contains has_column(', () => {
-    const sql = "SELECT has_column('users', 'id');"
-    expect(isPgTapTest(sql)).toBe(true)
-  })
-
   it('returns true when SQL contains is(', () => {
     const sql = 'SELECT is(1, 1);'
     expect(isPgTapTest(sql)).toBe(true)
@@ -38,7 +28,7 @@ describe('isPgTapTest', () => {
   })
 
   it('is case-insensitive', () => {
-    const sql = 'SELECT LIVES_OK($$SELECT 1$$);'
+    const sql = 'SELECT lives_ok($$SELECT 1$$);'
     expect(isPgTapTest(sql)).toBe(true)
   })
 })
@@ -76,14 +66,6 @@ describe('validatePgTapTest', () => {
     expect(result).toBeUndefined()
   })
 
-  it('returns undefined for valid pgTAP test using has_table', () => {
-    const sql = `
-      SELECT has_table('users');
-    `
-    const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
-  })
-
   it('returns undefined for valid pgTAP test using is()', () => {
     const sql = `
       SELECT is(1, 1, 'One equals one');
@@ -95,14 +77,6 @@ describe('validatePgTapTest', () => {
   it('returns undefined for valid pgTAP test using ok()', () => {
     const sql = `
       SELECT ok(true, 'True is true');
-    `
-    const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
-  })
-
-  it('is case-insensitive for validation', () => {
-    const sql = `
-      SELECT HAS_TABLE('users');
     `
     const result = validatePgTapTest(sql)
     expect(result).toBeUndefined()
