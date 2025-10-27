@@ -19,13 +19,38 @@ describe('validateSqlSyntax', () => {
     expect(result).toContain('Fix the SQL and retry')
   })
 
-  it('returns error message for completely invalid SQL', async () => {
-    const sql = 'INVALID SQL STATEMENT'
+  describe('pgTAP syntax compatibility', () => {
+    it('can parse pgTAP lives_ok with dollar quotes', async () => {
+      const sql = `SELECT lives_ok($$SELECT 1$$, 'Basic query works');`
 
-    const result = await validateSqlSyntax(sql)
+      const result = await validateSqlSyntax(sql)
+      expect(result).toBeUndefined()
+    })
 
-    expect(result).toBeDefined()
-    expect(result).toContain('SQL syntax error')
-    expect(result).toContain('Fix the SQL and retry')
+    it('can parse multiple pgTAP assertions', async () => {
+      const sql = `
+        SELECT lives_ok($$INSERT INTO users (name) VALUES ('test')$$, 'Insert user');
+        SELECT is((SELECT COUNT(*) FROM users), 1::bigint, 'User count is 1');
+      `
+
+      const result = await validateSqlSyntax(sql)
+      expect(result).toBeUndefined()
+    })
+
+    it('cannot detect syntax errors inside dollar-quoted strings (parser limitation)', async () => {
+      const sql = `SELECT lives_ok($$SELECT * FORM users$$, 'test with typo');`
+
+      const result = await validateSqlSyntax(sql)
+      expect(result).toBeUndefined()
+    })
+
+    it('detects syntax errors in pgTAP outer structure', async () => {
+      const sql = `SELECT lives_ok($$SELECT 1$$, 'test';`
+
+      const result = await validateSqlSyntax(sql)
+
+      expect(result).toBeDefined()
+      expect(result).toContain('SQL syntax error')
+    })
   })
 })

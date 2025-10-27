@@ -69,6 +69,9 @@ export const saveTestcaseTool: StructuredTool = tool(
       let validationError: string | undefined
       if (isPgTapTest(sql)) {
         validationError = validatePgTapTest(sql)
+        if (!validationError) {
+          validationError = await validateSqlSyntax(sql)
+        }
       } else {
         validationError = await validateSqlSyntax(sql)
       }
