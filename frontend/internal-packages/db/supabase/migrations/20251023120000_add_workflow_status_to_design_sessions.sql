@@ -3,7 +3,7 @@
 --   - Persist workflow runtime state for each design session.
 --   - Support SSR-friendly reads and Supabase Realtime updates to the UI.
 -- Changes:
---   - Create enum type workflow_status (running|idle) if not exists.
+--   - Create enum type workflow_status (running|completed|error) if not exists.
 --   - Add columns to public.design_sessions: status, started_at, finished_at.
 --   - Create helpful indexes for common queries.
 --   - Ensure the table is part of supabase_realtime publication for UPDATE events.
@@ -17,7 +17,7 @@ begin;
 do $$
 begin
   if not exists (select 1 from pg_type where typname = 'workflow_status') then
-    create type workflow_status as enum ('running', 'idle');
+    create type workflow_status as enum ('running', 'completed', 'error');
   end if;
 end$$;
 
@@ -28,9 +28,9 @@ alter table public.design_sessions
   add column if not exists started_at timestamptz,
   add column if not exists finished_at timestamptz;
 
-comment on column public.design_sessions.status is 'Workflow runtime status: running|idle';
+comment on column public.design_sessions.status is 'Workflow runtime status: running|completed|error';
 comment on column public.design_sessions.started_at is 'Timestamp when workflow started';
-comment on column public.design_sessions.finished_at is 'Timestamp when workflow finished (idle state)';
+comment on column public.design_sessions.finished_at is 'Timestamp when workflow finished (completed state)';
 
 -- 3) Indexes for status filtering and common list queries
 create index if not exists idx_design_sessions_status on public.design_sessions (status);

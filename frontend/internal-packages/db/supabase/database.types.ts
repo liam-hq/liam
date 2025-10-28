@@ -699,7 +699,7 @@ export type Database = {
       assistant_role_enum: 'db' | 'pm' | 'qa'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       workflow_run_status: 'pending' | 'success' | 'error'
-      workflow_status: 'running' | 'idle'
+      workflow_status: 'running' | 'completed' | 'error'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -833,7 +833,7 @@ export const Constants = {
       assistant_role_enum: ['db', 'pm', 'qa'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       workflow_run_status: ['pending', 'success', 'error'],
-      workflow_status: ['running', 'idle'],
+      workflow_status: ['running', 'completed', 'error'],
     },
   },
 } as const

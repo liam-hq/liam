@@ -91,7 +91,8 @@ ALTER TYPE "public"."workflow_run_status" OWNER TO "postgres";
 
 CREATE TYPE "public"."workflow_status" AS ENUM (
     'running',
-    'idle'
+    'completed',
+    'error'
 );
 
 
@@ -894,7 +895,7 @@ CREATE TABLE IF NOT EXISTS "public"."design_sessions" (
 ALTER TABLE "public"."design_sessions" OWNER TO "postgres";
 
 
-COMMENT ON COLUMN "public"."design_sessions"."status" IS 'Workflow runtime status: running|idle';
+COMMENT ON COLUMN "public"."design_sessions"."status" IS 'Workflow runtime status: running|completed|error';
 
 
 
@@ -902,7 +903,7 @@ COMMENT ON COLUMN "public"."design_sessions"."started_at" IS 'Timestamp when wor
 
 
 
-COMMENT ON COLUMN "public"."design_sessions"."finished_at" IS 'Timestamp when workflow finished (idle state)';
+COMMENT ON COLUMN "public"."design_sessions"."finished_at" IS 'Timestamp when workflow finished (completed state)';
 
 
 
