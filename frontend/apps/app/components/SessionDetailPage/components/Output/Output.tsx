@@ -1,5 +1,6 @@
 'use client'
 
+import type { BaseMessage } from '@langchain/core/messages'
 import type { AnalyzedRequirements } from '@liam-hq/agent/client'
 import type { Schema } from '@liam-hq/schema'
 import { TabsContent, TabsRoot } from '@liam-hq/ui'
@@ -26,6 +27,8 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   activeTab: OutputTabValue
   onTabChange: (value: OutputTabValue) => void
   analyzedRequirements?: AnalyzedRequirements | null
+  messages?: BaseMessage[]
+  isStreaming?: boolean
 }
 
 export const Output: FC<Props> = ({
@@ -37,6 +40,8 @@ export const Output: FC<Props> = ({
   onTabChange,
   initialIsPublic = false,
   analyzedRequirements,
+  messages,
+  isStreaming,
   ...propsForVersionDropdown
 }) => {
   const [internalTabValue, setInternalTabValue] =
@@ -103,7 +108,11 @@ export const Output: FC<Props> = ({
         className={styles.tabsContent}
         forceMount
       >
-        <ArtifactContainer analyzedRequirements={analyzedRequirements} />
+        <ArtifactContainer
+          analyzedRequirements={analyzedRequirements}
+          messages={messages}
+          isStreaming={isStreaming}
+        />
       </TabsContent>
     </TabsRoot>
   )
