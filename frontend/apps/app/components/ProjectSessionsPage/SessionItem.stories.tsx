@@ -29,8 +29,10 @@ const sampleSession: ProjectSession = {
   name: 'Database Schema Design',
   created_at: '2024-01-15T10:30:00Z',
   project_id: 'project-123',
+  organization_id: 'org-1',
   has_schema: false,
-  status: 'completed',
+  status: 'success',
+  latest_run_id: null,
 }
 
 export const Default: Story = {
@@ -46,8 +48,10 @@ export const RecentSession: Story = {
       name: 'User Authentication Flow',
       created_at: new Date().toISOString(),
       project_id: 'project-123',
+      organization_id: 'org-1',
       has_schema: true,
-      status: 'running',
+      status: 'pending',
+      latest_run_id: null,
     },
   },
 }
@@ -59,8 +63,10 @@ export const LongName: Story = {
       name: 'Very Long Session Name That Might Need Truncation or Wrapping',
       created_at: '2024-02-20T14:45:00Z',
       project_id: 'project-123',
+      organization_id: 'org-1',
       has_schema: false,
-      status: 'completed',
+      status: 'success',
+      latest_run_id: null,
     },
   },
 }
@@ -72,8 +78,10 @@ export const ErrorState: Story = {
       name: 'Schema Generation Failure',
       created_at: '2024-02-21T09:15:00Z',
       project_id: 'project-123',
+      organization_id: 'org-1',
       has_schema: false,
       status: 'error',
+      latest_run_id: null,
     },
   },
 }
