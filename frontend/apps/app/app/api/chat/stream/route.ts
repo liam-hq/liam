@@ -61,26 +61,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const organizationId = designSession.organization_id
-
-  const repositories = createSupabaseRepositories(supabase, organizationId)
-  const result = await repositories.schema.getSchema(designSessionId)
-
-  if (result.isErr()) {
-    return NextResponse.json({ error: result.error.message }, { status: 500 })
-  }
-
-  const config = {
-    configurable: {
-      repositories,
-      thread_id: designSessionId,
-    },
-  }
-
-  const supabaseServiceRole = await createClient({ useServiceRole: true })
-
   const updateDesignSessionStatus = async (fields: Record<string, unknown>) => {
-    const { error } = await supabaseServiceRole
+    const { error } = await supabase
       .from('design_sessions')
       .update(fields)
       .eq('id', designSessionId)
@@ -105,6 +87,30 @@ export async function POST(request: Request) {
       status: 'completed',
       finished_at: new Date().toISOString(),
     })
+  const markError = () =>
+    updateDesignSessionStatus({
+      status: 'error',
+      finished_at: new Date().toISOString(),
+    })
+
+  let shouldMarkError = false
+
+  const organizationId = designSession.organization_id
+
+  const repositories = createSupabaseRepositories(supabase, organizationId)
+  const result = await repositories.schema.getSchema(designSessionId)
+
+  if (result.isErr()) {
+    await markError()
+    return NextResponse.json({ error: result.error.message }, { status: 500 })
+  }
+
+  const config = {
+    configurable: {
+      repositories,
+      thread_id: designSessionId,
+    },
+  }
 
   const enc = new TextEncoder()
 
@@ -124,6 +130,10 @@ export async function POST(request: Request) {
     const events = await deepModelingStream(params, config)
 
     for await (const ev of events) {
+      if (ev.event === SSE_EVENTS.ERROR) {
+        shouldMarkError = true
+      }
+
       // Check if request was aborted during iteration
       if (signal.aborted) {
         controller.enqueue(
@@ -141,27 +151,40 @@ export async function POST(request: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       await markRunning()
-      try {
-        const result = await withTimeoutAndAbort(
-          (signal: AbortSignal) => processEvents(controller, signal),
-          TIMEOUT_MS,
-          request.signal,
-        )
+      const result = await withTimeoutAndAbort(
+        (signal: AbortSignal) => processEvents(controller, signal),
+        TIMEOUT_MS,
+        request.signal,
+      )
 
-        if (result.isErr()) {
-          const err = result.error
-          Sentry.captureException(err, {
-            tags: { designSchemaId: designSessionId },
-          })
+      if (result.isErr()) {
+        const err = result.error
+        const message = err.message?.toLowerCase() ?? ''
+        const isAbortError =
+          err.name === 'AbortError' ||
+          message.includes('abort') ||
+          message.includes('timeout') // allow replay to recover after abort
 
-          controller.enqueue(
-            enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
-          )
+        if (!isAbortError) {
+          shouldMarkError = true
         }
-      } finally {
-        await markCompleted()
-        controller.close()
+
+        Sentry.captureException(err, {
+          tags: { designSchemaId: designSessionId },
+        })
+
+        controller.enqueue(
+          enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
+        )
       }
+
+      if (shouldMarkError) {
+        await markError()
+      } else {
+        await markCompleted()
+      }
+
+      controller.close()
     },
   })
 

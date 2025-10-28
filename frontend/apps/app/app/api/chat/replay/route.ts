@@ -53,41 +53,6 @@ export async function POST(request: Request) {
 
   const userId = authResult.value.id
 
-  const buildingSchemaResult = await toResultAsync<{
-    id: string
-    organization_id: string
-  }>(
-    supabase
-      .from('building_schemas')
-      .select('id, organization_id')
-      .eq('design_session_id', designSessionId)
-      .limit(1)
-      .maybeSingle(),
-  )
-
-  if (buildingSchemaResult.isErr()) {
-    return NextResponse.json(
-      { error: 'Building schema not found for design session' },
-      { status: 404 },
-    )
-  }
-
-  const { id: buildingSchemaId, organization_id: organizationId } =
-    buildingSchemaResult.value
-
-  const repositories = createSupabaseRepositories(supabase, organizationId)
-  const checkpointer = repositories.schema.checkpointer
-
-  const findLatestCheckpointId = async (): Promise<string | null> => {
-    const graph = createGraph(checkpointer)
-
-    const state = await graph.getState({
-      configurable: { thread_id: designSessionId },
-    })
-    const checkpointId = state.config?.configurable?.checkpoint_id
-    return typeof checkpointId === 'string' ? checkpointId : null
-  }
-
   const updateDesignSessionStatus = async (fields: Record<string, unknown>) => {
     const { error } = await supabase
       .from('design_sessions')
@@ -112,6 +77,51 @@ export async function POST(request: Request) {
       status: 'completed',
       finished_at: new Date().toISOString(),
     })
+  const markError = () =>
+    updateDesignSessionStatus({
+      status: 'error',
+      finished_at: new Date().toISOString(),
+    })
+
+  let shouldMarkError = false
+
+  const buildingSchemaResult = await toResultAsync<{
+    id: string
+    organization_id: string
+  }>(
+    supabase
+      .from('building_schemas')
+      .select('id, organization_id')
+      .eq('design_session_id', designSessionId)
+      .limit(1)
+      .maybeSingle(),
+  )
+
+  if (buildingSchemaResult.isErr()) {
+    shouldMarkError = true
+    await markError()
+
+    return NextResponse.json(
+      { error: 'Building schema not found for design session' },
+      { status: 404 },
+    )
+  }
+
+  const { id: buildingSchemaId, organization_id: organizationId } =
+    buildingSchemaResult.value
+
+  const repositories = createSupabaseRepositories(supabase, organizationId)
+  const checkpointer = repositories.schema.checkpointer
+
+  const findLatestCheckpointId = async (): Promise<string | null> => {
+    const graph = createGraph(checkpointer)
+
+    const state = await graph.getState({
+      configurable: { thread_id: designSessionId },
+    })
+    const checkpointId = state.config?.configurable?.checkpoint_id
+    return typeof checkpointId === 'string' ? checkpointId : null
+  }
 
   const enc = new TextEncoder()
 
@@ -122,6 +132,7 @@ export async function POST(request: Request) {
     const checkpointId = await findLatestCheckpointId()
 
     if (!checkpointId) {
+      shouldMarkError = true
       const message = 'No checkpoint found for replay'
       controller.enqueue(enc.encode(line(SSE_EVENTS.ERROR, { message })))
       return
@@ -141,6 +152,10 @@ export async function POST(request: Request) {
     const events = await deepModelingReplayStream(checkpointer, replayParams)
 
     for await (const ev of events) {
+      if (ev.event === SSE_EVENTS.ERROR) {
+        shouldMarkError = true
+      }
+
       if (signal.aborted) {
         controller.enqueue(
           enc.encode(
@@ -159,27 +174,39 @@ export async function POST(request: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       await markRunning()
-      try {
-        const result = await withTimeoutAndAbort(
-          (signal: AbortSignal) => processReplayEvents(controller, signal),
-          REPLAY_TIMEOUT_MS,
-          request.signal,
+      await withTimeoutAndAbort(
+        (signal: AbortSignal) => processReplayEvents(controller, signal),
+        REPLAY_TIMEOUT_MS,
+        request.signal,
+      ).mapErr((err) => {
+        // allow replay to recover after abort
+        const message = err.message?.toLowerCase() ?? ''
+        const isAbortError =
+          err.name === 'AbortError' ||
+          message.includes('abort') ||
+          message.includes('timeout')
+
+        if (!isAbortError) {
+          shouldMarkError = true
+        }
+
+        Sentry.captureException(err, {
+          tags: { designSchemaId: designSessionId },
+        })
+
+        controller.enqueue(
+          enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
         )
 
-        if (result.isErr()) {
-          const err = result.error
-          Sentry.captureException(err, {
-            tags: { designSchemaId: designSessionId },
-          })
+        return err
+      })
 
-          controller.enqueue(
-            enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
-          )
-        }
-      } finally {
+      if (shouldMarkError) {
+        await markError()
+      } else {
         await markCompleted()
-        controller.close()
       }
+      controller.close()
     },
   })
 
