@@ -3,6 +3,7 @@
 import { MessagesSquare } from '@liam-hq/ui'
 import Link from 'next/link'
 import { type FC, useEffect, useState } from 'react'
+import { createClient as createSupabaseClient } from '../../libs/db/client'
 import { urlgen } from '../../libs/routes'
 import { formatDate } from '../../libs/utils'
 import styles from './SessionItem.module.css'
@@ -11,7 +12,6 @@ import {
   SessionStatusIndicator,
 } from './SessionStatusIndicator'
 import type { ProjectSession } from './services/fetchProjectSessions'
-import { createClient as createSupabaseClient } from '../../libs/db/client'
 
 type Props = {
   session: ProjectSession
@@ -41,9 +41,16 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
           filter: `id=eq.${session.id}`,
         },
         (payload) => {
-          const next = (payload.new as any)?.status as
-            | ProjectSession['status']
-            | undefined
+          if (!payload.new || typeof payload.new !== 'object') {
+            return
+          }
+
+          const rawStatus = Reflect.get(payload.new, 'status')
+          const next =
+            rawStatus === 'running' || rawStatus === 'idle'
+              ? rawStatus
+              : undefined
+
           setStatus(mapDbStatusToUi(next))
         },
       )

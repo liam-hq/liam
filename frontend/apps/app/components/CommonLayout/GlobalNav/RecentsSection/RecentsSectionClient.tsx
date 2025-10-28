@@ -136,14 +136,25 @@ export const RecentsSectionClient = ({
           filter,
         },
         (payload) => {
-          const row = payload.new as { id: string; status?: string }
+          if (!payload.new || typeof payload.new !== 'object') {
+            return
+          }
+
+          const idValue = Reflect.get(payload.new, 'id')
+          if (typeof idValue !== 'string') {
+            return
+          }
+
+          const rawStatus = Reflect.get(payload.new, 'status')
+          const nextStatus: RecentSession['status'] | null =
+            rawStatus === 'running' || rawStatus === 'idle' ? rawStatus : null
+
           setSessions((prev) =>
             prev.map((session) =>
-              session.id === row.id
+              session.id === idValue
                 ? {
                     ...session,
-                    status:
-                      (row.status as RecentSession['status']) ?? session.status,
+                    status: nextStatus ?? session.status,
                   }
                 : session,
             ),

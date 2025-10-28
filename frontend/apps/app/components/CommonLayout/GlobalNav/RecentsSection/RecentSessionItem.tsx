@@ -56,9 +56,7 @@ export const RecentSessionItem: FC<Props> = ({
       <SessionStatusIndicator status={status} />
       <div className={styles.sessionInfo}>
         <span className={styles.sessionName}>{session.name}</span>
-        {showOwner && (
-          <span className={styles.sessionOwner}>{ownerName}</span>
-        )}
+        {showOwner && <span className={styles.sessionOwner}>{ownerName}</span>}
         <span className={styles.sessionDate} aria-hidden="true">
           {sessionDate}
         </span>
