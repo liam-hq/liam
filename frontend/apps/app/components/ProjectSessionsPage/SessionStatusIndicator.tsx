@@ -10,7 +10,7 @@ import {
 import type { FC } from 'react'
 import styles from './SessionStatusIndicator.module.css'
 
-export type SessionStatus = 'running' | 'idle'
+export type SessionStatus = 'running' | 'completed' | 'error'
 
 type Props = {
   status: SessionStatus
@@ -21,20 +21,31 @@ const statusConfig = {
     label: 'Running',
     className: styles.indicatorRunning,
   },
-  idle: {
-    label: 'Idle',
-    className: styles.indicatorIdle,
+  completed: {
+    label: 'Completed',
+    className: styles.indicatorCompleted,
   },
-} as const
+  error: {
+    label: 'Error',
+    className: styles.indicatorError,
+    content: '!',
+  },
+} as const satisfies Record<
+  SessionStatus,
+  { label: string; className: string; content?: string }
+>
 
 export const SessionStatusIndicator: FC<Props> = ({ status }) => {
   const config = statusConfig[status]
+  const content = 'content' in config ? config.content : null
 
   return (
     <TooltipProvider>
       <TooltipRoot>
         <TooltipTrigger asChild>
-          <div className={config.className} />
+          <div className={config.className} aria-hidden="true">
+            {content}
+          </div>
         </TooltipTrigger>
         <TooltipPortal>
           <TooltipContent side="top" sideOffset={4}>

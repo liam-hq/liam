@@ -27,6 +27,24 @@ type RecentsSectionClientProps = {
 const PAGE_SIZE = 20
 const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
+const mapRealtimeStatus = (
+  status: unknown,
+): RecentSession['status'] | null => {
+  if (status === 'running') {
+    return 'running'
+  }
+
+  if (status === 'error') {
+    return 'error'
+  }
+
+  if (status === 'completed') {
+    return 'completed'
+  }
+
+  return null
+}
+
 export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
@@ -146,8 +164,7 @@ export const RecentsSectionClient = ({
           }
 
           const rawStatus = Reflect.get(payload.new, 'status')
-          const nextStatus: RecentSession['status'] | null =
-            rawStatus === 'running' || rawStatus === 'idle' ? rawStatus : null
+          const nextStatus = mapRealtimeStatus(rawStatus)
 
           setSessions((prev) =>
             prev.map((session) =>

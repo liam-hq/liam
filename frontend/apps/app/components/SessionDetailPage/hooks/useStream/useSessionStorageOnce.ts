@@ -8,6 +8,25 @@ import {
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 import { LG_INITIAL_MESSAGE_PREFIX } from '../../../../constants/storageKeys'
 
+const readStoredMessage = (key: string): BaseMessage | null => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const stored = sessionStorage.getItem(key)
+  if (!stored) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(stored)
+    const message = coerceMessageLikeToMessage(parsed)
+    return isHumanMessage(message) ? message : null
+  } catch {
+    return null
+  }
+}
+
 /**
  * useStream-specific sessionStorage reading hook
  * Reads initial message once and deletes it
@@ -28,22 +47,7 @@ export function useSessionStorageOnce(
   const getSnapshot = useCallback(() => {
     // Cache the snapshot to ensure stable identity across renders
     if (!initializedRef.current) {
-      if (typeof window === 'undefined') {
-        snapshotRef.current = null
-      } else {
-        const stored = sessionStorage.getItem(key)
-        if (!stored) {
-          snapshotRef.current = null
-        } else {
-          try {
-            const parsed = JSON.parse(stored)
-            const message = coerceMessageLikeToMessage(parsed)
-            snapshotRef.current = isHumanMessage(message) ? message : null
-          } catch {
-            snapshotRef.current = null
-          }
-        }
-      }
+      snapshotRef.current = readStoredMessage(key)
       initializedRef.current = true
     }
     return snapshotRef.current

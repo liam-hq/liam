@@ -21,7 +21,15 @@ type Props = {
 const mapDbStatusToUi = (
   status: RecentSession['status'] | undefined,
 ): SessionStatus => {
-  return status === 'running' ? 'running' : 'idle'
+  if (status === 'running') {
+    return 'running'
+  }
+
+  if (status === 'error') {
+    return 'error'
+  }
+
+  return 'completed'
 }
 
 export const RecentSessionItem: FC<Props> = ({

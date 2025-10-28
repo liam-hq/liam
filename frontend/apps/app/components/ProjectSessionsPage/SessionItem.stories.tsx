@@ -30,6 +30,7 @@ const sampleSession: ProjectSession = {
   created_at: '2024-01-15T10:30:00Z',
   project_id: 'project-123',
   has_schema: false,
+  status: 'completed',
 }
 
 export const Default: Story = {
@@ -46,6 +47,7 @@ export const RecentSession: Story = {
       created_at: new Date().toISOString(),
       project_id: 'project-123',
       has_schema: true,
+      status: 'running',
     },
   },
 }
@@ -58,6 +60,7 @@ export const LongName: Story = {
       created_at: '2024-02-20T14:45:00Z',
       project_id: 'project-123',
       has_schema: false,
+      status: 'completed',
     },
   },
 }

@@ -20,7 +20,15 @@ type Props = {
 const mapDbStatusToUi = (
   status: ProjectSession['status'] | undefined,
 ): SessionStatus => {
-  return status === 'running' ? 'running' : 'idle'
+  if (status === 'running') {
+    return 'running'
+  }
+
+  if (status === 'error') {
+    return 'error'
+  }
+
+  return 'completed'
 }
 
 export const SessionItemClient: FC<Props> = ({ session }) => {
@@ -47,7 +55,9 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
 
           const rawStatus = Reflect.get(payload.new, 'status')
           const next =
-            rawStatus === 'running' || rawStatus === 'idle'
+            rawStatus === 'running' ||
+            rawStatus === 'error' ||
+            rawStatus === 'completed'
               ? rawStatus
               : undefined
 

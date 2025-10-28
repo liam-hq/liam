@@ -1,4 +1,5 @@
 import { createClient } from '../../../libs/db/server'
+import type { SessionStatus } from '../SessionStatusIndicator'
 
 export type ProjectSession = {
   id: string
@@ -6,7 +7,19 @@ export type ProjectSession = {
   created_at: string
   project_id: string | null
   has_schema: boolean
-  status: 'running' | 'idle'
+  status: SessionStatus
+}
+
+const normalizeStatus = (status: string | null): SessionStatus => {
+  if (status === 'running') {
+    return 'running'
+  }
+
+  if (status === 'error') {
+    return 'error'
+  }
+
+  return 'completed'
 }
 
 export const fetchProjectSessions = async (
@@ -43,7 +56,7 @@ export const fetchProjectSessions = async (
       name: session.name,
       created_at: session.created_at,
       project_id: session.project_id,
-      status: session.status,
+      status: normalizeStatus(session.status),
       has_schema:
         Array.isArray(session.building_schemas) &&
         session.building_schemas.length > 0,

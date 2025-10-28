@@ -1,10 +1,12 @@
+import type { SessionStatus } from '../../../ProjectSessionsPage/SessionStatusIndicator'
+
 export type RecentSession = {
   id: string
   name: string
   created_at: string
   project_id: string | null
   has_schema: boolean
-  status: 'running' | 'idle'
+  status: SessionStatus
   created_by_user: {
     id: string
     name: string

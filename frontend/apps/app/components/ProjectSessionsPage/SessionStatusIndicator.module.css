@@ -7,12 +7,27 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.indicatorIdle {
+.indicatorCompleted {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
   background-color: var(--overlay-40);
+}
+
+.indicatorError {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  background-color: var(--color-red-alpha-20);
+  color: var(--color-red-500);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes pulse {

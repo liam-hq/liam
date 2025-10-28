@@ -1,5 +1,6 @@
 import { toResultAsync } from '@liam-hq/db'
 import { createClient } from '../../../../libs/db/server'
+import type { SessionStatus } from '../../../ProjectSessionsPage/SessionStatusIndicator'
 import type { RecentSession, SessionFilterType } from './types'
 
 export type FetchRecentSessionsOptions = {
@@ -19,8 +20,17 @@ type SupabaseRecentSession = {
   created_by_user: RecentSession['created_by_user']
 }
 
-const normalizeStatus = (status: string | null): RecentSession['status'] =>
-  status === 'running' ? 'running' : 'idle'
+const normalizeStatus = (status: string | null): SessionStatus => {
+  if (status === 'running') {
+    return 'running'
+  }
+
+  if (status === 'error') {
+    return 'error'
+  }
+
+  return 'completed'
+}
 
 export const fetchRecentSessions = async (
   organizationId: string,
@@ -55,10 +65,34 @@ export const fetchRecentSessions = async (
     query = query.eq('created_by_user_id', filterType)
   }
 
-  const result = await toResultAsync<SupabaseRecentSession[] | null>(
-    query
+  const queryPromise = (async () => {
+    const response = await query
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1),
+      .range(offset, offset + limit - 1)
+
+    const data: SupabaseRecentSession[] | null =
+      response.data?.map((session) => ({
+        id: session.id,
+        name: session.name,
+        created_at: session.created_at,
+        project_id: session.project_id,
+        status: session.status,
+        building_schemas: Array.isArray(session.building_schemas)
+          ? session.building_schemas
+          : session.building_schemas
+            ? [session.building_schemas]
+            : null,
+        created_by_user: session.created_by_user,
+      })) ?? null
+
+    return {
+      data,
+      error: response.error,
+    }
+  })()
+
+  const result = await toResultAsync<SupabaseRecentSession[] | null>(
+    queryPromise,
     { allowNull: true },
   )
 
@@ -70,9 +104,9 @@ export const fetchRecentSessions = async (
         created_at: session.created_at,
         project_id: session.project_id,
         status: normalizeStatus(session.status),
-        has_schema:
-          Array.isArray(session.building_schemas) &&
-          session.building_schemas.length > 0,
+        has_schema: Array.isArray(session.building_schemas)
+          ? session.building_schemas.length > 0
+          : Boolean(session.building_schemas),
         created_by_user: session.created_by_user,
       })),
     () => [],
