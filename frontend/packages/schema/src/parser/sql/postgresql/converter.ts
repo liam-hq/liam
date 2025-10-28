@@ -1,3 +1,4 @@
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import type {
   AlterTableStmt,
   CommentStmt,
@@ -11,7 +12,6 @@ import type {
   String as PgString,
   RawStmt,
 } from '@pgsql/types'
-import { err, ok, type Result } from 'neverthrow'
 import type {
   CheckConstraint,
   Columns,

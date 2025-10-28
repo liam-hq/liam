@@ -1,4 +1,4 @@
-import { err, fromPromise, type Result } from 'neverthrow'
+import { err, fromPromise, type Result } from '@liam-hq/neverthrow'
 import OpenAI from 'openai'
 import {
   handleExecutionResult,

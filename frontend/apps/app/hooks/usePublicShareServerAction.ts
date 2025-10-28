@@ -1,4 +1,4 @@
-import { fromPromise } from 'neverthrow'
+import { fromPromise } from '@liam-hq/neverthrow'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import {
   disablePublicShare,

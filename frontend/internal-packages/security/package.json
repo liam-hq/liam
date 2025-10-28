@@ -14,8 +14,7 @@
     "./cryptoBox": "./src/cryptoBox.ts"
   },
   "dependencies": {
-    "@liam-hq/neverthrow": "workspace:*",
-    "neverthrow": "8.2.0"
+    "@liam-hq/neverthrow": "workspace:*"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.5",

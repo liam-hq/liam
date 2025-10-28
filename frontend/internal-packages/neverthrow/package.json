@@ -10,9 +10,12 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "dependencies": {
     "neverthrow": "8.2.0",
@@ -27,6 +30,7 @@
     "typescript": "5.9.3"
   },
   "scripts": {
+    "build": "tsc",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
     "fmt:eslint": "eslint --fix .",
@@ -36,9 +40,10 @@
     "lint:tsc": "tsc --noEmit"
   },
   "files": [
-    "src/**/*",
+    "dist/**/*",
     "README.md",
     "package.json",
     "LICENSE"
-  ]
+  ],
+  "types": "dist/index.d.ts"
 }

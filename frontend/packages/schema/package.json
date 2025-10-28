@@ -20,7 +20,6 @@
     "@ruby/prism": "1.5.2",
     "@swc/core": "1.12.11",
     "fast-json-patch": "3.1.1",
-    "neverthrow": "8.2.0",
     "pg-query-emscripten": "5.1.0",
     "valibot": "1.1.0",
     "yaml": "2.8.1",

@@ -1,4 +1,4 @@
-import { err, ok, Result } from 'neverthrow'
+import { err, ok, Result } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 import { schemaSchema } from '../../schema/index.js'
 import type { ProcessResult } from '../types.js'

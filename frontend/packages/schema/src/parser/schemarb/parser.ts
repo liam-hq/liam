@@ -1,3 +1,4 @@
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import {
   ArrayNode,
   AssocNode,
@@ -14,7 +15,6 @@ import {
   TrueNode,
   Visitor,
 } from '@ruby/prism'
-import { err, ok, type Result } from 'neverthrow'
 import type {
   CheckConstraint,
   Column,

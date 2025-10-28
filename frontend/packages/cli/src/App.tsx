@@ -6,8 +6,8 @@ import {
   VersionProvider,
   versionSchema,
 } from '@liam-hq/erd-core'
+import { ResultAsync } from '@liam-hq/neverthrow'
 import { type Schema, schemaSchema } from '@liam-hq/schema'
-import { ResultAsync } from 'neverthrow'
 import { useEffect, useState } from 'react'
 import * as v from 'valibot'
 

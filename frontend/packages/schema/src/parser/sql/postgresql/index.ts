@@ -1,5 +1,5 @@
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import type { RawStmt } from '@pgsql/types'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import type { Schema } from '../../../schema/index.js'
 import { type ProcessError, UnexpectedTokenWarningError } from '../../errors.js'
 import type { Processor } from '../../types.js'

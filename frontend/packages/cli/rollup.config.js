@@ -31,5 +31,7 @@ export default {
     'glob',
     '@swc/core',
     'ink',
+    '@liam-hq/neverthrow',
+    'neverthrow',
   ],
 }

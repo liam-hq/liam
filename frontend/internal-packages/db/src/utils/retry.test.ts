@@ -1,4 +1,4 @@
-import { err, ok } from 'neverthrow'
+import { err, ok } from '@liam-hq/neverthrow'
 import { describe, expect, it, vi } from 'vitest'
 import { retry } from './retry'
 

@@ -1,5 +1,5 @@
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import type { Operation } from 'fast-json-patch'
-import { err, ok, type Result } from 'neverthrow'
 
 /**
  * Unescape JSON Pointer path according to RFC 6901

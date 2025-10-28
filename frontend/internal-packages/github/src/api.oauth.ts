@@ -1,5 +1,5 @@
+import { ResultAsync } from '@liam-hq/neverthrow'
 import { Octokit } from '@octokit/rest'
-import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import type { Installation } from './types'
 

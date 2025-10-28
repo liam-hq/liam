@@ -151,9 +151,6 @@ importers:
       lucide-react:
         specifier: 0.511.0
         version: 0.511.0(react@19.1.1)
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       next:
         specifier: 15.4.7
         version: 15.4.7(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -372,9 +369,6 @@ importers:
       langsmith:
         specifier: 0.3.73
         version: 0.3.73(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(openai@5.12.2(ws@8.18.3)(zod@3.25.76))
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       uuid:
         specifier: 11.1.0
         version: 11.1.0
@@ -445,15 +439,15 @@ importers:
 
   frontend/internal-packages/db:
     dependencies:
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../neverthrow
       '@supabase/ssr':
         specifier: 0.7.0
         version: 0.7.0(@supabase/supabase-js@2.58.0)
       '@supabase/supabase-js':
         specifier: 2.58.0
         version: 2.58.0
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.9.3)
@@ -531,9 +525,6 @@ importers:
       '@octokit/rest':
         specifier: 21.1.1
         version: 21.1.1
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.9.3)
@@ -664,9 +655,6 @@ importers:
       langsmith:
         specifier: 0.3.73
         version: 0.3.73(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(openai@5.9.2(ws@8.18.3)(zod@3.25.76))
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       openai:
         specifier: 5.9.2
         version: 5.9.2(ws@8.18.3)(zod@3.25.76)
@@ -695,9 +683,6 @@ importers:
       '@liam-hq/neverthrow':
         specifier: workspace:*
         version: link:../neverthrow
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.5
@@ -760,6 +745,9 @@ importers:
       '@liam-hq/erd-core':
         specifier: workspace:*
         version: link:../erd-core
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../../internal-packages/neverthrow
       '@liam-hq/schema':
         specifier: workspace:*
         version: link:../schema
@@ -784,9 +772,6 @@ importers:
       inquirer:
         specifier: 12.6.3
         version: 12.6.3(@types/node@22.18.10)
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       react:
         specifier: 19.1.1
         version: 19.1.1
@@ -854,6 +839,9 @@ importers:
 
   frontend/packages/erd-core:
     dependencies:
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../../internal-packages/neverthrow
       '@liam-hq/ui':
         specifier: workspace:*
         version: link:../ui
@@ -875,9 +863,6 @@ importers:
       elkjs:
         specifier: 0.10.0
         version: 0.10.0
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       nuqs:
         specifier: 2.4.3
         version: 2.4.3(next@15.4.7(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
@@ -957,9 +942,6 @@ importers:
       fast-json-patch:
         specifier: 3.1.1
         version: 3.1.1
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       pg-query-emscripten:
         specifier: 5.1.0
         version: 5.1.0
@@ -1006,6 +988,9 @@ importers:
 
   frontend/packages/ui:
     dependencies:
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../../internal-packages/neverthrow
       '@radix-ui/react-collapsible':
         specifier: 1.1.12
         version: 1.1.12(@types/react-dom@19.2.1(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -1051,9 +1036,6 @@ importers:
       lucide-react:
         specifier: 0.511.0
         version: 0.511.0(react@19.1.1)
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
       react:
         specifier: 19.1.1
         version: 19.1.1
@@ -18973,7 +18955,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.12.2)
+      retry-axios: 2.6.0(axios@1.12.2(debug@4.4.3))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -21649,7 +21631,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.12.2):
+  retry-axios@2.6.0(axios@1.12.2(debug@4.4.3)):
     dependencies:
       axios: 1.12.2(debug@4.4.3)
 

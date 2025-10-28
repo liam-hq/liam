@@ -6,8 +6,8 @@ import {
   writeFileSync,
 } from 'node:fs'
 import * as path from 'node:path'
+import { err, ok, Result, ResultAsync } from '@liam-hq/neverthrow'
 import { type Schema, schemaSchema } from '@liam-hq/schema'
-import { err, ok, Result, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { evaluate } from '../../evaluate/evaluate.ts'
 import { formatError } from '../../shared/formatError.ts'
