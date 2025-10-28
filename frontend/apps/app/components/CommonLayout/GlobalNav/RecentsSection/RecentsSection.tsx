@@ -32,6 +32,7 @@ export const RecentsSection = async () => {
       sessions={sessions}
       organizationMembers={members}
       currentUserId={currentUserId}
+      organizationId={organizationId}
     />
   )
 }

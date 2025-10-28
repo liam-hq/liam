@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createClient } from '../../../../libs/db/client'
 import { urlgen } from '../../../../libs/routes'
 import { formatDateShort } from '../../../../libs/utils'
 import itemStyles from '../Item.module.css'
@@ -22,6 +23,7 @@ type RecentsSectionClientProps = {
   sessions: RecentSession[]
   organizationMembers: OrganizationMember[]
   currentUserId: string
+  organizationId: string
 }
 
 const PAGE_SIZE = 20
@@ -31,6 +33,7 @@ export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
   currentUserId,
+  organizationId,
 }: RecentsSectionClientProps) => {
   const pathname = usePathname()
   const [sessions, setSessions] = useState<RecentSession[]>(initialSessions)
@@ -90,6 +93,69 @@ export const RecentsSectionClient = ({
     setIsLoading(false)
   }, [isLoading, hasMore, sessions.length, filterType])
 
+  const handleInsertEvent = useCallback(
+    async (supabase: ReturnType<typeof createClient>, sessionId: string) => {
+      const { data: newSession, error } = await supabase
+        .from('design_sessions')
+        .select(
+          `
+          id,
+          name,
+          created_at,
+          project_id,
+          created_by_user:created_by_user_id(
+            id,
+            name,
+            email,
+            avatar_url
+          )
+        `,
+        )
+        .eq('id', sessionId)
+        .single()
+
+      if (error || !newSession) {
+        console.error('Error fetching new session:', error)
+        return
+      }
+
+      const shouldDisplay =
+        filterType === 'all' ||
+        (filterType === 'me' &&
+          newSession.created_by_user?.id === currentUserId) ||
+        (filterType !== 'all' &&
+          filterType !== 'me' &&
+          newSession.created_by_user?.id === filterType)
+
+      if (!shouldDisplay) {
+        return
+      }
+
+      setSessions((prevSessions) => {
+        const exists = prevSessions.some((s) => s.id === newSession.id)
+        if (exists) {
+          return prevSessions
+        }
+        return [newSession, ...prevSessions]
+      })
+    },
+    [filterType, currentUserId],
+  )
+
+  const handleUpdateEvent = useCallback((sessionId: string, name: string) => {
+    setSessions((prevSessions) =>
+      prevSessions.map((session) =>
+        session.id === sessionId ? { ...session, name } : session,
+      ),
+    )
+  }, [])
+
+  const handleDeleteEvent = useCallback((sessionId: string) => {
+    setSessions((prevSessions) =>
+      prevSessions.filter((session) => session.id !== sessionId),
+    )
+  }, [])
+
   useEffect(() => {
     const currentLoadMoreRef = loadMoreRef.current
     const currentSessionsListRef = sessionsListRef.current
@@ -118,6 +184,41 @@ export const RecentsSectionClient = ({
       }
     }
   }, [loadMore])
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel(`design_sessions:${organizationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'design_sessions',
+          filter: `organization_id=eq.${organizationId}`,
+        },
+        async (payload) => {
+          try {
+            if (payload.eventType === 'INSERT') {
+              await handleInsertEvent(supabase, payload.new.id)
+            } else if (payload.eventType === 'UPDATE') {
+              handleUpdateEvent(payload.new.id, payload.new.name)
+            } else if (payload.eventType === 'DELETE') {
+              handleDeleteEvent(payload.old.id)
+            }
+          } catch (error) {
+            console.error('Error handling realtime event:', error)
+            Sentry.captureException(error)
+          }
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [organizationId, handleInsertEvent, handleUpdateEvent, handleDeleteEvent])
 
   return (
     <>
