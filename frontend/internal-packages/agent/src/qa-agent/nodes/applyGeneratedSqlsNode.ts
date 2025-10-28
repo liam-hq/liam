@@ -1,6 +1,12 @@
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
+import type { RunnableConfig } from '@langchain/core/runnables'
+import { SSE_EVENTS } from '../../streaming/constants'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
 
-export const applyGeneratedSqlsNode = (state: QaAgentState) => {
+export const applyGeneratedSqlsNode = async (
+  state: QaAgentState,
+  _config: RunnableConfig,
+) => {
   const { generatedSqls, analyzedRequirements } = state
 
   if (generatedSqls.length === 0) {
@@ -29,10 +35,17 @@ export const applyGeneratedSqlsNode = (state: QaAgentState) => {
     }
   }
 
+  const updatedAnalyzedRequirements = {
+    ...analyzedRequirements,
+    testcases: updatedTestcases,
+  }
+
+  await dispatchCustomEvent(
+    SSE_EVENTS.ANALYZED_REQUIREMENTS,
+    updatedAnalyzedRequirements,
+  )
+
   return {
-    analyzedRequirements: {
-      ...analyzedRequirements,
-      testcases: updatedTestcases,
-    },
+    analyzedRequirements: updatedAnalyzedRequirements,
   }
 }
