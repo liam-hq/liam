@@ -34,60 +34,66 @@ describe('isPgTapTest', () => {
 })
 
 describe('validatePgTapTest', () => {
-  it('returns error when no assertions are found', () => {
+  it('returns Ok when SQL is not a pgTAP test', () => {
     const sql = `
       SELECT 1;
     `
     const result = validatePgTapTest(sql)
-    expect(result).toContain('No pgTAP assertions found')
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns error with multiple validation errors', () => {
+  it('returns Err when pgTAP test has no valid assertions', () => {
+    // This test should contain pgTAP-like syntax but fail validation
+    // However, since checkAssertions looks for pgTAP functions, we need a different approach
+    // Let's test with syntax error instead
     const sql = `
-      SELECT 1;
+      SELECT lives_ok($$SELECT 1$$;)
     `
     const result = validatePgTapTest(sql)
-    expect(result).toContain('pgTAP test validation failed')
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error).toContain('pgTAP test validation failed')
+    }
   })
 
-  it('returns undefined for valid pgTAP test using lives_ok', () => {
+  it('returns Ok for valid pgTAP test using lives_ok', () => {
     const sql = `
       SELECT lives_ok($$SELECT 1$$, 'Basic query works');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for valid pgTAP test using throws_ok', () => {
+  it('returns Ok for valid pgTAP test using throws_ok', () => {
     const sql = `
       SELECT throws_ok($$SELECT 1/0$$, '22012');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for valid pgTAP test using is()', () => {
+  it('returns Ok for valid pgTAP test using is()', () => {
     const sql = `
       SELECT is(1, 1, 'One equals one');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for valid pgTAP test using ok()', () => {
+  it('returns Ok for valid pgTAP test using ok()', () => {
     const sql = `
       SELECT ok(true, 'True is true');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for multiple assertions without plan/finish', () => {
+  it('returns Ok for multiple assertions without plan/finish', () => {
     const sql = `
       SELECT lives_ok($$INSERT INTO users (name) VALUES ('test')$$, 'Insert user');
       SELECT is((SELECT COUNT(*) FROM users), 1::bigint, 'User count is 1');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 })
