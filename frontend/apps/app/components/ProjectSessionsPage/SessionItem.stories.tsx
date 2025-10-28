@@ -64,3 +64,16 @@ export const LongName: Story = {
     },
   },
 }
+
+export const ErrorState: Story = {
+  args: {
+    session: {
+      id: 'session-4',
+      name: 'Schema Generation Failure',
+      created_at: '2024-02-21T09:15:00Z',
+      project_id: 'project-123',
+      has_schema: false,
+      status: 'error',
+    },
+  },
+}
