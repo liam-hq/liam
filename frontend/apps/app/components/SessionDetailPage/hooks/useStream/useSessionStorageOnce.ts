@@ -5,6 +5,7 @@ import {
   coerceMessageLikeToMessage,
   isHumanMessage,
 } from '@langchain/core/messages'
+import { fromThrowable } from '@liam-hq/neverthrow'
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 import { LG_INITIAL_MESSAGE_PREFIX } from '../../../../constants/storageKeys'
 
@@ -18,13 +19,12 @@ const readStoredMessage = (key: string): BaseMessage | null => {
     return null
   }
 
-  try {
-    const parsed = JSON.parse(stored)
-    const message = coerceMessageLikeToMessage(parsed)
-    return isHumanMessage(message) ? message : null
-  } catch {
-    return null
-  }
+  const parseJson = fromThrowable(JSON.parse)
+
+  return parseJson(stored)
+    .map((parsed) => coerceMessageLikeToMessage(parsed))
+    .map((message) => (isHumanMessage(message) ? message : null))
+    .unwrapOr(null)
 }
 
 /**

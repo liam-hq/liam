@@ -10,7 +10,8 @@ import {
   MessageTupleManager,
   SSE_EVENTS,
 } from '@liam-hq/agent/client'
-import { err, ok, type Result } from 'neverthrow'
+import { fromPromise } from '@liam-hq/neverthrow'
+import { err, errAsync, ok, okAsync, type Result } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'
@@ -108,6 +109,42 @@ export const useStream = ({
   const clearError = useCallback(() => {
     setError(null)
   }, [])
+
+  const postStatusUpdate = useCallback(
+    async (sessionId: string, status: 'running' | 'completed' | 'error') => {
+      await fromPromise(
+        fetch(`/api/design-sessions/${sessionId}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        }),
+      )
+        .andThen((response) => {
+          if (!response.ok) {
+            const error = Object.assign(
+              new Error('Failed to update design session status'),
+              {
+                statusCode: response.status,
+                statusText: response.statusText,
+              },
+            )
+            return errAsync(error)
+          }
+          return okAsync(undefined)
+        })
+        .match(
+          () => undefined,
+          (statusUpdateError) => {
+            console.error('Failed to update design session status', {
+              sessionId,
+              status,
+              error: statusUpdateError,
+            })
+          },
+        )
+    },
+    [],
+  )
 
   useNavigationGuard((_event) => {
     if (isStreaming) {
@@ -278,6 +315,7 @@ export const useStream = ({
         const result = await runStreamAttempt('/api/chat/replay', params)
 
         if (result.isErr()) {
+          await postStatusUpdate(params.designSessionId, 'error')
           return err(result.error)
         }
 
@@ -289,12 +327,13 @@ export const useStream = ({
       const timeoutMessage = ERROR_MESSAGES.CONNECTION_TIMEOUT
       abortWorkflow()
       setError(timeoutMessage)
+      await postStatusUpdate(params.designSessionId, 'error')
       return err({
         type: 'timeout',
         message: timeoutMessage,
       })
     },
-    [abortWorkflow, runStreamAttempt],
+    [abortWorkflow, runStreamAttempt, postStatusUpdate],
   )
 
   const start = useCallback(
@@ -308,6 +347,7 @@ export const useStream = ({
       const result = await runStreamAttempt('/api/chat/stream', params)
 
       if (result.isErr()) {
+        await postStatusUpdate(params.designSessionId, 'error')
         return err(result.error)
       }
 
@@ -319,7 +359,7 @@ export const useStream = ({
         designSessionId: params.designSessionId,
       })
     },
-    [replay, runStreamAttempt],
+    [replay, runStreamAttempt, postStatusUpdate],
   )
 
   return {
