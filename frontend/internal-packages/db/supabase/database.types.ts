@@ -119,6 +119,13 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
+            foreignKeyName: 'building_schemas_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'run_status_by_design_session'
+            referencedColumns: ['design_session_id']
+          },
+          {
             foreignKeyName: 'building_schemas_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
@@ -272,38 +279,29 @@ export type Database = {
         Row: {
           created_at: string
           created_by_user_id: string
-          finished_at: string | null
           id: string
           name: string
           organization_id: string
           parent_design_session_id: string | null
           project_id: string | null
-          started_at: string | null
-          status: Database['public']['Enums']['workflow_status']
         }
         Insert: {
           created_at?: string
           created_by_user_id: string
-          finished_at?: string | null
           id?: string
           name: string
           organization_id: string
           parent_design_session_id?: string | null
           project_id?: string | null
-          started_at?: string | null
-          status?: Database['public']['Enums']['workflow_status']
         }
         Update: {
           created_at?: string
           created_by_user_id?: string
-          finished_at?: string | null
           id?: string
           name?: string
           organization_id?: string
           parent_design_session_id?: string | null
           project_id?: string | null
-          started_at?: string | null
-          status?: Database['public']['Enums']['workflow_status']
         }
         Relationships: [
           {
@@ -326,6 +324,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'design_sessions'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_sessions_parent_design_session_id_fkey'
+            columns: ['parent_design_session_id']
+            isOneToOne: false
+            referencedRelation: 'run_status_by_design_session'
+            referencedColumns: ['design_session_id']
           },
           {
             foreignKeyName: 'design_sessions_project_id_fkey'
@@ -575,6 +580,108 @@ export type Database = {
             referencedRelation: 'design_sessions'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'public_share_settings_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'run_status_by_design_session'
+            referencedColumns: ['design_session_id']
+          },
+        ]
+      }
+      run_events: {
+        Row: {
+          event_at: string
+          event_type: Database['public']['Enums']['run_event_type']
+          id: string
+          organization_id: string
+          run_id: string
+        }
+        Insert: {
+          event_at?: string
+          event_type: Database['public']['Enums']['run_event_type']
+          id?: string
+          organization_id: string
+          run_id: string
+        }
+        Update: {
+          event_at?: string
+          event_type?: Database['public']['Enums']['run_event_type']
+          id?: string
+          organization_id?: string
+          run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'run_events_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'run_events_run_id_org_fkey'
+            columns: ['run_id', 'organization_id']
+            isOneToOne: false
+            referencedRelation: 'runs'
+            referencedColumns: ['id', 'organization_id']
+          },
+        ]
+      }
+      runs: {
+        Row: {
+          created_by_user_id: string | null
+          design_session_id: string
+          ended_at: string | null
+          id: string
+          organization_id: string
+          started_at: string
+        }
+        Insert: {
+          created_by_user_id?: string | null
+          design_session_id: string
+          ended_at?: string | null
+          id?: string
+          organization_id: string
+          started_at?: string
+        }
+        Update: {
+          created_by_user_id?: string | null
+          design_session_id?: string
+          ended_at?: string | null
+          id?: string
+          organization_id?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'runs_created_by_user_id_fkey'
+            columns: ['created_by_user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'runs_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'runs_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: false
+            referencedRelation: 'run_status_by_design_session'
+            referencedColumns: ['design_session_id']
+          },
+          {
+            foreignKeyName: 'runs_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
         ]
       }
       schema_file_paths: {
@@ -645,7 +752,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      run_status_by_design_session: {
+        Row: {
+          derived_from_sql: string | null
+          design_session_id: string | null
+          last_event_at: string | null
+          organization_id: string | null
+          status: Database['public']['Enums']['workflow_run_status'] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'design_sessions_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Functions: {
       accept_invitation: {
@@ -697,9 +821,9 @@ export type Database = {
     }
     Enums: {
       assistant_role_enum: 'db' | 'pm' | 'qa'
+      run_event_type: 'started' | 'completed' | 'error'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
       workflow_run_status: 'pending' | 'success' | 'error'
-      workflow_status: 'running' | 'completed' | 'error'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -831,9 +955,9 @@ export const Constants = {
   public: {
     Enums: {
       assistant_role_enum: ['db', 'pm', 'qa'],
+      run_event_type: ['started', 'completed', 'error'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
       workflow_run_status: ['pending', 'success', 'error'],
-      workflow_status: ['running', 'completed', 'error'],
     },
   },
 } as const
