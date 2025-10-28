@@ -6,9 +6,11 @@ import { useCallback, useEffect, useState } from 'react'
 import type { OutputTabValue } from '../Output/constants'
 import styles from './Chat.module.css'
 import { ErrorDisplay } from './components/ErrorDisplay'
+import { FixedWorkflowStatusIndicator } from './components/FixedWorkflowStatusIndicator'
 import { Messages } from './components/Messages'
 import { ScrollToBottomButton } from './components/ScrollToBottomButton'
 import { WorkflowRunningIndicator } from './components/WorkflowRunningIndicator'
+import { useWorkflowStatus } from './hooks/useWorkflowStatus'
 import { useScrollToBottom } from './useScrollToBottom'
 
 type Props = {
@@ -16,6 +18,7 @@ type Props = {
   isWorkflowRunning?: boolean
   error?: string | null
   onNavigate: (tab: OutputTabValue) => void
+  hasOutput?: boolean
 }
 
 export const Chat: FC<Props> = ({
@@ -23,11 +26,13 @@ export const Chat: FC<Props> = ({
   isWorkflowRunning = false,
   onNavigate,
   error,
+  hasOutput = false,
 }) => {
   const { containerRef, scrollToBottom } = useScrollToBottom<HTMLDivElement>(
     messages.length,
   )
   const [showScrollButton, setShowScrollButton] = useState(false)
+  const workflowStatus = useWorkflowStatus(messages, isWorkflowRunning)
 
   const recomputeScrollButton = useCallback(() => {
     const el = containerRef.current
@@ -53,7 +58,13 @@ export const Chat: FC<Props> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.messageListWrapper}>
-        <div className={styles.messageList} ref={containerRef}>
+        <div
+          className={styles.messageList}
+          ref={containerRef}
+          style={{
+            maxHeight: isWorkflowRunning ? 'calc(100% - 80px)' : '100%',
+          }}
+        >
           <Messages
             messages={messages}
             onNavigate={onNavigate}
@@ -66,6 +77,12 @@ export const Chat: FC<Props> = ({
           visible={showScrollButton}
           onClick={scrollToBottom}
         />
+        {isWorkflowRunning && workflowStatus && (
+          <FixedWorkflowStatusIndicator
+            statusText={workflowStatus}
+            hasOutput={hasOutput}
+          />
+        )}
       </div>
     </div>
   )
