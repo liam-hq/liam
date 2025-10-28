@@ -1,0 +1,74 @@
+.statusBar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--primary-overlay-10),
+    var(--primary-overlay-15),
+    var(--primary-overlay-10)
+  );
+  border-bottom: var(--border-width-base) solid var(--primary-overlay-20);
+  backdrop-filter: blur(8px);
+  animation: slideDown 0.3s var(--default-timing-function);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+}
+
+.indicator {
+  display: flex;
+  gap: var(--spacing-1);
+  align-items: center;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--border-radius-full);
+  background-color: var(--primary-accent);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.text {
+  font-size: var(--font-size-4);
+  color: var(--primary-accent);
+  font-weight: var(--text-weight-en-medium);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
