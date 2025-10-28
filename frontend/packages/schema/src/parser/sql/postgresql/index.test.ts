@@ -391,6 +391,51 @@ describe(processor, () => {
       })
     })
 
+    it('parses CHECK constraints when multibyte characters precede the constraint', async () => {
+      // eslint-disable-next-line no-non-english/no-non-english-characters
+      const sampleSql = /* sql */ `
+        COMMENT ON TABLE "public"."homes" IS '標準 public schema';
+
+        CREATE TABLE "public"."home_members" (
+          "id" uuid,
+          "role" text NOT NULL,
+          "メモ" text,
+          CONSTRAINT "home_members_role_check" CHECK (("role" = ANY (ARRAY['owner'::text, 'member'::text])))
+        );
+
+        CREATE TABLE "public"."user_auth_providers" (
+          "id" uuid,
+          "provider" text NOT NULL,
+          "表示名" text,
+          CONSTRAINT "user_auth_providers_provider_check" CHECK ((("provider")::text = ANY (ARRAY[('apple'::character varying)::text, ('google'::character varying)::text, ('anonymous'::character varying)::text])))
+        );
+      `
+
+      const { value, errors } = await processor(sampleSql)
+
+      expect(errors).toEqual([])
+      const homeMembersCheck =
+        value.tables['home_members']?.constraints?.['home_members_role_check']
+      const authProvidersCheck =
+        value.tables['user_auth_providers']?.constraints?.[
+          'user_auth_providers_provider_check'
+        ]
+
+      expect(homeMembersCheck?.type).toBe('CHECK')
+      expect(authProvidersCheck?.type).toBe('CHECK')
+
+      if (homeMembersCheck?.type === 'CHECK') {
+        expect(homeMembersCheck.detail).toMatchInlineSnapshot(
+          `"("role" = ANY (ARRAY['owner'::text, 'member'::text]))"`,
+        )
+      }
+      if (authProvidersCheck?.type === 'CHECK') {
+        expect(authProvidersCheck.detail).toMatchInlineSnapshot(
+          `"(("provider")::text = ANY (ARRAY[('apple'::character varying)::text, ('google'::character varying)::text, ('anonymous'::character varying)::text]))"`,
+        )
+      }
+    })
+
     it('table-level unique constraint', async () => {
       const { value } = await processor(/* sql */ `
         CREATE TABLE user_roles (

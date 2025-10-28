@@ -55,7 +55,9 @@ export const CommandPaletteSearchInput: FC<Props> = ({
     }
     return suggestion.type === 'column'
       ? suggestion.columnName
-      : suggestion.name
+      : suggestion.type === 'index'
+        ? suggestion.indexName
+        : suggestion.name
   }, [mode, suggestion, isTableModeActivatable])
 
   const completionSuffix = useMemo(() => {

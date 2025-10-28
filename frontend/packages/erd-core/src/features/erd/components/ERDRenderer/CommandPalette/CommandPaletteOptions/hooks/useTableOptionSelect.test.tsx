@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { ReactFlowProvider } from '@xyflow/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import type { FC, ReactNode } from 'react'
+import type { Hash } from 'src/schemas'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserEditingProvider } from '../../../../../../../stores'
 import * as UseTableSelection from '../../../../../hooks'
@@ -172,94 +173,56 @@ describe('optionSelectHandler', () => {
   // in the test cases, we simulate the method clicking a link of a table option
   const TableOptionLinkWithSelectHandler: FC<{
     tableName: string
-    columnName: string | undefined
-  }> = ({ tableName, columnName }) => {
+    columnElementId: Hash
+  }> = ({ tableName, columnElementId }) => {
     const { optionSelectHandler } = useTableOptionSelect(null)
 
     return (
       <a
         href="/"
         // use the handler by passing the event object and table name
-        onClick={(event) => optionSelectHandler(event, tableName, columnName)}
+        onClick={(event) =>
+          optionSelectHandler(event, tableName, columnElementId)
+        }
       >
         table option link
       </a>
     )
   }
 
-  describe('when passing only tableName', () => {
-    it('moves to clicked table in ERD and closes the dialog', async () => {
-      const user = userEvent.setup()
-      render(
-        <TableOptionLinkWithSelectHandler
-          tableName="follows"
-          columnName={undefined}
-        />,
-        { wrapper },
-      )
+  it('moves to clicked table in ERD and closes the dialog', async () => {
+    const user = userEvent.setup()
+    render(
+      <TableOptionLinkWithSelectHandler
+        tableName="follows"
+        columnElementId="follows__columns__user_id"
+      />,
+      { wrapper },
+    )
 
-      await user.click(screen.getByRole('link', { name: 'table option link' }))
+    await user.click(screen.getByRole('link', { name: 'table option link' }))
 
-      expect(mockSelectTable).toHaveBeenCalled()
-      expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
-    })
-
-    it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
-      const user = userEvent.setup()
-      render(
-        <TableOptionLinkWithSelectHandler
-          tableName="follows"
-          columnName={undefined}
-        />,
-        { wrapper },
-      )
-
-      await user.keyboard('{Meta>}')
-      await user.click(screen.getByRole('link', { name: 'table option link' }))
-      await user.keyboard('{/Meta}')
-
-      expect(mockSelectTable).not.toHaveBeenCalled()
-      expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
-    })
+    expect(mockSelectTable).toHaveBeenCalled()
+    expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
+    expect(window.location.hash).toBe('#follows__columns__user_id')
   })
 
-  describe('when passing both tableName and columnName', () => {
-    it('moves to clicked table in ERD and closes the dialog', async () => {
-      const user = userEvent.setup()
-      render(
-        <TableOptionLinkWithSelectHandler
-          tableName="follows"
-          columnName="user_id"
-        />,
-        { wrapper },
-      )
+  it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
+    const user = userEvent.setup()
+    render(
+      <TableOptionLinkWithSelectHandler
+        tableName="follows"
+        columnElementId="follows__columns__user_id"
+      />,
+      { wrapper },
+    )
 
-      await user.click(screen.getByRole('link', { name: 'table option link' }))
+    await user.keyboard('{Meta>}')
+    await user.click(screen.getByRole('link', { name: 'table option link' }))
+    await user.keyboard('{/Meta}')
 
-      expect(mockSelectTable).toHaveBeenCalled()
-      expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
-      expect(window.location.hash).toBe('#follows__columns__user_id')
-    })
-
-    it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
-      const user = userEvent.setup()
-      render(
-        <TableOptionLinkWithSelectHandler
-          tableName="follows"
-          columnName="user_id"
-        />,
-        {
-          wrapper,
-        },
-      )
-
-      await user.keyboard('{Meta>}')
-      await user.click(screen.getByRole('link', { name: 'table option link' }))
-      await user.keyboard('{/Meta}')
-
-      expect(mockSelectTable).not.toHaveBeenCalled()
-      expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
-      expect(window.location.hash).toBe('')
-    })
+    expect(mockSelectTable).not.toHaveBeenCalled()
+    expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
+    expect(window.location.hash).toBe('')
   })
 })

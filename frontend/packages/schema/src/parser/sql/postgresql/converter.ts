@@ -28,6 +28,63 @@ import { type ProcessError, UnexpectedTokenWarningError } from '../../errors.js'
 import type { ProcessResult } from '../../types.js'
 import { defaultRelationshipName } from '../../utils/index.js'
 
+const getUtf8ByteLength = (codePoint: number): number => {
+  // Validate Unicode code point range
+  // Surrogate pairs (0xD800-0xDFFF) are invalid standalone code points
+  // Code points above 0x10FFFF exceed the Unicode limit
+  if (codePoint >= 0xd800 && codePoint <= 0xdfff) return -1
+  if (codePoint > 0x10ffff) return -1
+
+  if (codePoint <= 0x7f) return 1
+  if (codePoint <= 0x7ff) return 2
+  if (codePoint <= 0xffff) return 3
+  return 4
+}
+
+const utf8ByteOffsetToCharIndex = (
+  input: string,
+  byteOffset: number,
+): number | null => {
+  if (byteOffset < 0) return null
+
+  let bytesConsumed = 0
+
+  for (let i = 0; i < input.length; ) {
+    if (bytesConsumed === byteOffset) {
+      return i
+    }
+
+    const codePoint = input.codePointAt(i)
+    if (codePoint === undefined) {
+      return null
+    }
+
+    const utf8Length = getUtf8ByteLength(codePoint)
+    if (utf8Length < 0) {
+      // Invalid code point (surrogate or out of range)
+      return null
+    }
+
+    if (bytesConsumed + utf8Length > byteOffset) {
+      return null
+    }
+
+    bytesConsumed += utf8Length
+    const codeUnitLength = codePoint > 0xffff ? 2 : 1
+    i += codeUnitLength
+
+    if (bytesConsumed === byteOffset) {
+      return i
+    }
+  }
+
+  if (bytesConsumed === byteOffset) {
+    return input.length
+  }
+
+  return null
+}
+
 function isStringNode(node: Node | undefined): node is { String: PgString } {
   return (
     node !== undefined &&
@@ -160,6 +217,7 @@ const constraintToCheckConstraint = (
   columnName: string | undefined,
   constraint: PgConstraint,
   rawSql: string,
+  chunkSql: string,
   chunkOffset: number,
 ): Result<CheckConstraint, UnexpectedTokenWarningError> => {
   if (constraint.contype !== 'CONSTR_CHECK') {
@@ -170,6 +228,19 @@ const constraintToCheckConstraint = (
 
   if (constraint.location === undefined) {
     return err(new UnexpectedTokenWarningError('Invalid check constraint'))
+  }
+
+  const locationInChunk = utf8ByteOffsetToCharIndex(
+    chunkSql,
+    constraint.location,
+  )
+
+  if (locationInChunk === null) {
+    return err(
+      new UnexpectedTokenWarningError(
+        `Failed to resolve location for CHECK constraint "${constraint.conname || 'unnamed'}"`,
+      ),
+    )
   }
 
   // Find balanced parentheses for the CHECK constraint condition
@@ -197,7 +268,7 @@ const constraintToCheckConstraint = (
     return null
   }
 
-  const absoluteLocation = constraint.location + chunkOffset
+  const absoluteLocation = locationInChunk + chunkOffset
   const parentheses = findBalancedParentheses(rawSql, absoluteLocation)
 
   if (!parentheses) {
@@ -209,6 +280,18 @@ const constraintToCheckConstraint = (
   }
 
   const condition = rawSql.slice(parentheses.start + 1, parentheses.end)
+  const trimmedCondition = condition.trim()
+
+  if (trimmedCondition.length === 0) {
+    const fallbackName =
+      constraint.conname ??
+      (columnName ? `${columnName}_check` : 'unnamed_check_constraint')
+    return err(
+      new UnexpectedTokenWarningError(
+        `CHECK constraint "${fallbackName}" has empty detail`,
+      ),
+    )
+  }
 
   // Generate a better name for anonymous constraints
   let constraintName = constraint.conname
@@ -218,8 +301,7 @@ const constraintToCheckConstraint = (
     } else {
       // For table-level constraints, try to extract a meaningful name from the condition
       // Handle case where condition might be empty or invalid
-      const simplifiedCondition = condition
-        .trim()
+      const simplifiedCondition = trimmedCondition
         .replace(/\s+/g, '_')
         .replace(/[^a-zA-Z0-9_]/g, '')
         .substring(0, 20)
@@ -244,6 +326,7 @@ export const convertToSchema = (
   rawSql: string,
   mainSchema: Schema,
   chunkOffset: number,
+  chunkSql: string,
 ): ProcessResult => {
   const tables: Record<string, Table> = {}
   const enums: Record<string, Enum> = {}
@@ -405,6 +488,7 @@ export const convertToSchema = (
           columnName,
           constraint.Constraint,
           rawSql,
+          chunkSql,
           chunkOffset,
         )
 
@@ -552,6 +636,7 @@ export const convertToSchema = (
         undefined,
         constraint,
         rawSql,
+        chunkSql,
         chunkOffset,
       )
 
@@ -925,6 +1010,7 @@ export const convertToSchema = (
       undefined,
       constraint,
       rawSql,
+      chunkSql,
       chunkOffset,
     )
 

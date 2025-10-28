@@ -82,10 +82,8 @@ export const saveTestcaseTool: StructuredTool = tool(
           tool_call_id: toolCallId,
         })
         await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
-        throw new WorkflowTerminationError(
-          new Error(validationError),
-          TOOL_NAME,
-        )
+        // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
+        throw new Error(validationError)
       }
 
       const state = getCurrentTaskInput<typeof testcaseAnnotation.State>()
