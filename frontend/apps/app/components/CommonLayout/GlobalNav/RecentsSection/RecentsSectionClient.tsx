@@ -27,9 +27,7 @@ type RecentsSectionClientProps = {
 const PAGE_SIZE = 20
 const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
-const mapRealtimeStatus = (
-  status: unknown,
-): RecentSession['status'] | null => {
+const mapRealtimeStatus = (status: unknown): RecentSession['status'] | null => {
   if (status === 'running') {
     return 'running'
   }
