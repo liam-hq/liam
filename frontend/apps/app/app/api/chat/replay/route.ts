@@ -14,6 +14,7 @@ import * as v from 'valibot'
 import { line } from '../../../../features/stream/utils/line'
 import { withTimeoutAndAbort } from '../../../../features/stream/utils/withTimeoutAndAbort'
 import { createClient } from '../../../../libs/db/server'
+import { RunTracker } from '../../../../libs/runs/runService'
 
 export const maxDuration = 800
 const REPLAY_TIMEOUT_MS = 700000
@@ -53,37 +54,71 @@ export async function POST(request: Request) {
 
   const userId = authResult.value.id
 
-  const updateDesignSessionStatus = async (fields: Record<string, unknown>) => {
-    const { error } = await supabase
-      .from('design_sessions')
-      .update(fields)
-      .eq('id', designSessionId)
+  const { data: designSession, error: designSessionError } = await supabase
+    .from('design_sessions')
+    .select('organization_id')
+    .eq('id', designSessionId)
+    .limit(1)
+    .single()
 
-    if (error) {
-      Sentry.captureException(error, {
+  if (designSessionError || !designSession) {
+    return NextResponse.json(
+      { error: 'Design Session not found' },
+      { status: 404 },
+    )
+  }
+
+  const organizationId = designSession.organization_id
+
+  let runTracker: RunTracker | null = null
+
+  const recordRunError = async (
+    context?: Record<string, unknown>,
+  ): Promise<void> => {
+    if (!runTracker) return
+    const tracker = runTracker
+    const failResult = await fromAsyncThrowable(() => tracker.fail())()
+    if (failResult.isErr()) {
+      Sentry.captureException(failResult.error, {
         tags: { designSessionId },
+        extra: { location: 'chat/replay run fail', context },
       })
     }
   }
 
-  const markRunning = () =>
-    updateDesignSessionStatus({
-      status: 'running',
-      started_at: new Date().toISOString(),
-      finished_at: null,
+  const recordRunSuccess = async () => {
+    if (!runTracker) return
+    const tracker = runTracker
+    const completeResult = await fromAsyncThrowable(() => tracker.complete())()
+    if (completeResult.isErr()) {
+      Sentry.captureException(completeResult.error, {
+        tags: { designSessionId },
+        extra: { location: 'chat/replay run complete' },
+      })
+    }
+  }
+
+  const runTrackerResult = await fromAsyncThrowable(() =>
+    RunTracker.start({
+      supabase,
+      designSessionId,
+      organizationId,
+      userId,
+    }),
+  )()
+
+  if (runTrackerResult.isErr()) {
+    Sentry.captureException(runTrackerResult.error, {
+      tags: { designSessionId },
+      extra: { location: 'chat/replay run start' },
     })
-  const markCompleted = () =>
-    updateDesignSessionStatus({
-      status: 'completed',
-      finished_at: new Date().toISOString(),
-    })
-  const markError = () =>
-    updateDesignSessionStatus({
-      status: 'error',
-      finished_at: new Date().toISOString(),
-    })
+    runTracker = null
+  } else {
+    runTracker = runTrackerResult.value
+  }
 
   let shouldMarkError = false
+  let runErrorContext: Record<string, unknown> | null = null
 
   const buildingSchemaResult = await toResultAsync<{
     id: string
@@ -99,7 +134,9 @@ export async function POST(request: Request) {
 
   if (buildingSchemaResult.isErr()) {
     shouldMarkError = true
-    await markError()
+    await recordRunError({
+      reason: 'building_schema_not_found',
+    })
 
     return NextResponse.json(
       { error: 'Building schema not found for design session' },
@@ -107,8 +144,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const { id: buildingSchemaId, organization_id: organizationId } =
-    buildingSchemaResult.value
+  const { id: buildingSchemaId } = buildingSchemaResult.value
 
   const repositories = createSupabaseRepositories(supabase, organizationId)
   const checkpointer = repositories.schema.checkpointer
@@ -133,6 +169,9 @@ export async function POST(request: Request) {
 
     if (!checkpointId) {
       shouldMarkError = true
+      runErrorContext = {
+        reason: 'checkpoint_not_found',
+      }
       const message = 'No checkpoint found for replay'
       controller.enqueue(enc.encode(line(SSE_EVENTS.ERROR, { message })))
       return
@@ -154,6 +193,7 @@ export async function POST(request: Request) {
     for await (const ev of events) {
       if (ev.event === SSE_EVENTS.ERROR) {
         shouldMarkError = true
+        runErrorContext = { reason: 'sse_error' }
       }
 
       if (signal.aborted) {
@@ -173,7 +213,6 @@ export async function POST(request: Request) {
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      await markRunning()
       await withTimeoutAndAbort(
         (signal: AbortSignal) => processReplayEvents(controller, signal),
         REPLAY_TIMEOUT_MS,
@@ -188,6 +227,10 @@ export async function POST(request: Request) {
 
         if (!isAbortError) {
           shouldMarkError = true
+          runErrorContext = {
+            reason: 'workflow_error',
+            message: err.message,
+          }
         }
 
         Sentry.captureException(err, {
@@ -202,9 +245,13 @@ export async function POST(request: Request) {
       })
 
       if (shouldMarkError) {
-        await markError()
+        await recordRunError(
+          runErrorContext ?? {
+            reason: 'workflow_error',
+          },
+        )
       } else {
-        await markCompleted()
+        await recordRunSuccess()
       }
       controller.close()
     },
@@ -214,11 +261,16 @@ export async function POST(request: Request) {
     await awaitAllCallbacks()
   })
 
+  const headers = new Headers({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+  })
+  if (runTracker) {
+    headers.set('x-run-id', runTracker.id)
+  }
+
   return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
-      Connection: 'keep-alive',
-    },
+    headers,
   })
 }
