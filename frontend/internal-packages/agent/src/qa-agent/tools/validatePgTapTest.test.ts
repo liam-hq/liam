@@ -116,4 +116,10 @@ describe('validatePgTapTest', () => {
     const result = validatePgTapTest(sql)
     expect(result).toBeUndefined()
   })
+
+  it('returns error when pgTAP function has syntax error with semicolon before closing parenthesis', () => {
+    const sql = 'SELECT lives_ok($$SELECT 1$$;)'
+    const result = validatePgTapTest(sql)
+    expect(result).toContain('Semicolon before closing parenthesis detected')
+  })
 })
