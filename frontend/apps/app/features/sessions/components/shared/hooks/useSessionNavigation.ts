@@ -24,6 +24,7 @@ export const useSessionNavigation = (state: CreateSessionState) => {
         JSON.stringify(humanMessage),
       )
 
+      router.refresh()
       router.push(state.redirectTo)
     })
   }, [state, router])
