@@ -1,3 +1,5 @@
+import { err, ok, type Result } from 'neverthrow'
+
 const PGTAP_FUNCTIONS = [
   'lives_ok',
   'throws_ok',
@@ -33,7 +35,11 @@ const checkSyntaxErrors = (sql: string, errors: string[]): void => {
   }
 }
 
-export const validatePgTapTest = (sql: string): string | undefined => {
+export const validatePgTapTest = (sql: string): Result<void, string> => {
+  if (!isPgTapTest(sql)) {
+    return ok(undefined)
+  }
+
   const lowerSql = sql.toLowerCase()
   const errors: string[] = []
 
@@ -41,8 +47,10 @@ export const validatePgTapTest = (sql: string): string | undefined => {
   checkSyntaxErrors(sql, errors)
 
   if (errors.length > 0) {
-    return `pgTAP test validation failed:\n${errors.map((e, i) => `${i + 1}. ${e}`).join('\n')}\n\nFix these issues and retry.`
+    return err(
+      `pgTAP test validation failed:\n${errors.map((e, i) => `${i + 1}. ${e}`).join('\n')}\n\nFix these issues and retry.`,
+    )
   }
 
-  return undefined
+  return ok(undefined)
 }
