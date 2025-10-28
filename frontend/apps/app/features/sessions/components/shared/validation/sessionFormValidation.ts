@@ -20,7 +20,7 @@ const emptyStringToNull = v.pipe(
 )
 
 // Base form schema shared across all session types
-const BaseFormDataSchema = v.object({
+export const BaseFormDataSchema = v.object({
   parentDesignSessionId: v.optional(v.nullable(emptyStringToNull)),
   initialMessage: v.pipe(
     v.string(),
@@ -59,6 +59,19 @@ export const UploadFormDataSchema = v.object({
 export const UrlFormDataSchema = v.object({
   ...BaseFormDataSchema.entries,
   schemaUrl: v.pipe(v.string(), v.url('Please enter a valid URL')),
+  schemaFormat: v.pipe(
+    v.string(),
+    v.picklist(['postgres', 'schemarb', 'prisma', 'tbls']),
+  ),
+})
+
+// Paste-specific form schema
+export const PasteFormDataSchema = v.object({
+  ...BaseFormDataSchema.entries,
+  schemaContent: v.pipe(
+    v.string(),
+    v.minLength(1, 'Schema content is required'),
+  ),
   schemaFormat: v.pipe(
     v.string(),
     v.picklist(['postgres', 'schemarb', 'prisma', 'tbls']),

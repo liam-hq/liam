@@ -25,8 +25,8 @@ export const SessionsNewPage: FC = async () => {
     <div className={styles.container}>
       <div className={styles.wrapper}>
         <h1 className={styles.title}>
-          What can I help you <br />
-          Database Design?
+          How can I help you <br />
+          with Database Design?
         </h1>
         <SessionFormContainer projects={projects} />
 

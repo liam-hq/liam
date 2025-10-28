@@ -1,9 +1,9 @@
-import { GithubLogo, Link, Upload } from '@liam-hq/ui'
+import { ClipboardList, GithubLogo, Link, Upload } from '@liam-hq/ui'
 import clsx from 'clsx'
 import { type FC, useEffect, useId, useRef } from 'react'
 import styles from './SessionModeSelector.module.css'
 
-export type SessionMode = 'github' | 'upload' | 'url'
+export type SessionMode = 'scratch' | 'github' | 'upload' | 'url' | 'paste'
 
 export type ModeIds = {
   tabId: string
@@ -19,18 +19,23 @@ const modes: { mode: SessionMode; label: string; icon: React.ReactElement }[] =
   [
     {
       mode: 'github',
-      label: 'Import Schema from GitHub',
+      label: 'Import from GitHub',
       icon: <GithubLogo className={styles.modeButtonIcon} />,
     },
     {
       mode: 'upload',
-      label: 'Start from Upload',
+      label: 'Import from File',
       icon: <Upload size={16} className={styles.modeButtonIcon} />,
     },
     {
       mode: 'url',
-      label: 'Use Existing Schema (URL)',
+      label: 'Import from URL',
       icon: <Link size={16} className={styles.modeButtonIcon} />,
+    },
+    {
+      mode: 'paste',
+      label: 'Paste Schema',
+      icon: <ClipboardList size={16} className={styles.modeButtonIcon} />,
     },
   ]
 
@@ -46,6 +51,10 @@ export const SessionModeSelector: FC<Props> = ({
   // Generate unique IDs for all modes
   const baseId = useId()
   const modeIds: Record<SessionMode, ModeIds> = {
+    scratch: {
+      tabId: `${baseId}-scratch-tab`,
+      panelId: `${baseId}-scratch-panel`,
+    },
     github: {
       tabId: `${baseId}-github-tab`,
       panelId: `${baseId}-github-panel`,
@@ -57,6 +66,10 @@ export const SessionModeSelector: FC<Props> = ({
     url: {
       tabId: `${baseId}-url-tab`,
       panelId: `${baseId}-url-panel`,
+    },
+    paste: {
+      tabId: `${baseId}-paste-tab`,
+      panelId: `${baseId}-paste-panel`,
     },
   }
 
