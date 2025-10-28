@@ -10,7 +10,11 @@ import {
   MessageTupleManager,
   SSE_EVENTS,
 } from '@liam-hq/agent/client'
-import { fromPromise } from '@liam-hq/neverthrow'
+import {
+  fromAsyncThrowable,
+  fromPromise,
+  fromThrowable,
+} from '@liam-hq/neverthrow'
 import { err, errAsync, ok, okAsync, type Result } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
@@ -43,11 +47,8 @@ type StreamAttemptStatus = 'complete' | 'shouldRetry'
 const extractStreamErrorMessage = (rawData: unknown): string => {
   const parsedData = (() => {
     if (typeof rawData !== 'string') return rawData
-    try {
-      return JSON.parse(rawData)
-    } catch {
-      return null
-    }
+    const parseResult = fromThrowable(JSON.parse)(rawData)
+    return parseResult.isOk() ? parseResult.value : null
   })()
 
   const schema = object({ message: string() })
@@ -90,6 +91,7 @@ export const useStream = ({
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const retryCountRef = useRef(0)
+  const runIdRef = useRef<string | null>(null)
 
   const completeWorkflow = useCallback((sessionId: string) => {
     setIsStreaming(false)
@@ -110,19 +112,23 @@ export const useStream = ({
     setError(null)
   }, [])
 
-  const postStatusUpdate = useCallback(
-    async (sessionId: string, status: 'running' | 'completed' | 'error') => {
+  const reportRunFailure = useCallback(
+    async (runId: string | null, context?: Record<string, unknown>) => {
+      if (!runId) {
+        return
+      }
+
       await fromPromise(
-        fetch(`/api/design-sessions/${sessionId}/status`, {
+        fetch(`/api/runs/${runId}/events`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status }),
+          body: JSON.stringify({ eventType: 'error' }),
         }),
       )
         .andThen((response) => {
           if (!response.ok) {
             const error = Object.assign(
-              new Error('Failed to update design session status'),
+              new Error('Failed to record run failure'),
               {
                 statusCode: response.status,
                 statusText: response.statusText,
@@ -134,11 +140,11 @@ export const useStream = ({
         })
         .match(
           () => undefined,
-          (statusUpdateError) => {
-            console.error('Failed to update design session status', {
-              sessionId,
-              status,
-              error: statusUpdateError,
+          (runEventError) => {
+            console.error('Failed to record run failure', {
+              runId,
+              context,
+              error: runEventError,
             })
           },
         )
@@ -250,48 +256,19 @@ export const useStream = ({
       setIsStreaming(true)
       setError(null)
 
-      try {
-        const res = await fetch(endpoint, {
+      runIdRef.current = null
+      const responseResult = await fromAsyncThrowable(() =>
+        fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(params),
           signal: controller.signal,
-        })
+        }),
+      )()
 
-        if (!res.body) {
-          abortWorkflow()
-          return err({
-            type: 'network',
-            message: ERROR_MESSAGES.FETCH_FAILED,
-            status: res.status,
-          })
-        }
-
-        const endEventReceived = await processStreamEvents(res)
-
-        if (!endEventReceived) {
-          if (controller.signal.aborted) {
-            abortWorkflow()
-            return err({
-              type: 'abort',
-              message: 'Request was aborted',
-            })
-          }
-
-          controller.abort()
-          abortRef.current = null
-          return ok('shouldRetry')
-        }
-
-        completeWorkflow(params.designSessionId)
-        return ok('complete')
-      } catch (unknownError) {
+      if (responseResult.isErr()) {
         abortWorkflow()
-
-        if (
-          unknownError instanceof Error &&
-          unknownError.name === 'AbortError'
-        ) {
+        if (responseResult.error.name === 'AbortError') {
           return err({
             type: 'abort',
             message: 'Request was aborted',
@@ -303,6 +280,39 @@ export const useStream = ({
           message: ERROR_MESSAGES.GENERAL,
         })
       }
+
+      const res = responseResult.value
+
+      const headerRunId = res.headers.get('x-run-id')
+      runIdRef.current = headerRunId
+
+      if (!res.body) {
+        abortWorkflow()
+        return err({
+          type: 'network',
+          message: ERROR_MESSAGES.FETCH_FAILED,
+          status: res.status,
+        })
+      }
+
+      const endEventReceived = await processStreamEvents(res)
+
+      if (!endEventReceived) {
+        if (controller.signal.aborted) {
+          abortWorkflow()
+          return err({
+            type: 'abort',
+            message: 'Request was aborted',
+          })
+        }
+
+        controller.abort()
+        abortRef.current = null
+        return ok('shouldRetry')
+      }
+
+      completeWorkflow(params.designSessionId)
+      return ok('complete')
     },
     [completeWorkflow, abortWorkflow, processStreamEvents],
   )
@@ -315,7 +325,11 @@ export const useStream = ({
         const result = await runStreamAttempt('/api/chat/replay', params)
 
         if (result.isErr()) {
-          await postStatusUpdate(params.designSessionId, 'error')
+          await reportRunFailure(runIdRef.current, {
+            reason: 'replay_attempt_failed',
+            type: result.error.type,
+            message: result.error.message,
+          })
           return err(result.error)
         }
 
@@ -327,13 +341,16 @@ export const useStream = ({
       const timeoutMessage = ERROR_MESSAGES.CONNECTION_TIMEOUT
       abortWorkflow()
       setError(timeoutMessage)
-      await postStatusUpdate(params.designSessionId, 'error')
+      await reportRunFailure(runIdRef.current, {
+        reason: 'replay_timeout',
+        message: timeoutMessage,
+      })
       return err({
         type: 'timeout',
         message: timeoutMessage,
       })
     },
-    [abortWorkflow, runStreamAttempt, postStatusUpdate],
+    [abortWorkflow, runStreamAttempt, reportRunFailure],
   )
 
   const start = useCallback(
@@ -347,7 +364,11 @@ export const useStream = ({
       const result = await runStreamAttempt('/api/chat/stream', params)
 
       if (result.isErr()) {
-        await postStatusUpdate(params.designSessionId, 'error')
+        await reportRunFailure(runIdRef.current, {
+          reason: 'stream_start_failed',
+          type: result.error.type,
+          message: result.error.message,
+        })
         return err(result.error)
       }
 
@@ -359,7 +380,7 @@ export const useStream = ({
         designSessionId: params.designSessionId,
       })
     },
-    [replay, runStreamAttempt, postStatusUpdate],
+    [replay, runStreamAttempt, reportRunFailure],
   )
 
   return {
