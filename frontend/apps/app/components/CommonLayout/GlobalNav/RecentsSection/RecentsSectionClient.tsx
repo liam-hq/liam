@@ -1,6 +1,7 @@
 'use client'
 
 import { fromPromise } from '@liam-hq/neverthrow'
+import { Skeleton } from '@liam-hq/ui'
 import * as Sentry from '@sentry/nextjs'
 import clsx from 'clsx'
 import Link from 'next/link'
@@ -15,7 +16,6 @@ import {
   SessionFilterDropdown,
 } from './components/SessionFilterDropdown'
 import styles from './RecentsSectionClient.module.css'
-import { Skeleton } from './Skeleton'
 import type { RecentSession, SessionFilterType } from './types'
 
 type RecentsSectionClientProps = {

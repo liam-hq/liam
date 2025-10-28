@@ -10,8 +10,15 @@
 }
 
 .skeleton {
+  display: inline-block;
   background-color: var(--overlay-20);
   animation: pulse 1.5s ease-in-out infinite;
   border-radius: var(--border-radius-sm);
-  height: 1rem;
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.skeleton > * {
+  visibility: hidden;
 }
