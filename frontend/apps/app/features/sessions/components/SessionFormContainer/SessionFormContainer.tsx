@@ -4,6 +4,7 @@ import { type FC, useEffect, useRef, useState } from 'react'
 import type { Projects } from '../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import { createAccessibleOpacityTransition } from '../../../../utils/accessibleTransitions'
 import { GitHubSessionForm } from '../GitHubSessionForm'
+import { PasteSchemaSessionForm } from '../PasteSchemaSessionForm'
 import { UploadSessionForm } from '../UploadSessionForm'
 import { UrlSessionForm } from '../UrlSessionForm'
 import styles from './SessionFormContainer.module.css'
@@ -22,7 +23,7 @@ export const SessionFormContainer: FC<Props> = ({
   projects,
   defaultProjectId,
 }) => {
-  const [mode, setMode] = useState<SessionMode>('github')
+  const [mode, setMode] = useState<SessionMode | null>(null)
   const [modeIds, setModeIds] = useState<ModeIds>({ tabId: '', panelId: '' })
   const [isTransitioning, setIsTransitioning] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -118,41 +119,53 @@ export const SessionFormContainer: FC<Props> = ({
         selectedMode={mode}
         onModeChange={handleModeChange}
       />
-      <div ref={containerRef} className={styles.formContainer}>
-        {mode === 'github' && (
-          <div
-            role="tabpanel"
-            id={modeIds.panelId}
-            aria-labelledby={modeIds.tabId}
-            style={createAccessibleOpacityTransition(!isTransitioning)}
-          >
-            <GitHubSessionForm
-              projects={projects}
-              defaultProjectId={defaultProjectId}
-            />
-          </div>
-        )}
-        {mode === 'upload' && (
-          <div
-            role="tabpanel"
-            id={modeIds.panelId}
-            aria-labelledby={modeIds.tabId}
-            style={createAccessibleOpacityTransition(!isTransitioning)}
-          >
-            <UploadSessionForm />
-          </div>
-        )}
-        {mode === 'url' && (
-          <div
-            role="tabpanel"
-            id={modeIds.panelId}
-            aria-labelledby={modeIds.tabId}
-            style={createAccessibleOpacityTransition(!isTransitioning)}
-          >
-            <UrlSessionForm />
-          </div>
-        )}
-      </div>
+      {mode && (
+        <div ref={containerRef} className={styles.formContainer}>
+          {mode === 'github' && (
+            <div
+              role="tabpanel"
+              id={modeIds.panelId}
+              aria-labelledby={modeIds.tabId}
+              style={createAccessibleOpacityTransition(!isTransitioning)}
+            >
+              <GitHubSessionForm
+                projects={projects}
+                defaultProjectId={defaultProjectId}
+              />
+            </div>
+          )}
+          {mode === 'upload' && (
+            <div
+              role="tabpanel"
+              id={modeIds.panelId}
+              aria-labelledby={modeIds.tabId}
+              style={createAccessibleOpacityTransition(!isTransitioning)}
+            >
+              <UploadSessionForm />
+            </div>
+          )}
+          {mode === 'url' && (
+            <div
+              role="tabpanel"
+              id={modeIds.panelId}
+              aria-labelledby={modeIds.tabId}
+              style={createAccessibleOpacityTransition(!isTransitioning)}
+            >
+              <UrlSessionForm />
+            </div>
+          )}
+          {mode === 'paste' && (
+            <div
+              role="tabpanel"
+              id={modeIds.panelId}
+              aria-labelledby={modeIds.tabId}
+              style={createAccessibleOpacityTransition(!isTransitioning)}
+            >
+              <PasteSchemaSessionForm />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

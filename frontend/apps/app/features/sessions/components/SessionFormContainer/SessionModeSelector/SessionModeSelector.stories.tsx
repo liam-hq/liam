@@ -47,7 +47,7 @@ export const Interactive: Story = {
     onModeChange: () => {},
   },
   render: (args: ComponentProps<typeof SessionModeSelector>) => {
-    const [selectedMode, setSelectedMode] = useState<SessionMode>(
+    const [selectedMode, setSelectedMode] = useState<SessionMode | null>(
       args.selectedMode,
     )
 
