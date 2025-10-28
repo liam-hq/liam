@@ -88,10 +88,8 @@ export async function POST(request: Request) {
     return typeof checkpointId === 'string' ? checkpointId : null
   }
 
-  const supabaseServiceRole = await createClient({ useServiceRole: true })
-
   const updateDesignSessionStatus = async (fields: Record<string, unknown>) => {
-    const { error } = await supabaseServiceRole
+    const { error } = await supabase
       .from('design_sessions')
       .update(fields)
       .eq('id', designSessionId)
@@ -99,8 +97,6 @@ export async function POST(request: Request) {
     if (error) {
       Sentry.captureException(error, {
         tags: { designSessionId },
-        level: 'warning',
-        extra: { location: 'chat/replay status update', fields },
       })
     }
   }
@@ -111,9 +107,9 @@ export async function POST(request: Request) {
       started_at: new Date().toISOString(),
       finished_at: null,
     })
-  const markIdle = () =>
+  const markCompleted = () =>
     updateDesignSessionStatus({
-      status: 'idle',
+      status: 'completed',
       finished_at: new Date().toISOString(),
     })
 
@@ -181,7 +177,7 @@ export async function POST(request: Request) {
           )
         }
       } finally {
-        await markIdle()
+        await markCompleted()
         controller.close()
       }
     },

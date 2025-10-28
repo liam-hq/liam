@@ -100,9 +100,9 @@ export async function POST(request: Request) {
       started_at: new Date().toISOString(),
       finished_at: null,
     })
-  const markIdle = () =>
+  const markCompleted = () =>
     updateDesignSessionStatus({
-      status: 'idle',
+      status: 'completed',
       finished_at: new Date().toISOString(),
     })
 
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
           )
         }
       } finally {
-        await markIdle()
+        await markCompleted()
         controller.close()
       }
     },
