@@ -1,6 +1,6 @@
 'use client'
 
-import { fromPromise } from '@liam-hq/neverthrow'
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import * as Sentry from '@sentry/nextjs'
 import clsx from 'clsx'
 import { usePathname } from 'next/navigation'
@@ -22,31 +22,20 @@ type RecentsSectionClientProps = {
   sessions: RecentSession[]
   organizationMembers: OrganizationMember[]
   currentUserId: string
+  organizationId: string
 }
 
 const PAGE_SIZE = 20
 const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
-const mapRealtimeStatus = (status: unknown): RecentSession['status'] | null => {
-  if (status === 'running') {
-    return 'running'
-  }
-
-  if (status === 'error') {
-    return 'error'
-  }
-
-  if (status === 'completed') {
-    return 'completed'
-  }
-
-  return null
-}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
   currentUserId,
+  organizationId,
 }: RecentsSectionClientProps) => {
   const pathname = usePathname()
   const [sessions, setSessions] = useState<RecentSession[]>(initialSessions)
@@ -56,23 +45,27 @@ export const RecentsSectionClient = ({
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const sessionsListRef = useRef<HTMLElement | null>(null)
+  const sessionsRef = useRef(initialSessions)
+  const runIdToSessionMap = useRef(new Map<string, string>())
 
   const handleFilterChange = useCallback(async (newFilterType: string) => {
-    setFilterType(newFilterType)
+    const nextFilterType: SessionFilterType = newFilterType
+    setFilterType(nextFilterType)
     setIsLoading(true)
 
-    const result = await fromPromise(fetchFilteredSessions(newFilterType))
+    const sessionsResult = await fromAsyncThrowable(() =>
+      fetchFilteredSessions(nextFilterType),
+    )()
 
-    result.match(
-      (newSessions) => {
-        setSessions(newSessions)
-        setHasMore(newSessions.length >= PAGE_SIZE)
-      },
-      (err) => {
-        Sentry.captureException(err)
-      },
-    )
+    if (sessionsResult.isErr()) {
+      Sentry.captureException(sessionsResult.error)
+      setIsLoading(false)
+      return
+    }
 
+    const newSessions = sessionsResult.value
+    setSessions(newSessions)
+    setHasMore(newSessions.length >= PAGE_SIZE)
     setIsLoading(false)
   }, [])
 
@@ -81,30 +74,43 @@ export const RecentsSectionClient = ({
 
     setIsLoading(true)
 
-    const result = await fromPromise(
+    const newSessionsResult = await fromAsyncThrowable(() =>
       loadMoreSessions({
         limit: PAGE_SIZE,
-        offset: sessions.length,
+        offset: sessionsRef.current.length,
         filterType,
       }),
-    )
+    )()
 
-    result.match(
-      (newSessions) => {
-        if (newSessions.length === 0) {
-          setHasMore(false)
-        } else {
-          setSessions((prev) => [...prev, ...newSessions])
-          setHasMore(newSessions.length >= PAGE_SIZE)
-        }
-      },
-      (err) => {
-        Sentry.captureException(err)
-      },
-    )
+    if (newSessionsResult.isErr()) {
+      Sentry.captureException(newSessionsResult.error)
+      setIsLoading(false)
+      return
+    }
 
+    const newSessions = newSessionsResult.value
+
+    if (newSessions.length === 0) {
+      setHasMore(false)
+      setIsLoading(false)
+      return
+    }
+
+    setSessions((prevSessions) => [...prevSessions, ...newSessions])
+    setHasMore(newSessions.length >= PAGE_SIZE)
     setIsLoading(false)
-  }, [filterType, hasMore, isLoading, sessions.length])
+  }, [filterType, hasMore, isLoading])
+
+  useEffect(() => {
+    sessionsRef.current = sessions
+    const map = runIdToSessionMap.current
+    map.clear()
+    sessions.forEach((session) => {
+      if (session.latest_run_id) {
+        map.set(session.latest_run_id, session.id)
+      }
+    })
+  }, [sessions])
 
   useEffect(() => {
     const currentLoadMoreRef = loadMoreRef.current
@@ -136,52 +142,171 @@ export const RecentsSectionClient = ({
   }, [loadMore])
 
   useEffect(() => {
-    const ids = sessions.map((session) => session.id)
-    if (ids.length === 0) return
-
     const supabase = createSupabaseClient()
-    const filter = `id=in.(${ids.join(',')})`
-    const channel = supabase
-      .channel('design_sessions_status_recents')
+
+    const getRecord = (value: unknown) => (isRecord(value) ? value : null)
+
+    const extractNewRow = (payload: unknown) => {
+      if (!isRecord(payload)) {
+        return null
+      }
+
+      return getRecord(payload['new'])
+    }
+
+    const getStringField = (record: Record<string, unknown>, key: string) => {
+      const value = record[key]
+      return typeof value === 'string' ? value : null
+    }
+
+    const handleRunInsert = (payload: unknown) => {
+      const newRow = extractNewRow(payload)
+      if (!newRow) {
+        return
+      }
+
+      const runId = getStringField(newRow, 'id')
+      const sessionId = getStringField(newRow, 'design_session_id')
+
+      if (!runId || !sessionId) {
+        return
+      }
+
+      runIdToSessionMap.current.set(runId, sessionId)
+
+      if (!sessionsRef.current.some((session) => session.id === sessionId)) {
+        return
+      }
+
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionId
+            ? {
+                ...session,
+                status: 'pending',
+                latest_run_id: runId,
+              }
+            : session,
+        ),
+      )
+    }
+
+    const resolveSessionIdForRun = async (
+      runId: string,
+      eventType: string,
+    ): Promise<string | null> => {
+      const cachedSessionId = runIdToSessionMap.current.get(runId)
+      if (cachedSessionId) {
+        return cachedSessionId
+      }
+
+      const { data, error } = await supabase
+        .from('runs')
+        .select('design_session_id')
+        .eq('id', runId)
+        .maybeSingle()
+
+      if (error || !data) {
+        Sentry.captureException(error ?? new Error('Run not found for event'), {
+          extra: { runId, eventType },
+        })
+        return null
+      }
+
+      const sessionId = data.design_session_id
+      if (typeof sessionId === 'string') {
+        runIdToSessionMap.current.set(runId, sessionId)
+        return sessionId
+      }
+
+      return null
+    }
+
+    const applyRunEvent = (
+      sessionId: string,
+      runId: string,
+      eventType: string,
+    ) => {
+      const nextStatus: RecentSession['status'] =
+        eventType === 'error'
+          ? 'error'
+          : eventType === 'completed'
+            ? 'success'
+            : 'pending'
+
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionId
+            ? {
+                ...session,
+                status: nextStatus,
+                latest_run_id:
+                  eventType === 'started'
+                    ? runId
+                    : (session.latest_run_id ?? runId),
+              }
+            : session,
+        ),
+      )
+    }
+
+    const handleRunEvent = async (payload: unknown) => {
+      const newRow = extractNewRow(payload)
+      if (!newRow) {
+        return
+      }
+
+      const runId = getStringField(newRow, 'run_id')
+      const eventType = getStringField(newRow, 'event_type')
+
+      if (!runId || !eventType) {
+        return
+      }
+
+      const sessionId = await resolveSessionIdForRun(runId, eventType)
+      if (!sessionId) {
+        return
+      }
+
+      runIdToSessionMap.current.set(runId, sessionId)
+      applyRunEvent(sessionId, runId, eventType)
+    }
+
+    const runsChannel = supabase
+      .channel('runs_recents')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: 'INSERT',
           schema: 'public',
-          table: 'design_sessions',
-          filter,
+          table: 'runs',
+          filter: `organization_id=eq.${organizationId}`,
+        },
+        (payload) => handleRunInsert(payload),
+      )
+      .subscribe()
+
+    const runEventsChannel = supabase
+      .channel('run_events_recents')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'run_events',
+          filter: `organization_id=eq.${organizationId}`,
         },
         (payload) => {
-          if (!payload.new || typeof payload.new !== 'object') {
-            return
-          }
-
-          const idValue = Reflect.get(payload.new, 'id')
-          if (typeof idValue !== 'string') {
-            return
-          }
-
-          const rawStatus = Reflect.get(payload.new, 'status')
-          const nextStatus = mapRealtimeStatus(rawStatus)
-
-          setSessions((prev) =>
-            prev.map((session) =>
-              session.id === idValue
-                ? {
-                    ...session,
-                    status: nextStatus ?? session.status,
-                  }
-                : session,
-            ),
-          )
+          void handleRunEvent(payload)
         },
       )
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      supabase.removeChannel(runsChannel)
+      supabase.removeChannel(runEventsChannel)
     }
-  }, [sessions])
+  }, [organizationId])
 
   return (
     <>

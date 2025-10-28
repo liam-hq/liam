@@ -5,8 +5,10 @@ export type RecentSession = {
   name: string
   created_at: string
   project_id: string | null
+  organization_id: string
   has_schema: boolean
   status: SessionStatus
+  latest_run_id: string | null
   created_by_user: {
     id: string
     name: string

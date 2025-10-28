@@ -20,16 +20,19 @@ type Props = {
 const mapDbStatusToUi = (
   status: ProjectSession['status'] | undefined,
 ): SessionStatus => {
-  if (status === 'running') {
-    return 'running'
-  }
-
   if (status === 'error') {
     return 'error'
   }
 
-  return 'completed'
+  if (status === 'success') {
+    return 'success'
+  }
+
+  return 'pending'
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 export const SessionItemClient: FC<Props> = ({ session }) => {
   const [status, setStatus] = useState<SessionStatus>(
@@ -37,39 +40,130 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
   )
 
   useEffect(() => {
+    setStatus(mapDbStatusToUi(session.status))
+  }, [session.status])
+
+  useEffect(() => {
     const supabase = createSupabaseClient()
-    const channel = supabase
-      .channel(`design_sessions_status_${session.id}`)
+    const knownRunIds = new Set<string>()
+    if (session.latest_run_id) {
+      knownRunIds.add(session.latest_run_id)
+    }
+
+    const getRecord = (value: unknown) => (isRecord(value) ? value : null)
+
+    const getStringField = (record: Record<string, unknown>, key: string) => {
+      const value = record[key]
+      return typeof value === 'string' ? value : null
+    }
+
+    const ensureRunIsTracked = async (runId: string) => {
+      if (knownRunIds.has(runId)) {
+        return true
+      }
+
+      const { data, error } = await supabase
+        .from('runs')
+        .select('design_session_id')
+        .eq('id', runId)
+        .maybeSingle()
+
+      if (error || !data || data.design_session_id !== session.id) {
+        return false
+      }
+
+      knownRunIds.add(runId)
+      return true
+    }
+
+    const handleRunInsert = (payload: unknown) => {
+      const payloadRecord = isRecord(payload) ? payload : null
+      const newRow = getRecord(payloadRecord ? payloadRecord['new'] : null)
+      if (!newRow) {
+        return
+      }
+
+      const runId = getStringField(newRow, 'id')
+      const designSessionId = getStringField(newRow, 'design_session_id')
+      if (!runId || designSessionId !== session.id) {
+        return
+      }
+
+      knownRunIds.add(runId)
+      setStatus('pending')
+    }
+
+    const eventTypeToStatus: Record<string, SessionStatus> = {
+      error: 'error',
+      completed: 'success',
+    }
+
+    const parseRunEventPayload = (
+      payload: unknown,
+    ): { runId: string; eventType: string } | null => {
+      const payloadRecord = isRecord(payload) ? payload : null
+      const newRow = getRecord(payloadRecord ? payloadRecord['new'] : null)
+      if (!newRow) {
+        return null
+      }
+
+      const runId = getStringField(newRow, 'run_id')
+      const eventType = getStringField(newRow, 'event_type')
+      if (!runId || !eventType) {
+        return null
+      }
+
+      return { runId, eventType }
+    }
+
+    const handleRunEvent = async (payload: unknown) => {
+      const parsedPayload = parseRunEventPayload(payload)
+      if (!parsedPayload) {
+        return
+      }
+
+      if (!(await ensureRunIsTracked(parsedPayload.runId))) {
+        return
+      }
+
+      setStatus(eventTypeToStatus[parsedPayload.eventType] ?? 'pending')
+    }
+
+    const runsChannel = supabase
+      .channel(`runs_session_${session.id}`)
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: 'INSERT',
           schema: 'public',
-          table: 'design_sessions',
-          filter: `id=eq.${session.id}`,
+          table: 'runs',
+          filter: `design_session_id=eq.${session.id}`,
+        },
+        (payload) => handleRunInsert(payload),
+      )
+      .subscribe()
+
+    const runEventsChannel = supabase
+      .channel(`run_events_session_${session.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'run_events',
+          filter: `organization_id=eq.${session.organization_id}`,
         },
         (payload) => {
-          if (!payload.new || typeof payload.new !== 'object') {
-            return
-          }
-
-          const rawStatus = Reflect.get(payload.new, 'status')
-          const next =
-            rawStatus === 'running' ||
-            rawStatus === 'error' ||
-            rawStatus === 'completed'
-              ? rawStatus
-              : undefined
-
-          setStatus(mapDbStatusToUi(next))
+          void handleRunEvent(payload)
         },
       )
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      supabase.removeChannel(runsChannel)
+      supabase.removeChannel(runEventsChannel)
     }
-  }, [session.id])
+  }, [session.id, session.latest_run_id, session.organization_id])
 
   return (
     <Link
