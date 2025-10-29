@@ -101,8 +101,6 @@ export async function POST(request: Request) {
   }
 
   let shouldMarkError = false
-  let runErrorContext: Record<string, unknown> | null = null
-
   const buildingSchemaResult = await toResultAsync<{
     id: string
     organization_id: string
@@ -153,9 +151,6 @@ export async function POST(request: Request) {
 
     if (!checkpointId) {
       shouldMarkError = true
-      runErrorContext = {
-        reason: 'checkpoint_not_found',
-      }
       const message = 'No checkpoint found for replay'
       controller.enqueue(enc.encode(line(SSE_EVENTS.ERROR, { message })))
       return
@@ -177,7 +172,6 @@ export async function POST(request: Request) {
     for await (const ev of events) {
       if (ev.event === SSE_EVENTS.ERROR) {
         shouldMarkError = true
-        runErrorContext = { reason: 'sse_error' }
       }
 
       if (signal.aborted) {
@@ -211,10 +205,6 @@ export async function POST(request: Request) {
 
         if (!isAbortError) {
           shouldMarkError = true
-          runErrorContext = {
-            reason: 'workflow_error',
-            message: err.message,
-          }
         }
 
         Sentry.captureException(err, {
@@ -229,11 +219,7 @@ export async function POST(request: Request) {
       })
 
       if (shouldMarkError) {
-        await recordRunError(
-          runErrorContext ?? {
-            reason: 'workflow_error',
-          },
-        )
+        await recordRunError()
       } else {
         await recordRunSuccess()
       }

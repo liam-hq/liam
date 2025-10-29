@@ -64,7 +64,6 @@ export async function POST(request: Request) {
   }
 
   let shouldMarkError = false
-  let runErrorContext: Record<string, unknown> | null = null
 
   const organizationId = designSession.organization_id
 
@@ -158,7 +157,6 @@ export async function POST(request: Request) {
     for await (const ev of events) {
       if (ev.event === SSE_EVENTS.ERROR) {
         shouldMarkError = true
-        runErrorContext = { reason: 'sse_error' }
       }
 
       // Check if request was aborted during iteration
@@ -193,10 +191,6 @@ export async function POST(request: Request) {
 
         if (!isAbortError) {
           shouldMarkError = true
-          runErrorContext = {
-            reason: 'workflow_error',
-            message: err.message,
-          }
         }
 
         Sentry.captureException(err, {
@@ -209,11 +203,7 @@ export async function POST(request: Request) {
       }
 
       if (shouldMarkError) {
-        await recordRunError(
-          runErrorContext ?? {
-            reason: 'workflow_error',
-          },
-        )
+        await recordRunError()
       } else {
         await recordRunSuccess()
       }
