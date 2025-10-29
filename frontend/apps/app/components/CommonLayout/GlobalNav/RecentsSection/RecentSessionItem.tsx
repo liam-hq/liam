@@ -18,33 +18,15 @@ type Props = {
   showOwner?: boolean
 }
 
-const mapDbStatusToUi = (status: string | undefined): SessionStatus => {
-  if (status === 'error') {
-    return 'error'
-  }
-
-  if (status === 'completed' || status === 'success') {
-    return 'completed'
-  }
-
-  if (status === 'running' || status === 'pending') {
-    return 'running'
-  }
-
-  return 'running'
-}
-
 export const RecentSessionItem: FC<Props> = ({
   session,
   isActive,
   showOwner = false,
 }) => {
-  const [status, setStatus] = useState<SessionStatus>(
-    mapDbStatusToUi(session.status),
-  )
+  const [status, setStatus] = useState<SessionStatus>(session.status)
 
   useEffect(() => {
-    setStatus(mapDbStatusToUi(session.status))
+    setStatus(session.status)
   }, [session.status])
 
   const sessionUrl = urlgen('design_sessions/[id]', {

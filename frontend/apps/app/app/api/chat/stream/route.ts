@@ -226,15 +226,11 @@ export async function POST(request: Request) {
   after(async () => {
     await awaitAllCallbacks()
   })
-  const headers = new Headers({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache, no-transform',
-    Connection: 'keep-alive',
-  })
-  if (runTracker) {
-    headers.set('x-run-id', runTracker.id)
-  }
   return new Response(stream, {
-    headers,
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+    },
   })
 }
