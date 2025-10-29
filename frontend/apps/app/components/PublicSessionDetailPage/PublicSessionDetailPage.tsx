@@ -112,6 +112,7 @@ export const PublicSessionDetailPage = async ({
         <SessionDetailPageClient
           buildingSchemaId={buildingSchemaId}
           designSessionId={designSessionId}
+          sessionTitle={designSession.name}
           initialMessages={[]}
           initialAnalyzedRequirements={initialAnalyzedRequirements}
           initialDisplayedSchema={initialSchema}
