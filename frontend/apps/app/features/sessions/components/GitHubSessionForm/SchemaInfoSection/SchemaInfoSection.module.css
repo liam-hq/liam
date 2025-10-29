@@ -41,20 +41,17 @@
 .validatingText {
   font-size: var(--font-size-3);
   color: var(--overlay-50);
-  font-weight: 500;
 }
 
 .validText {
   font-size: var(--font-size-2);
   color: var(--button-primary-background);
-  font-weight: 400;
   white-space: nowrap;
 }
 
 .invalidText {
   font-size: var(--font-size-2);
   color: var(--severity-warning-100);
-  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -65,7 +62,6 @@
 
 .formatName {
   color: var(--global-foreground);
-  font-weight: 500;
 }
 
 .errorText {
@@ -107,7 +103,6 @@
 .fileName {
   font-size: var(--font-size-3);
   color: var(--global-foreground);
-  font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

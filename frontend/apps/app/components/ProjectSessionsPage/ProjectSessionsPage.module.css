@@ -29,15 +29,12 @@
 .recentsSection {
   margin-top: var(--spacing-12);
   padding-top: var(--spacing-12);
-  border-top: 1px solid var(--global-border);
   width: 100%;
 }
 
 .recentsTitle {
   font-size: var(--font-size-8);
-  font-weight: 600;
   margin-bottom: var(--spacing-6);
-  color: var(--global-foreground);
   text-align: center;
 }
 
@@ -60,19 +57,15 @@
 
 .emptyIcon {
   margin-bottom: var(--spacing-4);
-  color: var(--global-mute-text);
 }
 
 .emptyTitle {
   font-size: var(--font-size-7);
-  font-weight: 600;
   margin: 0 0 var(--spacing-2) 0;
-  color: var(--global-foreground);
 }
 
 .emptyDescription {
   font-size: var(--font-size-5);
-  color: var(--global-body-text);
   margin: 0;
   max-width: 444px;
   line-height: 1.5;

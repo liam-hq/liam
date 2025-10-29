@@ -84,20 +84,21 @@
   margin-bottom: 0;
 }
 
+/* stylelint-disable csstools/value-no-unknown-custom-properties */
 @keyframes slideDown {
   from {
     height: 0;
     opacity: 0;
   }
   to {
-    height: auto;
+    height: var(--radix-collapsible-content-height);
     opacity: 1;
   }
 }
 
 @keyframes slideUp {
   from {
-    height: auto;
+    height: var(--radix-collapsible-content-height);
     opacity: 1;
   }
   to {
@@ -105,3 +106,4 @@
     opacity: 0;
   }
 }
+/* stylelint-enable csstools/value-no-unknown-custom-properties */

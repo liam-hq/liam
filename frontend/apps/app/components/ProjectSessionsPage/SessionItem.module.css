@@ -2,7 +2,6 @@
   display: flex;
   align-items: center;
   padding: 16px;
-  border: 1px solid var(--pane-border);
   border-radius: 8px;
   text-decoration: none;
   color: inherit;
@@ -11,8 +10,6 @@
 }
 
 .sessionItem:hover {
-  border-color: var(--pane-border-hover);
-  background-color: var(--pane-background-hover);
 }
 
 .iconContainer {
@@ -22,8 +19,6 @@
   width: 40px;
   height: 40px;
   border-radius: 6px;
-  background-color: var(--pane-muted-background);
-  color: var(--global-body-text);
   flex-shrink: 0;
 }
 
@@ -34,9 +29,7 @@
 
 .sessionName {
   font-size: 14px;
-  font-weight: 500;
   margin: 0 0 4px 0;
-  color: var(--global-foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -44,12 +37,10 @@
 
 .sessionDate {
   font-size: 12px;
-  color: var(--global-mute-text);
   margin: 0;
 }
 
 .arrow {
-  color: var(--global-mute-text);
   font-size: 14px;
   flex-shrink: 0;
 }

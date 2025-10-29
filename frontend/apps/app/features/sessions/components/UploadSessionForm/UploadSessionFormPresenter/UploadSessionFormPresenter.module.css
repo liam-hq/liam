@@ -101,7 +101,6 @@
 }
 
 .textarea:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -115,7 +114,6 @@
 .buttonCustom {
   height: var(--spacing-9);
   font-size: var(--font-size-4);
-  font-weight: 500;
 }
 
 .error {
@@ -152,7 +150,6 @@
 }
 
 .dropZoneDisabled {
-  opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -165,7 +162,6 @@
 
 .dropZoneText {
   font-size: var(--font-size-6);
-  font-weight: 500;
   color: var(--global-foreground);
   margin: 0 0 var(--spacing-2) 0;
   line-height: 1.6;
@@ -248,7 +244,6 @@
   width: 134px;
   height: 119px;
   color: var(--overlay-40);
-  opacity: 0.6;
   transition: opacity var(--default-animation-duration)
     var(--default-timing-function);
   position: relative;
@@ -266,7 +261,6 @@
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
   transform: rotate(-10deg) translateX(8px) translateY(7px);
-  opacity: 0.7;
 }
 
 .fileIcon :global(.file-back-right) {
@@ -274,7 +268,6 @@
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
   transform: rotate(10deg) translateX(-8px) translateY(7px);
-  opacity: 0.7;
 }
 
 .fileIcon :global(.file-back-left-hover) {
@@ -303,7 +296,6 @@
   background-color: var(--primary-overlay-20);
   color: var(--button-primary-background);
   font-size: var(--font-size-2);
-  font-weight: 600;
   font-family: var(--code-font);
   padding: 0 var(--spacing-1);
   border-radius: var(--border-radius-sm);
@@ -387,7 +379,6 @@
 .validSchemaText {
   font-size: var(--font-size-2);
   color: var(--button-primary-background);
-  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -400,7 +391,6 @@
 .invalidSchemaText {
   font-size: var(--font-size-2);
   color: var(--severity-warning-100);
-  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -442,7 +432,6 @@
 .fileName {
   font-size: var(--font-size-3);
   color: var(--global-foreground);
-  font-weight: 400;
 }
 
 .formatSelect {

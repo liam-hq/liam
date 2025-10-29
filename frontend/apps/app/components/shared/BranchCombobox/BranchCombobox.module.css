@@ -10,7 +10,6 @@
   padding: 8px 12px;
   border: 1px solid var(--overlay-20);
   border-radius: 6px;
-  background: var(--global-background);
   cursor: pointer;
   height: 32px;
   max-width: 100%;

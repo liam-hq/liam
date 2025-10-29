@@ -2,7 +2,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: var(--border-radius-sm);
   padding: var(--spacing-2) var(--spacing-3);
   font-size: var(--font-size-4);
   line-height: 1;
@@ -52,7 +51,6 @@
   overflow: hidden;
   background-color: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
-  border-radius: var(--border-radius-sm);
   z-index: var(--z-index-toast);
 }
 
@@ -124,7 +122,6 @@
 .checkIcon {
   width: 1rem;
   height: 1rem;
-  color: var(--global-foreground);
 }
 
 .scrollButton {

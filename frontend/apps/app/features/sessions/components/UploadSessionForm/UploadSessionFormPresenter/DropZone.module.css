@@ -33,7 +33,6 @@
 }
 
 .dropZoneDisabled {
-  opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -46,7 +45,6 @@
 
 .dropZoneText {
   font-size: var(--font-size-6);
-  font-weight: 500;
   color: var(--global-foreground);
   margin: 0 0 var(--spacing-2) 0;
   line-height: 1.6;

@@ -19,7 +19,6 @@
 .schemaName {
   font-size: var(--font-size-3);
   color: var(--overlay-70);
-  font-weight: 400;
   transition: color var(--default-animation-duration)
     var(--default-timing-function);
 }
