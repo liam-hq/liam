@@ -43,8 +43,8 @@ export const SessionStatusIndicator: FC<Props> = ({ status }) => {
     <TooltipProvider>
       <TooltipRoot>
         <TooltipTrigger asChild>
-          <div className={config.className} aria-hidden="true">
-            {content}
+          <div className={styles.indicatorWrapper} aria-hidden="true">
+            <div className={config.className}>{content}</div>
           </div>
         </TooltipTrigger>
         <TooltipPortal>
