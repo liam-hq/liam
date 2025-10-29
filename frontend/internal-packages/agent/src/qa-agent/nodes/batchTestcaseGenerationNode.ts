@@ -10,16 +10,14 @@ import { testcaseGeneration } from '../testcaseGeneration'
 
 const CONCURRENT_TESTCASE_LIMIT = 3
 
-/**
- * Process testcases in batches with progress tracking
- * This node replaces the parallel Send-based execution with controlled batching
- */
-export async function batchTestcaseGenerationNode(
-  state: QaAgentState,
-  config: RunnableConfig,
-): Promise<Partial<QaAgentState>> {
-  const { analyzedRequirements, schemaData } = state
+type BatchResult = {
+  generatedSqls: Array<{ testcaseId: string; sql: string }>
+  schemaIssues: Array<{ testcaseId: string; description: string }>
+}
 
+function collectUnprocessedTestcases(
+  analyzedRequirements: QaAgentState['analyzedRequirements'],
+): TestCaseData[] {
   const allTestcases: TestCaseData[] = []
   for (const [category, testcases] of Object.entries(
     analyzedRequirements.testcases,
@@ -30,7 +28,45 @@ export async function batchTestcaseGenerationNode(
       }
     }
   }
+  return allTestcases
+}
 
+function aggregateBatchResults(
+  batchResults: PromiseSettledResult<BatchResult>[],
+): BatchResult {
+  const generatedSqls: Array<{ testcaseId: string; sql: string }> = []
+  const schemaIssues: Array<{ testcaseId: string; description: string }> = []
+
+  for (const result of batchResults) {
+    if (result.status === 'fulfilled') {
+      generatedSqls.push(...result.value.generatedSqls)
+      schemaIssues.push(...result.value.schemaIssues)
+    } else {
+      const errorMessage =
+        result.reason instanceof Error
+          ? result.reason.message
+          : String(result.reason)
+      schemaIssues.push({
+        testcaseId: 'unknown',
+        description: `Testcase generation failed: ${errorMessage}`,
+      })
+    }
+  }
+
+  return { generatedSqls, schemaIssues }
+}
+
+/**
+ * Process testcases in batches with progress tracking
+ * This node replaces the parallel Send-based execution with controlled batching
+ */
+export async function batchTestcaseGenerationNode(
+  state: QaAgentState,
+  config: RunnableConfig,
+): Promise<Partial<QaAgentState>> {
+  const { analyzedRequirements, schemaData } = state
+
+  const allTestcases = collectUnprocessedTestcases(analyzedRequirements)
   const totalTestcases = allTestcases.length
 
   if (totalTestcases === 0) {
@@ -67,17 +103,13 @@ export async function batchTestcaseGenerationNode(
       }
     })
 
-    const batchResults = await Promise.all(batchPromises)
+    const batchResults = await Promise.allSettled(batchPromises)
+    const aggregated = aggregateBatchResults(batchResults)
 
-    for (const result of batchResults) {
-      generatedSqls.push(...result.generatedSqls)
-      schemaIssues.push(...result.schemaIssues)
-    }
+    generatedSqls.push(...aggregated.generatedSqls)
+    schemaIssues.push(...aggregated.schemaIssues)
 
-    const completedCount = Math.min(
-      i + CONCURRENT_TESTCASE_LIMIT,
-      totalTestcases,
-    )
+    const completedCount = Math.min(i + batch.length, totalTestcases)
 
     await dispatchProgressEvent(
       {
