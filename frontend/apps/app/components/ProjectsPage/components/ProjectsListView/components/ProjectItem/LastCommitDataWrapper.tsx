@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import { formatDate } from '../../../../../../libs/utils'
 import { fetchLastCommitData } from '../../../../services/fetchLastCommitData'
+import styles from './LastCommitDataWrapper.module.css'
 
 type LastCommitDataWrapperProps = {
   installationId: number
@@ -33,26 +34,22 @@ export function LastCommitDataWrapper({
   }, [installationId, owner, repo])
 
   if (isLoading) {
-    return <span>Loading commit info...</span>
+    return <span className={styles.commitInfoText}>Loading commit info...</span>
   }
 
   // When commit information is available
   if (commitInfo) {
     return (
-      <>
-        <span>{commitInfo.author}</span>
-        <span>committed</span>
-        <span>on {formatDate(commitInfo.date)}</span>
-      </>
+      <span className={styles.commitInfoText}>
+        {`${commitInfo.author} committed on ${formatDate(commitInfo.date)}`}
+      </span>
     )
   }
 
   // Default display (when fetch fails)
   return (
-    <>
-      <span>User</span>
-      <span>committed</span>
-      <span>on {formatDate(defaultDate)}</span>
-    </>
+    <span className={styles.commitInfoText}>
+      {`User committed on ${formatDate(defaultDate)}`}
+    </span>
   )
 }

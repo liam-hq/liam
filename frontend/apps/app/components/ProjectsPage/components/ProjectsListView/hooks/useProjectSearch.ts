@@ -4,7 +4,7 @@ import type { Tables } from '@liam-hq/db/supabase/database.types'
 import { useState } from 'react'
 
 type SearchResult = {
-  projects: Tables<'projects'>[] | null
+  projects: Tables<'projects'>[]
   loading: boolean
   error: Error | null
 }
@@ -14,7 +14,7 @@ export const useProjectSearch = (
   initialProjects?: Tables<'projects'>[] | null,
 ) => {
   const [searchResult, setSearchResult] = useState<SearchResult>({
-    projects: initialProjects || null,
+    projects: initialProjects ?? [],
     loading: false,
     error: null,
   })
@@ -26,7 +26,7 @@ export const useProjectSearch = (
 
     if (!query.trim()) {
       setSearchResult({
-        projects: initialProjects || null,
+        projects: initialProjects ?? [],
         loading: false,
         error: null,
       })
@@ -51,7 +51,7 @@ export const useProjectSearch = (
       })
     } catch (error) {
       setSearchResult({
-        projects: null,
+        projects: [],
         loading: false,
         error: error instanceof Error ? error : new Error(String(error)),
       })

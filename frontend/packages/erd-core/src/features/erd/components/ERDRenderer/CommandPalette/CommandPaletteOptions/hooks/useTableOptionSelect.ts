@@ -1,8 +1,11 @@
-import { useCallback, useEffect } from 'react'
+import { type MouseEvent, useCallback, useEffect } from 'react'
+import type { Hash } from '../../../../../../../schemas'
 import { useTableSelection } from '../../../../../../erd/hooks'
 import {
   getTableColumnElementId,
   getTableColumnLinkHref,
+  getTableIndexElementId,
+  getTableIndexLinkHref,
   getTableLinkHref,
 } from '../../../../../utils'
 import { useCommandPaletteOrThrow } from '../../CommandPaletteProvider'
@@ -15,11 +18,9 @@ export const useTableOptionSelect = (
 
   const { selectTable } = useTableSelection()
   const goToERD = useCallback(
-    (tableName: string, columnName?: string) => {
+    (tableName: string, hash?: Hash) => {
       selectTable({ tableId: tableName, displayArea: 'main' })
-      if (columnName) {
-        window.location.hash = getTableColumnElementId(tableName, columnName)
-      }
+      if (hash) window.location.hash = hash
 
       setOpen(false)
     },
@@ -27,14 +28,14 @@ export const useTableOptionSelect = (
   )
 
   const optionSelectHandler = useCallback(
-    (event: React.MouseEvent, tableName: string, columnName?: string) => {
+    (event: MouseEvent, tableName: string, hash?: Hash) => {
       // Do not call preventDefault to allow the default link behavior when ⌘ key is pressed
       if (event.ctrlKey || event.metaKey) {
         return
       }
 
       event.preventDefault()
-      goToERD(tableName, columnName)
+      goToERD(tableName, hash)
     },
     [goToERD],
   )
@@ -76,7 +77,30 @@ export const useTableOptionSelect = (
         if (event.metaKey || event.ctrlKey) {
           window.open(getTableColumnLinkHref(tableName, columnName))
         } else {
-          goToERD(tableName, columnName)
+          goToERD(tableName, getTableColumnElementId(tableName, columnName))
+        }
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [suggestion, goToERD])
+
+  // Select index option by pressing [Enter] key (with/without ⌘ key)
+  useEffect(() => {
+    // It doesn't subscribe a keydown event listener if the suggestion type is not "index"
+    if (suggestion?.type !== 'index') return
+
+    const down = (event: KeyboardEvent) => {
+      const { tableName, indexName } = suggestion
+
+      if (event.key === 'Enter') {
+        event.preventDefault()
+
+        if (event.metaKey || event.ctrlKey) {
+          window.open(getTableIndexLinkHref(tableName, indexName))
+        } else {
+          goToERD(tableName, getTableIndexElementId(tableName, indexName))
         }
       }
     }

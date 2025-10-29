@@ -17,7 +17,7 @@
   "dependencies": {
     "@liam-hq/neverthrow": "workspace:*",
     "@prisma/internals": "6.8.2",
-    "@ruby/prism": "1.4.0",
+    "@ruby/prism": "1.5.2",
     "@swc/core": "1.12.11",
     "fast-json-patch": "3.1.1",
     "neverthrow": "8.2.0",
@@ -31,7 +31,7 @@
     "@liam-hq/configs": "workspace:*",
     "@pgsql/types": "15.1.1",
     "@prisma/generator-helper": "6.8.2",
-    "@types/node": "22.18.8",
+    "@types/node": "22.18.10",
     "eslint": "9.37.0",
     "json-refs": "3.0.15",
     "json-schema-to-zod": "2.6.1",

@@ -3,6 +3,8 @@ import { ToolMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { type StructuredTool, tool } from '@langchain/core/tools'
 import { Command, getCurrentTaskInput } from '@langchain/langgraph'
+import { toAsync } from '@liam-hq/neverthrow'
+import { ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../../streaming/constants'
@@ -10,7 +12,7 @@ import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
 import type { testcaseAnnotation } from '../testcaseGeneration/testcaseAnnotation'
-import { isPgTapTest, validatePgTapTest } from './validatePgTapTest'
+import { validatePgTapTest } from './validatePgTapTest'
 import { validateSqlSyntax } from './validateSqlSyntax'
 
 const TOOL_NAME = 'saveTestcase'
@@ -66,26 +68,21 @@ export const saveTestcaseTool: StructuredTool = tool(
 
       const { sql } = parsed.output
 
-      let validationError: string | undefined
-      if (isPgTapTest(sql)) {
-        validationError = validatePgTapTest(sql)
-      } else {
-        validationError = await validateSqlSyntax(sql)
-      }
-
-      if (validationError) {
+      const result = await ResultAsync.combineWithAllErrors([
+        validateSqlSyntax(sql),
+        toAsync(validatePgTapTest(sql)),
+      ])
+      if (result.isErr()) {
         const toolMessage = new ToolMessage({
           id: uuidv4(),
           name: TOOL_NAME,
           status: 'error',
-          content: validationError,
+          content: result.error.join('\n'),
           tool_call_id: toolCallId,
         })
         await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
-        throw new WorkflowTerminationError(
-          new Error(validationError),
-          TOOL_NAME,
-        )
+        // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
+        throw new Error(result.error.join('\n'))
       }
 
       const state = getCurrentTaskInput<typeof testcaseAnnotation.State>()

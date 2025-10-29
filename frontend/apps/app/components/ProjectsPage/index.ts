@@ -1,2 +1,2 @@
+export * from './components/ServerProjectsDataProvider'
 export * from './ProjectsPage'
-export * from './ServerProjectsDataProvider'

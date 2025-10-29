@@ -96,6 +96,42 @@ const extractTapOutput = (
   return tapLines.join('\n')
 }
 
+const countAssertions = (sql: string): number => {
+  const assertionPatterns = [
+    /lives_ok\s*\(/gi,
+    /throws_ok\s*\(/gi,
+    /\bis\s*\(/gi, // word boundary to avoid matching "this"
+    /\bok\s*\(/gi, // word boundary to avoid matching "ok" in words
+    /results_eq\s*\(/gi,
+    /bag_eq\s*\(/gi,
+    /has_table\s*\(/gi,
+    /has_column\s*\(/gi,
+    /has_pk\s*\(/gi,
+    /has_fk\s*\(/gi,
+    /col_is_pk\s*\(/gi,
+  ]
+
+  let totalCount = 0
+  for (const pattern of assertionPatterns) {
+    const matches = sql.match(pattern)
+    if (matches) {
+      totalCount += matches.length
+    }
+  }
+
+  return totalCount
+}
+
+const wrapWithPlanAndFinish = (testSql: string): string => {
+  const assertionCount = countAssertions(testSql)
+
+  if (assertionCount === 0) {
+    return testSql
+  }
+
+  return `SELECT plan(${assertionCount});\n\n${testSql}\n\nSELECT * FROM finish();`
+}
+
 const executeTestCase = async (
   ddlStatements: string,
   testcase: TestCase,
@@ -114,7 +150,9 @@ const executeTestCase = async (
   }
 
   sqlParts.push('CREATE EXTENSION IF NOT EXISTS pgtap;')
-  sqlParts.push(testcase.sql)
+
+  const wrappedTestSql = wrapWithPlanAndFinish(testcase.sql)
+  sqlParts.push(wrappedTestSql)
 
   const combinedSql = sqlParts.join('\n')
 
@@ -154,19 +192,8 @@ const executeTestCase = async (
       executedAt: startTime.toISOString(),
       success: false as const,
       message:
-        'No TAP output or missing plan detected. Ensure your pgTAP test runs plan(...) and SELECT * FROM finish().',
+        'No TAP output detected. Ensure your test SQL contains pgTAP assertions (lives_ok, throws_ok, is, ok, etc.).',
     }
-  }
-
-  // Check for plan mismatch but treat as warning only
-  const warnings: string[] = []
-  if (
-    tapSummary.plan !== null &&
-    tapSummary.total !== tapSummary.plan.end - tapSummary.plan.start + 1
-  ) {
-    warnings.push(
-      `Warning: TAP plan mismatch - planned ${tapSummary.plan.end - tapSummary.plan.start + 1} test(s), but got ${tapSummary.total}.`,
-    )
   }
 
   const allTestsPassed = tapSummary.failed === 0
@@ -180,20 +207,17 @@ const executeTestCase = async (
       })
       .join('\n')
 
-    const warningPrefix =
-      warnings.length > 0 ? `${warnings.join('\n')}\n\n` : ''
     return {
       executedAt: startTime.toISOString(),
       success: false as const,
-      message: `${warningPrefix}${tapSummary.failed} test(s) failed:\n${errorMessages}`,
+      message: `${tapSummary.failed} test(s) failed:\n${errorMessages}`,
     }
   }
 
-  const warningPrefix = warnings.length > 0 ? `${warnings.join('\n')}\n` : ''
   return {
     executedAt: startTime.toISOString(),
     success: true as const,
-    message: `${warningPrefix}All ${tapSummary.passed} test(s) passed`,
+    message: `All ${tapSummary.passed} test(s) passed`,
   }
 }
 

@@ -7,10 +7,10 @@
     "@changesets/get-github-info": "0.6.0",
     "@changesets/types": "6.1.0",
     "@turbo/gen": "2.5.8",
-    "@types/node": "22.18.8",
+    "@types/node": "22.18.10",
     "@vitest/coverage-v8": "3.2.4",
     "concurrently": "9.2.1",
-    "knip": "5.64.2",
+    "knip": "5.64.3",
     "lefthook": "1.13.6",
     "syncpack": "13.0.4",
     "turbo": "2.5.8",
@@ -42,7 +42,7 @@
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"
   },
-  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
+  "packageManager": "pnpm@10.18.2",
   "pnpm": {
     "onlyBuiltDependencies": [
       "supabase"

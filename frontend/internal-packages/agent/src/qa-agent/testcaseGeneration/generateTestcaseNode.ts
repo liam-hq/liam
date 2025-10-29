@@ -16,14 +16,14 @@ import {
 import type { testcaseAnnotation } from './testcaseAnnotation'
 
 const model = new ChatOpenAI({
-  model: 'gpt-5-nano',
+  model: 'gpt-5-mini',
   reasoning: { effort: 'minimal', summary: 'auto' },
   verbosity: 'low',
   useResponsesApi: true,
 }).bindTools([saveTestcaseTool], {
   strict: true,
   parallel_tool_calls: false,
-  tool_choice: 'auto',
+  tool_choice: 'required', // Force LLM to always call the tool
 })
 
 /**

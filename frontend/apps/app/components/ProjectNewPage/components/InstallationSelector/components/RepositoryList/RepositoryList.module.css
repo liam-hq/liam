@@ -1,0 +1,18 @@
+.repositoriesSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4, 16px);
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--global-foreground);
+  font-size: var(--font-size-6, 16px);
+  font-weight: 500;
+}
+
+.repositoriesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3, 12px);
+}

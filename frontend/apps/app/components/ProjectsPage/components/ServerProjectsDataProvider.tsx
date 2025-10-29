@@ -1,9 +1,9 @@
 'use server'
 
 import type { Tables } from '@liam-hq/db/supabase/database.types'
-import { ProjectsListView } from './components/ProjectsListView'
-import { fetchLastCommitData } from './services/fetchLastCommitData'
-import type { ProjectWithLastCommit } from './types'
+import { fetchLastCommitData } from '../services/fetchLastCommitData'
+import type { ProjectWithLastCommit } from '../types'
+import { ProjectsListView } from './ProjectsListView'
 
 type ServerProjectsDataProviderProps = {
   projects: Tables<'projects'>[] | null

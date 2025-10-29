@@ -1,0 +1,16 @@
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3, 12px);
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.installButton {
+  min-width: 170px;
+  justify-content: flex-start;
+  gap: var(--spacing-2, 8px);
+  font-size: var(--font-size-4, 13px);
+  font-weight: 400;
+  padding-right: var(--spacing-3, 12px);
+}

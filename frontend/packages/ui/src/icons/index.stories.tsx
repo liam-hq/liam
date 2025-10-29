@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs'
 import {
   AlertTriangle,
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   BookMarked,
@@ -84,6 +85,7 @@ import {
 const IconShowcase = () => {
   const iconsMap = {
     AlertTriangle,
+    ArrowLeft,
     ArrowRight,
     ArrowUpRight,
     BookMarked,

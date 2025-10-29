@@ -1,4 +1,4 @@
-import { aColumn, aTable } from '@liam-hq/schema'
+import { aColumn, anIndex, aTable } from '@liam-hq/schema'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ReactFlowProvider } from '@xyflow/react'
@@ -14,7 +14,8 @@ import {
 import * as UseTableSelection from '../../../../hooks'
 import { CommandPaletteProvider } from '../CommandPaletteProvider'
 import * as UseCommandPalette from '../CommandPaletteProvider/hooks'
-import { TableColumnOptions } from './TableColumnOptions'
+import type { CommandPaletteSuggestion } from '../types'
+import { TableDetailOptions } from './TableDetailOptions'
 
 beforeEach(() => {
   window.location.hash = ''
@@ -58,6 +59,10 @@ const schema: SchemaProviderValue = {
           id: aColumn({ name: 'id' }),
           created_at: aColumn({ name: 'created_at', type: 'timestamp' }),
         },
+        indexes: {
+          users_on_status_id: anIndex({ name: 'users_on_status_id' }),
+          users_on_created_at: anIndex({ name: 'users_on_created_at' }),
+        },
       }),
       posts: aTable({ name: 'posts' }),
     },
@@ -81,13 +86,12 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 )
 
 it('displays selected table option and its columns', () => {
-  render(<TableColumnOptions tableName="users" suggestion={null} />, {
+  render(<TableDetailOptions tableName="users" suggestion={null} />, {
     wrapper,
   })
 
   // table option
   const userTableOption = screen.getByRole('option', { name: 'users' })
-  expect(userTableOption).toBeInTheDocument()
   expect(within(userTableOption).getByRole('link')).toHaveAttribute(
     'href',
     '?active=users',
@@ -95,7 +99,6 @@ it('displays selected table option and its columns', () => {
 
   // column options
   const idColumnOption = screen.getByRole('option', { name: 'id' })
-  expect(idColumnOption).toBeInTheDocument()
   expect(within(idColumnOption).getByRole('link')).toHaveAttribute(
     'href',
     '?active=users#users__columns__id',
@@ -103,90 +106,111 @@ it('displays selected table option and its columns', () => {
   const createdAtColumnOption = screen.getByRole('option', {
     name: 'created_at',
   })
-  expect(createdAtColumnOption).toBeInTheDocument()
   expect(within(createdAtColumnOption).getByRole('link')).toHaveAttribute(
     'href',
     '?active=users#users__columns__created_at',
   )
+
+  // index options
+  const usersOnStatusIdIndexColumnOption = screen.getByRole('option', {
+    name: 'users_on_status_id',
+  })
+  expect(
+    within(usersOnStatusIdIndexColumnOption).getByRole('link'),
+  ).toHaveAttribute('href', '?active=users#users__indexes__users_on_status_id')
+  const usersOnCreatedAtIndexColumnOption = screen.getByRole('option', {
+    name: 'users_on_created_at',
+  })
+  expect(
+    within(usersOnCreatedAtIndexColumnOption).getByRole('link'),
+  ).toHaveAttribute('href', '?active=users#users__indexes__users_on_created_at')
 
   // other tables are not displayed
   expect(screen.queryByRole('link', { name: 'posts' })).not.toBeInTheDocument()
 })
 
 describe('mouse interactions', () => {
-  describe('table option', () => {
-    it('moves to clicked table in ERD and closes the dialog', async () => {
+  describe.each<{ kind: string; elementName: string; hash: string }>([
+    { kind: 'table', elementName: 'users', hash: '' },
+    {
+      kind: 'column',
+      elementName: 'created_at',
+      hash: '#users__columns__created_at',
+    },
+    {
+      kind: 'index',
+      elementName: 'users_on_status_id',
+      hash: '#users__indexes__users_on_status_id',
+    },
+  ])('$kind option', ({ elementName, hash }) => {
+    it('moves to clicked option in ERD and closes the dialog', async () => {
       const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
+      render(<TableDetailOptions tableName="users" suggestion={null} />, {
         wrapper,
       })
 
-      await user.click(screen.getByRole('link', { name: 'users' }))
+      await user.click(screen.getByRole('link', { name: elementName }))
 
       expect(mockSelectTable).toHaveBeenCalled()
       expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
+      expect(window.location.hash).toBe(hash)
     })
 
     it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
       const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
+      render(<TableDetailOptions tableName="users" suggestion={null} />, {
         wrapper,
       })
 
       await user.keyboard('{Meta>}')
-      await user.click(screen.getByRole('link', { name: 'users' }))
-      await user.keyboard('{/Meta}')
-
-      expect(mockSelectTable).not.toHaveBeenCalled()
-      expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('column options', () => {
-    it('moves to clicked table column in ERD and closes the dialog', async () => {
-      const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
-        wrapper,
-      })
-
-      await user.click(screen.getByRole('link', { name: 'created_at' }))
-
-      expect(mockSelectTable).toHaveBeenCalled()
-      expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
-      expect(window.location.hash).toBe('#users__columns__created_at')
-    })
-
-    it('does nothing with ⌘ + click (default browser action: open in new tab)', async () => {
-      const user = userEvent.setup()
-      render(<TableColumnOptions tableName="users" suggestion={null} />, {
-        wrapper,
-      })
-
-      await user.keyboard('{Meta>}')
-      await user.click(screen.getByRole('link', { name: 'created_at' }))
+      await user.click(screen.getByRole('link', { name: elementName }))
       await user.keyboard('{/Meta}')
 
       expect(mockSelectTable).not.toHaveBeenCalled()
       expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
 
       // FIXME: jsdom doesn't implement behavior of ⌘ + click to open a link in a new tab, but it changes the URL of the current window
-      // So, the following assertion doesn't pass
+      // So, the following assertion should pass but doesn't
       // expect(window.location.hash).toBe('')
     })
   })
 })
 
 describe('keyboard interactions', () => {
-  describe('table option', () => {
-    it('moves to suggested table in ERD and closes the dialog on Enter', async () => {
+  describe.each<{
+    kind: string
+    suggestion: CommandPaletteSuggestion
+    hash: string
+  }>([
+    {
+      kind: 'table',
+      suggestion: { type: 'table', name: 'users' },
+      hash: '',
+    },
+    {
+      kind: 'column',
+      suggestion: {
+        type: 'column',
+        tableName: 'users',
+        columnName: 'created_at',
+      },
+      hash: '#users__columns__created_at',
+    },
+    {
+      kind: 'index',
+      suggestion: {
+        type: 'index',
+        tableName: 'users',
+        indexName: 'users_on_status_id',
+      },
+      hash: '#users__indexes__users_on_status_id',
+    },
+  ])('$kind option', ({ suggestion, hash }) => {
+    it('moves to suggested option in ERD and closes the dialog on Enter', async () => {
       const user = userEvent.setup()
-      render(
-        <TableColumnOptions
-          tableName="users"
-          suggestion={{ type: 'table', name: 'users' }}
-        />,
-        { wrapper },
-      )
+      render(<TableDetailOptions tableName="users" suggestion={suggestion} />, {
+        wrapper,
+      })
 
       await user.keyboard('{Enter}')
 
@@ -195,79 +219,21 @@ describe('keyboard interactions', () => {
         tableId: 'users',
       })
       expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
-      expect(window.location.hash).toBe('')
+      expect(window.location.hash).toBe(hash)
 
       // other functions are not called
       expect(mockWindowOpen).not.toHaveBeenCalled()
     })
 
-    it('opens suggested table in another tab on ⌘Enter', async () => {
+    it('opens suggested element in another tab on ⌘Enter', async () => {
       const user = userEvent.setup()
-      render(
-        <TableColumnOptions
-          tableName="users"
-          suggestion={{ type: 'table', name: 'users' }}
-        />,
-        { wrapper },
-      )
-
-      await user.keyboard('{Meta>}{Enter}{/Meta}')
-
-      expect(mockWindowOpen).toHaveBeenCalledWith('?active=users')
-
-      // other functions are not called
-      expect(mockSelectTable).not.toHaveBeenCalled()
-      expect(mockSetCommandPaletteDialogOpen).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('column option', () => {
-    it('moves to suggested table column in ERD and closes the dialog on Enter', async () => {
-      const user = userEvent.setup()
-      render(
-        <TableColumnOptions
-          tableName="users"
-          suggestion={{
-            type: 'column',
-            tableName: 'users',
-            columnName: 'created_at',
-          }}
-        />,
-        { wrapper },
-      )
-
-      await user.keyboard('{Enter}')
-
-      expect(mockSelectTable).toHaveBeenCalledWith({
-        displayArea: 'main',
-        tableId: 'users',
+      render(<TableDetailOptions tableName="users" suggestion={suggestion} />, {
+        wrapper,
       })
-      expect(mockSetCommandPaletteDialogOpen).toHaveBeenCalledWith(false)
-      expect(window.location.hash).toBe('#users__columns__created_at')
-
-      // other functions are not called
-      expect(mockWindowOpen).not.toHaveBeenCalled()
-    })
-
-    it('opens suggested table column in another tab on ⌘Enter', async () => {
-      const user = userEvent.setup()
-      render(
-        <TableColumnOptions
-          tableName="users"
-          suggestion={{
-            type: 'column',
-            tableName: 'users',
-            columnName: 'created_at',
-          }}
-        />,
-        { wrapper },
-      )
 
       await user.keyboard('{Meta>}{Enter}{/Meta}')
 
-      expect(mockWindowOpen).toHaveBeenCalledWith(
-        '?active=users#users__columns__created_at',
-      )
+      expect(mockWindowOpen).toHaveBeenCalledWith(`?active=users${hash}`)
 
       // other functions are not called
       expect(mockSelectTable).not.toHaveBeenCalled()
@@ -275,10 +241,10 @@ describe('keyboard interactions', () => {
     })
   })
 
-  it('does nothing on Enter when suggestion is not table', async () => {
+  it('does nothing on Enter when suggestion is neither table, column nor index', async () => {
     const user = userEvent.setup()
     render(
-      <TableColumnOptions
+      <TableDetailOptions
         tableName="users"
         suggestion={{ type: 'command', name: 'copy link' }}
       />,

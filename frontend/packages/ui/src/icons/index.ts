@@ -1,6 +1,7 @@
 export {
   AlertTriangle,
   ArrowDown,
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   BookMarked,

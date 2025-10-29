@@ -50,7 +50,6 @@ export async function designSchemaNode(
   return {
     ...state,
     messages: [...state.messages, response],
-    designSchemaRetryCount: (state.designSchemaRetryCount ?? 0) + 1,
     // Reset success flag when retrying
     schemaDesignSuccessful: false,
   }

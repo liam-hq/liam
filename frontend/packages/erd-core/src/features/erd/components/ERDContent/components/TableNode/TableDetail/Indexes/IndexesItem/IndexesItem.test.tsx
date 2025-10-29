@@ -2,12 +2,24 @@ import { anIndex } from '@liam-hq/schema'
 import { render, screen } from '@testing-library/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import type { FC, PropsWithChildren } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import * as UseUserEditing from '../../../../../../../../../stores'
 import {
   SchemaProvider,
   UserEditingProvider,
 } from '../../../../../../../../../stores'
 import { IndexesItem } from './IndexesItem'
+
+const mockFocusedElementId = vi.fn()
+
+const originalUseCommandPaletteOrThrow = UseUserEditing.useUserEditingOrThrow
+vi.spyOn(UseUserEditing, 'useUserEditingOrThrow').mockImplementation(() => {
+  const original = originalUseCommandPaletteOrThrow()
+  return {
+    ...original,
+    focusedElementId: mockFocusedElementId(),
+  }
+})
 
 const wrapper: FC<PropsWithChildren> = ({ children }) => (
   <NuqsTestingAdapter>
@@ -23,7 +35,6 @@ describe('id', () => {
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id' })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -46,7 +57,6 @@ describe('type', () => {
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id', type: 'gist' })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -60,7 +70,6 @@ describe('type', () => {
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id', type: 'btree' })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -75,7 +84,6 @@ describe('columns', () => {
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id', columns: ['user_id'] })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -92,7 +100,6 @@ describe('columns', () => {
           name: 'posts_on_user_id_and_status_id',
           columns: ['user_id', 'status_id'],
         })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -109,7 +116,6 @@ describe('unique', () => {
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id', unique: true })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -123,7 +129,6 @@ describe('unique', () => {
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id', unique: false })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -135,11 +140,14 @@ describe('unique', () => {
 
 describe('blink circle indicator', () => {
   it('renders a blink circle indicator when the "focusedElementId" is same with its element id', () => {
+    mockFocusedElementId.mockImplementation(
+      () => 'posts__indexes__posts_on_user_id',
+    )
+
     render(
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id' })}
-        focusedElementId={'posts__indexes__posts_on_user_id'}
       />,
       { wrapper },
     )
@@ -148,11 +156,14 @@ describe('blink circle indicator', () => {
   })
 
   it('does not render a blink circle indicator when the "focusedElementId" is different than its element id', () => {
+    mockFocusedElementId.mockImplementation(
+      () => 'posts__indexes__posts_on_status_id',
+    )
+
     render(
       <IndexesItem
         tableId="posts"
         index={anIndex({ name: 'posts_on_user_id' })}
-        focusedElementId={'posts__indexes__posts_on_status_id'}
       />,
       { wrapper },
     )

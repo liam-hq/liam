@@ -1,8 +1,9 @@
 .container {
   display: flex;
   width: 100%;
+  max-width: 1080px;
   height: 100%;
-  padding: var(--spacing-20) var(--spacing-4);
+  padding: var(--spacing-20) var(--spacing-12);
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-20);
@@ -22,7 +23,6 @@
   gap: var(--spacing-7);
   width: 100%;
   height: 100%;
-  max-width: 1080px;
 }
 
 .projectsContainer {

@@ -21,11 +21,6 @@
   gap: var(--spacing-4);
 }
 
-.illustration {
-  width: 200px;
-  height: 100px;
-}
-
 .title {
   color: var(--global-foreground, #fff);
   font-family: var(--main-font, Inter);
@@ -43,27 +38,4 @@
   font-style: normal;
   font-weight: 400;
   line-height: 160%;
-}
-
-/* TODO: Ideally, we want to use the Button from @liam-hq/ui, but since the content is a link, we're implementing a custom version here. */
-.createButton {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-4);
-  background-color: var(--button-primary-background);
-  color: var(--button-foreground);
-  border: var(--border-width-base) solid var(--button-primary-background);
-  border-radius: var(--border-radius-base);
-  font-size: var(--font-size-6);
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color var(--default-hover-animation-duration)
-    var(--default-timing-function);
-}
-
-.createButton:hover {
-  background-color: var(--button-primary-background-hover);
-  border-color: var(--button-primary-background-hover);
 }

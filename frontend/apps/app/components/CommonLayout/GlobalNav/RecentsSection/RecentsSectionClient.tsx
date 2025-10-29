@@ -1,6 +1,7 @@
 'use client'
 
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
+import { Skeleton } from '@liam-hq/ui'
 import * as Sentry from '@sentry/nextjs'
 import clsx from 'clsx'
 import { usePathname } from 'next/navigation'
@@ -15,7 +16,6 @@ import {
 } from './components/SessionFilterDropdown'
 import { RecentSessionItem } from './RecentSessionItem'
 import styles from './RecentsSectionClient.module.css'
-import { Skeleton } from './Skeleton'
 import type { RecentSession, SessionFilterType } from './types'
 
 type RecentsSectionClientProps = {
@@ -361,8 +361,8 @@ export const RecentsSectionClient = ({
                 <div className={styles.loadingState}>
                   {SKELETON_KEYS.map((key) => (
                     <div key={key} className={styles.skeletonItem}>
-                      <Skeleton width="80%" height="1rem" />
-                      <Skeleton width="40%" height="0.75rem" />
+                      <Skeleton variant="box" width="80%" height="1rem" />
+                      <Skeleton variant="box" width="40%" height="0.75rem" />
                     </div>
                   ))}
                 </div>

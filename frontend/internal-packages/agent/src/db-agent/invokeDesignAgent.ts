@@ -30,7 +30,7 @@ const model = new ChatOpenAI({
   streaming: true,
 }).bindTools([schemaDesignTool], {
   strict: true,
-  tool_choice: schemaDesignTool.name,
+  tool_choice: 'auto',
 })
 
 type DesignAgentResult = {

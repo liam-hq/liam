@@ -64,6 +64,9 @@ jobs:
           echo "" >> execution_log.md
           echo "**Started at:** $start_time_formatted" >> execution_log.md
           echo "" >> execution_log.md
+          echo "<details>" >> execution_log.md
+          echo "<summary>View Details</summary>" >> execution_log.md
+          echo "" >> execution_log.md
           echo "### Command Output" >> execution_log.md
           echo "" >> execution_log.md
           
@@ -101,6 +104,8 @@ jobs:
           
           echo "" >> execution_log.md
           echo "**Finished at:** $end_time_formatted" >> execution_log.md
+          echo "" >> execution_log.md
+          echo "</details>" >> execution_log.md
           
           # Insert processing time after the header using sed
           sed -i '2a\\n**Processing time:** '"$duration_formatted"'' execution_log.md

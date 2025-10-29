@@ -1,0 +1,20 @@
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4, 16px);
+  text-align: center;
+  margin: auto;
+}
+
+.emptyIllustration {
+  width: 200px;
+  height: 100px;
+}
+
+.emptyDescription {
+  color: var(--global-mute-text);
+  font-size: var(--font-size-4, 13px);
+  line-height: 1.6;
+  max-width: 360px;
+}

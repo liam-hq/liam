@@ -26,6 +26,7 @@ describe('convertToSchema', () => {
           sql,
           schema,
           wrongChunkOffset,
+          sql,
         )
 
         expect(errors).toEqual([

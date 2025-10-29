@@ -4,9 +4,9 @@ import { Command, defaultFilter as cmdkBaseFilter } from 'cmdk'
 import { type FC, useMemo, useState } from 'react'
 import {
   CommandPaletteCommandOptions,
+  TableDetailOptions,
   TableOptions,
 } from '../CommandPaletteOptions'
-import { TableColumnOptions } from '../CommandPaletteOptions/TableColumnOptions'
 import { CommandPreview, TablePreview } from '../CommandPalettePreview'
 import { CommandPaletteSearchInput } from '../CommandPaletteSearchInput'
 import type { CommandPaletteInputMode } from '../types'
@@ -39,8 +39,10 @@ const tableInputModeFilter: typeof cmdkBaseFilter = (value, ...rest) => {
   if (suggestion.type === 'table') return 1
   if (suggestion.type === 'column')
     return cmdkBaseFilter(suggestion.columnName, ...rest)
+  if (suggestion.type === 'index')
+    return cmdkBaseFilter(suggestion.indexName, ...rest)
 
-  // it displays only 'table' and 'column' type suggestions in the "table" input mode
+  // it displays only 'table', 'column' and 'index' type suggestions in the "table" input mode
   return 0
 }
 
@@ -101,7 +103,7 @@ export const CommandPaletteContent: FC<Props> = ({
             <TableOptions suggestion={suggestion} />
           )}
           {inputMode.type === 'table' && (
-            <TableColumnOptions
+            <TableDetailOptions
               tableName={inputMode.tableName}
               suggestion={suggestion}
             />
@@ -117,7 +119,7 @@ export const CommandPaletteContent: FC<Props> = ({
           {suggestion?.type === 'table' && (
             <TablePreview tableName={suggestion.name} />
           )}
-          {suggestion?.type === 'column' && (
+          {(suggestion?.type === 'column' || suggestion?.type === 'index') && (
             <TablePreview tableName={suggestion.tableName} />
           )}
           {suggestion?.type === 'command' && (

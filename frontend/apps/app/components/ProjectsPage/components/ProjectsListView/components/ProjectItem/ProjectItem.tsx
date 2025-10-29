@@ -66,11 +66,9 @@ export const ProjectItem: FC<ProjectItemProps> = ({ project }) => {
               defaultDate={project.created_at}
             />
           ) : (
-            <>
-              <span>User</span>
-              <span>committed</span>
-              <span>on {formatDate(project.created_at)}</span>
-            </>
+            <span className={styles.commitInfoText}>
+              {`User committed on ${formatDate(project.created_at)}`}
+            </span>
           )}
         </div>
       </div>

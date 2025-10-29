@@ -24,6 +24,7 @@
   align-items: center;
   gap: var(--spacing-3);
   width: 100%;
+  min-width: 0;
 }
 
 .projectIcon {
@@ -56,12 +57,18 @@
   font-weight: 600;
   color: var(--global-foreground);
   line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .projectInfo {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
+  min-width: 0;
 }
 
 .repositoryBadge {
@@ -74,6 +81,8 @@
   background-color: var(--overlay-5);
   border-radius: var(--border-radius-full);
   width: fit-content;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .repositoryIcon {
@@ -88,13 +97,21 @@
 .repositoryName {
   font-size: var(--font-size-3);
   color: var(--global-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .commitInfo {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--spacing-1);
   font-size: var(--font-size-2);
   color: var(--overlay-50);
+  min-width: 0;
+}
+
+.commitInfoText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

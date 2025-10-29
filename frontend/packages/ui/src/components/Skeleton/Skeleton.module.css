@@ -1,0 +1,47 @@
+@keyframes pulse {
+  0%,
+  100% {
+    background-color: var(--skeleton-start);
+  }
+  50% {
+    background-color: var(--skeleton-end);
+  }
+}
+
+.wrapper {
+  --skeleton-start: var(--pane-background);
+  --skeleton-end: var(--pane-background-active);
+
+  position: relative;
+  display: inline-block;
+  border-radius: var(--border-radius-base);
+  background: var(--skeleton-start);
+}
+
+.box {
+  display: block;
+  min-height: 0.75rem;
+}
+
+.circle {
+  border-radius: var(--border-radius-full);
+}
+
+.text {
+  width: 100%;
+  line-height: inherit;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--skeleton-start);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* In text variant, make only the last line 80% width */
+.text > .wrapper:last-child {
+  width: 80%;
+}

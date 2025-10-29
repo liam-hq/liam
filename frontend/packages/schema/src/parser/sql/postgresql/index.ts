@@ -1,6 +1,8 @@
 import type { RawStmt } from '@pgsql/types'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { type InferIssue, safeParse } from 'valibot'
 import type { Schema } from '../../../schema/index.js'
+import { schemaSchema } from '../../../schema/index.js'
 import { type ProcessError, UnexpectedTokenWarningError } from '../../errors.js'
 import type { Processor } from '../../types.js'
 import { convertToSchema } from './converter.js'
@@ -103,6 +105,7 @@ function processChunk(
         rawSql,
         schema,
         chunkOffset,
+        chunk,
       )
 
     if (conversionErrors !== null) {
@@ -159,5 +162,26 @@ export const processor: Processor = async (
     },
   )
 
-  return { value: schema, errors: parseErrors.concat(errors) }
+  const validation = safeParse(schemaSchema, schema)
+
+  if (!validation.success) {
+    const validationErrors = validation.issues.map(
+      (issue: InferIssue<typeof schemaSchema>) => {
+        const path =
+          issue.path && issue.path.length > 0
+            ? issue.path.map((p) => p.key).join('.')
+            : 'schema'
+        return new UnexpectedTokenWarningError(
+          `Schema validation failed at ${path}: ${issue.message}`,
+        )
+      },
+    )
+
+    return {
+      value: schema,
+      errors: parseErrors.concat(errors, validationErrors),
+    }
+  }
+
+  return { value: validation.output, errors: parseErrors.concat(errors) }
 }

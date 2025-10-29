@@ -2,16 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { isPgTapTest, validatePgTapTest } from './validatePgTapTest'
 
 describe('isPgTapTest', () => {
-  it('returns true when SQL contains plan(', () => {
-    const sql = 'SELECT plan(1);'
-    expect(isPgTapTest(sql)).toBe(true)
-  })
-
-  it('returns true when SQL contains finish()', () => {
-    const sql = 'SELECT finish();'
-    expect(isPgTapTest(sql)).toBe(true)
-  })
-
   it('returns true when SQL contains lives_ok(', () => {
     const sql = "SELECT lives_ok('SELECT 1');"
     expect(isPgTapTest(sql)).toBe(true)
@@ -22,13 +12,13 @@ describe('isPgTapTest', () => {
     expect(isPgTapTest(sql)).toBe(true)
   })
 
-  it('returns true when SQL contains has_table(', () => {
-    const sql = "SELECT has_table('users');"
+  it('returns true when SQL contains is(', () => {
+    const sql = 'SELECT is(1, 1);'
     expect(isPgTapTest(sql)).toBe(true)
   })
 
-  it('returns true when SQL contains has_column(', () => {
-    const sql = "SELECT has_column('users', 'id');"
+  it('returns true when SQL contains ok(', () => {
+    const sql = 'SELECT ok(true);'
     expect(isPgTapTest(sql)).toBe(true)
   })
 
@@ -38,115 +28,67 @@ describe('isPgTapTest', () => {
   })
 
   it('is case-insensitive', () => {
-    const sql = 'SELECT PLAN(1);'
+    const sql = 'SELECT lives_ok($$SELECT 1$$);'
     expect(isPgTapTest(sql)).toBe(true)
   })
 })
 
 describe('validatePgTapTest', () => {
-  it('returns error when plan() is missing', () => {
-    const sql = `
-      SELECT has_table('users');
-      SELECT finish();
-    `
-    const result = validatePgTapTest(sql)
-    expect(result).toContain('Missing plan() declaration')
-  })
-
-  it('returns error when plan() is called multiple times', () => {
-    const sql = `
-      SELECT plan(1);
-      SELECT has_table('users');
-      SELECT plan(2);
-      SELECT finish();
-    `
-    const result = validatePgTapTest(sql)
-    expect(result).toContain('Multiple plan() declarations found')
-  })
-
-  it('returns error when finish() is missing', () => {
-    const sql = `
-      SELECT plan(1);
-      SELECT has_table('users');
-    `
-    const result = validatePgTapTest(sql)
-    expect(result).toContain('Missing finish() call')
-  })
-
-  it('returns error when no assertions are found', () => {
-    const sql = `
-      SELECT plan(1);
-      SELECT finish();
-    `
-    const result = validatePgTapTest(sql)
-    expect(result).toContain('No pgTAP assertions found')
-  })
-
-  it('returns error with multiple validation errors', () => {
+  it('returns Ok when SQL is not a pgTAP test', () => {
     const sql = `
       SELECT 1;
     `
     const result = validatePgTapTest(sql)
-    expect(result).toContain('pgTAP test validation failed')
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for valid pgTAP test using lives_ok', () => {
+  it('returns Err when pgTAP function has syntax error', () => {
+    const sql = 'SELECT lives_ok($$SELECT 1$$;)'
+    const result = validatePgTapTest(sql)
+    expect(result.isErr()).toBe(true)
+    if (result.isErr()) {
+      expect(result.error).toContain('Semicolon before closing parenthesis')
+    }
+  })
+
+  it('returns Ok for valid pgTAP test using lives_ok', () => {
     const sql = `
-      SELECT plan(1);
-      SELECT lives_ok('SELECT 1', 'Basic query works');
-      SELECT finish();
+      SELECT lives_ok($$SELECT 1$$, 'Basic query works');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for valid pgTAP test using throws_ok', () => {
+  it('returns Ok for valid pgTAP test using throws_ok', () => {
     const sql = `
-      SELECT plan(1);
-      SELECT throws_ok('SELECT 1/0', 'division by zero');
-      SELECT finish();
+      SELECT throws_ok($$SELECT 1/0$$, '22012');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for valid pgTAP test using has_table', () => {
+  it('returns Ok for valid pgTAP test using is()', () => {
     const sql = `
-      SELECT plan(1);
-      SELECT has_table('users');
-      SELECT finish();
-    `
-    const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
-  })
-
-  it('returns undefined for valid pgTAP test using is()', () => {
-    const sql = `
-      SELECT plan(1);
       SELECT is(1, 1, 'One equals one');
-      SELECT finish();
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('returns undefined for valid pgTAP test using ok()', () => {
+  it('returns Ok for valid pgTAP test using ok()', () => {
     const sql = `
-      SELECT plan(1);
       SELECT ok(true, 'True is true');
-      SELECT finish();
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 
-  it('is case-insensitive for validation', () => {
+  it('returns Ok for multiple assertions without plan/finish', () => {
     const sql = `
-      SELECT PLAN(1);
-      SELECT HAS_TABLE('users');
-      SELECT FINISH();
+      SELECT lives_ok($$INSERT INTO users (name) VALUES ('test')$$, 'Insert user');
+      SELECT is((SELECT COUNT(*) FROM users), 1::bigint, 'User count is 1');
     `
     const result = validatePgTapTest(sql)
-    expect(result).toBeUndefined()
+    expect(result.isOk()).toBe(true)
   })
 })

@@ -36,7 +36,6 @@ describe('designSchemaNode Integration', () => {
       designSessionId: context.designSessionId,
       prompt: userInput,
       next: END,
-      designSchemaRetryCount: 0,
       schemaDesignSuccessful: false,
     }
 
