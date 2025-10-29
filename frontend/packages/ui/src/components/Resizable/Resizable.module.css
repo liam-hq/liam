@@ -65,6 +65,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--border-radius-sm);
+  border: 1px solid var(--pane-border);
+  background-color: var(--pane-muted-background);
 }
 
 .panelAnimating {

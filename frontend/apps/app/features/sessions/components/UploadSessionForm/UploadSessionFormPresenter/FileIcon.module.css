@@ -2,6 +2,7 @@
   width: 134px;
   height: 119px;
   color: var(--overlay-40);
+  opacity: 0.6;
   transition: opacity var(--default-animation-duration)
     var(--default-timing-function);
   position: relative;
@@ -19,6 +20,7 @@
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
   transform: rotate(-10deg) translateX(8px) translateY(7px);
+  opacity: 0.7;
 }
 
 .fileBackRight {
@@ -26,6 +28,7 @@
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
   transform: rotate(10deg) translateX(-8px) translateY(7px);
+  opacity: 0.7;
 }
 
 .fileBackLeftHover {

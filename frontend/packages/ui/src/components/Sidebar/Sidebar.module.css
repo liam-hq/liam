@@ -41,6 +41,7 @@
 }
 
 [data-collapsible='offcanvas'] .sidebarWrapper {
+  left: calc(var(--sidebar-width, 16rem) * -1);
 }
 
 .sidebar {
