@@ -231,6 +231,29 @@ $$;
 ALTER FUNCTION "public"."add_project"("p_project_name" "text", "p_repository_name" "text", "p_repository_owner" "text", "p_installation_id" bigint, "p_repository_identifier" bigint, "p_organization_id" "uuid") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."apply_run_event_to_runs"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  effective_timestamp timestamptz;
+BEGIN
+  effective_timestamp := COALESCE(NEW.created_at, now());
+
+  UPDATE public.runs
+  SET ended_at = CASE
+        WHEN NEW.status IN ('completed', 'error') THEN effective_timestamp
+        ELSE ended_at
+      END
+  WHERE id = NEW.run_id;
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."apply_run_event_to_runs"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_invitation_data"("p_token" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
@@ -590,6 +613,60 @@ $$;
 
 
 ALTER FUNCTION "public"."set_project_repository_mappings_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_run_events_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  org_id uuid;
+BEGIN
+  IF NEW.run_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT organization_id
+  INTO org_id
+  FROM public.runs
+  WHERE id = NEW.run_id;
+
+  IF org_id IS NOT NULL THEN
+    NEW.organization_id := org_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_run_events_organization_id"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_runs_organization_id"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  org_id uuid;
+BEGIN
+  IF NEW.design_session_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT organization_id
+  INTO org_id
+  FROM public.design_sessions
+  WHERE id = NEW.design_session_id;
+
+  IF org_id IS NOT NULL THEN
+    NEW.organization_id := org_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."set_runs_organization_id"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."set_schema_file_paths_organization_id"() RETURNS "trigger"
@@ -965,106 +1042,132 @@ CREATE TABLE IF NOT EXISTS "public"."public_share_settings" (
 ALTER TABLE "public"."public_share_settings" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."run_events" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "run_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "status" "public"."workflow_run_status" NOT NULL,
+    "created_by_user_id" "uuid",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."run_events" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."run_events" IS 'Immutable log of workflow run state transitions. Each insert captures a new status event for a run.';
+
+
+
+COMMENT ON COLUMN "public"."run_events"."run_id" IS 'Foreign key to the run this event belongs to.';
+
+
+
+COMMENT ON COLUMN "public"."run_events"."organization_id" IS 'Organization copied from the parent run for multi-tenant scoping.';
+
+
+
+COMMENT ON COLUMN "public"."run_events"."status" IS 'Workflow status captured by this event (running, completed, error).';
+
+
+
+COMMENT ON COLUMN "public"."run_events"."created_by_user_id" IS 'User that recorded the event (if applicable).';
+
+
+
+COMMENT ON COLUMN "public"."run_events"."created_at" IS 'Timestamp when the event was recorded.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."runs" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "ended_at" timestamp with time zone,
-    "started_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "organization_id" "uuid" NOT NULL,
     "design_session_id" "uuid" NOT NULL,
+    "organization_id" "uuid" NOT NULL,
     "created_by_user_id" "uuid",
-    "status" "public"."workflow_run_status" DEFAULT 'running'::"public"."workflow_run_status" NOT NULL
+    "started_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "ended_at" timestamp with time zone
 );
 
 
 ALTER TABLE "public"."runs" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."runs" IS 'Runs table: immutable record of Run creation; ended_at is set when a terminal event is recorded to allow lifecycle constraints. Organization and design_session link ensure multi-tenancy and ownership.';
+COMMENT ON TABLE "public"."runs" IS 'Current workflow run per design session (1:1). Updated via run_events trigger to reflect the latest lifecycle state.';
 
 
 
-COMMENT ON COLUMN "public"."runs"."id" IS 'Unique identifier for a Run (created when a Run is started)';
+COMMENT ON COLUMN "public"."runs"."id" IS 'Unique identifier for the run record associated with a design session.';
 
 
 
-COMMENT ON COLUMN "public"."runs"."ended_at" IS 'Timestamp of terminal event (completed or error). Stored on runs to allow efficient lookup of active Runs; set when terminal event occurs';
+COMMENT ON COLUMN "public"."runs"."design_session_id" IS 'Design session owning this run record (enforced unique to keep 1:1).';
 
 
 
-COMMENT ON COLUMN "public"."runs"."started_at" IS 'Timestamp when the Run was started (inserted at Run creation)';
+COMMENT ON COLUMN "public"."runs"."organization_id" IS 'Organization scope for the run; auto-populated from the design session.';
 
 
 
-COMMENT ON COLUMN "public"."runs"."organization_id" IS 'Organization owning the Run; must match the design_session organization for multi-tenancy';
+COMMENT ON COLUMN "public"."runs"."created_by_user_id" IS 'User that initiated or last restarted the workflow run.';
 
 
 
-COMMENT ON COLUMN "public"."runs"."design_session_id" IS 'Design session this Run belongs to';
+COMMENT ON COLUMN "public"."runs"."started_at" IS 'Timestamp when the run started (defaults to insertion time).';
 
 
 
-COMMENT ON COLUMN "public"."runs"."created_by_user_id" IS 'User that initiated the Run';
-
-
-
-COMMENT ON COLUMN "public"."runs"."status" IS 'Current status for the Run derived from workflow execution (running, completed, error)';
+COMMENT ON COLUMN "public"."runs"."ended_at" IS 'Timestamp of the most recent terminal event (completed or error).';
 
 
 
 CREATE OR REPLACE VIEW "public"."run_status" AS
- WITH "runs_with_timestamps" AS (
-         SELECT "runs"."design_session_id",
-            "runs"."organization_id",
-            "runs"."status",
-            COALESCE("runs"."ended_at", "runs"."started_at") AS "last_event_at",
-            "runs"."started_at"
-           FROM "public"."runs"
-        ), "aggregated_by_session" AS (
-         SELECT "runs_with_timestamps"."design_session_id",
-            "runs_with_timestamps"."organization_id",
-            "max"(COALESCE("runs_with_timestamps"."last_event_at", "runs_with_timestamps"."started_at")) AS "last_event_at",
-            (
-                CASE
-                    WHEN "bool_or"(("runs_with_timestamps"."status" = 'error'::"public"."workflow_run_status")) THEN 'error'::"text"
-                    WHEN "bool_or"(("runs_with_timestamps"."status" = 'running'::"public"."workflow_run_status")) THEN 'running'::"text"
-                    ELSE 'completed'::"text"
-                END)::"public"."workflow_run_status" AS "status"
-           FROM "runs_with_timestamps"
-          GROUP BY "runs_with_timestamps"."design_session_id", "runs_with_timestamps"."organization_id"
+ WITH "latest_events" AS (
+         SELECT DISTINCT ON ("re"."run_id") "re"."run_id",
+            "re"."status",
+            "re"."created_at"
+           FROM "public"."run_events" "re"
+          ORDER BY "re"."run_id", "re"."created_at" DESC, "re"."id" DESC
+        ), "run_snapshot" AS (
+         SELECT "r"."design_session_id",
+            "r"."organization_id",
+            COALESCE("le"."status", 'running'::"public"."workflow_run_status") AS "status",
+            COALESCE("le"."created_at", "r"."ended_at", "r"."started_at") AS "last_event_at"
+           FROM ("public"."runs" "r"
+             LEFT JOIN "latest_events" "le" ON (("le"."run_id" = "r"."id")))
         )
- SELECT COALESCE("agg"."status", 'running'::"public"."workflow_run_status") AS "status",
-    "agg"."last_event_at",
+ SELECT COALESCE("rs"."status", 'running'::"public"."workflow_run_status") AS "status",
+    "rs"."last_event_at",
     "ds"."organization_id",
     'Derived in migration 20251023120000_add_workflow_status_to_design_sessions.sql'::"text" AS "derived_from_sql",
     "ds"."id" AS "design_session_id"
    FROM ("public"."design_sessions" "ds"
-     LEFT JOIN "aggregated_by_session" "agg" ON ((("agg"."design_session_id" = "ds"."id") AND ("agg"."organization_id" = "ds"."organization_id"))));
+     LEFT JOIN "run_snapshot" "rs" ON ((("rs"."design_session_id" = "ds"."id") AND ("rs"."organization_id" = "ds"."organization_id"))));
 
 
 ALTER TABLE "public"."run_status" OWNER TO "postgres";
 
 
-COMMENT ON VIEW "public"."run_status" IS 'Read-only view that derives a design_session''s current status from runs without mutating state. Aggregates latest Run status and timestamps per session.';
+COMMENT ON VIEW "public"."run_status" IS 'Read-only view returning the latest workflow status per design session, sourced from run_events history.';
 
 
 
-COMMENT ON COLUMN "public"."run_status"."status" IS 'Derived aggregate status for the design session: running, completed, or error';
+COMMENT ON COLUMN "public"."run_status"."status" IS 'Derived workflow status (running, completed, error).';
 
 
 
-COMMENT ON COLUMN "public"."run_status"."last_event_at" IS 'Timestamp of the most recent run considered when deriving status';
+COMMENT ON COLUMN "public"."run_status"."last_event_at" IS 'Timestamp of the latest status event or fallback to run start/end.';
 
 
 
-COMMENT ON COLUMN "public"."run_status"."organization_id" IS 'Organization owning the design session for multi-tenant scoping; included to ensure derived status is scoped correctly';
+COMMENT ON COLUMN "public"."run_status"."organization_id" IS 'Organization associated with the design session for scoping.';
 
 
 
-COMMENT ON COLUMN "public"."run_status"."derived_from_sql" IS 'Developer note: SQL used to define this view; do not mutate';
+COMMENT ON COLUMN "public"."run_status"."derived_from_sql" IS 'Developer note: SQL used to define the view.';
 
 
 
-COMMENT ON COLUMN "public"."run_status"."design_session_id" IS 'Identifier of the design session for which we derive the current Run status (one row per design_session)';
+COMMENT ON COLUMN "public"."run_status"."design_session_id" IS 'Design session identifier (one row per design session).';
 
 
 
@@ -1198,8 +1301,13 @@ ALTER TABLE ONLY "public"."github_repositories"
 
 
 
+ALTER TABLE ONLY "public"."run_events"
+    ADD CONSTRAINT "run_events_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."runs"
-    ADD CONSTRAINT "runs_id_organization_unique" UNIQUE ("id", "organization_id");
+    ADD CONSTRAINT "runs_design_session_id_key" UNIQUE ("design_session_id");
 
 
 
@@ -1298,11 +1406,31 @@ CREATE UNIQUE INDEX "project_repository_mapping_project_id_repository_id_key" ON
 
 
 
+CREATE INDEX "run_events_organization_id_idx" ON "public"."run_events" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "run_events_run_id_created_at_idx" ON "public"."run_events" USING "btree" ("run_id", "created_at" DESC);
+
+
+
+CREATE INDEX "runs_design_session_id_idx" ON "public"."runs" USING "btree" ("design_session_id");
+
+
+
+CREATE INDEX "runs_organization_id_idx" ON "public"."runs" USING "btree" ("organization_id");
+
+
+
 CREATE UNIQUE INDEX "schema_file_path_path_project_id_key" ON "public"."schema_file_paths" USING "btree" ("path", "project_id");
 
 
 
 CREATE UNIQUE INDEX "schema_file_path_project_id_key" ON "public"."schema_file_paths" USING "btree" ("project_id");
+
+
+
+CREATE OR REPLACE TRIGGER "apply_run_event_to_runs_trigger" AFTER INSERT ON "public"."run_events" FOR EACH ROW EXECUTE FUNCTION "public"."apply_run_event_to_runs"();
 
 
 
@@ -1327,6 +1455,14 @@ CREATE OR REPLACE TRIGGER "set_design_sessions_organization_id_trigger" BEFORE I
 
 
 CREATE OR REPLACE TRIGGER "set_project_repository_mappings_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."project_repository_mappings" FOR EACH ROW EXECUTE FUNCTION "public"."set_project_repository_mappings_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_run_events_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."run_events" FOR EACH ROW EXECUTE FUNCTION "public"."set_run_events_organization_id"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_runs_organization_id_trigger" BEFORE INSERT OR UPDATE ON "public"."runs" FOR EACH ROW EXECUTE FUNCTION "public"."set_runs_organization_id"();
 
 
 
@@ -1440,6 +1576,21 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
 
 ALTER TABLE ONLY "public"."public_share_settings"
     ADD CONSTRAINT "public_share_settings_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."run_events"
+    ADD CONSTRAINT "run_events_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."run_events"
+    ADD CONSTRAINT "run_events_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."run_events"
+    ADD CONSTRAINT "run_events_run_id_fkey" FOREIGN KEY ("run_id") REFERENCES "public"."runs"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -1566,6 +1717,26 @@ CREATE POLICY "authenticated_users_can_delete_org_public_share_settings" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_delete_org_run_events" ON "public"."run_events" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_run_events" ON "public"."run_events" IS 'Authenticated users can delete run events only inside organizations they belong to.';
+
+
+
+CREATE POLICY "authenticated_users_can_delete_org_runs" ON "public"."runs" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_delete_org_runs" ON "public"."runs" IS 'Authenticated users can delete runs only inside organizations they belong to.';
+
+
+
 CREATE POLICY "authenticated_users_can_insert_org_building_schema_versions" ON "public"."building_schema_versions" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1661,6 +1832,26 @@ CREATE POLICY "authenticated_users_can_insert_org_public_share_settings" ON "pub
   WHERE ("ds"."organization_id" IN ( SELECT "organization_members"."organization_id"
            FROM "public"."organization_members"
           WHERE ("organization_members"."user_id" = "auth"."uid"()))))));
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_run_events" ON "public"."run_events" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_run_events" ON "public"."run_events" IS 'Authenticated users can create run events only inside organizations they belong to.';
+
+
+
+CREATE POLICY "authenticated_users_can_insert_org_runs" ON "public"."runs" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_insert_org_runs" ON "public"."runs" IS 'Authenticated users can create runs only inside organizations they belong to.';
 
 
 
@@ -1808,6 +1999,26 @@ CREATE POLICY "authenticated_users_can_select_org_public_share_settings" ON "pub
 
 
 
+CREATE POLICY "authenticated_users_can_select_org_run_events" ON "public"."run_events" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_run_events" ON "public"."run_events" IS 'Authenticated users can view run events for organizations they belong to.';
+
+
+
+CREATE POLICY "authenticated_users_can_select_org_runs" ON "public"."runs" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_select_org_runs" ON "public"."runs" IS 'Authenticated users can view runs for organizations they belong to.';
+
+
+
 CREATE POLICY "authenticated_users_can_select_org_schema_file_paths" ON "public"."schema_file_paths" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"()))));
@@ -1916,6 +2127,30 @@ COMMENT ON POLICY "authenticated_users_can_update_org_projects" ON "public"."pro
 
 
 
+CREATE POLICY "authenticated_users_can_update_org_run_events" ON "public"."run_events" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_run_events" ON "public"."run_events" IS 'Authenticated users can update run events only inside organizations they belong to.';
+
+
+
+CREATE POLICY "authenticated_users_can_update_org_runs" ON "public"."runs" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "om"."organization_id"
+   FROM "public"."organization_members" "om"
+  WHERE ("om"."user_id" = "auth"."uid"()))));
+
+
+
+COMMENT ON POLICY "authenticated_users_can_update_org_runs" ON "public"."runs" IS 'Authenticated users can update runs only inside organizations they belong to.';
+
+
+
 CREATE POLICY "authenticated_users_can_update_org_schema_file_paths" ON "public"."schema_file_paths" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "organization_members"."organization_id"
    FROM "public"."organization_members"
   WHERE ("organization_members"."user_id" = "auth"."uid"())))) WITH CHECK (("organization_id" IN ( SELECT "organization_members"."organization_id"
@@ -1988,6 +2223,12 @@ CREATE POLICY "public_share_settings_read" ON "public"."public_share_settings" F
 
 
 
+ALTER TABLE "public"."run_events" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."runs" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."schema_file_paths" ENABLE ROW LEVEL SECURITY;
 
 
@@ -2020,6 +2261,14 @@ CREATE POLICY "service_role_can_delete_all_projects" ON "public"."projects" FOR 
 
 
 COMMENT ON POLICY "service_role_can_delete_all_projects" ON "public"."projects" IS 'Service role can delete any project (for jobs)';
+
+
+
+CREATE POLICY "service_role_can_delete_all_run_events" ON "public"."run_events" FOR DELETE TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_delete_all_runs" ON "public"."runs" FOR DELETE TO "service_role" USING (true);
 
 
 
@@ -2056,6 +2305,14 @@ CREATE POLICY "service_role_can_insert_all_projects" ON "public"."projects" FOR 
 
 
 COMMENT ON POLICY "service_role_can_insert_all_projects" ON "public"."projects" IS 'Service role can create any project (for jobs)';
+
+
+
+CREATE POLICY "service_role_can_insert_all_run_events" ON "public"."run_events" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_insert_all_runs" ON "public"."runs" FOR INSERT TO "service_role" WITH CHECK (true);
 
 
 
@@ -2103,6 +2360,14 @@ COMMENT ON POLICY "service_role_can_select_all_projects" ON "public"."projects" 
 
 
 
+CREATE POLICY "service_role_can_select_all_run_events" ON "public"."run_events" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "service_role_can_select_all_runs" ON "public"."runs" FOR SELECT TO "service_role" USING (true);
+
+
+
 CREATE POLICY "service_role_can_select_all_schema_file_paths" ON "public"."schema_file_paths" FOR SELECT TO "service_role" USING (true);
 
 
@@ -2143,6 +2408,14 @@ COMMENT ON POLICY "service_role_can_update_all_projects" ON "public"."projects" 
 
 
 
+CREATE POLICY "service_role_can_update_all_run_events" ON "public"."run_events" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "service_role_can_update_all_runs" ON "public"."runs" FOR UPDATE TO "service_role" USING (true) WITH CHECK (true);
+
+
+
 ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
 
 
@@ -2163,6 +2436,10 @@ ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."building_schema_v
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."building_schemas";
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."run_events";
 
 
 
@@ -2345,6 +2622,12 @@ GRANT ALL ON FUNCTION "public"."add_project"("p_project_name" "text", "p_reposit
 
 
 
+GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "service_role";
+GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "anon";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "service_role";
 
@@ -2398,6 +2681,18 @@ GRANT ALL ON FUNCTION "public"."set_design_sessions_organization_id"() TO "servi
 
 GRANT ALL ON FUNCTION "public"."set_project_repository_mappings_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_project_repository_mappings_organization_id"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_run_events_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_run_events_organization_id"() TO "service_role";
+GRANT ALL ON FUNCTION "public"."set_run_events_organization_id"() TO "anon";
+
+
+
+GRANT ALL ON FUNCTION "public"."set_runs_organization_id"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_runs_organization_id"() TO "service_role";
+GRANT ALL ON FUNCTION "public"."set_runs_organization_id"() TO "anon";
 
 
 
@@ -2570,8 +2865,15 @@ GRANT SELECT ON TABLE "public"."public_share_settings" TO "anon";
 
 
 
+GRANT ALL ON TABLE "public"."run_events" TO "authenticated";
+GRANT ALL ON TABLE "public"."run_events" TO "service_role";
+GRANT ALL ON TABLE "public"."run_events" TO "anon";
+
+
+
 GRANT ALL ON TABLE "public"."runs" TO "authenticated";
 GRANT ALL ON TABLE "public"."runs" TO "service_role";
+GRANT ALL ON TABLE "public"."runs" TO "anon";
 
 
 

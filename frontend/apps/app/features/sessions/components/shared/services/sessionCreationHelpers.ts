@@ -5,6 +5,7 @@ import type { SupabaseClientType } from '@liam-hq/db'
 import type { Schema } from '@liam-hq/schema'
 import { parse, setPrismWasmUrl } from '@liam-hq/schema/parser'
 import { createClient } from '../../../../../libs/db/server'
+import { RunTracker } from '../../../../../libs/runs/runService'
 import { getOrganizationId } from '../../../../organizations/services/getOrganizationId'
 import type {
   CreateSessionState,
@@ -108,6 +109,35 @@ const createBuildingSchema = async (
   return buildingSchema
 }
 
+const initializeSessionRun = async (
+  supabase: SupabaseClientType,
+  {
+    designSessionId,
+    organizationId,
+    currentUserId,
+  }: {
+    designSessionId: string
+    organizationId: string
+    currentUserId: string
+  },
+): Promise<CreateSessionState | null> => {
+  try {
+    await RunTracker.start({
+      supabase,
+      designSessionId,
+      organizationId,
+      userId: currentUserId,
+    })
+    return null
+  } catch (error) {
+    console.error('Error initializing workflow run for design session:', error)
+    return {
+      success: false,
+      error: 'Failed to initialize workflow run for the new session',
+    }
+  }
+}
+
 export const parseSchemaContent = async (
   content: string,
   format: SchemaFormat,
@@ -160,6 +190,16 @@ export const createSessionWithSchema = async (
   }
   const designSession = designSessionResult
   const designSessionId = designSession.id
+
+  const runInitializationResult = await initializeSessionRun(supabase, {
+    designSessionId,
+    organizationId,
+    currentUserId,
+  })
+
+  if (runInitializationResult) {
+    return runInitializationResult
+  }
 
   const buildingSchemaResult = await createBuildingSchema(
     designSessionId,

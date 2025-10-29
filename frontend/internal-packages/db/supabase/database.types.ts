@@ -589,6 +589,55 @@ export type Database = {
           },
         ]
       }
+      run_events: {
+        Row: {
+          created_at: string
+          created_by_user_id: string | null
+          id: string
+          organization_id: string
+          run_id: string
+          status: Database['public']['Enums']['workflow_run_status']
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          organization_id: string
+          run_id: string
+          status: Database['public']['Enums']['workflow_run_status']
+        }
+        Update: {
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          organization_id?: string
+          run_id?: string
+          status?: Database['public']['Enums']['workflow_run_status']
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'run_events_created_by_user_id_fkey'
+            columns: ['created_by_user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'run_events_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'run_events_run_id_fkey'
+            columns: ['run_id']
+            isOneToOne: false
+            referencedRelation: 'runs'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       runs: {
         Row: {
           created_by_user_id: string | null
@@ -597,7 +646,6 @@ export type Database = {
           id: string
           organization_id: string
           started_at: string
-          status: Database['public']['Enums']['workflow_run_status']
         }
         Insert: {
           created_by_user_id?: string | null
@@ -606,7 +654,6 @@ export type Database = {
           id?: string
           organization_id: string
           started_at?: string
-          status?: Database['public']['Enums']['workflow_run_status']
         }
         Update: {
           created_by_user_id?: string | null
@@ -615,7 +662,6 @@ export type Database = {
           id?: string
           organization_id?: string
           started_at?: string
-          status?: Database['public']['Enums']['workflow_run_status']
         }
         Relationships: [
           {
@@ -628,14 +674,14 @@ export type Database = {
           {
             foreignKeyName: 'runs_design_session_id_fkey'
             columns: ['design_session_id']
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: 'design_sessions'
             referencedColumns: ['id']
           },
           {
             foreignKeyName: 'runs_design_session_id_fkey'
             columns: ['design_session_id']
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: 'run_status'
             referencedColumns: ['design_session_id']
           },

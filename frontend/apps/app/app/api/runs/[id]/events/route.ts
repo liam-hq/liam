@@ -40,7 +40,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   const runId = params.id
   const { data: runData, error: runError } = await supabase
     .from('runs')
-    .select('id, organization_id')
+    .select('id, organization_id, design_session_id')
     .eq('id', runId)
     .maybeSingle()
 
@@ -60,14 +60,15 @@ export async function POST(request: Request, { params }: RouteContext) {
     supabase,
     runId: runData.id,
     organizationId: runData.organization_id,
+    userId: userData.user.id,
   })
 
   const eventAt = parsed.value.eventAt
 
   const eventResult = await fromAsyncThrowable(() =>
     parsed.value.eventType === 'error'
-      ? tracker.fail(eventAt)
-      : tracker.complete(eventAt),
+      ? tracker.fail(eventAt, userData.user.id)
+      : tracker.complete(eventAt, userData.user.id),
   )()
 
   if (eventResult.isErr()) {
@@ -84,5 +85,28 @@ export async function POST(request: Request, { params }: RouteContext) {
     )
   }
 
-  return NextResponse.json({ ok: true })
+  const { data: statusData, error: statusError } = await supabase
+    .from('run_status')
+    .select('status, last_event_at, design_session_id')
+    .eq('design_session_id', runData.design_session_id)
+    .eq('organization_id', runData.organization_id)
+    .maybeSingle()
+
+  if (statusError) {
+    Sentry.captureException(statusError, {
+      tags: { runId },
+      extra: { location: 'runs/[id]/events fetch status' },
+    })
+    return NextResponse.json(
+      { error: 'Failed to fetch latest run status' },
+      { status: 500 },
+    )
+  }
+
+  return NextResponse.json({
+    status: statusData?.status ?? null,
+    lastEventAt: statusData?.last_event_at ?? null,
+    designSessionId: statusData?.design_session_id ?? runData.design_session_id,
+    runId,
+  })
 }

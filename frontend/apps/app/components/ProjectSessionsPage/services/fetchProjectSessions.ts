@@ -1,4 +1,9 @@
 import { createClient } from '../../../libs/db/server'
+import {
+  fetchRunStatusMap,
+  type RunStatusRecord,
+  type WorkflowRunStatus,
+} from '../../../libs/runs/fetchRunStatuses'
 import type { SessionStatus } from '../SessionStatusIndicator'
 
 export type ProjectSession = {
@@ -25,22 +30,6 @@ const hasStringId = (value: unknown): boolean => {
 
   const id = value.id
   return typeof id === 'string'
-}
-
-const normalizeStatus = (status: string | null): SessionStatus => {
-  if (status === 'error') {
-    return 'error'
-  }
-
-  if (status === 'completed' || status === 'success') {
-    return 'completed'
-  }
-
-  if (status === 'running' || status === 'pending') {
-    return 'running'
-  }
-
-  return 'running'
 }
 
 export const fetchProjectSessions = async (
@@ -106,15 +95,12 @@ export const fetchProjectSessions = async (
     }) ?? []
 
   const sessionIds = sessionList.map((session) => session.id)
-  const statusMap = new Map<string, SessionStatus>()
   const runIdMap = new Map<string, string>()
+  let statusRecordsMap: Map<string, RunStatusRecord> = new Map()
 
   if (sessionIds.length > 0) {
-    const [statusResponse, runsResponse] = await Promise.all([
-      supabase
-        .from('run_status')
-        .select('design_session_id, status')
-        .in('design_session_id', sessionIds),
+    const [resolvedStatusMap, runsResponse] = await Promise.all([
+      fetchRunStatusMap(supabase, sessionIds, { context: 'project sessions' }),
       supabase
         .from('runs')
         .select('id, design_session_id, started_at')
@@ -122,32 +108,7 @@ export const fetchProjectSessions = async (
         .order('started_at', { ascending: false }),
     ])
 
-    if (statusResponse.error) {
-      console.error(
-        'Error fetching run statuses for project sessions:',
-        statusResponse.error,
-      )
-    } else {
-      const statusRows = Array.isArray(statusResponse.data)
-        ? statusResponse.data
-        : []
-
-      statusRows.forEach((row) => {
-        if (!isRecord(row)) {
-          return
-        }
-
-        const designSessionId = toStringOrNull(row.design_session_id)
-        if (!designSessionId) {
-          return
-        }
-
-        statusMap.set(
-          designSessionId,
-          normalizeStatus(toStringOrNull(row.status)),
-        )
-      })
-    }
+    statusRecordsMap = resolvedStatusMap
 
     if (runsResponse.error) {
       console.error(
@@ -174,13 +135,31 @@ export const fetchProjectSessions = async (
     }
   }
 
+  const toSessionStatus = (
+    status: WorkflowRunStatus | undefined,
+  ): SessionStatus => {
+    if (!status) {
+      return 'running'
+    }
+
+    if (status === 'completed') {
+      return 'completed'
+    }
+
+    if (status === 'error') {
+      return 'error'
+    }
+
+    return 'running'
+  }
+
   return sessionList.map((session) => ({
     id: session.id,
     name: session.name,
     created_at: session.created_at,
     project_id: session.project_id,
     organization_id: session.organization_id,
-    status: statusMap.get(session.id) ?? 'running',
+    status: toSessionStatus(statusRecordsMap.get(session.id)?.status),
     latest_run_id: runIdMap.get(session.id) ?? null,
     has_schema: session.has_schema,
   }))

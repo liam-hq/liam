@@ -47,10 +47,9 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
 
   useEffect(() => {
     const supabase = createSupabaseClient()
-    const runStatuses = new Map<string, SessionStatus>()
-
+    const knownRunIds = new Set<string>()
     if (session.latest_run_id) {
-      runStatuses.set(session.latest_run_id, mapDbStatusToUi(session.status))
+      knownRunIds.add(session.latest_run_id)
     }
 
     const getRecord = (value: unknown) => (isRecord(value) ? value : null)
@@ -59,95 +58,137 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
       record: Record<string, unknown>,
       key: string,
     ): string | null => {
-      const value = record[key]
-      return typeof value === 'string' ? value : null
+      const fieldValue = record[key]
+      return typeof fieldValue === 'string' ? fieldValue : null
     }
 
-    const deriveAggregatedStatus = () => {
-      if (runStatuses.size === 0) {
-        return mapDbStatusToUi(session.status)
-      }
+    let refreshInFlight = false
+    let latestRunIdHint: string | null = null
+    let needsRefresh = false
 
-      const statuses = Array.from(runStatuses.values())
-      if (statuses.some((value) => value === 'error')) {
-        return 'error' as const
-      }
+    const refreshStatusFromSource = async () => {
+      do {
+        needsRefresh = false
+        const hint = latestRunIdHint
+        latestRunIdHint = null
 
-      if (statuses.some((value) => value === 'running')) {
-        return 'running' as const
-      }
+        const { data, error } = await supabase
+          .from('run_status')
+          .select('status')
+          .eq('design_session_id', session.id)
+          .maybeSingle()
 
-      return 'completed' as const
+        if (error) {
+          console.error('Error refreshing run status for session item:', error)
+          continue
+        }
+
+        const nextStatus = mapDbStatusToUi(
+          typeof data?.status === 'string' ? data.status : undefined,
+        )
+        setStatus(nextStatus)
+
+        if (hint) {
+          knownRunIds.add(hint)
+        }
+      } while (needsRefresh)
     }
 
-    const getUpdatedRun = (payload: unknown) => {
+    const scheduleRefresh = (runIdHint?: string) => {
+      if (runIdHint) {
+        latestRunIdHint = runIdHint
+      }
+
+      if (refreshInFlight) {
+        needsRefresh = true
+        return
+      }
+
+      refreshInFlight = true
+
+      refreshStatusFromSource()
+        .catch((error) => {
+          console.error('Unexpected error refreshing session status:', error)
+        })
+        .finally(() => {
+          refreshInFlight = false
+          if (needsRefresh) {
+            scheduleRefresh()
+          }
+        })
+    }
+
+    const resolveSessionMatch = async (runId: string) => {
+      if (knownRunIds.has(runId)) {
+        return true
+      }
+
+      const { data, error } = await supabase
+        .from('runs')
+        .select('design_session_id')
+        .eq('id', runId)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error resolving run session mapping:', error)
+        return false
+      }
+
+      const designSessionId =
+        typeof data?.design_session_id === 'string'
+          ? data.design_session_id
+          : null
+
+      if (designSessionId === session.id && runId) {
+        knownRunIds.add(runId)
+        return true
+      }
+
+      return false
+    }
+
+    const handleRunEvent = async (payload: unknown) => {
       const payloadRecord = isRecord(payload) ? payload : null
       const newRow = getRecord(payloadRecord ? payloadRecord['new'] : null)
       if (!newRow) {
-        return null
-      }
-
-      const runId = getStringField(newRow, 'id')
-      const designSessionId = getStringField(newRow, 'design_session_id')
-      if (!runId || designSessionId !== session.id) {
-        return null
-      }
-
-      return { runId, statusValue: getStringField(newRow, 'status') }
-    }
-
-    const handleRunInsert = (payload: unknown) => {
-      const updatedRun = getUpdatedRun(payload)
-      if (!updatedRun) {
         return
       }
 
-      runStatuses.set(updatedRun.runId, 'running')
-      setStatus(deriveAggregatedStatus())
-    }
-
-    const handleRunUpdate = (payload: unknown) => {
-      const updatedRun = getUpdatedRun(payload)
-      if (!updatedRun) {
+      const runId = getStringField(newRow, 'run_id')
+      if (!runId) {
         return
       }
 
-      const { runId, statusValue } = updatedRun
-      if (statusValue) {
-        runStatuses.set(runId, mapDbStatusToUi(statusValue))
+      const matchesSession = await resolveSessionMatch(runId)
+      if (!matchesSession) {
+        return
       }
 
-      setStatus(deriveAggregatedStatus())
+      scheduleRefresh(runId)
     }
 
-    const runsChannel = supabase
-      .channel(`runs_session_${session.id}`)
+    const eventsChannel = supabase
+      .channel(`run_events_session_${session.id}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'runs',
-          filter: `design_session_id=eq.${session.id}`,
+          table: 'run_events',
+          filter: `organization_id=eq.${session.organization_id}`,
         },
-        (payload) => handleRunInsert(payload),
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'runs',
-          filter: `design_session_id=eq.${session.id}`,
+        (payload) => {
+          // Treat realtime as an invalidation signal and re-read run_status
+          // for the authoritative workflow state.
+          void handleRunEvent(payload)
         },
-        (payload) => handleRunUpdate(payload),
       )
       .subscribe()
 
     return () => {
-      supabase.removeChannel(runsChannel)
+      supabase.removeChannel(eventsChannel)
     }
-  }, [session.id, session.latest_run_id, session.status])
+  }, [session.id, session.latest_run_id, session.organization_id])
 
   return (
     <Link

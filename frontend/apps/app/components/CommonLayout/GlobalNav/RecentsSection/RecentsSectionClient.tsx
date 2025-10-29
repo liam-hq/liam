@@ -31,17 +31,13 @@ const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const mapRunStatus = (status: string | null): RecentSession['status'] => {
+const toSessionStatus = (status: unknown): RecentSession['status'] => {
   if (status === 'error') {
     return 'error'
   }
 
   if (status === 'completed' || status === 'success') {
     return 'completed'
-  }
-
-  if (status === 'running' || status === 'pending' || status === 'started') {
-    return 'running'
   }
 
   return 'running'
@@ -62,9 +58,19 @@ export const RecentsSectionClient = ({
   const sessionsListRef = useRef<HTMLElement | null>(null)
   const sessionsRef = useRef(initialSessions)
   const runIdToSessionMap = useRef(new Map<string, string>())
-  const sessionRunStatusesRef = useRef(
-    new Map<string, Map<string, RecentSession['status']>>(),
+  const supabaseRef = useRef<ReturnType<typeof createSupabaseClient> | null>(
+    null,
   )
+  const refreshStateRef = useRef<
+    Map<
+      string,
+      {
+        inFlight: boolean
+        needsRefresh: boolean
+        latestRunIdHint: string | null
+      }
+    >
+  >(new Map())
 
   const handleFilterChange = useCallback(async (newFilterType: string) => {
     const nextFilterType: SessionFilterType = newFilterType
@@ -123,17 +129,127 @@ export const RecentsSectionClient = ({
     sessionsRef.current = sessions
     const runMap = runIdToSessionMap.current
     runMap.clear()
-    const statusMap = sessionRunStatusesRef.current
-    statusMap.clear()
     sessions.forEach((session) => {
-      const runStatuses = new Map<string, RecentSession['status']>()
       if (session.latest_run_id) {
         runMap.set(session.latest_run_id, session.id)
-        runStatuses.set(session.latest_run_id, session.status)
       }
-      statusMap.set(session.id, runStatuses)
     })
   }, [sessions])
+
+  const refreshSession = useCallback(
+    async (designSessionId: string, latestRunIdHint?: string) => {
+      const supabase = supabaseRef.current
+      if (!supabase) {
+        return
+      }
+
+      if (
+        !sessionsRef.current.some((session) => session.id === designSessionId)
+      ) {
+        return
+      }
+
+      const readSessionSnapshot = async () => {
+        const [statusResult, runResult] = await Promise.all([
+          supabase
+            .from('run_status')
+            .select('status')
+            .eq('design_session_id', designSessionId)
+            .maybeSingle(),
+          supabase
+            .from('runs')
+            .select('id')
+            .eq('design_session_id', designSessionId)
+            .maybeSingle(),
+        ])
+
+        if (statusResult.error) {
+          console.error(
+            'Error refreshing run status for recents:',
+            statusResult.error,
+          )
+        }
+
+        if (runResult.error) {
+          console.error(
+            'Error refreshing run metadata for recents:',
+            runResult.error,
+          )
+        }
+
+        const statusValue =
+          typeof statusResult.data?.status === 'string'
+            ? statusResult.data.status
+            : null
+
+        return {
+          normalizedStatus: toSessionStatus(statusValue),
+          fetchedRunId:
+            typeof runResult.data?.id === 'string' ? runResult.data.id : null,
+        }
+      }
+
+      const stateMap = refreshStateRef.current
+      let state = stateMap.get(designSessionId)
+      if (!state) {
+        state = {
+          inFlight: false,
+          needsRefresh: false,
+          latestRunIdHint: null,
+        }
+        stateMap.set(designSessionId, state)
+      }
+
+      if (typeof latestRunIdHint === 'string') {
+        state.latestRunIdHint = latestRunIdHint
+      }
+
+      if (state.inFlight) {
+        state.needsRefresh = true
+        return
+      }
+
+      state.inFlight = true
+
+      const runRefreshCycle = async () => {
+        do {
+          state.needsRefresh = false
+          const hint = state.latestRunIdHint
+          state.latestRunIdHint = null
+          const { normalizedStatus, fetchedRunId } = await readSessionSnapshot()
+          const nextRunId = hint ?? fetchedRunId ?? null
+
+          if (nextRunId) {
+            runIdToSessionMap.current.set(nextRunId, designSessionId)
+          }
+
+          setSessions((prev) =>
+            prev.map((session) =>
+              session.id === designSessionId
+                ? {
+                    ...session,
+                    status: normalizedStatus,
+                    latest_run_id: nextRunId ?? session.latest_run_id,
+                  }
+                : session,
+            ),
+          )
+        } while (state.needsRefresh)
+      }
+
+      runRefreshCycle()
+        .catch((error) => {
+          console.error('Unexpected error refreshing session state:', error)
+        })
+        .finally(() => {
+          state.inFlight = false
+          if (state.needsRefresh) {
+            void refreshSession(designSessionId)
+          }
+        })
+    },
+    [],
+  )
 
   useEffect(() => {
     const currentLoadMoreRef = loadMoreRef.current
@@ -166,6 +282,7 @@ export const RecentsSectionClient = ({
 
   useEffect(() => {
     const supabase = createSupabaseClient()
+    supabaseRef.current = supabase
 
     const getRecord = (value: unknown) => (isRecord(value) ? value : null)
 
@@ -182,139 +299,83 @@ export const RecentsSectionClient = ({
       return typeof value === 'string' ? value : null
     }
 
-    const sessionExists = (sessionId: string) =>
-      sessionsRef.current.some((session) => session.id === sessionId)
-
-    const upsertRunStatus = (
-      sessionId: string,
+    const resolveSessionIdForRun = async (
       runId: string,
-      status: RecentSession['status'],
-    ) => {
-      let runStatuses = sessionRunStatusesRef.current.get(sessionId)
-      if (!runStatuses) {
-        runStatuses = new Map<string, RecentSession['status']>()
-        sessionRunStatusesRef.current.set(sessionId, runStatuses)
+    ): Promise<string | null> => {
+      const cachedSessionId = runIdToSessionMap.current.get(runId)
+      if (cachedSessionId) {
+        return cachedSessionId
       }
 
-      runStatuses.set(runId, status)
-    }
+      const { data, error } = await supabase
+        .from('runs')
+        .select('design_session_id')
+        .eq('id', runId)
+        .maybeSingle()
 
-    const computeAggregatedStatus = (
-      sessionId: string,
-    ): RecentSession['status'] => {
-      const runStatuses = sessionRunStatusesRef.current.get(sessionId)
-      if (!runStatuses || runStatuses.size === 0) {
-        const session = sessionsRef.current.find(
-          (item) => item.id === sessionId,
-        )
-        return session ? session.status : 'running'
+      if (error) {
+        console.error('Error resolving session for run event:', error)
+        return null
       }
 
-      const statuses = Array.from(runStatuses.values())
-      if (statuses.some((value) => value === 'error')) {
-        return 'error'
+      const designSessionId =
+        typeof data?.design_session_id === 'string'
+          ? data.design_session_id
+          : null
+
+      if (designSessionId) {
+        runIdToSessionMap.current.set(runId, designSessionId)
       }
 
-      if (statuses.some((value) => value === 'running')) {
-        return 'running'
-      }
-
-      return 'completed'
-    }
-
-    const updateSessionState = (
-      sessionId: string,
-      options?: { latestRunId?: string },
-    ) => {
-      if (!sessionExists(sessionId)) {
-        return
-      }
-
-      const aggregatedStatus = computeAggregatedStatus(sessionId)
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === sessionId
-            ? {
-                ...session,
-                status: aggregatedStatus,
-                latest_run_id:
-                  options && 'latestRunId' in options
-                    ? (options.latestRunId ?? session.latest_run_id)
-                    : session.latest_run_id,
-              }
-            : session,
-        ),
-      )
-    }
-
-    const handleRunInsert = (payload: unknown) => {
-      const newRow = extractNewRow(payload)
-      if (!newRow) {
-        return
-      }
-
-      const runId = getStringField(newRow, 'id')
-      const sessionId = getStringField(newRow, 'design_session_id')
-      const statusValue = getStringField(newRow, 'status')
-
-      if (!runId || !sessionId || !sessionExists(sessionId)) {
-        return
-      }
-
-      const normalizedStatus = mapRunStatus(statusValue)
-      runIdToSessionMap.current.set(runId, sessionId)
-      upsertRunStatus(sessionId, runId, normalizedStatus)
-      updateSessionState(sessionId, { latestRunId: runId })
-    }
-
-    const handleRunUpdate = (payload: unknown) => {
-      const newRow = extractNewRow(payload)
-      if (!newRow) {
-        return
-      }
-
-      const runId = getStringField(newRow, 'id')
-      const sessionId = getStringField(newRow, 'design_session_id')
-      const statusValue = getStringField(newRow, 'status')
-
-      if (!runId || !sessionId || !sessionExists(sessionId) || !statusValue) {
-        return
-      }
-
-      const normalizedStatus = mapRunStatus(statusValue)
-      runIdToSessionMap.current.set(runId, sessionId)
-      upsertRunStatus(sessionId, runId, normalizedStatus)
-      updateSessionState(sessionId)
+      return designSessionId
     }
 
     const runsChannel = supabase
-      .channel('runs_recents')
+      .channel(`run_events_recents_${organizationId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'runs',
+          table: 'run_events',
           filter: `organization_id=eq.${organizationId}`,
         },
-        (payload) => handleRunInsert(payload),
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'runs',
-          filter: `organization_id=eq.${organizationId}`,
+        async (payload) => {
+          // Realtime payload is only a trigger; fetch the authoritative status
+          // from the run_status view for the affected design session.
+          const newRow = extractNewRow(payload)
+          if (!newRow) {
+            return
+          }
+
+          const runId = getStringField(newRow, 'run_id')
+          if (!runId) {
+            return
+          }
+
+          const designSessionId = await resolveSessionIdForRun(runId)
+          if (!designSessionId) {
+            return
+          }
+
+          if (
+            !sessionsRef.current.some(
+              (session) => session.id === designSessionId,
+            )
+          ) {
+            return
+          }
+
+          await refreshSession(designSessionId, runId)
         },
-        (payload) => handleRunUpdate(payload),
       )
       .subscribe()
 
     return () => {
       supabase.removeChannel(runsChannel)
+      supabaseRef.current = null
     }
-  }, [organizationId])
+  }, [organizationId, refreshSession])
 
   return (
     <>

@@ -1,4 +1,8 @@
 import { createClient } from '../../../../libs/db/server'
+import {
+  fetchRunStatusMap,
+  type WorkflowRunStatus,
+} from '../../../../libs/runs/fetchRunStatuses'
 import type { SessionStatus } from '../../../ProjectSessionsPage/SessionStatusIndicator'
 import type { RecentSession, SessionFilterType } from './types'
 
@@ -34,22 +38,6 @@ const hasStringId = (value: unknown): boolean => {
 
   const id = value.id
   return typeof id === 'string'
-}
-
-const normalizeStatus = (status: string | null): SessionStatus => {
-  if (status === 'error') {
-    return 'error'
-  }
-
-  if (status === 'completed' || status === 'success') {
-    return 'completed'
-  }
-
-  if (status === 'running' || status === 'pending') {
-    return 'running'
-  }
-
-  return 'running'
 }
 
 const sanitizeCreatedByUser = (
@@ -176,45 +164,6 @@ const fetchSessionRows = async (
     .filter((session): session is SanitizedSession => Boolean(session))
 }
 
-const fetchStatusMap = async (
-  supabase: SupabaseClient,
-  sessionIds: string[],
-) => {
-  const statusMap = new Map<string, SessionStatus>()
-
-  if (sessionIds.length === 0) {
-    return statusMap
-  }
-
-  const { data, error } = await supabase
-    .from('run_status')
-    .select('design_session_id, status')
-    .in('design_session_id', sessionIds)
-
-  if (error) {
-    console.error('Error fetching run statuses for recents:', error)
-    return statusMap
-  }
-
-  const rows = Array.isArray(data) ? data : []
-
-  rows.forEach((row) => {
-    if (!isRecord(row)) {
-      return
-    }
-
-    const designSessionId = toStringOrNull(row.design_session_id)
-
-    if (!designSessionId) {
-      return
-    }
-
-    statusMap.set(designSessionId, normalizeStatus(toStringOrNull(row.status)))
-  })
-
-  return statusMap
-}
-
 const fetchLatestRunMap = async (
   supabase: SupabaseClient,
   sessionIds: string[],
@@ -266,10 +215,28 @@ export const fetchRecentSessions = async (
 
   const sessionIds = sessions.map((session) => session.id)
 
-  const [statusMap, runIdMap] = await Promise.all([
-    fetchStatusMap(supabase, sessionIds),
+  const [statusRecordsMap, runIdMap] = await Promise.all([
+    fetchRunStatusMap(supabase, sessionIds, { context: 'recents' }),
     fetchLatestRunMap(supabase, sessionIds),
   ])
+
+  const toSessionStatus = (
+    status: WorkflowRunStatus | undefined,
+  ): SessionStatus => {
+    if (!status) {
+      return 'running'
+    }
+
+    if (status === 'completed') {
+      return 'completed'
+    }
+
+    if (status === 'error') {
+      return 'error'
+    }
+
+    return 'running'
+  }
 
   return sessions.map((session) => ({
     id: session.id,
@@ -277,7 +244,7 @@ export const fetchRecentSessions = async (
     created_at: session.created_at,
     project_id: session.project_id,
     organization_id: session.organization_id,
-    status: statusMap.get(session.id) ?? 'running',
+    status: toSessionStatus(statusRecordsMap.get(session.id)?.status),
     latest_run_id: runIdMap.get(session.id) ?? null,
     has_schema: session.has_schema,
     created_by_user: session.created_by_user,
