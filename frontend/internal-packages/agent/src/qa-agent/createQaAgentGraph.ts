@@ -1,18 +1,18 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import { RETRY_POLICY } from '../utils/errorHandling'
-import { continueToRequirements } from './distributeRequirements'
 import { applyGeneratedSqlsNode } from './nodes/applyGeneratedSqlsNode'
+import { batchTestcaseGenerationNode } from './nodes/batchTestcaseGenerationNode'
 import { invokeRunTestToolNode } from './nodes/invokeRunTestToolNode'
 import { qaAgentAnnotation } from './shared/qaAgentAnnotation'
-import { testcaseGeneration } from './testcaseGeneration'
 import { validateSchemaNode } from './validateSchema'
 
 export const createQaAgentGraph = () => {
   const qaAgentGraph = new StateGraph(qaAgentAnnotation)
 
   qaAgentGraph
-    // Add nodes for map-reduce pattern
-    .addNode('testcaseGeneration', testcaseGeneration)
+    .addNode('batchTestcaseGeneration', batchTestcaseGenerationNode, {
+      retryPolicy: RETRY_POLICY,
+    })
 
     .addNode('applyGeneratedSqls', applyGeneratedSqlsNode)
 
@@ -23,13 +23,11 @@ export const createQaAgentGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
 
-    // Define edges for map-reduce flow
-    // Use conditional edge with Send API for parallel execution from START
-    // Send targets the testcaseGeneration
-    .addConditionalEdges(START, continueToRequirements)
+    // Define edges for sequential flow with batched processing
+    .addEdge(START, 'batchTestcaseGeneration')
 
-    // After all parallel subgraph executions complete, apply generated SQLs
-    .addEdge('testcaseGeneration', 'applyGeneratedSqls')
+    // After batched generation completes, apply generated SQLs
+    .addEdge('batchTestcaseGeneration', 'applyGeneratedSqls')
 
     // Then validate
     .addEdge('applyGeneratedSqls', 'validateSchema')

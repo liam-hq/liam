@@ -234,20 +234,16 @@ The `qaAgent` node is implemented as a **LangGraph subgraph** that encapsulates 
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	testcaseGeneration(testcaseGeneration)
+	batchTestcaseGeneration(batchTestcaseGeneration)
 	applyGeneratedSqls(applyGeneratedSqls)
 	validateSchema(validateSchema)
 	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
+	__start__ --> batchTestcaseGeneration;
 	applyGeneratedSqls --> validateSchema;
+	batchTestcaseGeneration --> applyGeneratedSqls;
 	invokeRunTestTool --> __end__;
-	testcaseGeneration --> applyGeneratedSqls;
 	validateSchema --> invokeRunTestTool;
-	__start__ -.-> testcaseGeneration;
-	__start__ -.-> applyGeneratedSqls;
-	__start__ -.-> validateSchema;
-	__start__ -.-> invokeRunTestTool;
-	__start__ -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
@@ -255,12 +251,13 @@ graph TD;
 
 ### QA Agent Components
 
-#### 1. testcaseGeneration Node
+#### 1. batchTestcaseGeneration Node
 
-- **Purpose**: Implements map-reduce pattern for parallel testcase generation using a dedicated subgraph
-- **Performed by**: Multiple parallel instances of testcase generation subgraph
-- **Retry Policy**: maxAttempts: 3 (internal to subgraph)
+- **Purpose**: Processes testcases in controlled batches with progress tracking to prevent message flooding
+- **Performed by**: Batched execution of testcase generation subgraph with concurrent limit of 3
+- **Retry Policy**: maxAttempts: 3 (applied to the batch node)
 - **Output**: AI-generated test cases with DML operations using tool calls
+- **Progress Tracking**: Dispatches batch_start, progress, and batch_complete events for UX improvement
 
 #### 2. applyGeneratedSqls Node
 
@@ -332,10 +329,11 @@ graph TD;
 
 ### QA Agent Flow Patterns
 
-1. **Map-Reduce Flow**: `START → testcaseGeneration (parallel) → applyGeneratedSqls → validateSchema → invokeRunTestTool → END`
-2. **Parallel Processing**: Multiple testcase generation instances run concurrently
-3. **SQL Mapping**: Generated SQLs are mapped to analyzedRequirements.testcases before validation
-4. **Split Validation**: Test case generation and execution are now separated - generation creates test cases, then validation triggers test execution via the new runTestTool
+1. **Batched Flow**: `START → batchTestcaseGeneration → applyGeneratedSqls → validateSchema → invokeRunTestTool → END`
+2. **Controlled Concurrency**: Testcases are processed in batches of 3 to prevent message flooding
+3. **Progress Tracking**: Batch start, progress updates, and completion events provide clear UX feedback
+4. **SQL Mapping**: Generated SQLs are mapped to analyzedRequirements.testcases before validation
+5. **Split Validation**: Test case generation and execution are now separated - generation creates test cases, then validation triggers test execution via the new runTestTool
 
 ### QA Agent Benefits
 
