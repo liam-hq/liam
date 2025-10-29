@@ -2,9 +2,12 @@ import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import { AIMessage, AIMessageChunk } from '@langchain/core/messages'
 import { SSE_EVENTS } from '../streaming/constants'
 
+type MessageLevel = 'VERBOSE' | 'NORMAL' | 'QUIET'
+
 type StreamLLMOptions = {
   agentName: string
   eventType?: string
+  messageLevel?: MessageLevel
 }
 
 type ProcessStreamResult = {
@@ -68,6 +71,65 @@ async function processStreamWithImmediateDispatch(
   }
 }
 
+async function processStreamQuietly(
+  stream: AsyncIterable<AIMessageChunk>,
+  id: string,
+  agentName: string,
+): Promise<ProcessStreamResult> {
+  let accumulatedChunk: AIMessageChunk | null = null
+  let reasoningStartTime: number | null = null
+  let reasoningEndTime: number | null = null
+
+  for await (const _chunk of stream) {
+    const chunk = new AIMessageChunk({ ..._chunk, id, name: agentName })
+
+    if (chunk.additional_kwargs?.['reasoning']) {
+      if (!reasoningStartTime) {
+        reasoningStartTime = Date.now()
+      }
+      reasoningEndTime = Date.now()
+    }
+
+    accumulatedChunk = accumulatedChunk ? accumulatedChunk.concat(chunk) : chunk
+  }
+
+  const reasoningDurationMs =
+    reasoningStartTime && reasoningEndTime
+      ? reasoningEndTime - reasoningStartTime
+      : null
+
+  return {
+    chunk: accumulatedChunk,
+    reasoningDurationMs,
+  }
+}
+
+function buildAIMessage(
+  id: string,
+  agentName: string,
+  accumulatedChunk: AIMessageChunk | null,
+  reasoningDurationMs: number | null,
+): AIMessage {
+  if (!accumulatedChunk) {
+    return new AIMessage({ id, content: '', name: agentName })
+  }
+
+  return new AIMessage({
+    id,
+    content: accumulatedChunk.content,
+    additional_kwargs: {
+      ...accumulatedChunk.additional_kwargs,
+      ...(reasoningDurationMs !== null && {
+        reasoning_duration_ms: reasoningDurationMs,
+      }),
+    },
+    name: agentName,
+    ...(accumulatedChunk.tool_calls && {
+      tool_calls: accumulatedChunk.tool_calls,
+    }),
+  })
+}
+
 /**
  * Process a streaming LLM response with chunk accumulation and event dispatching
  */
@@ -75,34 +137,22 @@ export async function streamLLMResponse(
   stream: AsyncIterable<AIMessageChunk>,
   options: StreamLLMOptions,
 ): Promise<AIMessage> {
-  const { agentName, eventType = SSE_EVENTS.MESSAGES } = options
+  const {
+    agentName,
+    eventType = SSE_EVENTS.MESSAGES,
+    messageLevel = 'NORMAL',
+  } = options
 
-  // OpenAI ("chatcmpl-...") and LangGraph ("run-...") use different id formats,
-  // so we overwrite with a UUID to unify chunk ids for consistent handling.
   const id = crypto.randomUUID()
 
-  // All agents currently use immediate dispatch. If a provider streams
-  // tool_calls incrementally, the final message is reconstructed from
-  // the accumulated chunk below.
+  if (messageLevel === 'QUIET') {
+    const { chunk: accumulatedChunk, reasoningDurationMs } =
+      await processStreamQuietly(stream, id, agentName)
+    return buildAIMessage(id, agentName, accumulatedChunk, reasoningDurationMs)
+  }
+
   const { chunk: accumulatedChunk, reasoningDurationMs } =
     await processStreamWithImmediateDispatch(stream, id, agentName, eventType)
 
-  const response = accumulatedChunk
-    ? new AIMessage({
-        id,
-        content: accumulatedChunk.content,
-        additional_kwargs: {
-          ...accumulatedChunk.additional_kwargs,
-          ...(reasoningDurationMs !== null && {
-            reasoning_duration_ms: reasoningDurationMs,
-          }),
-        },
-        name: agentName,
-        ...(accumulatedChunk.tool_calls && {
-          tool_calls: accumulatedChunk.tool_calls,
-        }),
-      })
-    : new AIMessage({ id, content: '', name: agentName })
-
-  return response
+  return buildAIMessage(id, agentName, accumulatedChunk, reasoningDurationMs)
 }

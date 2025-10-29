@@ -1,0 +1,1 @@
+export const CONCURRENT_TESTCASE_LIMIT = 3

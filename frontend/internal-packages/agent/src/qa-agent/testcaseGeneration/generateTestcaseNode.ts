@@ -80,6 +80,7 @@ export async function generateTestcaseNode(
   const response = await streamLLMResponse(streamResult.value, {
     agentName: 'qa',
     eventType: 'messages',
+    messageLevel: 'QUIET',
   })
 
   return {
