@@ -7,7 +7,9 @@ import {
   TooltipRoot,
   TooltipTrigger,
 } from '@liam-hq/ui'
-import type { FC } from 'react'
+import clsx from 'clsx'
+import { X } from 'lucide-react'
+import type { FC, ReactNode } from 'react'
 import styles from './SessionStatusIndicator.module.css'
 
 export type SessionStatus = 'running' | 'completed' | 'error'
@@ -28,11 +30,11 @@ const statusConfig = {
   error: {
     label: 'Error',
     className: styles.indicatorError,
-    content: '!',
+    content: <X className={clsx(styles.errorIcon)} aria-hidden="true" />,
   },
 } as const satisfies Record<
   SessionStatus,
-  { label: string; className: string; content?: string }
+  { label: string; className: string; content?: ReactNode }
 >
 
 export const SessionStatusIndicator: FC<Props> = ({ status }) => {
