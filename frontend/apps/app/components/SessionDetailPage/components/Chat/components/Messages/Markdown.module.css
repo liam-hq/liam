@@ -72,7 +72,7 @@
 .markdownWrapper :global(h6) {
   font-weight: 600;
   font-size: 0.85em;
-  color: var(--global-body-text-subtle);
+  color: var(--global-mute-text);
 }
 
 /* Paragraphs */
@@ -132,8 +132,8 @@
   margin: 0;
   font-size: 85%;
   white-space: break-spaces;
-  background-color: var(--global-foreground-subtle);
-  border-radius: var(--border-radius-small);
+  background-color: var(--overlay-10);
+  border-radius: var(--border-radius-sm);
   font-family: var(--code-font);
 }
 
@@ -229,7 +229,7 @@
 .markdownWrapper :global(blockquote) {
   margin: 0 0 var(--spacing-2) 0;
   padding: 0 var(--spacing-2);
-  color: var(--global-body-text-subtle);
+  color: var(--global-mute-text);
   border-left: 0.25em solid var(--global-border);
 }
 
@@ -272,7 +272,7 @@
 
 .markdownWrapper :global(table th) {
   font-weight: 600;
-  background-color: var(--global-foreground-subtle);
+  background-color: var(--overlay-10);
   color: var(--global-body-text);
   text-align: left;
   position: sticky;

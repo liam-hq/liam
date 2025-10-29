@@ -1,17 +1,17 @@
 .card {
-  background-color: var(--color-bg-primary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--radius-md);
+  background-color: var(--pane-background);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-md);
   overflow: hidden;
 }
 
 .cardContent {
-  padding: var(--spacing-3xl);
+  padding: var(--spacing-6);
 }
 
 .rowContainer {
   display: flex;
-  gap: var(--spacing-5xl);
+  gap: var(--spacing-10);
   align-items: flex-start;
 }
 
@@ -21,8 +21,8 @@
 
 .cardTitle {
   font-size: var(--font-size-6);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  font-weight: 700;
+  color: var(--global-foreground);
   margin: 0;
 }
 
@@ -30,13 +30,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-3);
 }
 
 .label {
   font-size: var(--font-size-5);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
+  font-weight: 500;
+  color: var(--global-foreground);
 }
 
 .input {
@@ -45,17 +45,17 @@
 
 .helperText {
   font-size: var(--font-size-5);
-  color: var(--color-text-secondary);
+  color: var(--global-body-text);
   margin: 0;
 }
 
 .divider {
   height: 1px;
-  background-color: var(--color-border-primary);
+  background-color: var(--pane-border);
 }
 
 .cardFooter {
-  padding: var(--spacing-xl) var(--spacing-3xl);
+  padding: var(--spacing-5) var(--spacing-6);
   display: flex;
   justify-content: flex-end;
 }

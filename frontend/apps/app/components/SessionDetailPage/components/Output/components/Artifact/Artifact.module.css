@@ -4,8 +4,7 @@
   width: 100%;
   height: 100%;
   background-color: var(--global-background);
-  border-radius: var(--border-radius-medium);
-  box-shadow: var(--shadow-level-1);
+  border-radius: var(--border-radius-md);
   overflow: hidden;
   container-type: inline-size;
   container-name: artifact;
@@ -130,7 +129,7 @@
   line-height: 1.75rem;
   letter-spacing: -0.015em;
   color: var(--global-foreground);
-  border-bottom: 1px solid var(--global-border-subtle);
+  border-bottom: 1px solid var(--global-border);
   padding-bottom: var(--spacing-2);
 }
 
@@ -233,8 +232,8 @@
   margin: 0;
   font-size: var(--font-size-5);
   white-space: break-spaces;
-  background-color: var(--global-foreground-subtle);
-  border-radius: var(--border-radius-small);
+  background-color: var(--overlay-10);
+  border-radius: var(--border-radius-sm);
   font-family: var(--code-font);
 }
 
@@ -279,7 +278,7 @@
 
 .body :global(table th) {
   font-weight: 600;
-  background-color: var(--global-background-subtle);
+  background-color: var(--overlay-10);
 }
 
 .body :global(table tr) {
@@ -287,13 +286,13 @@
 }
 
 .body :global(table tr:nth-child(2n)) {
-  background-color: var(--global-background-subtle);
+  background-color: var(--overlay-5);
 }
 
 /* Blockquotes */
 .body :global(blockquote) {
   padding: 0 1em;
-  color: var(--global-body-text-subtle);
+  color: var(--global-mute-text);
   border-left: 0.25em solid var(--global-border);
   margin: 0 0 var(--spacing-2) 0;
 }
@@ -355,9 +354,9 @@
   line-height: 10px;
   color: var(--global-foreground);
   vertical-align: middle;
-  background-color: var(--global-background-subtle);
+  background-color: var(--overlay-5);
   border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-small);
+  border-radius: var(--border-radius-sm);
   box-shadow: inset 0 -1px 0 var(--global-border);
   font-family: var(--code-font);
 }
@@ -444,7 +443,7 @@
 }
 
 .body :global(summary:hover) {
-  color: var(--primary-accent-hover);
+  color: var(--primary-accent);
 }
 
 .body :global(details[open] summary) {
@@ -472,7 +471,7 @@
 .body :global(ul ul li) {
   font-family: var(--code-font);
   font-size: var(--font-size-3);
-  color: var(--global-body-text-subtle);
+  color: var(--global-mute-text);
 }
 
 /* Execution log styling */

@@ -11,7 +11,7 @@
   border: var(--border-width-base) solid transparent;
   border-radius: var(--border-radius-base);
   color: var(--global-foreground);
-  font-family: var(--font-family);
+  font-family: inherit;
   font-size: var(--font-size-4);
   font-weight: 500;
   line-height: 1;

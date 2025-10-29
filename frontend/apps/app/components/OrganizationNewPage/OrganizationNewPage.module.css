@@ -83,7 +83,6 @@
 }
 
 .buttonCustom {
-  min-width: var(--spacing-40);
   height: var(--spacing-9);
   font-size: var(--font-size-4);
   font-weight: 500;

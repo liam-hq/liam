@@ -49,5 +49,5 @@
 }
 
 .errorDisplayLabel {
-  color: var(--severity-critical-1);
+  color: var(--danger-high-contrast-text);
 }

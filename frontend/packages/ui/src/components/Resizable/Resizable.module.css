@@ -36,7 +36,7 @@
 
 .handle:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px var(--ring-color);
+  box-shadow: 0 0 0 1px var(--primary-accent);
   outline-offset: 1px;
 }
 
@@ -65,8 +65,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-color);
-  background-color: var(--border-color);
+  border: 1px solid var(--pane-border);
+  background-color: var(--pane-border);
 }
 
 .panelAnimating {
