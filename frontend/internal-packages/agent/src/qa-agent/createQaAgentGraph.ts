@@ -10,7 +10,7 @@ export const createQaAgentGraph = () => {
   const qaAgentGraph = new StateGraph(qaAgentAnnotation)
 
   qaAgentGraph
-    .addNode('processBatchedTestcases', processBatchedTestcasesNode, {
+    .addNode('testcaseGeneration', processBatchedTestcasesNode, {
       retryPolicy: RETRY_POLICY,
     })
 
@@ -23,9 +23,15 @@ export const createQaAgentGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
 
-    .addEdge(START, 'processBatchedTestcases')
+    .addConditionalEdges(START, () => 'testcaseGeneration', {
+      testcaseGeneration: 'testcaseGeneration',
+      applyGeneratedSqls: 'applyGeneratedSqls',
+      validateSchema: 'validateSchema',
+      invokeRunTestTool: 'invokeRunTestTool',
+      [END]: END,
+    })
 
-    .addEdge('processBatchedTestcases', 'applyGeneratedSqls')
+    .addEdge('testcaseGeneration', 'applyGeneratedSqls')
 
     .addEdge('applyGeneratedSqls', 'validateSchema')
 
