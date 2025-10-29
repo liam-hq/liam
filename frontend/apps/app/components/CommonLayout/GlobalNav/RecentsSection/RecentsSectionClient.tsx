@@ -27,6 +27,29 @@ type RecentsSectionClientProps = {
 const PAGE_SIZE = 20
 const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
+const STORAGE_KEY = 'sessionFilterType'
+
+const getInitialFilterType = (): SessionFilterType => {
+  if (typeof window === 'undefined') return 'me'
+
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (!saved) return 'me'
+
+    if (saved === 'all' || saved === 'me') {
+      return saved
+    }
+
+    if (saved.length > 0) {
+      return saved
+    }
+  } catch (error) {
+    Sentry.captureException(error)
+  }
+
+  return 'me'
+}
+
 export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
@@ -36,7 +59,8 @@ export const RecentsSectionClient = ({
   const [sessions, setSessions] = useState<RecentSession[]>(initialSessions)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialSessions.length >= PAGE_SIZE)
-  const [filterType, setFilterType] = useState<SessionFilterType>('me')
+  const [filterType, setFilterType] =
+    useState<SessionFilterType>(getInitialFilterType)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const sessionsListRef = useRef<HTMLElement | null>(null)
@@ -44,6 +68,12 @@ export const RecentsSectionClient = ({
   const handleFilterChange = useCallback(async (newFilterType: string) => {
     setFilterType(newFilterType)
     setIsLoading(true)
+
+    try {
+      localStorage.setItem(STORAGE_KEY, newFilterType)
+    } catch (error) {
+      Sentry.captureException(error)
+    }
 
     const result = await fromPromise(fetchFilteredSessions(newFilterType))
 
