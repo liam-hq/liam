@@ -18,13 +18,13 @@ import { toJsonSchema } from '../../utils/jsonSchema'
 import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
 import { getToolConfigurable } from '../getToolConfigurable'
 
-const TOOL_NAME = 'schemaDesignTool'
+const TOOL_NAME = 'createMigrationTool'
 
-const schemaDesignToolSchema = v.object({
+const createMigrationToolSchema = v.object({
   operations: migrationOperationsSchema,
 })
 
-const toolSchema = toJsonSchema(schemaDesignToolSchema)
+const toolSchema = toJsonSchema(createMigrationToolSchema)
 
 const validateAndExecuteDDL = async (
   schema: Schema,
@@ -109,7 +109,7 @@ const sendToolMessage = async (
   return toolMessage
 }
 
-export const schemaDesignTool: StructuredTool = tool(
+export const createMigrationTool: StructuredTool = tool(
   async (input: unknown, config: RunnableConfig): Promise<string> => {
     return withSentryCaptureException(async () => {
       const { toolCallId } = getConfigData(config)
@@ -122,7 +122,7 @@ export const schemaDesignTool: StructuredTool = tool(
         return errorMessage
       }
       const { repositories, designSessionId } = toolConfigurableResult.value
-      const parsed = v.safeParse(schemaDesignToolSchema, input)
+      const parsed = v.safeParse(createMigrationToolSchema, input)
       if (!parsed.success) {
         const errorDetails = parsed.issues
           .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)

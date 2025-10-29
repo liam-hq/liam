@@ -5,8 +5,6 @@ import { useMigrationsViewer } from './useMigrationsViewer'
 
 type Props = {
   doc: string
-  prevDoc?: string
-  showDiff?: boolean
   comments: ReviewComment[]
   showComments: boolean
   onQuickFix?: (comment: string) => void
@@ -14,16 +12,12 @@ type Props = {
 
 export const MigrationsViewer: FC<Props> = ({
   doc,
-  prevDoc,
-  showDiff,
   comments,
   showComments,
   onQuickFix,
 }) => {
   const { ref } = useMigrationsViewer({
     doc,
-    prevDoc,
-    showDiff,
     comments,
     showComments,
     onQuickFix,

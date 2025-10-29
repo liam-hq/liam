@@ -9,7 +9,7 @@ import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
 import type { VersionDropdown } from './components/Header/VersionDropdown'
-import { SQL } from './components/SQL'
+import { Migrations } from './components/Migrations'
 import {
   DEFAULT_OUTPUT_TAB,
   OUTPUT_TABS,
@@ -88,15 +88,11 @@ export const Output: FC<Props> = ({
         <ERD schema={schema} baselineSchema={baselineSchema} />
       </TabsContent>
       <TabsContent
-        value={OUTPUT_TABS.SQL}
+        value={OUTPUT_TABS.MIGRATIONS}
         className={styles.tabsContent}
         forceMount
       >
-        <SQL
-          currentSchema={schema}
-          baselineSchema={baselineSchema}
-          comments={sqlReviewComments}
-        />
+        <Migrations currentSchema={schema} comments={sqlReviewComments} />
       </TabsContent>
       <TabsContent
         value={OUTPUT_TABS.ARTIFACT}

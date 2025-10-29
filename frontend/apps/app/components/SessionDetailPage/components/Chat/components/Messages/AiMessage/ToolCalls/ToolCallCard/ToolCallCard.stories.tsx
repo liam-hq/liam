@@ -32,7 +32,7 @@ export default meta
 type Story = StoryObj<typeof ToolCallCard>
 
 const sampleCall: ToolCall = {
-  name: 'schemaDesignTool',
+  name: 'createMigrationTool',
   args: {
     requirements: 'Design a user authentication schema',
   },
@@ -53,7 +53,7 @@ export const Success: Story = {
     // @ts-expect-error - Using partial ToolMessage for story demo
     result: {
       content: 'Schema design completed successfully',
-      name: 'schemaDesignTool',
+      name: 'createMigrationTool',
       id: 'result-1',
       status: 'success',
       tool_call_id: 'call-1',
@@ -67,7 +67,7 @@ export const ErrorState: Story = {
     // @ts-expect-error - Using partial ToolMessage for story demo
     result: {
       content: 'Schema validation failed',
-      name: 'schemaDesignTool',
+      name: 'createMigrationTool',
       id: 'result-2',
       status: 'error',
       tool_call_id: 'call-1',

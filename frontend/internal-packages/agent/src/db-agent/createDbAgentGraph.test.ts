@@ -8,11 +8,11 @@ describe('createDbAgentGraph', () => {
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	designSchema(designSchema)
-	invokeSchemaDesignTool(invokeSchemaDesignTool)
+	invokeCreateMigrationTool(invokeCreateMigrationTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> designSchema;
-	invokeSchemaDesignTool --> designSchema;
-	designSchema -.-> invokeSchemaDesignTool;
+	invokeCreateMigrationTool --> designSchema;
+	designSchema -.-> invokeCreateMigrationTool;
 	designSchema -.-> __end__;
 	designSchema -.-> designSchema;
 	classDef default fill:#f2f0ff,line-height:1.2;

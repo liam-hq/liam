@@ -14,16 +14,16 @@ const createDbAgentState = (
   designSessionId: 'test-session',
   prompt: 'test input',
   next: END,
-  schemaDesignSuccessful: false,
+  createMigrationSuccessful: false,
 })
 
 describe('routeAfterDesignSchema', () => {
-  it('should return invokeSchemaDesignTool when message has tool calls', () => {
+  it('should return invokeCreateMigrationTool when message has tool calls', () => {
     const messageWithToolCalls = new AIMessage({
       content: 'I need to update the schema',
       tool_calls: [
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id',
         },
@@ -33,7 +33,7 @@ describe('routeAfterDesignSchema', () => {
     const state = createDbAgentState([messageWithToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('invokeSchemaDesignTool')
+    expect(result).toBe('invokeCreateMigrationTool')
   })
 
   it('should return END when message has no tool calls (design complete)', () => {
@@ -75,7 +75,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'I need to update the schema',
       tool_calls: [
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id',
         },
@@ -100,12 +100,12 @@ describe('routeAfterDesignSchema', () => {
       content: 'I need to update the schema',
       tool_calls: [
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id-1',
         },
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id-2',
         },
@@ -115,6 +115,6 @@ describe('routeAfterDesignSchema', () => {
     const state = createDbAgentState([messageWithMultipleToolCalls])
     const result = routeAfterDesignSchema(state)
 
-    expect(result).toBe('invokeSchemaDesignTool')
+    expect(result).toBe('invokeCreateMigrationTool')
   })
 })

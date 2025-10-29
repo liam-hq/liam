@@ -9,7 +9,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Repositories } from '../../repositories'
 import { InMemoryRepository } from '../../repositories/InMemoryRepository'
-import { schemaDesignTool } from './schemaDesignTool'
+import { createMigrationTool } from './createMigrationTool'
 
 type ToolCall = {
   id: string
@@ -21,7 +21,7 @@ vi.mock('@liam-hq/pglite-server', () => ({
   executeQuery: vi.fn(),
 }))
 
-describe('schemaDesignTool', () => {
+describe('createMigrationTool', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -41,7 +41,7 @@ describe('schemaDesignTool', () => {
     },
     toolCall: {
       id: 'test-tool-call-id',
-      name: 'schemaDesignTool',
+      name: 'createMigrationTool',
       args: {},
     },
   })
@@ -108,13 +108,13 @@ describe('schemaDesignTool', () => {
     }
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const result = await schemaDesignTool.invoke(input, config as never)
+    const result = await createMigrationTool.invoke(input, config as never)
 
     // Tool returns a ToolMessage with the success message
     expect(result).toMatchObject({
       content:
         'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (1/1 statements executed successfully), and new version created.',
-      name: 'schemaDesignTool',
+      name: 'createMigrationTool',
       tool_call_id: 'test-tool-call-id',
       status: 'success',
     })
@@ -161,7 +161,7 @@ describe('schemaDesignTool', () => {
       ],
     }
 
-    await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
+    await expect(createMigrationTool.invoke(input, config)).rejects.toThrow(
       /Could not retrieve current schema for DDL validation/,
     )
   })
@@ -183,7 +183,7 @@ describe('schemaDesignTool', () => {
     }
 
     // LangChain validates schema before our tool function is called
-    await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
+    await expect(createMigrationTool.invoke(input, config)).rejects.toThrow(
       'Received tool input did not match expected schema',
     )
   })
@@ -213,12 +213,12 @@ describe('schemaDesignTool', () => {
 
     // With actual PGlite, empty operations on empty schema should succeed
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const result2 = await schemaDesignTool.invoke(input, config as never)
+    const result2 = await createMigrationTool.invoke(input, config as never)
     // Tool returns a ToolMessage with the success message
     expect(result2).toMatchObject({
       content:
         'Schema successfully updated. The operations have been applied to the database schema, DDL validation successful (0/0 statements executed successfully), and new version created.',
-      name: 'schemaDesignTool',
+      name: 'createMigrationTool',
       tool_call_id: 'test-tool-call-id',
       status: 'success',
     })
@@ -299,7 +299,7 @@ describe('schemaDesignTool', () => {
       ],
     }
 
-    await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
+    await expect(createMigrationTool.invoke(input, config)).rejects.toThrow(
       /DDL execution validation failed/,
     )
 
@@ -377,7 +377,7 @@ ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_fkey" FOREIGN KEY ("user_id") 
       ],
     }
 
-    await expect(schemaDesignTool.invoke(input, config)).rejects.toThrow(
+    await expect(createMigrationTool.invoke(input, config)).rejects.toThrow(
       /Failed to create schema version after DDL validation: Version creation failed due to conflict/,
     )
 

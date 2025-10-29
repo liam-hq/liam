@@ -8,16 +8,16 @@ import {
 } from '../../../test-utils/workflowTestHelpers'
 import type { DbAgentState } from '../shared/dbAgentAnnotation'
 import { dbAgentAnnotation } from '../shared/dbAgentAnnotation'
-import { invokeSchemaDesignToolNode } from './invokeSchemaDesignToolNode'
+import { invokeCreateMigrationToolNode } from './invokeCreateMigrationToolNode'
 
-describe('invokeSchemaDesignToolNode Integration', () => {
+describe('invokeCreateMigrationToolNode Integration', () => {
   it('should execute schema design tool with real APIs', async () => {
     // Arrange
     const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(dbAgentAnnotation)
-      .addNode('invokeSchemaDesignTool', invokeSchemaDesignToolNode)
-      .addEdge(START, 'invokeSchemaDesignTool')
-      .addEdge('invokeSchemaDesignTool', END)
+      .addNode('invokeCreateMigrationTool', invokeCreateMigrationToolNode)
+      .addEdge(START, 'invokeCreateMigrationTool')
+      .addEdge('invokeCreateMigrationTool', END)
       .compile({ checkpointer })
 
     const toolCallMessage = new AIMessage({
@@ -25,7 +25,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       tool_calls: [
         {
           id: 'test-tool-call-id',
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: {
             operations: [
               {
@@ -79,7 +79,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       organizationId: context.organizationId,
       prompt: 'Test schema design',
       next: END,
-      schemaDesignSuccessful: false,
+      createMigrationSuccessful: false,
     }
 
     // Act
@@ -97,9 +97,9 @@ describe('invokeSchemaDesignToolNode Integration', () => {
     // Arrange
     const { config, context, checkpointer } = await getTestConfig()
     const graph = new StateGraph(dbAgentAnnotation)
-      .addNode('invokeSchemaDesignTool', invokeSchemaDesignToolNode)
-      .addEdge(START, 'invokeSchemaDesignTool')
-      .addEdge('invokeSchemaDesignTool', END)
+      .addNode('invokeCreateMigrationTool', invokeCreateMigrationToolNode)
+      .addEdge(START, 'invokeCreateMigrationTool')
+      .addEdge('invokeCreateMigrationTool', END)
       .compile({ checkpointer })
 
     const invalidToolCallMessage = new AIMessage({
@@ -107,7 +107,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       tool_calls: [
         {
           id: 'test-invalid-tool-call-id',
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: {
             operations: [
               {
@@ -142,7 +142,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       organizationId: context.organizationId,
       prompt: 'Test invalid schema design',
       next: END,
-      schemaDesignSuccessful: false,
+      createMigrationSuccessful: false,
     }
 
     // Act

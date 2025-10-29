@@ -1,13 +1,14 @@
 import { ArrowTooltipProvider } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ChangeEvent, FC } from 'react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { Projects } from '../../../../../components/CommonLayout/AppBar/ProjectsDropdownMenu/services/getProjects'
 import {
   type Branch,
   BranchCombobox,
 } from '../../../../../components/shared/BranchCombobox'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
+import { useAutoResizeTextarea } from '../../shared/hooks/useAutoResizeTextarea'
 import { useEnterKeySubmission } from '../../shared/hooks/useEnterKeySubmission'
 import { SessionFormActions } from '../../shared/SessionFormActions'
 import { ProjectsDropdown } from '../ProjectsDropdown'
@@ -43,39 +44,27 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
-  const [hasContent, setHasContent] = useState(false)
+  const [textContent, setTextContent] = useState('')
   const [selectedProjectId, setSelectedProjectId] = useState(
     defaultProjectId || '',
   )
   const initialMessageId = useId()
+  const [selectedBranchSha, setSelectedBranchSha] = useState('')
+
+  const hasContent = textContent.trim().length > 0
+
   const handleEnterKeySubmission = useEnterKeySubmission(
     hasContent,
     isPending,
     formRef,
   )
-  const [selectedBranchSha, setSelectedBranchSha] = useState('')
 
-  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const textarea = e.target
-    textarea.style.height = 'auto'
-    textarea.style.height = `${textarea.scrollHeight}px`
-    setHasContent(textarea.value.trim().length > 0)
-  }
-
-  useEffect(() => {
-    const textarea = textareaRef.current
-    if (textarea) {
-      textarea.style.height = 'auto'
-      textarea.style.height = `${textarea.scrollHeight}px`
-    }
-  }, [])
-
-  // Reset hasContent when form submission completes
-  useEffect(() => {
-    if (!isPending && textareaRef.current) {
-      setHasContent(textareaRef.current.value.trim().length > 0)
-    }
-  }, [isPending])
+  const { handleChange } = useAutoResizeTextarea(textareaRef)
+  const handleTextareaChange = handleChange(
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
+      setTextContent(e.target.value)
+    },
+  )
 
   const isSchemaFilePathUnset =
     selectedProjectId !== '' &&
@@ -104,6 +93,7 @@ export const GitHubSessionFormPresenter: FC<Props> = ({
               id={initialMessageId}
               name="initialMessage"
               ref={textareaRef}
+              value={textContent}
               onChange={handleTextareaChange}
               onKeyDown={handleEnterKeySubmission}
               placeholder="Enter your database design instructions. For example: Design a database for an e-commerce site that manages users, products, and orders..."

@@ -4,24 +4,18 @@ import type { Schema } from '@liam-hq/schema'
 import type { FC } from 'react'
 import type { ReviewComment } from '../../../../types'
 import { CopyButton } from '../../../CopyButton'
-import { useSql } from './hooks/useSql'
+import { useDdl } from './hooks/useDdl'
+import styles from './Migrations.module.css'
 import { MigrationsViewer } from './MigrationsViewer'
-import styles from './SQL.module.css'
 
 type Props = {
   currentSchema: Schema
-  baselineSchema: Schema
   comments?: ReviewComment[]
 }
 
-export const SQL: FC<Props> = ({
-  currentSchema,
-  baselineSchema,
-  comments = [],
-}) => {
-  const { cumulativeDdl, prevCumulativeDdl } = useSql({
+export const Migrations: FC<Props> = ({ currentSchema, comments = [] }) => {
+  const { cumulativeDdl } = useDdl({
     currentSchema,
-    baselineSchema,
   })
 
   return (
@@ -34,9 +28,7 @@ export const SQL: FC<Props> = ({
       </div>
       <div className={styles.body}>
         <MigrationsViewer
-          showDiff
           doc={cumulativeDdl}
-          prevDoc={prevCumulativeDdl}
           comments={comments}
           showComments={false}
         />

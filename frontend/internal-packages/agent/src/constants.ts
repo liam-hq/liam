@@ -6,7 +6,7 @@
  * applies to transitions between nodes.
  *
  * TEMPORARY LIMITATION (set to 10):
- * Due to issues with schemaDesignTool, the DB Agent cannot resolve schema issues
+ * Due to issues with createMigrationTool, the DB Agent cannot resolve schema issues
  * on the second and subsequent attempts, causing infinite loops between:
  * leadAgent → dbAgent → qaAgent → leadAgent (when schemaIssues exist)
  *
@@ -15,7 +15,7 @@
  * - The workflow will fail after 10 loops if issues persist
  * - Provides more opportunities for the DB Agent to refine the schema
  *
- * TODO: Increase this limit after fixing schemaDesignTool to properly handle
+ * TODO: Increase this limit after fixing createMigrationTool to properly handle
  * schema modifications (e.g., unique constraint issues, JSON patch errors)
  * See: route06/liam-internal#5642
  */

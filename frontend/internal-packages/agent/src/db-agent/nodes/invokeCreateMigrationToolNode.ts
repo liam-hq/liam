@@ -7,7 +7,7 @@ import type { Schema } from '@liam-hq/schema'
 import type { Repositories } from '../../repositories'
 import { getConfigurable } from '../../utils/getConfigurable'
 import type { DbAgentState } from '../shared/dbAgentAnnotation'
-import { schemaDesignTool } from '../tools/schemaDesignTool'
+import { createMigrationTool } from '../tools/createMigrationTool'
 
 /**
  * Check if a message is a ToolMessage
@@ -17,13 +17,13 @@ const isToolMessage = (message: BaseMessage): message is ToolMessage => {
 }
 
 /**
- * Check if schemaDesignTool was executed successfully
+ * Check if createMigrationTool was executed successfully
  */
-const wasSchemaDesignToolSuccessful = (messages: BaseMessage[]): boolean => {
+const wasCreateMigrationToolSuccessful = (messages: BaseMessage[]): boolean => {
   const toolMessages = messages.filter(isToolMessage)
   return toolMessages.some(
     (msg) =>
-      msg.name === 'schemaDesignTool' &&
+      msg.name === 'createMigrationTool' &&
       typeof msg.content === 'string' &&
       msg.content.includes('Schema successfully updated'),
   )
@@ -39,7 +39,7 @@ const fetchUpdatedSchemaWithResult = (
   return repositories.schema.getSchema(designSessionId)
 }
 
-export const invokeSchemaDesignToolNode = async (
+export const invokeCreateMigrationToolNode = async (
   state: DbAgentState,
   config: RunnableConfig,
 ) => {
@@ -48,12 +48,14 @@ export const invokeSchemaDesignToolNode = async (
     return {
       ...state,
       error: configurableResult.error,
-      schemaDesignSuccessful: false,
+      createMigrationSuccessful: false,
     }
   }
   const { repositories } = configurableResult.value
 
-  const toolNode = new ToolNode<{ messages: BaseMessage[] }>([schemaDesignTool])
+  const toolNode = new ToolNode<{ messages: BaseMessage[] }>([
+    createMigrationTool,
+  ])
 
   const stream = await toolNode.stream(state, {
     configurable: {
@@ -72,17 +74,17 @@ export const invokeSchemaDesignToolNode = async (
   if (!Array.isArray(messages)) {
     return {
       ...result,
-      schemaDesignSuccessful: false,
+      createMigrationSuccessful: false,
     }
   }
 
   let updatedResult = {
     ...state,
     messages: [...state.messages, ...messages],
-    schemaDesignSuccessful: false, // Default to false
+    createMigrationSuccessful: false, // Default to false
   }
 
-  if (wasSchemaDesignToolSuccessful(messages)) {
+  if (wasCreateMigrationToolSuccessful(messages)) {
     const schemaResult = await fetchUpdatedSchemaWithResult(
       repositories,
       state.designSessionId,
@@ -92,7 +94,7 @@ export const invokeSchemaDesignToolNode = async (
       updatedResult = {
         ...updatedResult,
         schemaData: schemaResult.value.schema,
-        schemaDesignSuccessful: true,
+        createMigrationSuccessful: true,
       }
     } else {
       console.warn(
