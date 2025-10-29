@@ -9,7 +9,7 @@ import {
   type SessionStatus,
   SessionStatusIndicator,
 } from '../../../ProjectSessionsPage/SessionStatusIndicator'
-import styles from './RecentsSectionClient.module.css'
+import styles from './RecentSessionItem.module.css'
 import type { RecentSession } from './types'
 
 type Props = {
