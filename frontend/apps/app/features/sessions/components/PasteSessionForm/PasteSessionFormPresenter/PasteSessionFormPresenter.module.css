@@ -55,43 +55,27 @@
   color: var(--global-foreground);
 }
 
-.schemaTextarea {
+.schemaEditorWrapper {
   width: 100%;
   min-height: 300px;
-  padding: var(--spacing-3);
   background-color: var(--global-background);
-  color: var(--global-foreground);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
-  font-size: var(--font-size-4);
-  font-family:
-    'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-  line-height: 1.5;
-  resize: vertical;
+  overflow: hidden;
   transition: border-color 0.2s ease;
 }
 
-.schemaTextarea:hover {
+.schemaEditorWrapper:hover {
   border-color: var(--overlay-30);
 }
 
-.schemaTextarea:focus {
-  outline: none;
+.schemaEditorWrapper:focus-within {
   border-color: var(--pane-border-hover);
 }
 
-.schemaTextarea:disabled {
+.schemaEditorWrapper.disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.schemaTextarea::placeholder {
-  color: var(--overlay-30);
-  transition: color 0.2s var(--default-timing-function);
-}
-
-.schemaTextarea:hover::placeholder {
-  color: var(--overlay-50);
 }
 
 .formatSelectorWrapper {
