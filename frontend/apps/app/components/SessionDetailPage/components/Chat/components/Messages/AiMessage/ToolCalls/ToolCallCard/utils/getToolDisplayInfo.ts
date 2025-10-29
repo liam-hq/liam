@@ -11,7 +11,7 @@ type ToolDisplayInfo = {
 
 export const getToolDisplayInfo = (toolName: ToolName): ToolDisplayInfo => {
   switch (toolName) {
-    case 'schemaDesignTool':
+    case 'createMigrationTool':
       return {
         displayName: 'Database Schema Design',
         description: 'Applying database schema changes',

@@ -45,4 +45,4 @@ export type ToolName =
   | 'runTestTool'
   | 'processAnalyzedRequirementsTool'
   | 'saveTestcase'
-  | 'schemaDesignTool'
+  | 'createMigrationTool'

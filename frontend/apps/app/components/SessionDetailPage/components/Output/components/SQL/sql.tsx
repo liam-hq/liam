@@ -10,33 +10,22 @@ import styles from './SQL.module.css'
 
 type Props = {
   currentSchema: Schema
-  baselineSchema: Schema
   comments?: ReviewComment[]
 }
 
-export const SQL: FC<Props> = ({
-  currentSchema,
-  baselineSchema,
-  comments = [],
-}) => {
-  const { cumulativeDdl, prevCumulativeDdl } = useSql({
+export const SQL: FC<Props> = ({ currentSchema, comments = [] }) => {
+  const { cumulativeDdl } = useSql({
     currentSchema,
-    baselineSchema,
   })
 
   return (
     <section className={styles.section}>
       <div className={styles.head}>
-        <CopyButton
-          textToCopy={cumulativeDdl}
-          tooltipLabel="Copy Migration Diff"
-        />
+        <CopyButton textToCopy={cumulativeDdl} tooltipLabel="Copy Migrations" />
       </div>
       <div className={styles.body}>
         <MigrationsViewer
-          showDiff
           doc={cumulativeDdl}
-          prevDoc={prevCumulativeDdl}
           comments={comments}
           showComments={false}
         />

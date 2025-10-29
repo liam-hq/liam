@@ -3,13 +3,13 @@ import {
   getIndexColumnsChangeStatus,
   getIndexRelatedChangeStatus,
   getTableRelatedChangeStatus,
-  type Operation,
+  type MigrationOperation,
 } from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   indexId: string
-  operations: Operation[]
+  operations: MigrationOperation[]
 }
 
 /**

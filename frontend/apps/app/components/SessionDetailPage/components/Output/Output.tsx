@@ -88,15 +88,11 @@ export const Output: FC<Props> = ({
         <ERD schema={schema} baselineSchema={baselineSchema} />
       </TabsContent>
       <TabsContent
-        value={OUTPUT_TABS.SQL}
+        value={OUTPUT_TABS.MIGRATIONS}
         className={styles.tabsContent}
         forceMount
       >
-        <SQL
-          currentSchema={schema}
-          baselineSchema={baselineSchema}
-          comments={sqlReviewComments}
-        />
+        <SQL currentSchema={schema} comments={sqlReviewComments} />
       </TabsContent>
       <TabsContent
         value={OUTPUT_TABS.ARTIFACT}

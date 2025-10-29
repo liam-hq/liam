@@ -3,7 +3,7 @@
 import { fromPromise } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
 import {
-  type Operation,
+  type MigrationOperation,
   postgresqlOperationDeparser,
   postgresqlSchemaDeparser,
   yamlSchemaDeparser,
@@ -27,10 +27,10 @@ type Props = {
   disabled?: boolean
   schema: Schema
   artifactDoc?: string
-  cumulativeOperations: Operation[]
+  cumulativeOperations: MigrationOperation[]
 }
 
-const generateCumulativeDDL = (operations: Operation[]): string => {
+const generateCumulativeDDL = (operations: MigrationOperation[]): string => {
   const ddlStatements: string[] = []
 
   for (const operation of operations) {
@@ -45,7 +45,7 @@ const generateCumulativeDDL = (operations: Operation[]): string => {
 
 const generateAIPrompt = (
   artifactDoc: string,
-  cumulativeOperations: Operation[],
+  cumulativeOperations: MigrationOperation[],
 ): string => {
   // Generate cumulative DDL diff
   const ddlContent = generateCumulativeDDL(cumulativeOperations)

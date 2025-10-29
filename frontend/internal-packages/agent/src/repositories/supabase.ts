@@ -4,7 +4,7 @@ import type { Json } from '@liam-hq/db/supabase/database.types'
 import type { Schema } from '@liam-hq/schema'
 import {
   applyPatchOperations,
-  operationsSchema,
+  migrationOperationsSchema,
   schemaSchema,
 } from '@liam-hq/schema'
 import { compare } from 'fast-json-patch'
@@ -113,7 +113,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
         : { tables: {}, enums: {}, extensions: {} }
 
     for (const version of versions) {
-      const patchParsed = v.safeParse(operationsSchema, version.patch)
+      const patchParsed = v.safeParse(migrationOperationsSchema, version.patch)
       if (patchParsed.success) {
         const pathResult = ensurePathStructure(
           currentSchema,
@@ -190,7 +190,7 @@ export class SupabaseSchemaRepository implements SchemaRepository {
 
     const patchArrayHistory = previousVersions
       .map((version) => {
-        const parsed = v.safeParse(operationsSchema, version.patch)
+        const parsed = v.safeParse(migrationOperationsSchema, version.patch)
         if (parsed.success) {
           return parsed.output
         }

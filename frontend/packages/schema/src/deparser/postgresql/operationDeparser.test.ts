@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { Operation } from '../../operation/schema/index.js'
+import type { MigrationOperation } from '../../migrationOperation/schema/index.js'
 import { postgresqlOperationDeparser } from './operationDeparser.js'
 import { expectGeneratedSQLToBeParseable } from './testUtils.js'
 
 describe('postgresqlOperationDeparser', () => {
   describe('table operations', () => {
     it('should generate CREATE TABLE statement from add operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/users',
         value: {
@@ -61,7 +61,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate CREATE TABLE with default values', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/settings',
         value: {
@@ -121,7 +121,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP TABLE statement from remove operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'remove',
         path: '/tables/users',
       }
@@ -137,7 +137,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate RENAME TABLE statement from replace operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/name',
         value: 'user_accounts',
@@ -156,7 +156,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('column operations', () => {
     it('should generate ADD COLUMN statement from add operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/users/columns/age',
         value: {
@@ -183,7 +183,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate ADD COLUMN with constraints', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/products/columns/price',
         value: {
@@ -208,7 +208,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP COLUMN statement from remove operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'remove',
         path: '/tables/users/columns/age',
       }
@@ -224,7 +224,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate RENAME COLUMN statement from replace operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/email/name',
         value: 'email_address',
@@ -241,7 +241,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate RENAME COLUMN for complex table and column names', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/user_profiles/columns/first_name/name',
         value: 'given_name',
@@ -260,7 +260,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('index operations', () => {
     it('should generate CREATE INDEX statement from add operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/users/indexes/idx_users_email',
         value: {
@@ -282,7 +282,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate CREATE UNIQUE INDEX statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/users/indexes/idx_users_username_unique',
         value: {
@@ -304,7 +304,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate CREATE INDEX with multiple columns', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/orders/indexes/idx_orders_user_date',
         value: {
@@ -326,7 +326,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate CREATE INDEX without index type', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/products/indexes/idx_products_category',
         value: {
@@ -348,7 +348,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP INDEX statement from remove operation', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'remove',
         path: '/tables/users/indexes/idx_users_email',
       }
@@ -364,7 +364,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP INDEX for complex index name', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'remove',
         path: '/tables/user_profiles/indexes/idx_user_profiles_email_unique',
       }
@@ -382,7 +382,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('constraint operations', () => {
     it('should generate ADD CONSTRAINT PRIMARY KEY statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/users/constraints/pk_users_id',
         value: {
@@ -403,7 +403,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate ADD CONSTRAINT FOREIGN KEY statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/orders/constraints/fk_orders_user_id',
         value: {
@@ -435,7 +435,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate ADD CONSTRAINT UNIQUE statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/users/constraints/uk_users_email',
         value: {
@@ -456,7 +456,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate ADD CONSTRAINT CHECK statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'add',
         path: '/tables/products/constraints/ck_products_price_positive',
         value: {
@@ -477,7 +477,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP CONSTRAINT statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'remove',
         path: '/tables/users/constraints/pk_users_id',
       }
@@ -493,7 +493,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP CONSTRAINT for complex constraint name', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'remove',
         path: '/tables/orders/constraints/fk_orders_user_id',
       }
@@ -509,7 +509,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP CONSTRAINT for table with complex name', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'remove',
         path: '/tables/user_profiles/constraints/uk_user_profiles_email',
       }
@@ -527,7 +527,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('table comment operations', () => {
     it('should generate COMMENT ON TABLE statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/comment',
         value: 'Updated user table comment',
@@ -544,7 +544,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate COMMENT ON TABLE IS NULL for null value', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/comment',
         value: null,
@@ -563,7 +563,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('column type operations', () => {
     it('should generate ALTER COLUMN TYPE statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/email/type',
         value: 'text',
@@ -582,7 +582,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('column comment operations', () => {
     it('should generate COMMENT ON COLUMN statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/email/comment',
         value: 'User email address',
@@ -599,7 +599,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate COMMENT ON COLUMN IS NULL for null value', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/email/comment',
         value: null,
@@ -618,7 +618,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('column notNull operations', () => {
     it('should generate ALTER COLUMN SET NOT NULL statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/email/notNull',
         value: true,
@@ -635,7 +635,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate ALTER COLUMN DROP NOT NULL statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/email/notNull',
         value: false,
@@ -654,7 +654,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('column default operations', () => {
     it('should generate ALTER COLUMN SET DEFAULT statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/status/default',
         value: 'active',
@@ -671,7 +671,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate ALTER COLUMN DROP DEFAULT statement for null', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/status/default',
         value: null,
@@ -688,7 +688,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate ALTER COLUMN SET DEFAULT with function', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/created_at/default',
         value: 'now()',
@@ -705,7 +705,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for enum values', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/role/default',
         value: 'admin', // Unquoted enum value
@@ -722,7 +722,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for pre-quoted enum values', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/role/default',
         value: "'admin'", // Already quoted
@@ -739,7 +739,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for timestamptz functions', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/events/columns/created_at/default',
         value: 'now()', // Function
@@ -756,7 +756,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for timestamptz literals', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/events/columns/scheduled_at/default',
         value: '2024-01-01 00:00:00+00', // Literal timestamp
@@ -773,7 +773,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for pre-quoted timestamptz', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/events/columns/scheduled_at/default',
         value: "'2024-01-01 00:00:00+00'", // Already quoted
@@ -790,7 +790,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for cast expressions', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/events/columns/created_at/default',
         value: "'2024-01-01'::timestamptz", // Cast expression
@@ -807,7 +807,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for enum cast expressions (issue #5684)', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/users/columns/status/default',
         value: "'invited'::user_status", // Enum cast expression from issue #5684
@@ -825,7 +825,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should handle ALTER COLUMN SET DEFAULT for INTERVAL expressions (issue #5702)', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/subscriptions/columns/expires_at/default',
         value: "(now() + INTERVAL '30 days')", // INTERVAL expression from issue #5702
@@ -845,7 +845,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('column check operations', () => {
     it('should generate ADD CHECK CONSTRAINT statement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/products/columns/price/check',
         value: 'price > 0',
@@ -862,7 +862,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should generate DROP CHECK CONSTRAINT statement for empty value', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/products/columns/price/check',
         value: '',
@@ -881,7 +881,7 @@ describe('postgresqlOperationDeparser', () => {
 
   describe('constraint action operations', () => {
     it('should return error for constraint delete action replacement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/orders/constraints/fk_orders_user_id/deleteConstraint',
         value: 'CASCADE',
@@ -897,7 +897,7 @@ describe('postgresqlOperationDeparser', () => {
     })
 
     it('should return error for constraint update action replacement', async () => {
-      const operation: Operation = {
+      const operation: MigrationOperation = {
         op: 'replace',
         path: '/tables/orders/constraints/fk_orders_user_id/updateConstraint',
         value: 'RESTRICT',

@@ -1,6 +1,6 @@
 export const OUTPUT_TABS = {
   ERD: 'erd',
-  SQL: 'sql',
+  MIGRATIONS: 'migrations',
   ARTIFACT: 'artifact',
 } as const
 
@@ -18,7 +18,7 @@ export const ARTIFACT_TAB: OutputTab = {
 
 export const ERD_SCHEMA_TABS_LIST: OutputTab[] = [
   { value: OUTPUT_TABS.ERD, label: 'ERD' },
-  { value: OUTPUT_TABS.SQL, label: 'SQL' },
+  { value: OUTPUT_TABS.MIGRATIONS, label: 'Migrations' },
 ]
 
 export const DEFAULT_OUTPUT_TAB = OUTPUT_TABS.ERD

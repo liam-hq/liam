@@ -25,7 +25,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       tool_calls: [
         {
           id: 'test-tool-call-id',
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: {
             operations: [
               {
@@ -107,7 +107,7 @@ describe('invokeSchemaDesignToolNode Integration', () => {
       tool_calls: [
         {
           id: 'test-invalid-tool-call-id',
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: {
             operations: [
               {

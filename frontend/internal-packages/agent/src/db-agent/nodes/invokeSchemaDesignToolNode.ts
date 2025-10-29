@@ -7,7 +7,7 @@ import type { ResultAsync } from 'neverthrow'
 import type { Repositories } from '../../repositories'
 import { getConfigurable } from '../../utils/getConfigurable'
 import type { DbAgentState } from '../shared/dbAgentAnnotation'
-import { schemaDesignTool } from '../tools/schemaDesignTool'
+import { createMigrationTool } from '../tools/createMigrationTool'
 
 /**
  * Check if a message is a ToolMessage
@@ -17,13 +17,13 @@ const isToolMessage = (message: BaseMessage): message is ToolMessage => {
 }
 
 /**
- * Check if schemaDesignTool was executed successfully
+ * Check if createMigrationTool was executed successfully
  */
 const wasSchemaDesignToolSuccessful = (messages: BaseMessage[]): boolean => {
   const toolMessages = messages.filter(isToolMessage)
   return toolMessages.some(
     (msg) =>
-      msg.name === 'schemaDesignTool' &&
+      msg.name === 'createMigrationTool' &&
       typeof msg.content === 'string' &&
       msg.content.includes('Schema successfully updated'),
   )
@@ -53,7 +53,9 @@ export const invokeSchemaDesignToolNode = async (
   }
   const { repositories } = configurableResult.value
 
-  const toolNode = new ToolNode<{ messages: BaseMessage[] }>([schemaDesignTool])
+  const toolNode = new ToolNode<{ messages: BaseMessage[] }>([
+    createMigrationTool,
+  ])
 
   const stream = await toolNode.stream(state, {
     configurable: {

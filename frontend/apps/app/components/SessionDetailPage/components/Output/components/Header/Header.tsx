@@ -1,6 +1,9 @@
 import type { AnalyzedRequirements } from '@liam-hq/agent/client'
 import type { Schema } from '@liam-hq/schema'
-import { type Operation, operationsSchema } from '@liam-hq/schema'
+import {
+  type MigrationOperation,
+  migrationOperationsSchema,
+} from '@liam-hq/schema'
 import { TabsList, TabsTrigger } from '@liam-hq/ui'
 import clsx from 'clsx'
 import type { ComponentProps, FC } from 'react'
@@ -29,17 +32,17 @@ type Props = ComponentProps<typeof VersionDropdown> & {
 const generateCumulativeOperations = (
   versions: Version[] | undefined,
   selectedVersion: Version | null,
-): Operation[] => {
+): MigrationOperation[] => {
   if (!selectedVersion) return []
 
   const versionsUpToSelected = (versions ?? [])
     .filter((v) => v.number <= selectedVersion.number)
     .sort((a, b) => a.number - b.number)
 
-  const operations: Operation[] = []
+  const operations: MigrationOperation[] = []
 
   for (const version of versionsUpToSelected) {
-    const parsed = v.safeParse(operationsSchema, version.patch)
+    const parsed = v.safeParse(migrationOperationsSchema, version.patch)
     if (parsed.success) {
       operations.push(...parsed.output)
     }

@@ -4,12 +4,12 @@ import {
   getConstraintRelatedChangeStatus,
   getIndexRelatedChangeStatus,
   getTableRelatedChangeStatus,
-  type Operation,
+  type MigrationOperation,
 } from '@liam-hq/schema'
 
 type Params = {
   tableId: string
-  operations: Operation[]
+  operations: MigrationOperation[]
 }
 
 /**

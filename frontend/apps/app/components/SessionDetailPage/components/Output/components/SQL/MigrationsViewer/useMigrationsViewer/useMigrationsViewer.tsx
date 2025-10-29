@@ -3,7 +3,6 @@
 import { sql } from '@codemirror/lang-sql'
 import { foldGutter, syntaxHighlighting } from '@codemirror/language'
 import { lintGutter } from '@codemirror/lint'
-import { unifiedMergeView } from '@codemirror/merge'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, lineNumbers } from '@codemirror/view'
 import { EditorView } from 'codemirror'
@@ -40,8 +39,6 @@ const baseExtensions: Extension[] = [
 
 type Props = {
   doc: string
-  prevDoc?: string
-  showDiff?: boolean
   comments?: ReviewComment[]
   showComments?: boolean
   onQuickFix?: (comment: string) => void
@@ -49,8 +46,6 @@ type Props = {
 
 export const useMigrationsViewer = ({
   doc,
-  prevDoc,
-  showDiff = false,
   comments = [],
   showComments = false,
   onQuickFix,
@@ -69,26 +64,11 @@ export const useMigrationsViewer = ({
     (
       showComments: boolean,
       onQuickFix?: (comment: string) => void,
-      showDiff?: boolean,
-      prevDoc?: string,
     ): Extension[] => {
       const extensions = [...baseExtensions]
 
       if (showComments && onQuickFix) {
         extensions.push(commentStateField(onQuickFix))
-      }
-
-      if (showDiff) {
-        extensions.push(
-          ...unifiedMergeView({
-            original: prevDoc || '',
-            highlightChanges: true,
-            gutter: true,
-            mergeControls: false,
-            syntaxHighlightDeletions: true,
-            allowInlineDiffs: true,
-          }),
-        )
       }
 
       return extensions
@@ -132,12 +112,7 @@ export const useMigrationsViewer = ({
   useEffect(() => {
     if (!container) return
 
-    const extensions = buildExtensions(
-      showComments,
-      onQuickFix,
-      showDiff,
-      prevDoc,
-    )
+    const extensions = buildExtensions(showComments, onQuickFix)
     const viewCurrent = createEditorView(doc, extensions, container)
     setView(viewCurrent)
 
@@ -149,8 +124,6 @@ export const useMigrationsViewer = ({
     }
   }, [
     doc,
-    prevDoc,
-    showDiff,
     container,
     showComments,
     comments,

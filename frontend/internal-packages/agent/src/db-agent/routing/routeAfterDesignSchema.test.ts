@@ -23,7 +23,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'I need to update the schema',
       tool_calls: [
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id',
         },
@@ -75,7 +75,7 @@ describe('routeAfterDesignSchema', () => {
       content: 'I need to update the schema',
       tool_calls: [
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id',
         },
@@ -100,12 +100,12 @@ describe('routeAfterDesignSchema', () => {
       content: 'I need to update the schema',
       tool_calls: [
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id-1',
         },
         {
-          name: 'schemaDesignTool',
+          name: 'createMigrationTool',
           args: { operations: [] },
           id: 'test-id-2',
         },

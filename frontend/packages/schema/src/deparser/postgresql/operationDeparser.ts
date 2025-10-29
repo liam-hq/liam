@@ -1,5 +1,5 @@
 import { err, ok, type Result } from 'neverthrow'
-import { PATH_PATTERNS } from '../../operation/constants.js'
+import { PATH_PATTERNS } from '../../migrationOperation/constants.js'
 import type {
   AddColumnOperation,
   RemoveColumnOperation,
@@ -9,7 +9,7 @@ import type {
   ReplaceColumnDefaultOperation,
   ReplaceColumnNotNullOperation,
   ReplaceColumnTypeOperation,
-} from '../../operation/schema/column.js'
+} from '../../migrationOperation/schema/column.js'
 import {
   isAddColumnOperation,
   isRemoveColumnOperation,
@@ -19,40 +19,40 @@ import {
   isReplaceColumnDefaultOperation,
   isReplaceColumnNotNullOperation,
   isReplaceColumnTypeOperation,
-} from '../../operation/schema/column.js'
+} from '../../migrationOperation/schema/column.js'
 import type {
   AddConstraintOperation,
   RemoveConstraintOperation,
   ReplaceConstraintDeleteOperation,
   ReplaceConstraintUpdateOperation,
-} from '../../operation/schema/constraint.js'
+} from '../../migrationOperation/schema/constraint.js'
 import {
   isAddConstraintOperation,
   isRemoveConstraintOperation,
   isReplaceConstraintDeleteOperation,
   isReplaceConstraintUpdateOperation,
-} from '../../operation/schema/constraint.js'
-import type { Operation } from '../../operation/schema/index.js'
+} from '../../migrationOperation/schema/constraint.js'
+import type { MigrationOperation } from '../../migrationOperation/schema/index.js'
 import type {
   AddIndexOperation,
   RemoveIndexOperation,
-} from '../../operation/schema/indexOperations.js'
+} from '../../migrationOperation/schema/indexOperations.js'
 import {
   isAddIndexOperation,
   isRemoveIndexOperation,
-} from '../../operation/schema/indexOperations.js'
+} from '../../migrationOperation/schema/indexOperations.js'
 import type {
   AddTableOperation,
   RemoveTableOperation,
   ReplaceTableCommentOperation,
   ReplaceTableNameOperation,
-} from '../../operation/schema/table.js'
+} from '../../migrationOperation/schema/table.js'
 import {
   isAddTableOperation,
   isRemoveTableOperation,
   isReplaceTableCommentOperation,
   isReplaceTableNameOperation,
-} from '../../operation/schema/table.js'
+} from '../../migrationOperation/schema/table.js'
 import type { LegacyOperationDeparser } from '../type.js'
 import {
   generateAddCheckConstraintStatement,
@@ -611,7 +611,7 @@ function generateAlterConstraintUpdateFromOperation(
  * TODO: Migrate to new OperationDeparser type (Result<string, Error>) for better error handling.
  */
 export const postgresqlOperationDeparser: LegacyOperationDeparser = (
-  operation: Operation,
+  operation: MigrationOperation,
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 ) => {
   const errors: { message: string }[] = []

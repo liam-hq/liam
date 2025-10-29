@@ -4,7 +4,7 @@ const toolNames = [
   'runTestTool',
   'processAnalyzedRequirementsTool',
   'saveTestcase',
-  'schemaDesignTool',
+  'createMigrationTool',
 ] as const
 
 const baseToolCallSchema = v.object({
