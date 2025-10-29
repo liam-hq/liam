@@ -122,7 +122,7 @@ export type Database = {
             foreignKeyName: 'building_schemas_design_session_id_fkey'
             columns: ['design_session_id']
             isOneToOne: true
-            referencedRelation: 'run_status_by_design_session'
+            referencedRelation: 'run_status'
             referencedColumns: ['design_session_id']
           },
           {
@@ -329,7 +329,7 @@ export type Database = {
             foreignKeyName: 'design_sessions_parent_design_session_id_fkey'
             columns: ['parent_design_session_id']
             isOneToOne: false
-            referencedRelation: 'run_status_by_design_session'
+            referencedRelation: 'run_status'
             referencedColumns: ['design_session_id']
           },
           {
@@ -584,47 +584,8 @@ export type Database = {
             foreignKeyName: 'public_share_settings_design_session_id_fkey'
             columns: ['design_session_id']
             isOneToOne: true
-            referencedRelation: 'run_status_by_design_session'
+            referencedRelation: 'run_status'
             referencedColumns: ['design_session_id']
-          },
-        ]
-      }
-      run_events: {
-        Row: {
-          event_at: string
-          event_type: Database['public']['Enums']['run_event_type']
-          id: string
-          organization_id: string
-          run_id: string
-        }
-        Insert: {
-          event_at?: string
-          event_type: Database['public']['Enums']['run_event_type']
-          id?: string
-          organization_id: string
-          run_id: string
-        }
-        Update: {
-          event_at?: string
-          event_type?: Database['public']['Enums']['run_event_type']
-          id?: string
-          organization_id?: string
-          run_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'run_events_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'run_events_run_id_org_fkey'
-            columns: ['run_id', 'organization_id']
-            isOneToOne: false
-            referencedRelation: 'runs'
-            referencedColumns: ['id', 'organization_id']
           },
         ]
       }
@@ -636,6 +597,7 @@ export type Database = {
           id: string
           organization_id: string
           started_at: string
+          status: Database['public']['Enums']['workflow_run_status']
         }
         Insert: {
           created_by_user_id?: string | null
@@ -644,6 +606,7 @@ export type Database = {
           id?: string
           organization_id: string
           started_at?: string
+          status?: Database['public']['Enums']['workflow_run_status']
         }
         Update: {
           created_by_user_id?: string | null
@@ -652,6 +615,7 @@ export type Database = {
           id?: string
           organization_id?: string
           started_at?: string
+          status?: Database['public']['Enums']['workflow_run_status']
         }
         Relationships: [
           {
@@ -672,7 +636,7 @@ export type Database = {
             foreignKeyName: 'runs_design_session_id_fkey'
             columns: ['design_session_id']
             isOneToOne: false
-            referencedRelation: 'run_status_by_design_session'
+            referencedRelation: 'run_status'
             referencedColumns: ['design_session_id']
           },
           {
@@ -752,7 +716,7 @@ export type Database = {
       }
     }
     Views: {
-      run_status_by_design_session: {
+      run_status: {
         Row: {
           derived_from_sql: string | null
           design_session_id: string | null
@@ -821,9 +785,8 @@ export type Database = {
     }
     Enums: {
       assistant_role_enum: 'db' | 'pm' | 'qa'
-      run_event_type: 'started' | 'completed' | 'error'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
-      workflow_run_status: 'pending' | 'success' | 'error'
+      workflow_run_status: 'running' | 'completed' | 'error'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -955,9 +918,8 @@ export const Constants = {
   public: {
     Enums: {
       assistant_role_enum: ['db', 'pm', 'qa'],
-      run_event_type: ['started', 'completed', 'error'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
-      workflow_run_status: ['pending', 'success', 'error'],
+      workflow_run_status: ['running', 'completed', 'error'],
     },
   },
 } as const

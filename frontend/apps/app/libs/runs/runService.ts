@@ -8,11 +8,6 @@ type StartRunParams = {
   startedAt?: string
 }
 
-type AppendEventParams = {
-  eventType: 'started' | 'completed' | 'error'
-  eventAt?: string
-}
-
 export class RunTracker {
   private readonly supabase: SupabaseClientType
   private readonly runId: string
@@ -54,6 +49,7 @@ export class RunTracker {
         organization_id: organizationId,
         created_by_user_id: userId,
         started_at: startedAt,
+        status: 'running',
       })
       .select('id')
       .single()
@@ -62,10 +58,7 @@ export class RunTracker {
       throw Object.assign(new Error('Failed to create run'), { cause: error })
     }
 
-    const tracker = new RunTracker(supabase, data.id, organizationId)
-    await tracker.appendEvent({ eventType: 'started', eventAt: startedAt })
-
-    return tracker
+    return new RunTracker(supabase, data.id, organizationId)
   }
 
   get id(): string {
@@ -74,13 +67,9 @@ export class RunTracker {
 
   async complete(eventAt?: string): Promise<void> {
     const timestamp = eventAt ?? new Date().toISOString()
-    await this.appendEvent({
-      eventType: 'completed',
-      eventAt: timestamp,
-    })
     const { error } = await this.supabase
       .from('runs')
-      .update({ ended_at: timestamp })
+      .update({ ended_at: timestamp, status: 'completed' })
       .eq('id', this.runId)
       .eq('organization_id', this.organizationId)
     if (error) {
@@ -92,35 +81,13 @@ export class RunTracker {
 
   async fail(eventAt?: string): Promise<void> {
     const timestamp = eventAt ?? new Date().toISOString()
-    await this.appendEvent({
-      eventType: 'error',
-      eventAt: timestamp,
-    })
     const { error } = await this.supabase
       .from('runs')
-      .update({ ended_at: timestamp })
+      .update({ ended_at: timestamp, status: 'error' })
       .eq('id', this.runId)
       .eq('organization_id', this.organizationId)
     if (error) {
       throw Object.assign(new Error('Failed to mark run as errored'), {
-        cause: error,
-      })
-    }
-  }
-
-  private async appendEvent({
-    eventType,
-    eventAt = new Date().toISOString(),
-  }: AppendEventParams): Promise<void> {
-    const { error } = await this.supabase.from('run_events').insert({
-      run_id: this.runId,
-      organization_id: this.organizationId,
-      event_type: eventType,
-      event_at: eventAt,
-    })
-
-    if (error) {
-      throw Object.assign(new Error('Failed to append run event'), {
         cause: error,
       })
     }

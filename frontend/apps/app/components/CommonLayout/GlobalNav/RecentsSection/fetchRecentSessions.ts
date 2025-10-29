@@ -41,11 +41,15 @@ const normalizeStatus = (status: string | null): SessionStatus => {
     return 'error'
   }
 
-  if (status === 'success') {
-    return 'success'
+  if (status === 'completed' || status === 'success') {
+    return 'completed'
   }
 
-  return 'pending'
+  if (status === 'running' || status === 'pending') {
+    return 'running'
+  }
+
+  return 'running'
 }
 
 const sanitizeCreatedByUser = (
@@ -183,7 +187,7 @@ const fetchStatusMap = async (
   }
 
   const { data, error } = await supabase
-    .from('run_status_by_design_session')
+    .from('run_status')
     .select('design_session_id, status')
     .in('design_session_id', sessionIds)
 
@@ -192,14 +196,20 @@ const fetchStatusMap = async (
     return statusMap
   }
 
-  data?.forEach((row) => {
-    const designSessionId = toStringOrNull(row?.design_session_id)
+  const rows = Array.isArray(data) ? data : []
+
+  rows.forEach((row) => {
+    if (!isRecord(row)) {
+      return
+    }
+
+    const designSessionId = toStringOrNull(row.design_session_id)
 
     if (!designSessionId) {
       return
     }
 
-    statusMap.set(designSessionId, normalizeStatus(toStringOrNull(row?.status)))
+    statusMap.set(designSessionId, normalizeStatus(toStringOrNull(row.status)))
   })
 
   return statusMap
@@ -267,7 +277,7 @@ export const fetchRecentSessions = async (
     created_at: session.created_at,
     project_id: session.project_id,
     organization_id: session.organization_id,
-    status: statusMap.get(session.id) ?? 'pending',
+    status: statusMap.get(session.id) ?? 'running',
     latest_run_id: runIdMap.get(session.id) ?? null,
     has_schema: session.has_schema,
     created_by_user: session.created_by_user,

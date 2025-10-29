@@ -27,26 +27,20 @@ const hasStringId = (value: unknown): boolean => {
   return typeof id === 'string'
 }
 
-type SupabaseStatusRow = {
-  design_session_id: string | null
-  status: string | null
-}
-
-type SupabaseRunRow = {
-  id: string | null
-  design_session_id: string | null
-}
-
 const normalizeStatus = (status: string | null): SessionStatus => {
   if (status === 'error') {
     return 'error'
   }
 
-  if (status === 'success') {
-    return 'success'
+  if (status === 'completed' || status === 'success') {
+    return 'completed'
   }
 
-  return 'pending'
+  if (status === 'running' || status === 'pending') {
+    return 'running'
+  }
+
+  return 'running'
 }
 
 export const fetchProjectSessions = async (
@@ -116,15 +110,9 @@ export const fetchProjectSessions = async (
   const runIdMap = new Map<string, string>()
 
   if (sessionIds.length > 0) {
-    const [
-      { data: statusRows, error: statusError },
-      { data: runsRows, error: runsError },
-    ]: [
-      { data: SupabaseStatusRow[] | null; error: unknown },
-      { data: SupabaseRunRow[] | null; error: unknown },
-    ] = await Promise.all([
+    const [statusResponse, runsResponse] = await Promise.all([
       supabase
-        .from('run_status_by_design_session')
+        .from('run_status')
         .select('design_session_id, status')
         .in('design_session_id', sessionIds),
       supabase
@@ -134,40 +122,54 @@ export const fetchProjectSessions = async (
         .order('started_at', { ascending: false }),
     ])
 
-    if (statusError) {
+    if (statusResponse.error) {
       console.error(
         'Error fetching run statuses for project sessions:',
-        statusError,
+        statusResponse.error,
       )
     } else {
-      statusRows?.forEach((row) => {
-        if (typeof row.design_session_id !== 'string') {
+      const statusRows = Array.isArray(statusResponse.data)
+        ? statusResponse.data
+        : []
+
+      statusRows.forEach((row) => {
+        if (!isRecord(row)) {
+          return
+        }
+
+        const designSessionId = toStringOrNull(row.design_session_id)
+        if (!designSessionId) {
           return
         }
 
         statusMap.set(
-          row.design_session_id,
-          normalizeStatus(typeof row.status === 'string' ? row.status : null),
+          designSessionId,
+          normalizeStatus(toStringOrNull(row.status)),
         )
       })
     }
 
-    if (runsError) {
+    if (runsResponse.error) {
       console.error(
         'Error fetching latest runs for project sessions:',
-        runsError,
+        runsResponse.error,
       )
-    } else if (runsRows) {
+    } else {
+      const runsRows = Array.isArray(runsResponse.data) ? runsResponse.data : []
+
       runsRows.forEach((run) => {
-        if (
-          typeof run.design_session_id !== 'string' ||
-          typeof run.id !== 'string' ||
-          runIdMap.has(run.design_session_id)
-        ) {
+        if (!isRecord(run)) {
           return
         }
 
-        runIdMap.set(run.design_session_id, run.id)
+        const designSessionId = toStringOrNull(run.design_session_id)
+        const runId = toStringOrNull(run.id)
+
+        if (!designSessionId || !runId || runIdMap.has(designSessionId)) {
+          return
+        }
+
+        runIdMap.set(designSessionId, runId)
       })
     }
   }
@@ -178,7 +180,7 @@ export const fetchProjectSessions = async (
     created_at: session.created_at,
     project_id: session.project_id,
     organization_id: session.organization_id,
-    status: statusMap.get(session.id) ?? 'pending',
+    status: statusMap.get(session.id) ?? 'running',
     latest_run_id: runIdMap.get(session.id) ?? null,
     has_schema: session.has_schema,
   }))

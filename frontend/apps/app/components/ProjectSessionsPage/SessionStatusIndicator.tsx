@@ -10,18 +10,18 @@ import {
 import type { FC } from 'react'
 import styles from './SessionStatusIndicator.module.css'
 
-export type SessionStatus = 'pending' | 'success' | 'error'
+export type SessionStatus = 'running' | 'completed' | 'error'
 
 type Props = {
   status: SessionStatus
 }
 
 const statusConfig = {
-  pending: {
+  running: {
     label: 'Running',
     className: styles.indicatorRunning,
   },
-  success: {
+  completed: {
     label: 'Completed',
     className: styles.indicatorCompleted,
   },

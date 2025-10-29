@@ -31,6 +31,21 @@ const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const mapRunStatus = (status: string | null): RecentSession['status'] => {
+  if (status === 'error') {
+    return 'error'
+  }
+
+  if (status === 'completed' || status === 'success') {
+    return 'completed'
+  }
+
+  if (status === 'running' || status === 'pending' || status === 'started') {
+    return 'running'
+  }
+
+  return 'running'
+}
 export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
@@ -47,6 +62,9 @@ export const RecentsSectionClient = ({
   const sessionsListRef = useRef<HTMLElement | null>(null)
   const sessionsRef = useRef(initialSessions)
   const runIdToSessionMap = useRef(new Map<string, string>())
+  const sessionRunStatusesRef = useRef(
+    new Map<string, Map<string, RecentSession['status']>>(),
+  )
 
   const handleFilterChange = useCallback(async (newFilterType: string) => {
     const nextFilterType: SessionFilterType = newFilterType
@@ -103,12 +121,17 @@ export const RecentsSectionClient = ({
 
   useEffect(() => {
     sessionsRef.current = sessions
-    const map = runIdToSessionMap.current
-    map.clear()
+    const runMap = runIdToSessionMap.current
+    runMap.clear()
+    const statusMap = sessionRunStatusesRef.current
+    statusMap.clear()
     sessions.forEach((session) => {
+      const runStatuses = new Map<string, RecentSession['status']>()
       if (session.latest_run_id) {
-        map.set(session.latest_run_id, session.id)
+        runMap.set(session.latest_run_id, session.id)
+        runStatuses.set(session.latest_run_id, session.status)
       }
+      statusMap.set(session.id, runStatuses)
     })
   }, [sessions])
 
@@ -159,6 +182,71 @@ export const RecentsSectionClient = ({
       return typeof value === 'string' ? value : null
     }
 
+    const sessionExists = (sessionId: string) =>
+      sessionsRef.current.some((session) => session.id === sessionId)
+
+    const upsertRunStatus = (
+      sessionId: string,
+      runId: string,
+      status: RecentSession['status'],
+    ) => {
+      let runStatuses = sessionRunStatusesRef.current.get(sessionId)
+      if (!runStatuses) {
+        runStatuses = new Map<string, RecentSession['status']>()
+        sessionRunStatusesRef.current.set(sessionId, runStatuses)
+      }
+
+      runStatuses.set(runId, status)
+    }
+
+    const computeAggregatedStatus = (
+      sessionId: string,
+    ): RecentSession['status'] => {
+      const runStatuses = sessionRunStatusesRef.current.get(sessionId)
+      if (!runStatuses || runStatuses.size === 0) {
+        const session = sessionsRef.current.find(
+          (item) => item.id === sessionId,
+        )
+        return session ? session.status : 'running'
+      }
+
+      const statuses = Array.from(runStatuses.values())
+      if (statuses.some((value) => value === 'error')) {
+        return 'error'
+      }
+
+      if (statuses.some((value) => value === 'running')) {
+        return 'running'
+      }
+
+      return 'completed'
+    }
+
+    const updateSessionState = (
+      sessionId: string,
+      options?: { latestRunId?: string },
+    ) => {
+      if (!sessionExists(sessionId)) {
+        return
+      }
+
+      const aggregatedStatus = computeAggregatedStatus(sessionId)
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionId
+            ? {
+                ...session,
+                status: aggregatedStatus,
+                latest_run_id:
+                  options && 'latestRunId' in options
+                    ? (options.latestRunId ?? session.latest_run_id)
+                    : session.latest_run_id,
+              }
+            : session,
+        ),
+      )
+    }
+
     const handleRunInsert = (payload: unknown) => {
       const newRow = extractNewRow(payload)
       if (!newRow) {
@@ -167,109 +255,36 @@ export const RecentsSectionClient = ({
 
       const runId = getStringField(newRow, 'id')
       const sessionId = getStringField(newRow, 'design_session_id')
+      const statusValue = getStringField(newRow, 'status')
 
-      if (!runId || !sessionId) {
+      if (!runId || !sessionId || !sessionExists(sessionId)) {
         return
       }
 
+      const normalizedStatus = mapRunStatus(statusValue)
       runIdToSessionMap.current.set(runId, sessionId)
-
-      if (!sessionsRef.current.some((session) => session.id === sessionId)) {
-        return
-      }
-
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === sessionId
-            ? {
-                ...session,
-                status: 'pending',
-                latest_run_id: runId,
-              }
-            : session,
-        ),
-      )
+      upsertRunStatus(sessionId, runId, normalizedStatus)
+      updateSessionState(sessionId, { latestRunId: runId })
     }
 
-    const resolveSessionIdForRun = async (
-      runId: string,
-      eventType: string,
-    ): Promise<string | null> => {
-      const cachedSessionId = runIdToSessionMap.current.get(runId)
-      if (cachedSessionId) {
-        return cachedSessionId
-      }
-
-      const { data, error } = await supabase
-        .from('runs')
-        .select('design_session_id')
-        .eq('id', runId)
-        .maybeSingle()
-
-      if (error || !data) {
-        Sentry.captureException(error ?? new Error('Run not found for event'), {
-          extra: { runId, eventType },
-        })
-        return null
-      }
-
-      const sessionId = data.design_session_id
-      if (typeof sessionId === 'string') {
-        runIdToSessionMap.current.set(runId, sessionId)
-        return sessionId
-      }
-
-      return null
-    }
-
-    const applyRunEvent = (
-      sessionId: string,
-      runId: string,
-      eventType: string,
-    ) => {
-      const nextStatus: RecentSession['status'] =
-        eventType === 'error'
-          ? 'error'
-          : eventType === 'completed'
-            ? 'success'
-            : 'pending'
-
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === sessionId
-            ? {
-                ...session,
-                status: nextStatus,
-                latest_run_id:
-                  eventType === 'started'
-                    ? runId
-                    : (session.latest_run_id ?? runId),
-              }
-            : session,
-        ),
-      )
-    }
-
-    const handleRunEvent = async (payload: unknown) => {
+    const handleRunUpdate = (payload: unknown) => {
       const newRow = extractNewRow(payload)
       if (!newRow) {
         return
       }
 
-      const runId = getStringField(newRow, 'run_id')
-      const eventType = getStringField(newRow, 'event_type')
+      const runId = getStringField(newRow, 'id')
+      const sessionId = getStringField(newRow, 'design_session_id')
+      const statusValue = getStringField(newRow, 'status')
 
-      if (!runId || !eventType) {
+      if (!runId || !sessionId || !sessionExists(sessionId) || !statusValue) {
         return
       }
 
-      const sessionId = await resolveSessionIdForRun(runId, eventType)
-      if (!sessionId) {
-        return
-      }
-
+      const normalizedStatus = mapRunStatus(statusValue)
       runIdToSessionMap.current.set(runId, sessionId)
-      applyRunEvent(sessionId, runId, eventType)
+      upsertRunStatus(sessionId, runId, normalizedStatus)
+      updateSessionState(sessionId)
     }
 
     const runsChannel = supabase
@@ -284,27 +299,20 @@ export const RecentsSectionClient = ({
         },
         (payload) => handleRunInsert(payload),
       )
-      .subscribe()
-
-    const runEventsChannel = supabase
-      .channel('run_events_recents')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'run_events',
+          table: 'runs',
           filter: `organization_id=eq.${organizationId}`,
         },
-        (payload) => {
-          void handleRunEvent(payload)
-        },
+        (payload) => handleRunUpdate(payload),
       )
       .subscribe()
 
     return () => {
       supabase.removeChannel(runsChannel)
-      supabase.removeChannel(runEventsChannel)
     }
   }, [organizationId])
 

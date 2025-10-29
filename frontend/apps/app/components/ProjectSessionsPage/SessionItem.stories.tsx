@@ -31,7 +31,7 @@ const sampleSession: ProjectSession = {
   project_id: 'project-123',
   organization_id: 'org-1',
   has_schema: false,
-  status: 'success',
+  status: 'completed',
   latest_run_id: null,
 }
 
@@ -50,7 +50,7 @@ export const RecentSession: Story = {
       project_id: 'project-123',
       organization_id: 'org-1',
       has_schema: true,
-      status: 'pending',
+      status: 'running',
       latest_run_id: null,
     },
   },
@@ -65,7 +65,7 @@ export const LongName: Story = {
       project_id: 'project-123',
       organization_id: 'org-1',
       has_schema: false,
-      status: 'success',
+      status: 'completed',
       latest_run_id: null,
     },
   },

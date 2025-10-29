@@ -68,16 +68,6 @@ CREATE TYPE "public"."assistant_role_enum" AS ENUM (
 ALTER TYPE "public"."assistant_role_enum" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."run_event_type" AS ENUM (
-    'started',
-    'completed',
-    'error'
-);
-
-
-ALTER TYPE "public"."run_event_type" OWNER TO "postgres";
-
-
 CREATE TYPE "public"."schema_format_enum" AS ENUM (
     'schemarb',
     'postgres',
@@ -90,8 +80,8 @@ ALTER TYPE "public"."schema_format_enum" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."workflow_run_status" AS ENUM (
-    'pending',
-    'success',
+    'running',
+    'completed',
     'error'
 );
 
@@ -640,18 +630,6 @@ $$;
 ALTER FUNCTION "public"."sync_existing_users"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."trg_reject_update_run_events"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-begin
-  raise exception 'run_events rows are immutable and cannot be updated';
-end;
-$$;
-
-
-ALTER FUNCTION "public"."trg_reject_update_run_events"() OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
@@ -987,49 +965,14 @@ CREATE TABLE IF NOT EXISTS "public"."public_share_settings" (
 ALTER TABLE "public"."public_share_settings" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."run_events" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "run_id" "uuid" NOT NULL,
-    "event_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "event_type" "public"."run_event_type" NOT NULL,
-    "organization_id" "uuid" NOT NULL
-);
-
-
-ALTER TABLE "public"."run_events" OWNER TO "postgres";
-
-
-COMMENT ON TABLE "public"."run_events" IS 'Immutable stream of events for Runs. Events are append-only; database-level immutability must be enforced. Install a BEFORE UPDATE trigger named trg_reject_update_run_events() that RAISES EXCEPTION on any UPDATE to this table to guarantee event immutability. Also create a read-only view run_status_by_design_session that derives current status per design_session from run_events (derivation SQL documented in migration scripts).';
-
-
-
-COMMENT ON COLUMN "public"."run_events"."id" IS 'Unique identifier for each immutable event row';
-
-
-
-COMMENT ON COLUMN "public"."run_events"."run_id" IS 'References runs.id for the related Run';
-
-
-
-COMMENT ON COLUMN "public"."run_events"."event_at" IS 'Timestamp when the event was recorded';
-
-
-
-COMMENT ON COLUMN "public"."run_events"."event_type" IS 'Type of event: started, completed, or error';
-
-
-
-COMMENT ON COLUMN "public"."run_events"."organization_id" IS 'Organization for multi-tenant scoping; must match runs.organization_id';
-
-
-
 CREATE TABLE IF NOT EXISTS "public"."runs" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "ended_at" timestamp with time zone,
     "started_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "organization_id" "uuid" NOT NULL,
     "design_session_id" "uuid" NOT NULL,
-    "created_by_user_id" "uuid"
+    "created_by_user_id" "uuid",
+    "status" "public"."workflow_run_status" DEFAULT 'running'::"public"."workflow_run_status" NOT NULL
 );
 
 
@@ -1064,43 +1007,32 @@ COMMENT ON COLUMN "public"."runs"."created_by_user_id" IS 'User that initiated t
 
 
 
-CREATE OR REPLACE VIEW "public"."run_status_by_design_session" AS
- WITH "latest_events" AS (
-         SELECT "r"."design_session_id",
-            "r"."organization_id",
-            "re"."run_id",
-            "re"."event_type",
-            "re"."event_at",
-            "row_number"() OVER (PARTITION BY "re"."run_id" ORDER BY "re"."event_at" DESC, "re"."id" DESC) AS "row_rank"
-           FROM ("public"."run_events" "re"
-             JOIN "public"."runs" "r" ON (("r"."id" = "re"."run_id")))
-        ), "current_run_state" AS (
-         SELECT "latest_events"."design_session_id",
-            "latest_events"."organization_id",
-            "latest_events"."run_id",
-            "latest_events"."event_at",
-            (
-                CASE
-                    WHEN ("latest_events"."event_type" = 'error'::"public"."run_event_type") THEN 'error'::"text"
-                    WHEN ("latest_events"."event_type" = 'completed'::"public"."run_event_type") THEN 'success'::"text"
-                    ELSE 'pending'::"text"
-                END)::"public"."workflow_run_status" AS "status"
-           FROM "latest_events"
-          WHERE ("latest_events"."row_rank" = 1)
+COMMENT ON COLUMN "public"."runs"."status" IS 'Current status for the Run derived from workflow execution (running, completed, error)';
+
+
+
+CREATE OR REPLACE VIEW "public"."run_status" AS
+ WITH "runs_with_timestamps" AS (
+         SELECT "runs"."design_session_id",
+            "runs"."organization_id",
+            "runs"."status",
+            COALESCE("runs"."ended_at", "runs"."started_at") AS "last_event_at",
+            "runs"."started_at"
+           FROM "public"."runs"
         ), "aggregated_by_session" AS (
-         SELECT "current_run_state"."design_session_id",
-            "current_run_state"."organization_id",
-            "max"("current_run_state"."event_at") AS "last_event_at",
+         SELECT "runs_with_timestamps"."design_session_id",
+            "runs_with_timestamps"."organization_id",
+            "max"(COALESCE("runs_with_timestamps"."last_event_at", "runs_with_timestamps"."started_at")) AS "last_event_at",
             (
                 CASE
-                    WHEN "bool_or"(("current_run_state"."status" = 'error'::"public"."workflow_run_status")) THEN 'error'::"text"
-                    WHEN "bool_or"(("current_run_state"."status" = 'pending'::"public"."workflow_run_status")) THEN 'pending'::"text"
-                    ELSE 'success'::"text"
+                    WHEN "bool_or"(("runs_with_timestamps"."status" = 'error'::"public"."workflow_run_status")) THEN 'error'::"text"
+                    WHEN "bool_or"(("runs_with_timestamps"."status" = 'running'::"public"."workflow_run_status")) THEN 'running'::"text"
+                    ELSE 'completed'::"text"
                 END)::"public"."workflow_run_status" AS "status"
-           FROM "current_run_state"
-          GROUP BY "current_run_state"."design_session_id", "current_run_state"."organization_id"
+           FROM "runs_with_timestamps"
+          GROUP BY "runs_with_timestamps"."design_session_id", "runs_with_timestamps"."organization_id"
         )
- SELECT COALESCE("agg"."status", 'pending'::"public"."workflow_run_status") AS "status",
+ SELECT COALESCE("agg"."status", 'running'::"public"."workflow_run_status") AS "status",
     "agg"."last_event_at",
     "ds"."organization_id",
     'Derived in migration 20251023120000_add_workflow_status_to_design_sessions.sql'::"text" AS "derived_from_sql",
@@ -1109,30 +1041,30 @@ CREATE OR REPLACE VIEW "public"."run_status_by_design_session" AS
      LEFT JOIN "aggregated_by_session" "agg" ON ((("agg"."design_session_id" = "ds"."id") AND ("agg"."organization_id" = "ds"."organization_id"))));
 
 
-ALTER TABLE "public"."run_status_by_design_session" OWNER TO "postgres";
+ALTER TABLE "public"."run_status" OWNER TO "postgres";
 
 
-COMMENT ON VIEW "public"."run_status_by_design_session" IS 'Read-only view (represented as a table definition for schema tooling) that derives a design_session''s current status from immutable run_events without mutating state. The view is computed by taking the latest event per run and collapsing per design_session to determine if any error exists, else if any in-progress (pending) exists, else success.';
-
-
-
-COMMENT ON COLUMN "public"."run_status_by_design_session"."status" IS 'Derived aggregate status for the design session: pending, success, or error';
+COMMENT ON VIEW "public"."run_status" IS 'Read-only view that derives a design_session''s current status from runs without mutating state. Aggregates latest Run status and timestamps per session.';
 
 
 
-COMMENT ON COLUMN "public"."run_status_by_design_session"."last_event_at" IS 'Timestamp of the most recent run event considered when deriving status';
+COMMENT ON COLUMN "public"."run_status"."status" IS 'Derived aggregate status for the design session: running, completed, or error';
 
 
 
-COMMENT ON COLUMN "public"."run_status_by_design_session"."organization_id" IS 'Organization owning the design session for multi-tenant scoping; included to ensure derived status is scoped correctly';
+COMMENT ON COLUMN "public"."run_status"."last_event_at" IS 'Timestamp of the most recent run considered when deriving status';
 
 
 
-COMMENT ON COLUMN "public"."run_status_by_design_session"."derived_from_sql" IS 'Developer note: SQL used to define this view; this table represents the schema of the read-only view ''run_status_by_design_session'' and documents the derivation logic; do not mutate';
+COMMENT ON COLUMN "public"."run_status"."organization_id" IS 'Organization owning the design session for multi-tenant scoping; included to ensure derived status is scoped correctly';
 
 
 
-COMMENT ON COLUMN "public"."run_status_by_design_session"."design_session_id" IS 'Identifier of the design session for which we derive the current Run status (one row per design_session)';
+COMMENT ON COLUMN "public"."run_status"."derived_from_sql" IS 'Developer note: SQL used to define this view; do not mutate';
+
+
+
+COMMENT ON COLUMN "public"."run_status"."design_session_id" IS 'Identifier of the design session for which we derive the current Run status (one row per design_session)';
 
 
 
@@ -1266,11 +1198,6 @@ ALTER TABLE ONLY "public"."github_repositories"
 
 
 
-ALTER TABLE ONLY "public"."run_events"
-    ADD CONSTRAINT "run_events_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."runs"
     ADD CONSTRAINT "runs_id_organization_unique" UNIQUE ("id", "organization_id");
 
@@ -1351,22 +1278,6 @@ CREATE INDEX "idx_public_share_settings_created_at" ON "public"."public_share_se
 
 
 
-CREATE INDEX "idx_run_events_organization_id" ON "public"."run_events" USING "btree" ("organization_id", "event_at" DESC);
-
-
-
-CREATE INDEX "idx_run_events_run_id_event_at" ON "public"."run_events" USING "btree" ("run_id", "event_at" DESC);
-
-
-
-CREATE INDEX "idx_runs_design_session_id" ON "public"."runs" USING "btree" ("design_session_id");
-
-
-
-CREATE INDEX "idx_runs_organization_id" ON "public"."runs" USING "btree" ("organization_id", "started_at" DESC);
-
-
-
 CREATE INDEX "invitations_email_idx" ON "public"."invitations" USING "btree" ("email");
 
 
@@ -1400,10 +1311,6 @@ CREATE OR REPLACE TRIGGER "check_last_organization_member" BEFORE DELETE ON "pub
 
 
 COMMENT ON TRIGGER "check_last_organization_member" ON "public"."organization_members" IS 'Prevents deletion of the last member of an organization to ensure organizations always have at least one member';
-
-
-
-CREATE OR REPLACE TRIGGER "run_events_prevent_update" BEFORE UPDATE ON "public"."run_events" FOR EACH ROW EXECUTE FUNCTION "public"."trg_reject_update_run_events"();
 
 
 
@@ -1533,16 +1440,6 @@ ALTER TABLE ONLY "public"."project_repository_mappings"
 
 ALTER TABLE ONLY "public"."public_share_settings"
     ADD CONSTRAINT "public_share_settings_design_session_id_fkey" FOREIGN KEY ("design_session_id") REFERENCES "public"."design_sessions"("id") ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."run_events"
-    ADD CONSTRAINT "run_events_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
-
-ALTER TABLE ONLY "public"."run_events"
-    ADD CONSTRAINT "run_events_run_id_org_fkey" FOREIGN KEY ("run_id", "organization_id") REFERENCES "public"."runs"("id", "organization_id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -2269,10 +2166,6 @@ ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."building_schemas"
 
 
 
-ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."run_events";
-
-
-
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."runs";
 
 
@@ -2518,11 +2411,6 @@ GRANT ALL ON FUNCTION "public"."sync_existing_users"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."trg_reject_update_run_events"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."trg_reject_update_run_events"() TO "service_role";
-
-
-
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_building_schema"("p_schema_id" "uuid", "p_schema_schema" "jsonb", "p_schema_version_patch" "jsonb", "p_schema_version_reverse_patch" "jsonb", "p_latest_schema_version_number" integer, "p_message_content" "text") TO "service_role";
 
@@ -2682,18 +2570,13 @@ GRANT SELECT ON TABLE "public"."public_share_settings" TO "anon";
 
 
 
-GRANT ALL ON TABLE "public"."run_events" TO "authenticated";
-GRANT ALL ON TABLE "public"."run_events" TO "service_role";
-
-
-
 GRANT ALL ON TABLE "public"."runs" TO "authenticated";
 GRANT ALL ON TABLE "public"."runs" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."run_status_by_design_session" TO "authenticated";
-GRANT ALL ON TABLE "public"."run_status_by_design_session" TO "service_role";
+GRANT ALL ON TABLE "public"."run_status" TO "authenticated";
+GRANT ALL ON TABLE "public"."run_status" TO "service_role";
 
 
 

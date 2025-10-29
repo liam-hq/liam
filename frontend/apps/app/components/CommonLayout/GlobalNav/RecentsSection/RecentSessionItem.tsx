@@ -18,18 +18,20 @@ type Props = {
   showOwner?: boolean
 }
 
-const mapDbStatusToUi = (
-  status: RecentSession['status'] | undefined,
-): SessionStatus => {
+const mapDbStatusToUi = (status: string | undefined): SessionStatus => {
   if (status === 'error') {
     return 'error'
   }
 
-  if (status === 'success') {
-    return 'success'
+  if (status === 'completed' || status === 'success') {
+    return 'completed'
   }
 
-  return 'pending'
+  if (status === 'running' || status === 'pending') {
+    return 'running'
+  }
+
+  return 'running'
 }
 
 export const RecentSessionItem: FC<Props> = ({

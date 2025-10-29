@@ -17,18 +17,20 @@ type Props = {
   session: ProjectSession
 }
 
-const mapDbStatusToUi = (
-  status: ProjectSession['status'] | undefined,
-): SessionStatus => {
+const mapDbStatusToUi = (status: string | undefined): SessionStatus => {
   if (status === 'error') {
     return 'error'
   }
 
-  if (status === 'success') {
-    return 'success'
+  if (status === 'completed' || status === 'success') {
+    return 'completed'
   }
 
-  return 'pending'
+  if (status === 'pending') {
+    return 'running'
+  }
+
+  return 'running'
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -45,88 +47,77 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
 
   useEffect(() => {
     const supabase = createSupabaseClient()
-    const knownRunIds = new Set<string>()
+    const runStatuses = new Map<string, SessionStatus>()
+
     if (session.latest_run_id) {
-      knownRunIds.add(session.latest_run_id)
+      runStatuses.set(session.latest_run_id, mapDbStatusToUi(session.status))
     }
 
     const getRecord = (value: unknown) => (isRecord(value) ? value : null)
 
-    const getStringField = (record: Record<string, unknown>, key: string) => {
+    const getStringField = (
+      record: Record<string, unknown>,
+      key: string,
+    ): string | null => {
       const value = record[key]
       return typeof value === 'string' ? value : null
     }
 
-    const ensureRunIsTracked = async (runId: string) => {
-      if (knownRunIds.has(runId)) {
-        return true
+    const deriveAggregatedStatus = () => {
+      if (runStatuses.size === 0) {
+        return mapDbStatusToUi(session.status)
       }
 
-      const { data, error } = await supabase
-        .from('runs')
-        .select('design_session_id')
-        .eq('id', runId)
-        .maybeSingle()
-
-      if (error || !data || data.design_session_id !== session.id) {
-        return false
+      const statuses = Array.from(runStatuses.values())
+      if (statuses.some((value) => value === 'error')) {
+        return 'error' as const
       }
 
-      knownRunIds.add(runId)
-      return true
+      if (statuses.some((value) => value === 'running')) {
+        return 'running' as const
+      }
+
+      return 'completed' as const
     }
 
-    const handleRunInsert = (payload: unknown) => {
+    const getUpdatedRun = (payload: unknown) => {
       const payloadRecord = isRecord(payload) ? payload : null
       const newRow = getRecord(payloadRecord ? payloadRecord['new'] : null)
       if (!newRow) {
-        return
+        return null
       }
 
       const runId = getStringField(newRow, 'id')
       const designSessionId = getStringField(newRow, 'design_session_id')
       if (!runId || designSessionId !== session.id) {
-        return
-      }
-
-      knownRunIds.add(runId)
-      setStatus('pending')
-    }
-
-    const eventTypeToStatus: Record<string, SessionStatus> = {
-      error: 'error',
-      completed: 'success',
-    }
-
-    const parseRunEventPayload = (
-      payload: unknown,
-    ): { runId: string; eventType: string } | null => {
-      const payloadRecord = isRecord(payload) ? payload : null
-      const newRow = getRecord(payloadRecord ? payloadRecord['new'] : null)
-      if (!newRow) {
         return null
       }
 
-      const runId = getStringField(newRow, 'run_id')
-      const eventType = getStringField(newRow, 'event_type')
-      if (!runId || !eventType) {
-        return null
-      }
-
-      return { runId, eventType }
+      return { runId, statusValue: getStringField(newRow, 'status') }
     }
 
-    const handleRunEvent = async (payload: unknown) => {
-      const parsedPayload = parseRunEventPayload(payload)
-      if (!parsedPayload) {
+    const handleRunInsert = (payload: unknown) => {
+      const updatedRun = getUpdatedRun(payload)
+      if (!updatedRun) {
         return
       }
 
-      if (!(await ensureRunIsTracked(parsedPayload.runId))) {
+      runStatuses.set(updatedRun.runId, 'running')
+      setStatus(deriveAggregatedStatus())
+    }
+
+    const handleRunUpdate = (payload: unknown) => {
+      const updatedRun = getUpdatedRun(payload)
+      if (!updatedRun) {
         return
       }
 
-      setStatus(eventTypeToStatus[parsedPayload.eventType] ?? 'pending')
+      const { runId, statusValue } = updatedRun
+      if (statusValue) {
+        runStatuses.set(runId, mapDbStatusToUi(statusValue))
+      }
+
+      setStatus(deriveAggregatedStatus())
     }
 
     const runsChannel = supabase
@@ -141,29 +132,22 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
         },
         (payload) => handleRunInsert(payload),
       )
-      .subscribe()
-
-    const runEventsChannel = supabase
-      .channel(`run_events_session_${session.id}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'run_events',
-          filter: `organization_id=eq.${session.organization_id}`,
+          table: 'runs',
+          filter: `design_session_id=eq.${session.id}`,
         },
-        (payload) => {
-          void handleRunEvent(payload)
-        },
+        (payload) => handleRunUpdate(payload),
       )
       .subscribe()
 
     return () => {
       supabase.removeChannel(runsChannel)
-      supabase.removeChannel(runEventsChannel)
     }
-  }, [session.id, session.latest_run_id, session.organization_id])
+  }, [session.id, session.latest_run_id, session.status])
 
   return (
     <Link
