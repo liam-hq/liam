@@ -1,0 +1,209 @@
+name: "[PR] Devin Review"
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  request_devin_review:
+    if: ${{ github.event.label.name == 'devin-review' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load review guidelines
+        id: guidelines
+        run: |
+          GUIDELINES_FILE="docs/review-guidelines.md"
+          if [ ! -f "$GUIDELINES_FILE" ]; then
+            echo "Error: $GUIDELINES_FILE not found"
+            exit 1
+          fi
+          GUIDELINES=$(cat "$GUIDELINES_FILE")
+          if [ -z "$GUIDELINES" ]; then
+            echo "Error: $GUIDELINES_FILE is empty"
+            exit 1
+          fi
+          echo "REVIEW_GUIDELINES<<EOF" >> $GITHUB_ENV
+          echo "$GUIDELINES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Select API Key
+        id: select-api-key
+        env:
+          SENDER_LOGIN: ${{ github.event.sender.login }}
+          DEVIN_API_KEY_MH4GF: ${{ secrets.DEVIN_API_KEY_MH4GF }}
+          DEVIN_API_KEY_HOSHINOTSUYOSHI: ${{ secrets.DEVIN_API_KEY_HOSHINOTSUYOSHI }}
+          DEVIN_API_KEY_FUNAMA_YUKINA: ${{ secrets.DEVIN_API_KEY_FUNAMA_YUKINA }}
+          DEVIN_API_KEY_JUNKISAI: ${{ secrets.DEVIN_API_KEY_JUNKISAI }}
+          DEVIN_API_KEY_NORITAKE_IKEDA: ${{ secrets.DEVIN_API_KEY_NORITAKE_IKEDA }}
+          DEVIN_API_KEY_KUMANOAYUMI: ${{ secrets.DEVIN_API_KEY_KUMANOAYUMI }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          
+          # Function to post comment to PR
+          post_pr_comment() {
+            local comment_body="$1"
+            gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+              -f body="$comment_body" || true
+          }
+
+          if [ -z "$SENDER_LOGIN" ] || [ "$SENDER_LOGIN" = "null" ]; then
+            echo "Error: github.event.sender.login is undefined or null"
+            exit 1
+          fi
+
+          echo "Label added by user: $SENDER_LOGIN"
+
+          case "$SENDER_LOGIN" in
+            "MH4GF")
+              SELECTED_KEY="$DEVIN_API_KEY_MH4GF"
+              ;;
+            "hoshinotsuyoshi")
+              SELECTED_KEY="$DEVIN_API_KEY_HOSHINOTSUYOSHI"
+              ;;
+            "FunamaYukina")
+              SELECTED_KEY="$DEVIN_API_KEY_FUNAMA_YUKINA"
+              ;;
+            "junkisai")
+              SELECTED_KEY="$DEVIN_API_KEY_JUNKISAI"
+              ;;
+            "NoritakaIkeda")
+              SELECTED_KEY="$DEVIN_API_KEY_NORITAKE_IKEDA"
+              ;;
+            "kumanoayumi")
+              SELECTED_KEY="$DEVIN_API_KEY_KUMANOAYUMI"
+              ;;
+            *)
+              echo "Error: No API Key configured for user: $SENDER_LOGIN"
+              post_pr_comment "❌ Error: No Devin API Key configured for user \`$SENDER_LOGIN\`. Please contact repository administrators."
+              exit 1
+              ;;
+          esac
+
+          if [ -z "$SELECTED_KEY" ] || [ "$SELECTED_KEY" = "null" ]; then
+            echo "Error: API Key for user $SENDER_LOGIN is empty or not set"
+            post_pr_comment "❌ Error: Devin API Key for user \`$SENDER_LOGIN\` is empty or not set. Please contact repository administrators."
+            exit 1
+          fi
+
+          echo "DEVIN_API_KEY=$SELECTED_KEY" >> "$GITHUB_ENV"
+          echo "API Key configured for: $SENDER_LOGIN"
+
+      - name: Request Devin Review
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
+          CURL_MAX_TIME: 30
+          CURL_CONNECT_TIMEOUT: 10
+        run: |
+          set -euo pipefail
+          
+          # Function to post comment to PR
+          post_pr_comment() {
+            local comment_body="$1"
+            gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+              -f body="$comment_body" || true
+          }
+
+          # Create JSON payload using jq with direct variable expansion
+          JSON_PAYLOAD=$(jq -n \
+            --arg pr_url "$PR_URL" \
+            --arg guidelines "$REVIEW_GUIDELINES" \
+            '{prompt: ("@Devin " + $pr_url + " のブランチを引き継いで内容を深くレビューし、出てきた問題を全て修正してください。\n\nレビュー観点は docs/review-guidelines.md を参照してください。以下にその内容を記載します:\n\n" + $guidelines)}')
+
+          echo "Sending request to Devin API..."
+          HTTP_CODE=$(curl -w "%{http_code}" -o response.json \
+            --max-time "${CURL_MAX_TIME}" \
+            --connect-timeout "${CURL_CONNECT_TIMEOUT}" \
+            -X POST "https://api.devin.ai/v1/sessions" \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD" \
+            -s) || {
+              echo "Error: API request failed or timed out"
+              if [ -f response.json ]; then cat response.json; fi
+              post_pr_comment "❌ Error: Request to Devin API failed or timed out. Please try again later."
+              exit 1
+            }
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "Error: API request failed with HTTP status $HTTP_CODE"
+            cat response.json
+            post_pr_comment "❌ Error: Devin API request failed (HTTP $HTTP_CODE). Check GitHub Actions logs for details."
+            exit 1
+          fi
+
+          RESPONSE=$(cat response.json)
+          echo "Devin API request successful (HTTP $HTTP_CODE)"
+
+          # Validate response is valid JSON
+          if ! echo "$RESPONSE" | jq empty 2>/dev/null; then
+            echo "Error: Received invalid JSON response from Devin API"
+            echo "Response (first 500 characters): ${RESPONSE:0:500}"
+            post_pr_comment "❌ Error: Received invalid response from Devin API. Check GitHub Actions logs for details."
+            exit 1
+          fi
+
+          # Extract session URL and check for errors in response
+          SESSION_URL=$(echo "$RESPONSE" | jq -r '.url // empty')
+          SESSION_ID=$(echo "$RESPONSE" | jq -r '.session_id // empty')
+          ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.error.message // empty')
+
+          if [ -n "$ERROR_MESSAGE" ]; then
+            echo "Error: API request failed with message: $ERROR_MESSAGE"
+            echo "Full response: $RESPONSE"
+            post_pr_comment "❌ Error: Devin API error: \`$ERROR_MESSAGE\`"
+            exit 1
+          fi
+
+          if [ -z "$SESSION_ID" ]; then
+            echo "Error: No session ID in response"
+            echo "Response: $RESPONSE"
+            post_pr_comment "❌ Error: Failed to create Devin session (no session ID). Check GitHub Actions logs for details."
+            exit 1
+          fi
+
+          if [ -z "$SESSION_URL" ]; then
+            echo "Warning: Session created but no URL in response"
+            echo "Session ID: $SESSION_ID"
+            echo "Response: $RESPONSE"
+          else
+            echo "Session URL: $SESSION_URL"
+          fi
+
+          echo "SESSION_URL=$SESSION_URL" >> "$GITHUB_ENV"
+
+      - name: Add comment to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SESSION_URL="${SESSION_URL:-}"
+          if [ -n "$SESSION_URL" ]; then
+            COMMENT_BODY="🤖 Devin review started. Track progress at <${SESSION_URL}>"
+          else
+            COMMENT_BODY="🤖 Devin review started. Fixes will be committed when review is complete."
+          fi
+
+          if ! gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            -f body="$COMMENT_BODY"; then
+              echo "::warning::Failed to post comment to PR #${{ github.event.pull_request.number }}, but Devin session was created successfully"
+              echo "Comment body was: $COMMENT_BODY"
+          fi
