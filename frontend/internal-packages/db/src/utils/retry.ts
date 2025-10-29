@@ -1,4 +1,4 @@
-import { ResultAsync } from 'neverthrow'
+import { ResultAsync } from '@liam-hq/neverthrow'
 
 /**
  * Retry configuration for Supabase operations

@@ -10,7 +10,7 @@ import {
   MessageTupleManager,
   SSE_EVENTS,
 } from '@liam-hq/agent/client'
-import { err, ok, type Result } from 'neverthrow'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'

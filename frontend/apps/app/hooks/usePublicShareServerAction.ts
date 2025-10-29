@@ -1,4 +1,4 @@
-import { fromPromise } from 'neverthrow'
+import { fromPromiseOriginal } from '@liam-hq/neverthrow'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import {
   disablePublicShare,
@@ -35,11 +35,11 @@ export const usePublicShareServerAction = ({
 
     setIsLoading(true)
 
-    const result = await fromPromise(
+    const result = await fromPromiseOriginal(
       currentIsPublic
         ? disablePublicShare(designSessionId)
         : enablePublicShare(designSessionId),
-      (error) => ({
+      (error): { success: false; error: string } => ({
         success: false,
         error:
           error instanceof Error

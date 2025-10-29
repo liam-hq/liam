@@ -1,6 +1,6 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
+import { Result } from '@liam-hq/neverthrow'
 import { yamlSchemaDeparser } from '@liam-hq/schema'
-import { Result } from 'neverthrow'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { getConfigurable } from '../../utils/getConfigurable'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'

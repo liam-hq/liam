@@ -1,6 +1,5 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import { fromValibotSafeParse } from '@liam-hq/neverthrow'
-import { ok, type Result } from 'neverthrow'
+import { fromValibotSafeParse, ok, type Result } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 import type { Repositories } from '../repositories'
 import {

@@ -1,5 +1,5 @@
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import type { RawStmt } from '@pgsql/types'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { type InferIssue, safeParse } from 'valibot'
 import type { Schema } from '../../../schema/index.js'
 import { schemaSchema } from '../../../schema/index.js'

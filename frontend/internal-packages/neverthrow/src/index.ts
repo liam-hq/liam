@@ -1,4 +1,3 @@
-export type { Result } from 'neverthrow'
 export {
   Err,
   err,
@@ -10,6 +9,7 @@ export {
   Ok,
   ok,
   okAsync,
+  Result,
   ResultAsync,
   safeTry,
 } from 'neverthrow'

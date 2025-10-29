@@ -1,4 +1,4 @@
-import type { Result } from 'neverthrow'
+import type { Result } from '@liam-hq/neverthrow'
 import type { MigrationOperation } from '../migrationOperation/schema/index.js'
 import type { Schema } from '../schema/index.js'
 

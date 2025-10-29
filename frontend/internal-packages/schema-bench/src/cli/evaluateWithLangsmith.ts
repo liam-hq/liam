@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
 import { resolve } from 'node:path'
-import { fromPromise } from '@liam-hq/neverthrow'
+import { fromPromise, ResultAsync } from '@liam-hq/neverthrow'
 import { config } from 'dotenv'
 import { evaluate } from 'langsmith/evaluation'
-import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { execute as executeLiamDb } from '../executors/liamDb/liamDbExecutor.ts'
 import { OpenAIExecutor } from '../executors/openai/openaiExecutor.ts'

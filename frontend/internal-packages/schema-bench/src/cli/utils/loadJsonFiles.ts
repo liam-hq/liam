@@ -7,7 +7,7 @@ import {
   ok,
   type Result,
   Result as ResultClass,
-} from 'neverthrow'
+} from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 
 /**

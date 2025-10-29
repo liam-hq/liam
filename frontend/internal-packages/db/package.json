@@ -7,9 +7,9 @@
   },
   "main": "src/index.ts",
   "dependencies": {
+    "@liam-hq/neverthrow": "workspace:*",
     "@supabase/ssr": "0.7.0",
     "@supabase/supabase-js": "2.75.0",
-    "neverthrow": "8.2.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {

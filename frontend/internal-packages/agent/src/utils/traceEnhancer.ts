@@ -4,8 +4,8 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
+import type { Result } from '@liam-hq/neverthrow'
 import { fromThrowable } from '@liam-hq/neverthrow'
-import type { Result } from 'neverthrow'
 
 /**
  * Environment information for enhanced tracing

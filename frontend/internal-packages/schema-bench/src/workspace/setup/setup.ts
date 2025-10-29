@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import * as path from 'node:path'
-import { err, ok } from 'neverthrow'
+import { err, ok } from '@liam-hq/neverthrow'
 import type { SetupResult, WorkspaceConfig } from '../types'
 
 const createWorkspaceDirectories = (workspacePath: string): SetupResult => {

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { fromPromise, type Result } from 'neverthrow'
+import { fromPromise, type Result } from '@liam-hq/neverthrow'
 
 type ArchiveOptions = {
   archiveRunId?: string

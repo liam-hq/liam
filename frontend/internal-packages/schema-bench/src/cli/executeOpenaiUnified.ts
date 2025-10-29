@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { join, resolve } from 'node:path'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import { config as loadEnv } from 'dotenv'
-import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { OpenAIExecutor } from '../executors/openai/openaiExecutor'
 import type { OpenAIExecutorInput } from '../executors/openai/types'

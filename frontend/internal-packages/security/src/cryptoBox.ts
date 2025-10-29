@@ -1,7 +1,6 @@
 import crypto from 'node:crypto'
 import type { Result } from '@liam-hq/neverthrow'
-import { fromThrowable } from '@liam-hq/neverthrow'
-import { err, ok } from 'neverthrow'
+import { err, fromThrowable, ok } from '@liam-hq/neverthrow'
 
 export type Key = { id: string; key: Buffer }
 

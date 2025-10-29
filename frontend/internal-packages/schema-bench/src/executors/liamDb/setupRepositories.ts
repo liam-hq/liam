@@ -4,7 +4,7 @@ import {
   type SupabaseClientType,
   toResultAsync,
 } from '@liam-hq/db'
-import { err, ok, type Result, type ResultAsync } from 'neverthrow'
+import { err, ok, type Result, type ResultAsync } from '@liam-hq/neverthrow'
 
 type Repositories = ReturnType<typeof createSupabaseRepositories>
 

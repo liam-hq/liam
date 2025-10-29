@@ -1,5 +1,5 @@
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import { pgParse } from '@liam-hq/schema/parser'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 /**
  * Validate SQL syntax using pgParse and return error message if validation fails

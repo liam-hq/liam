@@ -1,4 +1,4 @@
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import type { SetupDatabaseAndUserResult } from './scriptUtils'
 import {
   createBuildingSchema,

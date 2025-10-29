@@ -1,6 +1,6 @@
 import { deepModeling } from '@liam-hq/agent'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import { aSchema } from '@liam-hq/schema'
-import { err, ok, type Result } from 'neverthrow'
 import { handleExecutionResult, logInputProcessing } from '../utils.ts'
 import { setupRepositories } from './setupRepositories.ts'
 import type { LiamDbExecutorInput, LiamDbExecutorOutput } from './types.ts'

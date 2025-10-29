@@ -1,5 +1,5 @@
 import { getInstallations } from '@liam-hq/github'
-import { okAsync } from 'neverthrow'
+import { okAsync } from '@liam-hq/neverthrow'
 import { redirect } from 'next/navigation'
 import { ProjectNewPage } from '../../../components/ProjectNewPage'
 import { getOrganizationId } from '../../../features/organizations/services/getOrganizationId'

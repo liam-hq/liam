@@ -1,4 +1,4 @@
-import { err, ok, type Result } from 'neverthrow'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import { PATH_PATTERNS } from '../../migrationOperation/constants.js'
 import type { MigrationOperation } from '../../migrationOperation/index.js'
 import {
