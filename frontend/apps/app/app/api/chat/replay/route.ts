@@ -54,22 +54,6 @@ export async function POST(request: Request) {
 
   const userId = authResult.value.id
 
-  const { data: designSession, error: designSessionError } = await supabase
-    .from('design_sessions')
-    .select('organization_id')
-    .eq('id', designSessionId)
-    .limit(1)
-    .single()
-
-  if (designSessionError || !designSession) {
-    return NextResponse.json(
-      { error: 'Design Session not found' },
-      { status: 404 },
-    )
-  }
-
-  const organizationId = designSession.organization_id
-
   let runTracker: RunTracker | null = null
 
   const recordRunError = async (
@@ -102,7 +86,6 @@ export async function POST(request: Request) {
     RunTracker.start({
       supabase,
       designSessionId,
-      organizationId,
       userId,
     }),
   )()
@@ -144,7 +127,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const { id: buildingSchemaId } = buildingSchemaResult.value
+  const { id: buildingSchemaId, organization_id: organizationId } =
+    buildingSchemaResult.value
 
   const repositories = createSupabaseRepositories(supabase, organizationId)
   const checkpointer = repositories.schema.checkpointer

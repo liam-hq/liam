@@ -105,7 +105,6 @@ export async function POST(request: Request) {
     RunTracker.start({
       supabase,
       designSessionId,
-      organizationId,
       userId,
     }),
   )()

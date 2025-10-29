@@ -125,7 +125,6 @@ const initializeSessionRun = async (
     await RunTracker.start({
       supabase,
       designSessionId,
-      organizationId,
       userId: currentUserId,
     })
     return null
