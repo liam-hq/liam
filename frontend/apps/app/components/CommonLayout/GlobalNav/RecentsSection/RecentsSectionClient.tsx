@@ -58,19 +58,6 @@ export const RecentsSectionClient = ({
   const sessionsListRef = useRef<HTMLElement | null>(null)
   const sessionsRef = useRef(initialSessions)
   const runIdToSessionMap = useRef(new Map<string, string>())
-  const supabaseRef = useRef<ReturnType<typeof createSupabaseClient> | null>(
-    null,
-  )
-  const refreshStateRef = useRef<
-    Map<
-      string,
-      {
-        inFlight: boolean
-        needsRefresh: boolean
-        latestRunIdHint: string | null
-      }
-    >
-  >(new Map())
 
   const handleFilterChange = useCallback(async (newFilterType: string) => {
     const nextFilterType: SessionFilterType = newFilterType
@@ -136,121 +123,6 @@ export const RecentsSectionClient = ({
     })
   }, [sessions])
 
-  const refreshSession = useCallback(
-    async (designSessionId: string, latestRunIdHint?: string) => {
-      const supabase = supabaseRef.current
-      if (!supabase) {
-        return
-      }
-
-      if (
-        !sessionsRef.current.some((session) => session.id === designSessionId)
-      ) {
-        return
-      }
-
-      const readSessionSnapshot = async () => {
-        const [statusResult, runResult] = await Promise.all([
-          supabase
-            .from('run_status')
-            .select('status')
-            .eq('design_session_id', designSessionId)
-            .maybeSingle(),
-          supabase
-            .from('runs')
-            .select('id')
-            .eq('design_session_id', designSessionId)
-            .maybeSingle(),
-        ])
-
-        if (statusResult.error) {
-          console.error(
-            'Error refreshing run status for recents:',
-            statusResult.error,
-          )
-        }
-
-        if (runResult.error) {
-          console.error(
-            'Error refreshing run metadata for recents:',
-            runResult.error,
-          )
-        }
-
-        const statusValue =
-          typeof statusResult.data?.status === 'string'
-            ? statusResult.data.status
-            : null
-
-        return {
-          normalizedStatus: toSessionStatus(statusValue),
-          fetchedRunId:
-            typeof runResult.data?.id === 'string' ? runResult.data.id : null,
-        }
-      }
-
-      const stateMap = refreshStateRef.current
-      let state = stateMap.get(designSessionId)
-      if (!state) {
-        state = {
-          inFlight: false,
-          needsRefresh: false,
-          latestRunIdHint: null,
-        }
-        stateMap.set(designSessionId, state)
-      }
-
-      if (typeof latestRunIdHint === 'string') {
-        state.latestRunIdHint = latestRunIdHint
-      }
-
-      if (state.inFlight) {
-        state.needsRefresh = true
-        return
-      }
-
-      state.inFlight = true
-
-      const runRefreshCycle = async () => {
-        do {
-          state.needsRefresh = false
-          const hint = state.latestRunIdHint
-          state.latestRunIdHint = null
-          const { normalizedStatus, fetchedRunId } = await readSessionSnapshot()
-          const nextRunId = hint ?? fetchedRunId ?? null
-
-          if (nextRunId) {
-            runIdToSessionMap.current.set(nextRunId, designSessionId)
-          }
-
-          setSessions((prev) =>
-            prev.map((session) =>
-              session.id === designSessionId
-                ? {
-                    ...session,
-                    status: normalizedStatus,
-                    latest_run_id: nextRunId ?? session.latest_run_id,
-                  }
-                : session,
-            ),
-          )
-        } while (state.needsRefresh)
-      }
-
-      runRefreshCycle()
-        .catch((error) => {
-          console.error('Unexpected error refreshing session state:', error)
-        })
-        .finally(() => {
-          state.inFlight = false
-          if (state.needsRefresh) {
-            void refreshSession(designSessionId)
-          }
-        })
-    },
-    [],
-  )
-
   useEffect(() => {
     const currentLoadMoreRef = loadMoreRef.current
     const currentSessionsListRef = sessionsListRef.current
@@ -282,7 +154,6 @@ export const RecentsSectionClient = ({
 
   useEffect(() => {
     const supabase = createSupabaseClient()
-    supabaseRef.current = supabase
 
     const getRecord = (value: unknown) => (isRecord(value) ? value : null)
 
@@ -297,6 +168,65 @@ export const RecentsSectionClient = ({
     const getStringField = (record: Record<string, unknown>, key: string) => {
       const value = record[key]
       return typeof value === 'string' ? value : null
+    }
+
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: todo
+    const refreshSession = async (designSessionId: string) => {
+      if (
+        !sessionsRef.current.some((session) => session.id === designSessionId)
+      ) {
+        return
+      }
+
+      const [statusResult, runResult] = await Promise.all([
+        supabase
+          .from('run_status')
+          .select('status')
+          .eq('design_session_id', designSessionId)
+          .maybeSingle(),
+        supabase
+          .from('runs')
+          .select('id')
+          .eq('design_session_id', designSessionId)
+          .maybeSingle(),
+      ])
+
+      if (statusResult.error) {
+        console.error(
+          'Error refreshing run status for recents:',
+          statusResult.error,
+        )
+      }
+
+      if (runResult.error) {
+        console.error(
+          'Error refreshing run metadata for recents:',
+          runResult.error,
+        )
+      }
+
+      const statusValue =
+        typeof statusResult.data?.status === 'string'
+          ? statusResult.data.status
+          : null
+      const fetchedRunId =
+        typeof runResult.data?.id === 'string' ? runResult.data.id : null
+
+      if (fetchedRunId) {
+        runIdToSessionMap.current.set(fetchedRunId, designSessionId)
+      }
+
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === designSessionId
+            ? {
+                ...session,
+                status: toSessionStatus(statusValue),
+                latest_run_id: fetchedRunId ?? session.latest_run_id,
+              }
+            : session,
+        ),
+      )
     }
 
     const resolveSessionIdForRun = async (
@@ -366,16 +296,15 @@ export const RecentsSectionClient = ({
             return
           }
 
-          await refreshSession(designSessionId, runId)
+          await refreshSession(designSessionId)
         },
       )
       .subscribe()
 
     return () => {
-      supabase.removeChannel(runsChannel)
-      supabaseRef.current = null
+      void supabase.removeChannel(runsChannel)
     }
-  }, [organizationId, refreshSession])
+  }, [organizationId])
 
   return (
     <>
