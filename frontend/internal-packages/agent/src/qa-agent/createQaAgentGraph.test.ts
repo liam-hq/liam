@@ -7,16 +7,25 @@ describe('createQaAgentGraph', () => {
   const expectedMermaidDiagram = `%%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	batchTestcaseGeneration(batchTestcaseGeneration)
+	prepareTestcases(prepareTestcases)
+	testcaseGenerationWithSemaphore(testcaseGenerationWithSemaphore)
+	reportProgress(reportProgress)
 	applyGeneratedSqls(applyGeneratedSqls)
 	validateSchema(validateSchema)
 	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> batchTestcaseGeneration;
+	__start__ --> prepareTestcases;
 	applyGeneratedSqls --> validateSchema;
-	batchTestcaseGeneration --> applyGeneratedSqls;
 	invokeRunTestTool --> __end__;
+	reportProgress --> applyGeneratedSqls;
+	testcaseGenerationWithSemaphore --> reportProgress;
 	validateSchema --> invokeRunTestTool;
+	prepareTestcases -.-> testcaseGenerationWithSemaphore;
+	prepareTestcases -.-> reportProgress;
+	prepareTestcases -.-> applyGeneratedSqls;
+	prepareTestcases -.-> validateSchema;
+	prepareTestcases -.-> invokeRunTestTool;
+	prepareTestcases -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;

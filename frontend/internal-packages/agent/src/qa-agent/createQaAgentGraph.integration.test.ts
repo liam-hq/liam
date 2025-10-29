@@ -191,6 +191,8 @@ describe('createQaAgentGraph Integration', () => {
     const state: QaAgentState = {
       messages: [new HumanMessage(userInput)],
       schemaData,
+      batchId: 'test-batch-id',
+      totalTestcases: 0,
       analyzedRequirements: {
         goal: 'Implement secure user authentication and role-based access control system with comprehensive permission management and audit logging',
         testcases: {

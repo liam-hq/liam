@@ -1,8 +1,11 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import { RETRY_POLICY } from '../utils/errorHandling'
+import { continueToRequirements } from './distributeRequirements'
 import { applyGeneratedSqlsNode } from './nodes/applyGeneratedSqlsNode'
-import { batchTestcaseGenerationNode } from './nodes/batchTestcaseGenerationNode'
 import { invokeRunTestToolNode } from './nodes/invokeRunTestToolNode'
+import { prepareTestcasesNode } from './nodes/prepareTestcasesNode'
+import { reportProgressNode } from './nodes/reportProgressNode'
+import { testcaseGenerationWithSemaphoreNode } from './nodes/testcaseGenerationWithSemaphoreNode'
 import { qaAgentAnnotation } from './shared/qaAgentAnnotation'
 import { validateSchemaNode } from './validateSchema'
 
@@ -10,12 +13,16 @@ export const createQaAgentGraph = () => {
   const qaAgentGraph = new StateGraph(qaAgentAnnotation)
 
   qaAgentGraph
-    .addNode('batchTestcaseGeneration', batchTestcaseGenerationNode, {
-      retryPolicy: RETRY_POLICY,
-    })
-
+    .addNode('prepareTestcases', prepareTestcasesNode)
+    .addNode(
+      'testcaseGenerationWithSemaphore',
+      testcaseGenerationWithSemaphoreNode,
+      {
+        retryPolicy: RETRY_POLICY,
+      },
+    )
+    .addNode('reportProgress', reportProgressNode)
     .addNode('applyGeneratedSqls', applyGeneratedSqlsNode)
-
     .addNode('validateSchema', validateSchemaNode, {
       retryPolicy: RETRY_POLICY,
     })
@@ -23,11 +30,17 @@ export const createQaAgentGraph = () => {
       retryPolicy: RETRY_POLICY,
     })
 
-    // Define edges for sequential flow with batched processing
-    .addEdge(START, 'batchTestcaseGeneration')
+    // Define edges for Send API parallel flow with progress tracking
+    .addEdge(START, 'prepareTestcases')
 
-    // After batched generation completes, apply generated SQLs
-    .addEdge('batchTestcaseGeneration', 'applyGeneratedSqls')
+    // Use conditional edge with Send API for parallel execution from prepareTestcases
+    // Send targets the testcaseGenerationWithSemaphore (which wraps testcaseGeneration with semaphore)
+    .addConditionalEdges('prepareTestcases', continueToRequirements)
+
+    .addEdge('testcaseGenerationWithSemaphore', 'reportProgress')
+
+    // After all parallel subgraph executions complete, apply generated SQLs
+    .addEdge('reportProgress', 'applyGeneratedSqls')
 
     // Then validate
     .addEdge('applyGeneratedSqls', 'validateSchema')

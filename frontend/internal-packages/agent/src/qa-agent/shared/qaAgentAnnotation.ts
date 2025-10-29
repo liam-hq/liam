@@ -32,6 +32,12 @@ export const qaAgentAnnotation = Annotation.Root({
     reducer: (x, y) => y ?? x ?? END,
     default: () => END,
   }),
+  batchId: Annotation<string>({
+    reducer: (x) => x,
+  }),
+  totalTestcases: Annotation<number>({
+    reducer: (x) => x,
+  }),
 })
 
 export type QaAgentState = typeof qaAgentAnnotation.State
