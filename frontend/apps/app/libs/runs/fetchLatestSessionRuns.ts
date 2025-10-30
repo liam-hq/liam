@@ -3,14 +3,14 @@ import type { Database } from '@liam-hq/db/supabase/database.types'
 
 export type LatestSessionRun = {
   design_session_id: string
-  latest_run_id: string | null
-  status: 'running' | 'completed' | 'error'
+  run_id: string
+  latest_status: 'running' | 'completed' | 'error'
 }
 
-export type RawLatestSessionRun = {
+type RawLatestSessionRun = {
   design_session_id: string
-  latest_run_id: string | null
-  status: Database['public']['Enums']['workflow_run_status']
+  run_id: string
+  latest_status: Database['public']['Enums']['workflow_run_status']
 }
 
 type FetchLatestSessionRunMapOptions = {
@@ -48,10 +48,10 @@ export const fetchLatestSessionRunMap = async (
       row.design_session_id,
       {
         design_session_id: row.design_session_id,
-        latest_run_id: row.latest_run_id ?? null,
-        status:
-          row.status === 'completed' || row.status === 'error'
-            ? row.status
+        run_id: row.run_id,
+        latest_status:
+          row.latest_status === 'completed' || row.latest_status === 'error'
+            ? row.latest_status
             : 'running',
       },
     ]),

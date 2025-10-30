@@ -756,8 +756,8 @@ export type Database = {
         Args: { session_ids: string[] }
         Returns: {
           design_session_id: string
-          latest_run_id: string
-          status: Database['public']['Enums']['workflow_run_status']
+          latest_status: Database['public']['Enums']['workflow_run_status']
+          run_id: string
         }[]
       }
       get_invitation_data: {

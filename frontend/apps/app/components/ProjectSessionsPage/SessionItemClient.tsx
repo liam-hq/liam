@@ -43,8 +43,8 @@ const isLatestSessionRun = (value: unknown): value is LatestSessionRun => {
     return false
   }
 
-  const status = value['status']
-  const latestRunId = value['latest_run_id']
+  const status = value['latest_status']
+  const latestRunId = value['run_id']
 
   return (
     typeof value['design_session_id'] === 'string' &&
@@ -65,8 +65,8 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
   useEffect(() => {
     const supabase = createSupabaseClient()
     const knownRunIds = new Set<string>()
-    if (session.latest_run_id) {
-      knownRunIds.add(session.latest_run_id)
+    if (session.run_id) {
+      knownRunIds.add(session.run_id)
     }
 
     const getRecord = (value: unknown) => (isRecord(value) ? value : null)
@@ -116,7 +116,7 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
       }
 
       const payloadResult = await fromAsyncThrowable(
-        () => response.json() as Promise<unknown>,
+        (): Promise<unknown> => response.json(),
       )()
 
       if (payloadResult.isErr()) {
@@ -138,11 +138,11 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
         return
       }
 
-      if (typeof row.latest_run_id === 'string') {
-        knownRunIds.add(row.latest_run_id)
+      if (typeof row.run_id === 'string') {
+        knownRunIds.add(row.run_id)
       }
 
-      setStatus(mapDbStatusToUi(row.status))
+      setStatus(mapDbStatusToUi(row.latest_status))
     }
 
     const resolveSessionMatch = async (runId: string) => {
@@ -215,7 +215,7 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
     return () => {
       void supabase.removeChannel(eventsChannel)
     }
-  }, [session.id, session.latest_run_id, session.organization_id])
+  }, [session.id, session.run_id, session.organization_id])
 
   return (
     <Link

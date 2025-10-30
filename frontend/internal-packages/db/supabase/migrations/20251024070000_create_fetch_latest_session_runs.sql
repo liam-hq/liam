@@ -1,8 +1,8 @@
 create or replace function public.fetch_latest_session_runs_status(session_ids uuid[])
 returns table (
   design_session_id uuid,
-  latest_run_id uuid,
-  status public.workflow_run_status
+  run_id uuid,
+  latest_status public.workflow_run_status
 )
 language sql
 security definer
@@ -26,8 +26,8 @@ as $$
   )
   select
     lr.design_session_id,
-    lr.run_id as latest_run_id,
-    coalesce(le.status, 'running') as status
+    lr.run_id,
+    coalesce(le.status, 'running') as latest_status
   from latest_runs lr
   left join latest_events le on le.run_id = lr.run_id
   where lr.run_rank = 1;

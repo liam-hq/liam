@@ -32,7 +32,7 @@ const sampleSession: ProjectSession = {
   organization_id: 'org-1',
   has_schema: false,
   status: 'completed',
-  latest_run_id: null,
+  run_id: null,
 }
 
 export const Default: Story = {
@@ -51,7 +51,7 @@ export const RecentSession: Story = {
       organization_id: 'org-1',
       has_schema: true,
       status: 'running',
-      latest_run_id: null,
+      run_id: null,
     },
   },
 }
@@ -66,7 +66,7 @@ export const LongName: Story = {
       organization_id: 'org-1',
       has_schema: false,
       status: 'completed',
-      latest_run_id: null,
+      run_id: null,
     },
   },
 }
@@ -81,7 +81,7 @@ export const ErrorState: Story = {
       organization_id: 'org-1',
       has_schema: false,
       status: 'error',
-      latest_run_id: null,
+      run_id: null,
     },
   },
 }

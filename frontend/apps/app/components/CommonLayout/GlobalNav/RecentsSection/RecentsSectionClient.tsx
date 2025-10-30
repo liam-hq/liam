@@ -37,8 +37,8 @@ const isLatestSessionRun = (value: unknown): value is LatestSessionRun => {
     return false
   }
 
-  const status = value['status']
-  const latestRunId = value['latest_run_id']
+  const status = value['latest_status']
+  const latestRunId = value['run_id']
 
   return (
     typeof value['design_session_id'] === 'string' &&
@@ -133,8 +133,8 @@ export const RecentsSectionClient = ({
     const runMap = runIdToSessionMap.current
     runMap.clear()
     sessions.forEach((session) => {
-      if (session.latest_run_id) {
-        runMap.set(session.latest_run_id, session.id)
+      if (session.run_id) {
+        runMap.set(session.run_id, session.id)
       }
     })
   }, [sessions])
@@ -229,7 +229,7 @@ export const RecentsSectionClient = ({
       }
 
       const payloadResult = await fromAsyncThrowable(
-        () => response.json() as Promise<unknown>,
+        (): Promise<unknown> => response.json(),
       )()
 
       if (payloadResult.isErr()) {
@@ -251,8 +251,7 @@ export const RecentsSectionClient = ({
         return
       }
 
-      const fetchedRunId =
-        typeof row.latest_run_id === 'string' ? row.latest_run_id : null
+      const fetchedRunId = typeof row.run_id === 'string' ? row.run_id : null
 
       if (fetchedRunId) {
         runIdToSessionMap.current.set(fetchedRunId, designSessionId)
@@ -263,8 +262,8 @@ export const RecentsSectionClient = ({
           session.id === designSessionId
             ? {
                 ...session,
-                status: toSessionStatus(row.status),
-                latest_run_id: fetchedRunId ?? session.latest_run_id,
+                status: toSessionStatus(row.latest_status),
+                run_id: fetchedRunId ?? session.run_id,
               }
             : session,
         ),

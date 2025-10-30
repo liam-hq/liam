@@ -10,7 +10,7 @@ export type ProjectSession = {
   organization_id: string
   has_schema: boolean
   status: SessionStatus
-  latest_run_id: string | null
+  run_id: string | null
 }
 
 const toStringOrNull = (value: unknown): string | null =>
@@ -119,8 +119,8 @@ export const fetchProjectSessions = async (
     created_at: session.created_at,
     project_id: session.project_id,
     organization_id: session.organization_id,
-    status: toSessionStatus(sessionStatusMap.get(session.id)?.status),
-    latest_run_id: sessionStatusMap.get(session.id)?.latest_run_id ?? null,
+    status: toSessionStatus(sessionStatusMap.get(session.id)?.latest_status),
+    run_id: sessionStatusMap.get(session.id)?.run_id ?? null,
     has_schema: session.has_schema,
   }))
 }

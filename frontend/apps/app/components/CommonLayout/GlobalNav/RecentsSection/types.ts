@@ -8,7 +8,7 @@ export type RecentSession = {
   organization_id: string
   has_schema: boolean
   status: SessionStatus
-  latest_run_id: string | null
+  run_id: string | null
   created_by_user: {
     id: string
     name: string
