@@ -8,7 +8,7 @@ import { createClient as createSupabaseClient } from '../../libs/db/client'
 import { urlgen } from '../../libs/routes'
 import type { LatestSessionRun } from '../../libs/runs/fetchLatestSessionRuns'
 import { formatDate } from '../../libs/utils'
-import styles from './SessionItem.module.css'
+import styles from './SessionItemClient.module.css'
 import {
   type SessionStatus,
   SessionStatusIndicator,
