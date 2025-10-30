@@ -113,11 +113,9 @@ const initializeSessionRun = async (
   supabase: SupabaseClientType,
   {
     designSessionId,
-    organizationId,
     currentUserId,
   }: {
     designSessionId: string
-    organizationId: string
     currentUserId: string
   },
 ): Promise<CreateSessionState | null> => {
@@ -199,7 +197,6 @@ export const createSession = async (
 
   const runInitializationResult = await initializeSessionRun(supabase, {
     designSessionId,
-    organizationId,
     currentUserId,
   })
 
