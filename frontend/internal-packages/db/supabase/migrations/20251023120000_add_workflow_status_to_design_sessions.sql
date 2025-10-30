@@ -1,8 +1,8 @@
--- Migration: Introduce runs and run_events tables with derived status view
+-- Migration: Introduce runs and run_events tables with derived status tracking
 -- Purpose:
 --   - Reset workflow_run_status enum for workflow run lifecycle tracking.
 --   - Create runs/run_events tables with triggers to keep organization scope aligned.
---   - Derive design session status from immutable run_events history via run_status view.
+--   - Provide triggers for keeping run metadata in sync with run_events history.
 --   - Configure RLS policies, grants, and Supabase Realtime publications.
 -- Safety:
 --   - Uses IF EXISTS / IF NOT EXISTS guards to keep operations idempotent where possible.
@@ -180,45 +180,7 @@ CREATE TRIGGER apply_run_event_to_runs_trigger
   FOR EACH ROW
   EXECUTE FUNCTION public.apply_run_event_to_runs();
 
--- 4) run_status view: latest status per design session using run_events history.
-CREATE OR REPLACE VIEW public.run_status AS
-WITH latest_events AS (
-  SELECT DISTINCT ON (re.run_id)
-    re.run_id,
-    re.status,
-    re.created_at
-  FROM public.run_events re
-  ORDER BY re.run_id, re.created_at DESC, re.id DESC
-),
-run_snapshot AS (
-  SELECT
-    r.design_session_id,
-    r.organization_id,
-    COALESCE(le.status, 'running'::public.workflow_run_status) AS status,
-    COALESCE(le.created_at, r.ended_at, r.started_at) AS last_event_at
-  FROM public.runs r
-  LEFT JOIN latest_events le
-    ON le.run_id = r.id
-)
-SELECT
-  COALESCE(rs.status, 'running'::public.workflow_run_status) AS status,
-  rs.last_event_at,
-  ds.organization_id,
-  'Derived in migration 20251023120000_add_workflow_status_to_design_sessions.sql'::text AS derived_from_sql,
-  ds.id AS design_session_id
-FROM public.design_sessions ds
-LEFT JOIN run_snapshot rs
-  ON rs.design_session_id = ds.id
-  AND rs.organization_id = ds.organization_id;
-
-COMMENT ON VIEW public.run_status IS 'Read-only view returning the latest workflow status per design session, sourced from run_events history.';
-COMMENT ON COLUMN public.run_status.status IS 'Derived workflow status (running, completed, error).';
-COMMENT ON COLUMN public.run_status.last_event_at IS 'Timestamp of the latest status event or fallback to run start/end.';
-COMMENT ON COLUMN public.run_status.organization_id IS 'Organization associated with the design session for scoping.';
-COMMENT ON COLUMN public.run_status.derived_from_sql IS 'Developer note: SQL used to define the view.';
-COMMENT ON COLUMN public.run_status.design_session_id IS 'Design session identifier (one row per design session).';
-
--- 5) Row Level Security & policies for runs and run_events.
+-- 4) Row Level Security & policies for runs and run_events.
 ALTER TABLE public.runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.run_events ENABLE ROW LEVEL SECURITY;
 
@@ -416,7 +378,7 @@ CREATE POLICY "service_role_can_delete_all_run_events"
   FOR DELETE TO service_role
   USING (true);
 
--- 6) Grants for tables and helper functions (mirrors existing Supabase expectations).
+-- 5) Grants for tables and helper functions (mirrors existing Supabase expectations).
 GRANT ALL ON TABLE public.runs TO anon;
 GRANT ALL ON TABLE public.runs TO authenticated;
 GRANT ALL ON TABLE public.runs TO service_role;
@@ -437,10 +399,7 @@ GRANT ALL ON FUNCTION public.apply_run_event_to_runs() TO anon;
 GRANT ALL ON FUNCTION public.apply_run_event_to_runs() TO authenticated;
 GRANT ALL ON FUNCTION public.apply_run_event_to_runs() TO service_role;
 
-GRANT ALL ON TABLE public.run_status TO authenticated;
-GRANT ALL ON TABLE public.run_status TO service_role;
-
--- 7) Attach tables to Supabase Realtime publication (idempotent guards).
+-- 6) Attach tables to Supabase Realtime publication (idempotent guards).
 DO $$
 BEGIN
   IF NOT EXISTS (

@@ -254,6 +254,39 @@ $$;
 ALTER FUNCTION "public"."apply_run_event_to_runs"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) RETURNS TABLE("design_session_id" "uuid", "latest_run_id" "uuid", "status" "public"."workflow_run_status")
+    LANGUAGE "sql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+  with latest_runs as (
+    select
+      r.design_session_id,
+      r.id as run_id,
+      row_number() over (partition by r.design_session_id order by r.started_at desc) as run_rank
+    from runs r
+    where r.design_session_id = any(session_ids)
+  ),
+  latest_events as (
+    select distinct on (re.run_id)
+      re.run_id,
+      re.status
+    from run_events re
+    join latest_runs lr on lr.run_id = re.run_id
+    order by re.run_id, re.created_at desc, re.id desc
+  )
+  select
+    lr.design_session_id,
+    lr.run_id as latest_run_id,
+    coalesce(le.status, 'running') as status
+  from latest_runs lr
+  left join latest_events le on le.run_id = lr.run_id
+  where lr.run_rank = 1;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_invitation_data"("p_token" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
@@ -1117,57 +1150,6 @@ COMMENT ON COLUMN "public"."runs"."started_at" IS 'Timestamp when the run starte
 
 
 COMMENT ON COLUMN "public"."runs"."ended_at" IS 'Timestamp of the most recent terminal event (completed or error).';
-
-
-
-CREATE OR REPLACE VIEW "public"."run_status" AS
- WITH "latest_events" AS (
-         SELECT DISTINCT ON ("re"."run_id") "re"."run_id",
-            "re"."status",
-            "re"."created_at"
-           FROM "public"."run_events" "re"
-          ORDER BY "re"."run_id", "re"."created_at" DESC, "re"."id" DESC
-        ), "run_snapshot" AS (
-         SELECT "r"."design_session_id",
-            "r"."organization_id",
-            COALESCE("le"."status", 'running'::"public"."workflow_run_status") AS "status",
-            COALESCE("le"."created_at", "r"."ended_at", "r"."started_at") AS "last_event_at"
-           FROM ("public"."runs" "r"
-             LEFT JOIN "latest_events" "le" ON (("le"."run_id" = "r"."id")))
-        )
- SELECT COALESCE("rs"."status", 'running'::"public"."workflow_run_status") AS "status",
-    "rs"."last_event_at",
-    "ds"."organization_id",
-    'Derived in migration 20251023120000_add_workflow_status_to_design_sessions.sql'::"text" AS "derived_from_sql",
-    "ds"."id" AS "design_session_id"
-   FROM ("public"."design_sessions" "ds"
-     LEFT JOIN "run_snapshot" "rs" ON ((("rs"."design_session_id" = "ds"."id") AND ("rs"."organization_id" = "ds"."organization_id"))));
-
-
-ALTER TABLE "public"."run_status" OWNER TO "postgres";
-
-
-COMMENT ON VIEW "public"."run_status" IS 'Read-only view returning the latest workflow status per design session, sourced from run_events history.';
-
-
-
-COMMENT ON COLUMN "public"."run_status"."status" IS 'Derived workflow status (running, completed, error).';
-
-
-
-COMMENT ON COLUMN "public"."run_status"."last_event_at" IS 'Timestamp of the latest status event or fallback to run start/end.';
-
-
-
-COMMENT ON COLUMN "public"."run_status"."organization_id" IS 'Organization associated with the design session for scoping.';
-
-
-
-COMMENT ON COLUMN "public"."run_status"."derived_from_sql" IS 'Developer note: SQL used to define the view.';
-
-
-
-COMMENT ON COLUMN "public"."run_status"."design_session_id" IS 'Design session identifier (one row per design session).';
 
 
 
@@ -2628,6 +2610,11 @@ GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "anon";
 
 
 
+GRANT ALL ON FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_invitation_data"("p_token" "uuid") TO "service_role";
 
@@ -2874,11 +2861,6 @@ GRANT ALL ON TABLE "public"."run_events" TO "anon";
 GRANT ALL ON TABLE "public"."runs" TO "authenticated";
 GRANT ALL ON TABLE "public"."runs" TO "service_role";
 GRANT ALL ON TABLE "public"."runs" TO "anon";
-
-
-
-GRANT ALL ON TABLE "public"."run_status" TO "authenticated";
-GRANT ALL ON TABLE "public"."run_status" TO "service_role";
 
 
 

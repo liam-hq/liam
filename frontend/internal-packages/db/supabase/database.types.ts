@@ -119,13 +119,6 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
-            foreignKeyName: 'building_schemas_design_session_id_fkey'
-            columns: ['design_session_id']
-            isOneToOne: true
-            referencedRelation: 'run_status'
-            referencedColumns: ['design_session_id']
-          },
-          {
             foreignKeyName: 'building_schemas_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
@@ -324,13 +317,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'design_sessions'
             referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'design_sessions_parent_design_session_id_fkey'
-            columns: ['parent_design_session_id']
-            isOneToOne: false
-            referencedRelation: 'run_status'
-            referencedColumns: ['design_session_id']
           },
           {
             foreignKeyName: 'design_sessions_project_id_fkey'
@@ -580,13 +566,6 @@ export type Database = {
             referencedRelation: 'design_sessions'
             referencedColumns: ['id']
           },
-          {
-            foreignKeyName: 'public_share_settings_design_session_id_fkey'
-            columns: ['design_session_id']
-            isOneToOne: true
-            referencedRelation: 'run_status'
-            referencedColumns: ['design_session_id']
-          },
         ]
       }
       run_events: {
@@ -679,13 +658,6 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
-            foreignKeyName: 'runs_design_session_id_fkey'
-            columns: ['design_session_id']
-            isOneToOne: true
-            referencedRelation: 'run_status'
-            referencedColumns: ['design_session_id']
-          },
-          {
             foreignKeyName: 'runs_organization_id_fkey'
             columns: ['organization_id']
             isOneToOne: false
@@ -762,24 +734,7 @@ export type Database = {
       }
     }
     Views: {
-      run_status: {
-        Row: {
-          derived_from_sql: string | null
-          design_session_id: string | null
-          last_event_at: string | null
-          organization_id: string | null
-          status: Database['public']['Enums']['workflow_run_status'] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'design_sessions_organization_id_fkey'
-            columns: ['organization_id']
-            isOneToOne: false
-            referencedRelation: 'organizations'
-            referencedColumns: ['id']
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       accept_invitation: {
@@ -796,6 +751,14 @@ export type Database = {
           p_repository_owner: string
         }
         Returns: Json
+      }
+      fetch_latest_session_runs: {
+        Args: { session_ids: string[] }
+        Returns: {
+          design_session_id: string
+          latest_run_id: string
+          status: Database['public']['Enums']['workflow_run_status']
+        }[]
       }
       get_invitation_data: {
         Args: { p_token: string }
