@@ -2,6 +2,7 @@
 
 import path from 'node:path'
 import type { SupabaseClientType } from '@liam-hq/db'
+import { fromPromise } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
 import { parse, setPrismWasmUrl } from '@liam-hq/schema/parser'
 import { createClient } from '../../../../../libs/db/server'
@@ -119,20 +120,30 @@ const initializeSessionRun = async (
     currentUserId: string
   },
 ): Promise<CreateSessionState | null> => {
-  try {
-    await RunTracker.start({
+  const runInitializationResult = await fromPromise(
+    RunTracker.start({
       supabase,
       designSessionId,
       userId: currentUserId,
-    })
-    return null
-  } catch (error) {
-    console.error('Error initializing workflow run for design session:', error)
+    }),
+    (unknownError) =>
+      unknownError instanceof Error
+        ? unknownError
+        : new Error('Unknown error while starting RunTracker'),
+  )
+
+  if (runInitializationResult.isErr()) {
+    console.error(
+      'Error initializing workflow run for design session:',
+      runInitializationResult.error,
+    )
     return {
       success: false,
       error: 'Failed to initialize workflow run for the new session',
     }
   }
+
+  return null
 }
 
 export const parseSchemaContent = async (

@@ -14,14 +14,6 @@ const FormDataSchema = v.object({
   projectId: v.string(),
 })
 
-const repositoryMappingSchema = v.object({
-  github_repositories: v.object({
-    github_installation_identifier: v.number(),
-    owner: v.string(),
-    name: v.string(),
-  }),
-})
-
 export async function getBranches(
   _prevState: GetBranchesState,
   formData: FormData,
@@ -61,19 +53,9 @@ export async function getBranches(
     }
   }
 
-  const parsedMapping = v.safeParse(repositoryMappingSchema, mapping)
-  if (!parsedMapping.success) {
-    console.error('Invalid repository mapping data', parsedMapping.issues)
-    return {
-      branches: [],
-      loading: false,
-      error: 'Failed to parse repository information',
-    }
-  }
-
-  const repository = parsedMapping.output.github_repositories
+  const repository = mapping.github_repositories
   const branches = await getRepositoryBranches(
-    repository.github_installation_identifier,
+    Number(repository.github_installation_identifier),
     repository.owner,
     repository.name,
   )

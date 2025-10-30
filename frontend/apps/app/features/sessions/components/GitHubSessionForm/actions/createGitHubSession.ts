@@ -3,7 +3,6 @@
 import type { SupabaseClientType } from '@liam-hq/db'
 import { getFileContent } from '@liam-hq/github'
 import type { Schema } from '@liam-hq/schema'
-import * as v from 'valibot'
 import { createClient } from '../../../../../libs/db/server'
 import {
   createSession,
@@ -17,24 +16,6 @@ import {
   type RepositoryData,
   type SchemaFilePathData,
 } from '../../shared/validation/sessionFormValidation'
-
-const schemaFilePathDataSchema = v.object({
-  path: v.string(),
-  format: v.picklist(['schemarb', 'postgres', 'prisma', 'tbls']),
-})
-
-const repositoryDataSchema = v.object({
-  name: v.string(),
-  owner: v.string(),
-  github_installation_identifier: v.number(),
-})
-
-const repositoryInfoSchema = v.object({
-  github_repositories: repositoryDataSchema,
-  projects: v.object({
-    schema_file_paths: v.array(schemaFilePathDataSchema),
-  }),
-})
 
 async function getProject(
   supabase: SupabaseClientType,
@@ -83,13 +64,8 @@ async function getRepositoryInfo(
     return { success: false, error: 'Failed to fetch project information' }
   }
 
-  const parsedProjectData = v.safeParse(repositoryInfoSchema, projectData)
-  if (!parsedProjectData.success) {
-    return { success: false, error: 'Invalid project information' }
-  }
-
-  const { github_repositories: repository, projects } = parsedProjectData.output
-  const schemaFilePathData = projects.schema_file_paths[0]
+  const repository = projectData.github_repositories
+  const schemaFilePathData = projectData.projects?.schema_file_paths?.[0]
 
   if (!schemaFilePathData) {
     return { success: false, error: 'Schema file path not found' }
