@@ -62,60 +62,22 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
       return typeof fieldValue === 'string' ? fieldValue : null
     }
 
-    let refreshInFlight = false
-    let latestRunIdHint: string | null = null
-    let needsRefresh = false
+    const refreshStatus = async () => {
+      const { data, error } = await supabase
+        .from('run_status')
+        .select('status')
+        .eq('design_session_id', session.id)
+        .maybeSingle()
 
-    const refreshStatusFromSource = async () => {
-      do {
-        needsRefresh = false
-        const hint = latestRunIdHint
-        latestRunIdHint = null
-
-        const { data, error } = await supabase
-          .from('run_status')
-          .select('status')
-          .eq('design_session_id', session.id)
-          .maybeSingle()
-
-        if (error) {
-          console.error('Error refreshing run status for session item:', error)
-          continue
-        }
-
-        const nextStatus = mapDbStatusToUi(
-          typeof data?.status === 'string' ? data.status : undefined,
-        )
-        setStatus(nextStatus)
-
-        if (hint) {
-          knownRunIds.add(hint)
-        }
-      } while (needsRefresh)
-    }
-
-    const scheduleRefresh = (runIdHint?: string) => {
-      if (runIdHint) {
-        latestRunIdHint = runIdHint
-      }
-
-      if (refreshInFlight) {
-        needsRefresh = true
+      if (error) {
+        console.error('Error refreshing run status for session item:', error)
         return
       }
 
-      refreshInFlight = true
-
-      refreshStatusFromSource()
-        .catch((error) => {
-          console.error('Unexpected error refreshing session status:', error)
-        })
-        .finally(() => {
-          refreshInFlight = false
-          if (needsRefresh) {
-            scheduleRefresh()
-          }
-        })
+      const nextStatus = mapDbStatusToUi(
+        typeof data?.status === 'string' ? data.status : undefined,
+      )
+      setStatus(nextStatus)
     }
 
     const resolveSessionMatch = async (runId: string) => {
@@ -164,7 +126,7 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
         return
       }
 
-      scheduleRefresh(runId)
+      await refreshStatus()
     }
 
     const eventsChannel = supabase
@@ -177,16 +139,16 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
           table: 'run_events',
           filter: `organization_id=eq.${session.organization_id}`,
         },
-        (payload) => {
+        async (payload) => {
           // Treat realtime as an invalidation signal and re-read run_status
           // for the authoritative workflow state.
-          void handleRunEvent(payload)
+          await handleRunEvent(payload)
         },
       )
       .subscribe()
 
     return () => {
-      supabase.removeChannel(eventsChannel)
+      void supabase.removeChannel(eventsChannel)
     }
   }, [session.id, session.latest_run_id, session.organization_id])
 

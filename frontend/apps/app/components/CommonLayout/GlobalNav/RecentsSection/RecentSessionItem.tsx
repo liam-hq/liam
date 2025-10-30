@@ -2,13 +2,10 @@
 
 import clsx from 'clsx'
 import Link from 'next/link'
-import { type FC, useEffect, useState } from 'react'
+import type { FC } from 'react'
 import { urlgen } from '../../../../libs/routes'
 import { formatDateShort } from '../../../../libs/utils'
-import {
-  type SessionStatus,
-  SessionStatusIndicator,
-} from '../../../ProjectSessionsPage/SessionStatusIndicator'
+import { SessionStatusIndicator } from '../../../ProjectSessionsPage/SessionStatusIndicator'
 import styles from './RecentSessionItem.module.css'
 import type { RecentSession } from './types'
 
@@ -23,12 +20,6 @@ export const RecentSessionItem: FC<Props> = ({
   isActive,
   showOwner = false,
 }) => {
-  const [status, setStatus] = useState<SessionStatus>(session.status)
-
-  useEffect(() => {
-    setStatus(session.status)
-  }, [session.status])
-
   const sessionUrl = urlgen('design_sessions/[id]', {
     id: session.id,
   })
@@ -45,7 +36,7 @@ export const RecentSessionItem: FC<Props> = ({
       aria-label={ariaLabel}
       aria-current={isActive ? 'page' : undefined}
     >
-      <SessionStatusIndicator status={status} />
+      <SessionStatusIndicator status={session.status} />
       <div className={styles.sessionInfo}>
         <span className={styles.sessionName}>{session.name}</span>
         {showOwner && <span className={styles.sessionOwner}>{ownerName}</span>}
