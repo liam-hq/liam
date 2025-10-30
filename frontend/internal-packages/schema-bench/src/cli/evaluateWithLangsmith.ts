@@ -74,11 +74,12 @@ const createTarget = (
   }
 
   if (executorType === 'openai') {
-    const apiKey =
-      process.env['OPENAI_API_KEY'] ??
+    const apiKey = process.env['OPENAI_API_KEY']
+    if (!apiKey) {
       handleCliError('OPENAI_API_KEY environment variable is required')
+    }
 
-    const executor = new OpenAIExecutor({ apiKey })
+    const executor = new OpenAIExecutor({ apiKey: apiKey! })
 
     return async (input: LangSmithInput): Promise<LangSmithOutput> => {
       const prompt = input.prompt || input.input || ''
