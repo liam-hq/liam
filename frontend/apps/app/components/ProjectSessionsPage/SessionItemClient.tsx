@@ -1,10 +1,12 @@
 'use client'
 
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { MessagesSquare } from '@liam-hq/ui'
 import Link from 'next/link'
 import { type FC, useEffect, useState } from 'react'
 import { createClient as createSupabaseClient } from '../../libs/db/client'
 import { urlgen } from '../../libs/routes'
+import type { LatestSessionRun } from '../../libs/runs/fetchLatestSessionRuns'
 import { formatDate } from '../../libs/utils'
 import styles from './SessionItem.module.css'
 import {
@@ -36,6 +38,21 @@ const mapDbStatusToUi = (status: string | undefined): SessionStatus => {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const isLatestSessionRun = (value: unknown): value is LatestSessionRun => {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  const status = value['status']
+  const latestRunId = value['latest_run_id']
+
+  return (
+    typeof value['design_session_id'] === 'string' &&
+    (typeof latestRunId === 'string' || latestRunId === null) &&
+    (status === 'running' || status === 'completed' || status === 'error')
+  )
+}
+
 export const SessionItemClient: FC<Props> = ({ session }) => {
   const [status, setStatus] = useState<SessionStatus>(
     mapDbStatusToUi(session.status),
@@ -62,22 +79,70 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
       return typeof fieldValue === 'string' ? fieldValue : null
     }
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <fixme>
     const refreshStatus = async () => {
-      const { data, error } = await supabase
-        .from('run_status')
-        .select('status')
-        .eq('design_session_id', session.id)
-        .maybeSingle()
+      const responseResult = await fromAsyncThrowable(() =>
+        fetch('/api/recents/statuses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionIds: [session.id] }),
+        }),
+      )()
 
-      if (error) {
-        console.error('Error refreshing run status for session item:', error)
+      if (responseResult.isErr()) {
+        console.error(
+          'Failed to refresh session status via API:',
+          responseResult.error,
+        )
         return
       }
 
-      const nextStatus = mapDbStatusToUi(
-        typeof data?.status === 'string' ? data.status : undefined,
-      )
-      setStatus(nextStatus)
+      const response = responseResult.value
+
+      if (!response.ok) {
+        const bodyResult = await fromAsyncThrowable(() => response.text())()
+        if (bodyResult.isErr()) {
+          console.error(
+            `Failed to refresh session status via API (status ${response.status}): unable to read error body`,
+            bodyResult.error,
+          )
+        } else {
+          console.error(
+            `Failed to refresh session status via API (status ${response.status}):`,
+            bodyResult.value,
+          )
+        }
+        return
+      }
+
+      const payloadResult = await fromAsyncThrowable(
+        () => response.json() as Promise<unknown>,
+      )()
+
+      if (payloadResult.isErr()) {
+        console.error(
+          'Failed to parse session status response:',
+          payloadResult.error,
+        )
+        return
+      }
+
+      const payload = payloadResult.value
+      if (!Array.isArray(payload)) {
+        console.error('Session status API response was not an array')
+        return
+      }
+
+      const row = payload.find(isLatestSessionRun)
+      if (!row) {
+        return
+      }
+
+      if (typeof row.latest_run_id === 'string') {
+        knownRunIds.add(row.latest_run_id)
+      }
+
+      setStatus(mapDbStatusToUi(row.status))
     }
 
     const resolveSessionMatch = async (runId: string) => {
@@ -140,8 +205,8 @@ export const SessionItemClient: FC<Props> = ({ session }) => {
           filter: `organization_id=eq.${session.organization_id}`,
         },
         async (payload) => {
-          // Treat realtime as an invalidation signal and re-read run_status
-          // for the authoritative workflow state.
+          // Treat realtime as an invalidation signal and re-read the API-backed
+          // session status for this design session.
           await handleRunEvent(payload)
         },
       )

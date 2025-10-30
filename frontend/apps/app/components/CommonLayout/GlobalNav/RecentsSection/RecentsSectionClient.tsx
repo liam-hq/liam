@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient as createSupabaseClient } from '../../../../libs/db/client'
 import { urlgen } from '../../../../libs/routes'
+import type { LatestSessionRun } from '../../../../libs/runs/fetchLatestSessionRuns'
 import itemStyles from '../Item.module.css'
 import { fetchFilteredSessions, loadMoreSessions } from './actions'
 import {
@@ -30,6 +31,21 @@ const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const isLatestSessionRun = (value: unknown): value is LatestSessionRun => {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  const status = value['status']
+  const latestRunId = value['latest_run_id']
+
+  return (
+    typeof value['design_session_id'] === 'string' &&
+    (typeof latestRunId === 'string' || latestRunId === null) &&
+    (status === 'running' || status === 'completed' || status === 'error')
+  )
+}
 
 const toSessionStatus = (status: unknown): RecentSession['status'] => {
   if (status === 'error') {
@@ -170,7 +186,7 @@ export const RecentsSectionClient = ({
       return typeof value === 'string' ? value : null
     }
 
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: todo
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <todo>
     const refreshSession = async (designSessionId: string) => {
       if (
         !sessionsRef.current.some((session) => session.id === designSessionId)
@@ -178,39 +194,65 @@ export const RecentsSectionClient = ({
         return
       }
 
-      const [statusResult, runResult] = await Promise.all([
-        supabase
-          .from('run_status')
-          .select('status')
-          .eq('design_session_id', designSessionId)
-          .maybeSingle(),
-        supabase
-          .from('runs')
-          .select('id')
-          .eq('design_session_id', designSessionId)
-          .maybeSingle(),
-      ])
+      const responseResult = await fromAsyncThrowable(() =>
+        fetch('/api/recents/statuses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionIds: [designSessionId] }),
+        }),
+      )()
 
-      if (statusResult.error) {
+      if (responseResult.isErr()) {
         console.error(
-          'Error refreshing run status for recents:',
-          statusResult.error,
+          'Failed to refresh session via statuses API:',
+          responseResult.error,
         )
+        return
       }
 
-      if (runResult.error) {
-        console.error(
-          'Error refreshing run metadata for recents:',
-          runResult.error,
-        )
+      const response = responseResult.value
+
+      if (!response.ok) {
+        const bodyResult = await fromAsyncThrowable(() => response.text())()
+        if (bodyResult.isErr()) {
+          console.error(
+            `Failed to refresh session via statuses API (status ${response.status}): unable to read error body`,
+            bodyResult.error,
+          )
+        } else {
+          console.error(
+            `Failed to refresh session via statuses API (status ${response.status}):`,
+            bodyResult.value,
+          )
+        }
+        return
       }
 
-      const statusValue =
-        typeof statusResult.data?.status === 'string'
-          ? statusResult.data.status
-          : null
+      const payloadResult = await fromAsyncThrowable(
+        () => response.json() as Promise<unknown>,
+      )()
+
+      if (payloadResult.isErr()) {
+        console.error(
+          'Failed to parse session statuses response:',
+          payloadResult.error,
+        )
+        return
+      }
+
+      const payload = payloadResult.value
+      if (!Array.isArray(payload)) {
+        console.error('Statuses API response was not an array')
+        return
+      }
+
+      const row = payload.find(isLatestSessionRun)
+      if (!row) {
+        return
+      }
+
       const fetchedRunId =
-        typeof runResult.data?.id === 'string' ? runResult.data.id : null
+        typeof row.latest_run_id === 'string' ? row.latest_run_id : null
 
       if (fetchedRunId) {
         runIdToSessionMap.current.set(fetchedRunId, designSessionId)
@@ -221,7 +263,7 @@ export const RecentsSectionClient = ({
           session.id === designSessionId
             ? {
                 ...session,
-                status: toSessionStatus(statusValue),
+                status: toSessionStatus(row.status),
                 latest_run_id: fetchedRunId ?? session.latest_run_id,
               }
             : session,
@@ -272,7 +314,7 @@ export const RecentsSectionClient = ({
         },
         async (payload) => {
           // Realtime payload is only a trigger; fetch the authoritative status
-          // from the run_status view for the affected design session.
+          // via the session statuses API for the affected design session.
           const newRow = extractNewRow(payload)
           if (!newRow) {
             return
