@@ -9,12 +9,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient as createSupabaseClient } from '../../../../libs/db/client'
 import { urlgen } from '../../../../libs/routes'
 import type { LatestSessionRun } from '../../../../libs/runs/fetchLatestSessionRuns'
+import { setCookie } from '../../../../libs/utils/cookie'
 import itemStyles from '../Item.module.css'
 import { fetchFilteredSessions, loadMoreSessions } from './actions'
 import {
   type OrganizationMember,
   SessionFilterDropdown,
 } from './components/SessionFilterDropdown'
+import {
+  SESSION_FILTER_COOKIE,
+  SESSION_FILTER_COOKIE_MAX_AGE_SECONDS,
+} from './constants'
 import { RecentSessionItem } from './RecentSessionItem'
 import styles from './RecentsSectionClient.module.css'
 import type { RecentSession, SessionFilterType } from './types'
@@ -24,6 +29,7 @@ type RecentsSectionClientProps = {
   organizationMembers: OrganizationMember[]
   currentUserId: string
   organizationId: string
+  initialFilterType: SessionFilterType
 }
 
 const PAGE_SIZE = 20
@@ -58,43 +64,57 @@ const toSessionStatus = (status: unknown): RecentSession['status'] => {
 
   return 'running'
 }
+
+const setSessionFilterCookie = (value: SessionFilterType) => {
+  setCookie(SESSION_FILTER_COOKIE, value, {
+    path: '/',
+    maxAge: SESSION_FILTER_COOKIE_MAX_AGE_SECONDS,
+  })
+}
+
 export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
   currentUserId,
   organizationId,
+  initialFilterType,
 }: RecentsSectionClientProps) => {
   const pathname = usePathname()
   const [sessions, setSessions] = useState<RecentSession[]>(initialSessions)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialSessions.length >= PAGE_SIZE)
-  const [filterType, setFilterType] = useState<SessionFilterType>('me')
+  const [filterType, setFilterType] =
+    useState<SessionFilterType>(initialFilterType)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const sessionsListRef = useRef<HTMLElement | null>(null)
   const sessionsRef = useRef(initialSessions)
   const runIdToSessionMap = useRef(new Map<string, string>())
 
-  const handleFilterChange = useCallback(async (newFilterType: string) => {
-    const nextFilterType: SessionFilterType = newFilterType
-    setFilterType(nextFilterType)
-    setIsLoading(true)
+  const handleFilterChange = useCallback(
+    async (newFilterType: SessionFilterType) => {
+      setFilterType(newFilterType)
+      setIsLoading(true)
 
-    const sessionsResult = await fromAsyncThrowable(() =>
-      fetchFilteredSessions(nextFilterType),
-    )()
+      setSessionFilterCookie(newFilterType)
 
-    if (sessionsResult.isErr()) {
-      Sentry.captureException(sessionsResult.error)
+      const sessionsResult = await fromAsyncThrowable(() =>
+        fetchFilteredSessions(newFilterType),
+      )()
+
+      if (sessionsResult.isErr()) {
+        Sentry.captureException(sessionsResult.error)
+        setIsLoading(false)
+        return
+      }
+
+      const newSessions = sessionsResult.value
+      setSessions(newSessions)
+      setHasMore(newSessions.length >= PAGE_SIZE)
       setIsLoading(false)
-      return
-    }
-
-    const newSessions = sessionsResult.value
-    setSessions(newSessions)
-    setHasMore(newSessions.length >= PAGE_SIZE)
-    setIsLoading(false)
-  }, [])
+    },
+    [],
+  )
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return

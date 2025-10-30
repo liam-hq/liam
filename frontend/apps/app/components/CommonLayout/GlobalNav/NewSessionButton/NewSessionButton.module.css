@@ -1,6 +1,6 @@
 .newSessionButton {
-  background-color: var(--button-primary-background);
   color: var(--button-primary-foreground);
+  background-color: var(--button-primary-background);
   border: var(--border-width-base) solid var(--button-primary-background);
 }
 

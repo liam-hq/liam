@@ -1,10 +1,10 @@
 .container {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-20, 80px);
-  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
+  align-items: center;
   height: 100%;
+  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
   font-family: var(--main-font);
 }
 
@@ -26,20 +26,20 @@
   margin: 0;
   font-size: var(--font-size-8, 20px);
   font-weight: 500;
-  color: var(--global-foreground);
   line-height: 1;
+  color: var(--global-foreground);
 }
 
 .steps {
   display: flex;
-  align-items: center;
   gap: var(--spacing-4, 16px);
+  align-items: center;
 }
 
 .step {
   display: flex;
-  align-items: center;
   gap: var(--spacing-3, 12px);
+  align-items: center;
   color: var(--overlay-40);
 }
 
@@ -53,16 +53,16 @@
   justify-content: center;
   width: var(--spacing-6, 24px);
   height: var(--spacing-6, 24px);
-  border-radius: var(--border-radius-full, 9999px);
-  background-color: var(--global-muted-background);
-  color: var(--overlay-40);
   font-size: var(--font-size-4, 13px);
   font-weight: 500;
+  color: var(--overlay-40);
+  background-color: var(--global-muted-background);
+  border-radius: var(--border-radius-full, 9999px);
 }
 
 .stepBadgeActive {
-  background-color: var(--primary-color);
   color: var(--button-foreground);
+  background-color: var(--primary-color);
 }
 
 .stepLabel {
@@ -92,12 +92,12 @@
 
 .backLink {
   display: inline-flex;
-  align-items: center;
   gap: var(--spacing-1, 4px);
-  color: var(--overlay-70);
-  font-size: var(--font-size-2, 11px);
-  text-decoration: none;
+  align-items: center;
   width: fit-content;
+  font-size: var(--font-size-2, 11px);
+  color: var(--overlay-70);
+  text-decoration: none;
 }
 
 .backLink:hover {

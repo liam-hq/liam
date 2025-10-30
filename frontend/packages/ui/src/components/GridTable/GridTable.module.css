@@ -1,8 +1,8 @@
 .root {
+  border-spacing: 0;
+  border-collapse: separate;
   background-color: var(--pane-muted-background);
   border: solid 1px var(--global-border);
-  border-collapse: separate;
-  border-spacing: 0;
   border-radius: var(--border-radius-sm);
 }
 
@@ -18,38 +18,38 @@
 .dtHeader {
   width: 100%;
   padding: var(--spacing-1) var(--spacing-2);
-  color: var(--color-white-alpha-70);
-  background-color: var(--pane-background-hover);
   font-size: var(--font-size-2);
   font-weight: 600;
   line-height: 150%;
+  color: var(--color-white-alpha-70);
+  background-color: var(--pane-background-hover);
 }
 
 .dt {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
   width: 5.5625rem;
   padding: var(--spacing-1) var(--spacing-2);
-  border-right: solid 1px var(--global-border);
-  color: var(--color-white-alpha-70);
   font-size: var(--font-size-2);
   font-style: normal;
   font-weight: 400;
   line-height: 150%;
+  color: var(--color-white-alpha-70);
+  border-right: solid 1px var(--global-border);
 }
 
 .dd {
   display: flex;
+  gap: var(--spacing-1);
+  align-items: flex-start;
   padding: var(--spacing-1) var(--spacing-2);
-  color: var(--global-foreground);
   font-family: var(--code-font);
   font-size: var(--font-size-1);
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  gap: var(--spacing-1);
-  align-items: flex-start;
+  color: var(--global-foreground);
 }
 
 .row {

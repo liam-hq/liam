@@ -7,8 +7,6 @@ import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, lineNumbers } from '@codemirror/view'
 import { EditorView } from 'codemirror'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ReviewComment } from '../../../../../../types'
-import { commentStateField, setCommentsEffect } from './commentExtension'
 import { customTheme, sqlHighlightStyle } from './editorTheme'
 import { selectionHighlightExtension } from './selectionHighlight'
 
@@ -39,20 +37,11 @@ const baseExtensions: Extension[] = [
 
 type Props = {
   doc: string
-  comments?: ReviewComment[]
-  showComments?: boolean
-  onQuickFix?: (comment: string) => void
 }
 
-export const useMigrationsViewer = ({
-  doc,
-  comments = [],
-  showComments = false,
-  onQuickFix,
-}: Props) => {
+export const useMigrationsViewer = ({ doc }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const [container, setContainer] = useState<HTMLDivElement>()
-  const [view, setView] = useState<EditorView>()
 
   useEffect(() => {
     if (ref.current) {
@@ -60,21 +49,10 @@ export const useMigrationsViewer = ({
     }
   }, [])
 
-  const buildExtensions = useCallback(
-    (
-      showComments: boolean,
-      onQuickFix?: (comment: string) => void,
-    ): Extension[] => {
-      const extensions = [...baseExtensions]
-
-      if (showComments && onQuickFix) {
-        extensions.push(commentStateField(onQuickFix))
-      }
-
-      return extensions
-    },
-    [],
-  )
+  const buildExtensions = useCallback((): Extension[] => {
+    const extensions = [...baseExtensions]
+    return extensions
+  }, [])
 
   const createEditorView = useCallback(
     (
@@ -95,50 +73,17 @@ export const useMigrationsViewer = ({
     [],
   )
 
-  const applyComments = useCallback(
-    (
-      view: EditorView,
-      showComments: boolean,
-      comments: ReviewComment[],
-    ): void => {
-      if (showComments && comments.length > 0) {
-        const commentEffect = setCommentsEffect.of(comments)
-        view.dispatch({ effects: [commentEffect] })
-      }
-    },
-    [],
-  )
-
   useEffect(() => {
     if (!container) return
 
-    const extensions = buildExtensions(showComments, onQuickFix)
+    const extensions = buildExtensions()
     const viewCurrent = createEditorView(doc, extensions, container)
-    setView(viewCurrent)
-
-    applyComments(viewCurrent, showComments, comments)
 
     // Cleanup function
     return () => {
       viewCurrent.destroy()
     }
-  }, [
-    doc,
-    container,
-    showComments,
-    comments,
-    applyComments,
-    buildExtensions,
-    createEditorView,
-    onQuickFix,
-  ])
-
-  useEffect(() => {
-    if (!view || !showComments) return
-
-    const effect = setCommentsEffect.of(comments)
-    view.dispatch({ effects: [effect] })
-  }, [comments, view, showComments])
+  }, [doc, container, buildExtensions, createEditorView])
 
   return {
     ref,

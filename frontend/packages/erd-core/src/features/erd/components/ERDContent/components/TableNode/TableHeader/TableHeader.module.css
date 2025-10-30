@@ -2,8 +2,8 @@
   display: grid;
   grid-template-columns: auto 1fr;
   width: 100%;
-  border-radius: var(--border-radius-md) var(--border-radius-md) 0px 0px;
   background: var(--global-muted-background);
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0px 0px;
 }
 
 .wrapperTableNameMode {
@@ -16,8 +16,8 @@
   justify-content: center;
   width: 36px;
   height: 100%;
-  border-top-left-radius: var(--border-radius-md);
   background-color: var(--overlay-10);
+  border-top-left-radius: var(--border-radius-md);
 }
 
 .diffBoxTableNameMode {
@@ -25,18 +25,18 @@
 }
 
 .container {
-  flex: 1;
   display: flex;
-  padding: var(--spacing-2);
-  align-items: center;
+  flex: 1;
   gap: var(--spacing-1);
-  border-radius: var(--border-radius-md) var(--border-radius-md) 0px 0px;
-  background: var(--global-muted-background);
-  color: var(--overlay-60);
+  align-items: center;
+  padding: var(--spacing-2);
   text-overflow: ellipsis;
   font-size: var(--font-size-5);
   font-weight: 500;
   line-height: normal;
+  color: var(--overlay-60);
+  background: var(--global-muted-background);
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0px 0px;
 }
 
 .containerTableNameMode {
@@ -49,8 +49,8 @@
 }
 
 .tableIcon {
-  min-width: 1rem;
   width: 1rem;
+  min-width: 1rem;
 }
 
 .name {
@@ -65,13 +65,13 @@
 }
 
 .handle[data-handlepos='right'] {
-  transform: translate(50%, 0%);
   right: -17px;
   pointer-events: none;
+  transform: translate(50%, 0%);
 }
 
 .handle[data-handlepos='left'] {
-  transform: translate(-50%, 0%);
   left: -20px;
   pointer-events: none;
+  transform: translate(-50%, 0%);
 }

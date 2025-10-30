@@ -1,7 +1,7 @@
 .trigger {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
 }
 
 .trigger .text {
@@ -26,10 +26,10 @@
   max-width: 90vw;
   max-height: 50vh;
   padding: var(--spacing-4) var(--spacing-5);
-  background-color: rgba(20, 22, 22, 0.75);
-  backdrop-filter: blur(8px);
   overflow-y: scroll;
+  background-color: rgba(20, 22, 22, 0.75);
   box-shadow: 0 4px 20px 0 rgb(0 0 0 / 40%);
+  backdrop-filter: blur(8px);
 }
 
 .list {
@@ -78,6 +78,6 @@
 }
 
 .button.active {
-  color: var(--global-foreground);
   font-weight: 500;
+  color: var(--global-foreground);
 }

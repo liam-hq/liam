@@ -1,6 +1,6 @@
 .list {
-  list-style-type: decimal;
+  width: 100%;
   padding-left: 1rem;
   margin: 0;
-  width: 100%;
+  list-style-type: decimal;
 }

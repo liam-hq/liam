@@ -3,12 +3,12 @@
   grid-template-rows: auto 1fr;
   width: 300px;
   height: 100%;
-  border-left: 1px solid var(--pane-border, #383a3b);
-  background-color: var(--pane-background, #232526);
-  box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow, #000);
+  font-family: var(--main-font);
   word-break: break-all;
   list-style-position: outside;
-  font-family: var(--main-font);
+  background-color: var(--pane-background, #232526);
+  border-left: 1px solid var(--pane-border, #383a3b);
+  box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow, #000);
 }
 
 .body {

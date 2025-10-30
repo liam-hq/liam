@@ -13,6 +13,7 @@
     "knip": "5.64.3",
     "lefthook": "1.13.6",
     "stylelint": "16.25.0",
+    "stylelint-config-recess-order": "7.4.0",
     "stylelint-value-no-unknown-custom-properties": "6.0.1",
     "syncpack": "13.0.4",
     "turbo": "2.5.8",

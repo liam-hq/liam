@@ -1,12 +1,12 @@
 .fileIcon {
+  position: relative;
+  z-index: 1;
   width: 134px;
   height: 119px;
   color: var(--overlay-40);
   opacity: var(--opacity-60);
   transition: opacity var(--default-animation-duration)
     var(--default-timing-function);
-  position: relative;
-  z-index: 1;
 }
 
 .fileIconHovered {
@@ -16,27 +16,27 @@
 
 /* Back files animation */
 .fileBackLeft {
+  opacity: var(--opacity-70);
+  transform: rotate(-10deg) translateX(8px) translateY(7px);
   transform-origin: center bottom;
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
-  transform: rotate(-10deg) translateX(8px) translateY(7px);
-  opacity: var(--opacity-70);
 }
 
 .fileBackRight {
+  opacity: var(--opacity-70);
+  transform: rotate(10deg) translateX(-8px) translateY(7px);
   transform-origin: center bottom;
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
-  transform: rotate(10deg) translateX(-8px) translateY(7px);
-  opacity: var(--opacity-70);
 }
 
 .fileBackLeftHover {
-  transform: rotate(0deg) translateX(8px) translateY(7px);
   opacity: 0;
+  transform: rotate(0deg) translateX(8px) translateY(7px);
 }
 
 .fileBackRightHover {
-  transform: rotate(0deg) translateX(-8px) translateY(7px);
   opacity: 0;
+  transform: rotate(0deg) translateX(-8px) translateY(7px);
 }

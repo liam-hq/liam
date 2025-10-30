@@ -5,17 +5,17 @@
 }
 
 .button {
-  width: 100%;
-  height: 100%;
-  border: none;
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
   padding: var(--spacing-2);
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius-md);
   transition: background-color 0.2s ease;
-  position: relative;
 }
 
 .button:focus-visible {
@@ -66,9 +66,9 @@
 }
 
 .button.disabled {
-  opacity: var(--opacity-disabled);
   cursor: not-allowed;
   background-color: transparent;
+  opacity: var(--opacity-disabled);
 }
 
 .button.disabled:hover {

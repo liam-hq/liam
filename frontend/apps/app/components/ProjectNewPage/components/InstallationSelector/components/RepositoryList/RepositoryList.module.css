@@ -6,9 +6,9 @@
 
 .sectionTitle {
   margin: 0;
-  color: var(--global-foreground);
   font-size: var(--font-size-6, 16px);
   font-weight: 500;
+  color: var(--global-foreground);
 }
 
 .repositoriesList {

@@ -1,10 +1,10 @@
 .emptyState {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-4, 16px);
-  text-align: center;
+  align-items: center;
   margin: auto;
+  text-align: center;
 }
 
 .emptyIllustration {
@@ -13,8 +13,8 @@
 }
 
 .emptyDescription {
-  color: var(--global-mute-text);
+  max-width: 360px;
   font-size: var(--font-size-4, 13px);
   line-height: 1.6;
-  max-width: 360px;
+  color: var(--global-mute-text);
 }

@@ -26,7 +26,7 @@ type SessionFilterDropdownProps = {
   filterType: SessionFilterType
   organizationMembers: OrganizationMember[]
   currentUserId: string
-  onFilterChange: (filterType: string) => void
+  onFilterChange: (filterType: SessionFilterType) => void
 }
 
 const getFilterLabel = (
@@ -63,7 +63,7 @@ export const SessionFilterDropdown: FC<SessionFilterDropdownProps> = ({
       <DropdownMenuContent align="start" className={styles.dropdownContent}>
         <DropdownMenuRadioGroup
           value={filterType}
-          onValueChange={onFilterChange}
+          onValueChange={(value) => onFilterChange(value)}
         >
           <DropdownMenuRadioItem value="me" label="My Sessions" />
           <DropdownMenuRadioItem value="all" label="All Sessions" />

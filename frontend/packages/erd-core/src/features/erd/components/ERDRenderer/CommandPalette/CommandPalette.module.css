@@ -2,15 +2,15 @@
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  z-index: var(--z-index-command-palette);
   width: 638px;
+  font-family: var(--main-font);
+  color: var(--global-foreground);
+  background-color: var(--pane-background);
+  border: 1px solid var(--global-border);
   border-radius: var(--border-radius-lg);
   box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow, #000);
-  background-color: var(--pane-background);
-  color: var(--global-foreground);
-  border: 1px solid var(--global-border);
-  z-index: var(--z-index-command-palette);
-  font-family: var(--main-font);
+  transform: translate(-50%, -50%);
 }
 
 .content[data-state='open'] {
@@ -24,10 +24,10 @@
 .overlay {
   position: fixed;
   inset: 0;
+  z-index: var(--z-index-command-palette);
   width: 100vw;
   height: 100vh;
   backdrop-filter: blur(8px);
-  z-index: var(--z-index-command-palette);
 }
 
 .overlay[data-state='open'] {

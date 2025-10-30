@@ -1,6 +1,6 @@
 .container {
-  padding: 24px;
   max-width: 1200px;
+  padding: 24px;
   margin: 0 auto;
 }
 
@@ -15,9 +15,9 @@
 }
 
 .backLink {
+  display: inline-block;
   color: #fff;
   text-decoration: none;
-  display: inline-block;
 }
 
 .backLink:hover {
@@ -25,9 +25,9 @@
 }
 
 .title {
+  margin: 0;
   font-size: 24px;
   font-weight: 600;
-  margin: 0;
 }
 
 .content {
@@ -37,14 +37,14 @@
 }
 
 .infoCard {
-  border-radius: 8px;
   padding: 24px;
+  border-radius: 8px;
 }
 
 .sectionTitle {
+  margin: 0 0 24px 0;
   font-size: 18px;
   font-weight: 600;
-  margin: 0 0 24px 0;
   color: #fff;
 }
 
@@ -65,9 +65,9 @@
 }
 
 .resourceTitle {
+  margin: 0;
   font-size: 16px;
   font-weight: 500;
-  margin: 0;
   color: #fff;
 }
 
@@ -76,11 +76,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border: 1px solid var(--global-foreground, #fff);
-  border-radius: 6px;
+  font-weight: 500;
   color: #fff;
   text-decoration: none;
-  font-weight: 500;
+  border: 1px solid var(--global-foreground, #fff);
+  border-radius: 6px;
   transition: all 0.2s ease;
 }
 

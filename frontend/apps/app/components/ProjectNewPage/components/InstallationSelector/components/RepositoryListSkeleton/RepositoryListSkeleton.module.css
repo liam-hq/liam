@@ -16,10 +16,10 @@
 }
 
 .header {
-  height: 20px;
   width: 160px;
-  border-radius: var(--border-radius-sm, 6px);
+  height: 20px;
   background-color: var(--overlay-20);
+  border-radius: var(--border-radius-sm, 6px);
   animation: skeletonPulse 1.5s ease-in-out infinite;
 }
 
@@ -31,7 +31,7 @@
 
 .item {
   height: 48px;
-  border-radius: var(--border-radius-sm, 6px);
   background-color: var(--overlay-10);
+  border-radius: var(--border-radius-sm, 6px);
   animation: skeletonPulse 1.5s ease-in-out infinite;
 }

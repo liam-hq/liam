@@ -1,14 +1,14 @@
 .publicBadge {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1half);
+  align-items: center;
   padding: var(--spacing-1) var(--spacing-2);
-  background-color: var(--pane-background);
-  border: 1px solid var(--pane-border);
-  border-radius: var(--border-radius-base);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--global-foreground);
+  background-color: var(--pane-background);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-base);
 }
 
 .icon {

@@ -1,28 +1,28 @@
 /* Mode buttons */
 .modeButtons {
+  position: relative;
   display: flex;
   gap: var(--spacing-6);
   justify-content: center;
-  position: relative;
 }
 
 .modeButton {
+  position: relative;
+  z-index: 2;
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
   padding: var(--spacing-2) var(--spacing-3) var(--spacing-2)
     var(--spacing-2half);
-  background-color: transparent;
-  border: none;
-  border-radius: var(--border-radius-full);
-  color: var(--overlay-70);
   font-family: var(--main-font);
   font-size: var(--font-size-4);
   font-weight: 500;
+  color: var(--overlay-70);
   cursor: pointer;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-full);
   transition: color 0.2s ease;
-  position: relative;
-  z-index: 2;
 }
 
 .modeButton:hover {
@@ -43,17 +43,17 @@
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 1;
   height: 100%;
   background-color: var(--overlay-10);
   border-radius: var(--border-radius-full);
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
 }
 
 .modeButtonIcon {
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
-  flex-shrink: 0;
 }

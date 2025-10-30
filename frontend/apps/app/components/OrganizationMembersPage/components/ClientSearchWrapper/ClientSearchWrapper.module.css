@@ -8,9 +8,9 @@
 .header {
   display: flex;
   flex-direction: row;
+  gap: var(--spacing-4);
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-4);
   width: 100%;
 }
 
@@ -22,10 +22,10 @@
 }
 
 .sectionTitle {
+  margin: 0;
   font-size: var(--font-size-5);
   font-weight: 500;
   color: var(--global-foreground);
-  margin: 0;
 }
 
 .membersList {
@@ -40,10 +40,10 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-10);
+  margin: 0;
+  color: var(--global-mute-text);
+  text-align: center;
   background-color: var(--pane-background);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
-  color: var(--global-mute-text);
-  text-align: center;
-  margin: 0;
 }

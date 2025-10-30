@@ -1,27 +1,27 @@
 .container {
   display: flex;
-  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-20, 80px);
+  align-items: center;
+  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
   font-family: var(--main-font);
 }
 
 .title {
+  width: 100%;
+  margin: 0 0 var(--spacing-7) 0;
   font-size: 52px;
   font-weight: 600;
+  line-height: 1;
   color: var(--global-foreground);
   text-align: center;
-  line-height: 1;
   letter-spacing: -0.312px;
-  margin: 0 0 var(--spacing-7) 0;
-  width: 100%;
 }
 
 .wrapper {
   display: flex;
-  width: 782px;
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-7, 28px);
+  align-items: center;
+  width: 782px;
 }

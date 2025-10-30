@@ -1,7 +1,7 @@
 .container {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
   padding: var(--spacing-4);
   background-color: var(--global-background);
@@ -9,9 +9,13 @@
 
 .card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  align-items: center;
   width: 100%;
   max-width: 400px;
-  border-radius: var(--border-radius-xl);
+  padding: var(--spacing-10);
   background: var(
     --Auth-Background,
     linear-gradient(
@@ -20,11 +24,7 @@
       var(--primary-gradation-overlay-end, rgba(29, 237, 131, 0)) 99.35%
     )
   );
-  padding: var(--spacing-10);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-8);
+  border-radius: var(--border-radius-xl);
 
   /* emphasize-shadow */
   box-shadow: 0px 4px 80px 0px rgba(29, 237, 131, 0.1) inset;
@@ -32,14 +32,13 @@
 }
 
 .card::before {
-  content: '';
   position: absolute;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
-  border-radius: var(--border-radius-xl);
-  border: 1px solid transparent;
+  left: 0;
+  pointer-events: none;
+  content: '';
   background: linear-gradient(
       to bottom,
       var(--color-green-400),
@@ -47,19 +46,20 @@
       var(--color-green-700)
     )
     border-box;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-xl);
   -webkit-mask:
     linear-gradient(#fff 0 0) padding-box,
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
   mask-composite: exclude;
-  pointer-events: none;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
   width: 100%;
 }
 
@@ -72,14 +72,14 @@
 }
 
 .description {
+  align-self: stretch;
+  width: 100%;
   font-family: var(--main-font);
   font-size: var(--font-size-3);
   font-weight: 400;
+  line-height: 1.5;
   color: var(--overlay-70, rgba(255, 255, 255, 0.7));
   text-align: left;
-  width: 100%;
-  line-height: 1.5;
-  align-self: stretch;
 }
 
 .organizationName {
@@ -94,19 +94,19 @@
 
 .button {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: 100%;
   height: 36px;
   padding: var(--spacing-1) var(--spacing-3);
-  background-color: var(--color-green-400);
-  color: var(--color-black-alpha-100);
-  border: 1px solid var(--color-green-400);
-  border-radius: var(--border-radius-md);
   font-family: var(--main-font);
   font-size: var(--font-size-4);
   font-weight: 500;
+  color: var(--color-black-alpha-100);
   cursor: pointer;
+  background-color: var(--color-green-400);
+  border: 1px solid var(--color-green-400);
+  border-radius: var(--border-radius-md);
   transition: background-color 0.2s ease;
 }
 
@@ -120,9 +120,9 @@
 }
 
 .error {
-  color: var(--color-red-500);
-  font-size: var(--font-size-3);
-  margin-top: var(--spacing-2);
-  text-align: center;
   width: 100%;
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-3);
+  color: var(--color-red-500);
+  text-align: center;
 }

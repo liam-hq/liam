@@ -7,13 +7,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  max-width: 100%;
+  height: 32px;
   padding: 8px 12px;
+  cursor: pointer;
+  background: var(--background);
   border: 1px solid var(--overlay-20);
   border-radius: 6px;
-  background: var(--background);
-  cursor: pointer;
-  height: 32px;
-  max-width: 100%;
   transition: border-color 0.2s ease;
 }
 
@@ -50,36 +50,36 @@
 
 .content {
   display: flex;
-  align-items: center;
-  gap: 8px;
   flex: 1;
+  gap: 8px;
+  align-items: center;
   min-width: 0;
 }
 
 .branchIcon {
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
   color: var(--overlay-60);
-  flex-shrink: 0;
 }
 
 .branchName {
-  color: var(--global-foreground);
-  font-size: var(--font-size-2);
   flex: 1;
-  text-align: left;
-  white-space: nowrap;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
+  font-size: var(--font-size-2);
+  color: var(--global-foreground);
+  text-align: left;
+  white-space: nowrap;
 }
 
 .chevronIcon {
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
   color: var(--overlay-60);
   transition: transform 0.2s ease;
-  flex-shrink: 0;
 }
 
 .chevronIcon.open {
@@ -89,12 +89,12 @@
 .dropdown {
   position: fixed;
   z-index: var(--z-index-dropdown-menu);
+  min-width: 200px;
+  margin-top: 4px;
   background: var(--global-background);
   border: 1px solid var(--dropdown-border);
   border-radius: var(--border-radius-base);
   box-shadow: 0 4px 20px 0 rgb(0 0 0 / 40%);
-  margin-top: 4px;
-  min-width: 200px;
 }
 
 .dropdown.error {
@@ -104,26 +104,26 @@
 
 .searchContainer {
   display: flex;
+  gap: 8px;
   align-items: center;
   padding: 8px 12px;
   border-bottom: 1px solid var(--overlay-10);
-  gap: 8px;
 }
 
 .searchIcon {
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
   color: var(--overlay-60);
-  flex-shrink: 0;
 }
 
 .searchInput {
   flex: 1;
-  border: none;
+  font-size: var(--font-size-2);
+  color: var(--global-foreground);
   outline: none;
   background: transparent;
-  color: var(--global-foreground);
-  font-size: var(--font-size-2);
+  border: none;
 }
 
 .searchInput:focus-visible {
@@ -136,9 +136,9 @@
 
 .errorMessage {
   padding: var(--spacing-4) var(--spacing-3);
-  text-align: center;
-  color: var(--danger-high-contrast-text);
   font-size: var(--font-size-2);
+  color: var(--danger-high-contrast-text);
+  text-align: center;
 }
 
 .loading {
@@ -155,12 +155,12 @@
 
 .item {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-2);
-  cursor: pointer;
-  font-size: var(--font-size-2);
+  align-items: center;
   height: 32px;
+  padding: var(--spacing-2);
+  font-size: var(--font-size-2);
+  cursor: pointer;
   background: var(--global-background);
   border-radius: var(--border-radius-base);
   transition: background-color var(--default-hover-animation-duration)
@@ -185,23 +185,23 @@
 }
 
 .itemIcon {
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
   color: var(--overlay-60);
-  flex-shrink: 0;
 }
 
 .itemLabel {
   flex: 1;
-  color: var(--global-foreground);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--global-foreground);
+  white-space: nowrap;
 }
 
 .empty {
   padding: var(--spacing-4) var(--spacing-3);
-  text-align: center;
-  color: var(--overlay-60);
   font-size: var(--font-size-2);
+  color: var(--overlay-60);
+  text-align: center;
 }

@@ -1,18 +1,18 @@
 .trigger {
   display: flex;
+  gap: var(--spacing-2);
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-2);
-  padding: var(--spacing-1half) var(--spacing-2);
   min-width: fit-content;
   height: 32px;
-  background-color: var(--pane-background);
-  color: var(--global-foreground);
-  border-radius: var(--border-radius-md);
-  font-size: var(--font-size-4);
+  padding: var(--spacing-1half) var(--spacing-2);
   font-family: inherit;
+  font-size: var(--font-size-4);
   line-height: 1;
+  color: var(--global-foreground);
   cursor: pointer;
+  background-color: var(--pane-background);
+  border-radius: var(--border-radius-md);
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
 }
@@ -27,8 +27,8 @@
 }
 
 .trigger:disabled {
-  opacity: var(--opacity-disabled);
   cursor: not-allowed;
+  opacity: var(--opacity-disabled);
 }
 
 .trigger:disabled:hover {
@@ -37,47 +37,49 @@
 
 .iconAndName {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  overflow: hidden;
   flex: 1;
+  gap: var(--spacing-2);
+  align-items: center;
+  overflow: hidden;
 }
 
 .projectIcon {
+  flex-shrink: 0;
   width: 1rem;
   height: 1rem;
   color: var(--overlay-50);
-  flex-shrink: 0;
 }
 
 .projectName {
-  color: var(--global-foreground);
   font-family: inherit;
   font-size: var(--font-size-4);
   font-style: normal;
   font-weight: 400;
   line-height: 1.2;
+  color: var(--global-foreground);
   white-space: nowrap;
 }
 
 .chevronIcon {
+  flex-shrink: 0;
   width: 12px;
   height: 12px;
   color: var(--overlay-70);
-  flex-shrink: 0;
 }
 
 .content {
   min-width: 200px;
-  border-radius: var(--border-radius-md);
   max-height: 400px;
   overflow-y: auto;
+  border-radius: var(--border-radius-md);
 }
 
 .addNewProject {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
+  justify-content: flex-start;
+  height: 32px;
   padding: var(--spacing-2) !important;
   padding-left: var(--spacing-2) !important;
   font-size: var(--font-size-4);
@@ -85,8 +87,6 @@
   cursor: pointer;
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
-  height: 32px;
-  justify-content: flex-start;
 }
 
 .addNewProject:hover {
@@ -101,7 +101,7 @@
 
 /* Override dropdown separator style */
 .content [role='separator'] {
-  background-color: var(--global-border);
-  margin: 0 -5px;
   height: 1px;
+  margin: 0 -5px;
+  background-color: var(--global-border);
 }

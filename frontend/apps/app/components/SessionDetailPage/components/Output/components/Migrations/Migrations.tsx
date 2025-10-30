@@ -2,7 +2,6 @@
 
 import type { Schema } from '@liam-hq/schema'
 import type { FC } from 'react'
-import type { ReviewComment } from '../../../../types'
 import { CopyButton } from '../../../CopyButton'
 import { useDdl } from './hooks/useDdl'
 import styles from './Migrations.module.css'
@@ -10,10 +9,9 @@ import { MigrationsViewer } from './MigrationsViewer'
 
 type Props = {
   currentSchema: Schema
-  comments?: ReviewComment[]
 }
 
-export const Migrations: FC<Props> = ({ currentSchema, comments = [] }) => {
+export const Migrations: FC<Props> = ({ currentSchema }) => {
   const { cumulativeDdl } = useDdl({
     currentSchema,
   })
@@ -27,11 +25,7 @@ export const Migrations: FC<Props> = ({ currentSchema, comments = [] }) => {
         />
       </div>
       <div className={styles.body}>
-        <MigrationsViewer
-          doc={cumulativeDdl}
-          comments={comments}
-          showComments={false}
-        />
+        <MigrationsViewer doc={cumulativeDdl} />
       </div>
     </section>
   )

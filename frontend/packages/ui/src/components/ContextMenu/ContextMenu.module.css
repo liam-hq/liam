@@ -1,27 +1,27 @@
 .contextMenuTrigger {
   display: flex;
+  gap: var(--spacing-half);
   align-items: center;
   width: 100%;
-  gap: var(--spacing-half);
 }
 
 .contextMenuContent {
-  min-width: 280px;
-  background-color: var(--global-background);
   gap: var(--spacing-half);
-  border-radius: var(--border-radius-md);
-  overflow: hidden;
+  min-width: 280px;
   padding: var(--spacing-1);
+  overflow: hidden;
+  background-color: var(--global-background);
+  border-radius: var(--border-radius-md);
   box-shadow: 0 4px 20px 0 rgb(0 0 0 / 40%);
 }
 
 .contextMenuItem {
-  gap: var(--spacing-half);
-  padding: var(--border-radius-lg);
-  color: var(--global-foreground);
-  border-radius: var(--border-radius-base);
   display: flex;
+  gap: var(--spacing-half);
   align-items: center;
-  cursor: pointer;
+  padding: var(--border-radius-lg);
   font-size: var(--font-size-3);
+  color: var(--global-foreground);
+  cursor: pointer;
+  border-radius: var(--border-radius-base);
 }

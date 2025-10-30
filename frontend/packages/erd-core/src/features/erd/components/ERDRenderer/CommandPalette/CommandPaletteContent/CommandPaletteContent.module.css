@@ -1,9 +1,9 @@
 .searchContainer {
   display: flex;
-  align-items: center;
-  padding: var(--spacing-2) var(--spacing-4);
   gap: var(--spacing-4);
+  align-items: center;
   width: 100%;
+  padding: var(--spacing-2) var(--spacing-4);
   border-bottom: 1px solid var(--overlay-5);
 }
 
@@ -13,14 +13,14 @@
 
 .main {
   display: flex;
-  padding: var(--spacing-2);
   height: 459px;
+  padding: var(--spacing-2);
 }
 
 .main [cmdk-list] {
-  overflow-y: scroll;
-  height: 100%;
   flex: 1;
+  height: 100%;
+  overflow-y: scroll;
 }
 
 .main [cmdk-group-heading] {
@@ -36,9 +36,9 @@
 
 /* Empty search result display */
 .main [cmdk-list]:has([cmdk-empty]) {
+  position: relative;
   width: 100%;
   overflow: auto;
-  position: relative;
 }
 
 .main [cmdk-list] [cmdk-empty] {

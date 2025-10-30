@@ -10,10 +10,10 @@
   display: inline-grid;
   grid-auto-flow: column;
   gap: var(--spacing-half);
-  color: var(--overlay-70);
   font-family: var(--code-font);
   font-size: var(--font-size-1);
   font-weight: 400;
+  color: var(--overlay-70);
 
   @media (min-width: 768px) {
     display: none !important;
@@ -42,9 +42,9 @@
 
 .tablesMenu {
   flex: 1;
-  overflow-y: auto;
   min-height: 0;
   padding-bottom: var(--tables-menu-padding-bottom, var(--spacing-4));
+  overflow-y: auto;
 }
 
 .contentControls {
@@ -78,15 +78,15 @@
   display: inline-flex;
   align-items: center;
   padding: var(--spacing-1) var(--spacing-2);
-  border-radius: var(--border-radius-full);
   background: var(--pane-muted-background);
+  border-radius: var(--border-radius-full);
 }
 
 .versionText {
-  color: var(--global-mute-text);
   font-family: var(--code-font);
   font-size: var(--font-size-1);
   font-weight: 400;
+  color: var(--global-mute-text);
 }
 
 .textCursor {
@@ -95,13 +95,13 @@
 
 .tablesHeaderRow {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-sm);
-  padding: var(--spacing-1);
+  align-items: center;
   width: 100%;
   min-width: 0;
+  padding: var(--spacing-1);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-sm);
 }
 
 .tablesHeaderRow:hover {
@@ -110,13 +110,13 @@
 
 .showAllButton {
   display: flex;
-  align-items: center;
   gap: var(--spacing-half);
-  background: none;
-  border: none;
+  align-items: center;
+  padding: 0 var(--spacing-1);
   font: inherit;
   cursor: pointer;
-  padding: 0 var(--spacing-1);
+  background: none;
+  border: none;
   border-radius: var(--border-radius-sm);
   transition: background 0.15s;
 }
@@ -127,16 +127,16 @@
 }
 
 .showAllText {
+  margin-left: 0.25rem;
   font-size: var(--font-size-2);
   font-weight: 500;
-  margin-left: 0.25rem;
 }
 
 .visibleCount {
-  color: var(--overlay-40);
-  font-size: var(--font-size-1);
-  font-family: var(--code-font);
   margin-left: var(--spacing-1);
+  font-family: var(--code-font);
+  font-size: var(--font-size-1);
+  color: var(--overlay-40);
 }
 
 @container (max-width: 235px) {

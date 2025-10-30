@@ -1,9 +1,9 @@
 .container {
   width: 100%;
-  border: 1px solid var(--pane-border);
-  border-radius: var(--border-radius-xl);
   overflow: hidden;
   background-color: var(--global-background);
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-xl);
   transition:
     box-shadow 0.3s ease,
     border-color 0.3s ease;
@@ -34,15 +34,15 @@
 }
 
 .textarea {
-  color: var(--global-foreground);
-  border-radius: var(--border-radius-md);
-  font-size: var(--font-size-6);
-  font-family: inherit;
-  line-height: 1.6;
-  min-height: 120px;
   width: 100%;
-  resize: none;
+  min-height: 120px;
   overflow: hidden;
+  font-family: inherit;
+  font-size: var(--font-size-6);
+  line-height: 1.6;
+  color: var(--global-foreground);
+  resize: none;
+  border-radius: var(--border-radius-md);
 }
 
 .textarea::placeholder {
@@ -60,8 +60,8 @@
 }
 
 .textarea:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .textarea::placeholder {
@@ -69,8 +69,8 @@
 }
 
 .error {
-  color: var(--danger-high-contrast-text);
   font-size: var(--font-size-5);
+  color: var(--danger-high-contrast-text);
 }
 
 .buttonsWrapper {
@@ -81,16 +81,16 @@
 
 .buttons {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
+  justify-content: space-between;
 }
 
 .dropdowns {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
   flex: 1;
-  overflow-x: auto;
+  gap: var(--spacing-2);
+  align-items: center;
   padding: 2px;
+  overflow-x: auto;
 }

@@ -12,22 +12,22 @@
 
 .titleWrapper {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
 }
 
 .title {
   display: block;
   font-size: var(--font-size-2);
   font-weight: 600;
+  color: var(--color-gray-300);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-gray-300);
 }
 
 .icon {
-  flex-shrink: 0;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
 }
 
@@ -44,14 +44,14 @@
 }
 
 .content {
+  max-height: 100px;
   padding: var(--spacing-3);
-  border-radius: var(--border-radius-base);
-  background-color: var(--color-gray-1000);
+  overflow-y: auto;
   font-size: var(--font-size-3);
   line-height: 1.5;
   color: var(--color-gray-100);
-  max-height: 100px;
-  overflow-y: auto;
+  background-color: var(--color-gray-1000);
+  border-radius: var(--border-radius-base);
 }
 
 .resultAction {

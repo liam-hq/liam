@@ -4,7 +4,6 @@ import type { AnalyzedRequirements } from '@liam-hq/agent/client'
 import type { Schema } from '@liam-hq/schema'
 import { TabsContent, TabsRoot } from '@liam-hq/ui'
 import { type ComponentProps, type FC, useCallback, useState } from 'react'
-import type { ReviewComment } from '../../types'
 import { ArtifactContainer } from './components/Artifact/ArtifactContainer'
 import { ERD } from './components/ERD'
 import { Header } from './components/Header'
@@ -21,7 +20,6 @@ type Props = ComponentProps<typeof VersionDropdown> & {
   designSessionId: string
   schema: Schema
   baselineSchema: Schema
-  sqlReviewComments: ReviewComment[]
   initialIsPublic: boolean
   activeTab: OutputTabValue
   onTabChange: (value: OutputTabValue) => void
@@ -32,7 +30,6 @@ export const Output: FC<Props> = ({
   designSessionId,
   schema,
   baselineSchema,
-  sqlReviewComments,
   activeTab,
   onTabChange,
   initialIsPublic = false,
@@ -92,7 +89,7 @@ export const Output: FC<Props> = ({
         className={styles.tabsContent}
         forceMount
       >
-        <Migrations currentSchema={schema} comments={sqlReviewComments} />
+        <Migrations currentSchema={schema} />
       </TabsContent>
       <TabsContent
         value={OUTPUT_TABS.ARTIFACT}

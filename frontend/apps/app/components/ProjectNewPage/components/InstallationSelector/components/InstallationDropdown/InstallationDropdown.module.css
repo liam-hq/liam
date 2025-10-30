@@ -1,10 +1,10 @@
 .dropdownTrigger {
-  min-width: 280px;
-  justify-content: flex-start;
   gap: var(--spacing-2, 8px);
+  justify-content: flex-start;
+  min-width: 280px;
+  padding-right: var(--spacing-3, 12px);
   font-size: var(--font-size-4, 13px);
   font-weight: 400;
-  padding-right: var(--spacing-3, 12px);
 }
 
 .dropdownContent {

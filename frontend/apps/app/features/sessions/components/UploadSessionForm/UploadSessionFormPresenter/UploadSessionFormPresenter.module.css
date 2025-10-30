@@ -1,11 +1,11 @@
 .container {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  overflow: hidden;
   background-color: var(--global-background);
   border: 1px solid var(--pane-border);
   border-radius: var(--border-radius-xl);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
   transition:
     box-shadow 0.3s ease,
     border-color 0.3s ease;
@@ -31,38 +31,38 @@
 }
 
 .container.dragActive {
+  background-color: var(--primary-overlay-5);
   border-color: var(--primary-color);
   box-shadow: 0px 0px 20px 0px var(--primary-overlay-20);
-  background-color: var(--primary-overlay-5);
 }
 
 .uploadSection {
-  background-color: var(--overlay-5);
   flex-shrink: 0;
   order: 2;
+  background-color: var(--overlay-5);
 }
 
 .uploadContainer {
-  padding: var(--spacing-4);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
+  padding: var(--spacing-4);
 }
 
 .divider {
+  order: 1;
+  width: 100%;
   height: 1px;
   background-color: var(--pane-border);
-  width: 100%;
-  order: 1;
 }
 
 .inputSection {
-  order: 0;
-  flex-shrink: 0;
-  padding: var(--spacing-4);
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   gap: var(--spacing-2);
+  order: 0;
+  padding: var(--spacing-4);
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
 }
@@ -77,14 +77,14 @@
   width: 100%;
   min-height: 132px;
   padding: 0;
+  overflow: hidden;
+  font-family: inherit;
+  font-size: var(--font-size-6);
+  line-height: 1.6;
+  color: var(--global-foreground);
+  resize: none;
   background: transparent;
   border: none;
-  color: var(--global-foreground);
-  font-size: var(--font-size-6);
-  font-family: inherit;
-  line-height: 1.6;
-  resize: none;
-  overflow: hidden;
 }
 
 .textarea::placeholder {
@@ -101,15 +101,15 @@
 }
 
 .textarea:disabled {
-  opacity: var(--opacity-60);
   cursor: not-allowed;
+  opacity: var(--opacity-60);
 }
 
 .buttonContainer {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .buttonCustom {
@@ -120,27 +120,27 @@
 }
 
 .error {
-  color: var(--danger-high-contrast-text);
-  font-size: var(--font-size-5);
   margin-top: var(--spacing-2);
+  font-size: var(--font-size-5);
+  color: var(--danger-high-contrast-text);
 }
 
 /* Drop zone styles */
 .dropZone {
-  border: 1px dashed var(--overlay-20);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-10) var(--spacing-4);
-  text-align: center;
-  background-color: transparent;
-  transition: all var(--default-animation-duration)
-    var(--default-timing-function);
-  cursor: pointer;
-  min-height: 300px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
+  min-height: 300px;
+  padding: var(--spacing-10) var(--spacing-4);
+  text-align: center;
+  cursor: pointer;
+  background-color: transparent;
+  border: 1px dashed var(--overlay-20);
+  border-radius: var(--border-radius-lg);
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
 }
 
 .dropZone:hover {
@@ -148,14 +148,14 @@
 }
 
 .dropZoneActive {
-  border-color: var(--button-primary-background);
   background-color: var(--overlay-5);
+  border-color: var(--button-primary-background);
 }
 
 .dropZoneDisabled {
-  opacity: var(--opacity-60);
-  cursor: not-allowed;
   pointer-events: none;
+  cursor: not-allowed;
+  opacity: var(--opacity-60);
 }
 
 .dropZoneContent {
@@ -165,18 +165,18 @@
 }
 
 .dropZoneText {
+  margin: 0 0 var(--spacing-2) 0;
   font-size: var(--font-size-6);
   font-weight: var(--font-weight-medium);
-  color: var(--global-foreground);
-  margin: 0 0 var(--spacing-2) 0;
   line-height: 1.6;
+  color: var(--global-foreground);
 }
 
 .dropZoneSubtext {
-  font-size: var(--font-size-5);
-  color: var(--overlay-60);
   margin: 0 0 var(--spacing-4) 0;
+  font-size: var(--font-size-5);
   line-height: 1.6;
+  color: var(--overlay-60);
 }
 
 .selectFileButton {
@@ -188,12 +188,12 @@
   font-size: var(--font-size-4);
   font-weight: 500;
   line-height: normal;
-  border-radius: var(--border-radius-md);
+  color: var(--button-primary-foreground);
   cursor: pointer;
   /* Solid Primary style (default) */
   background-color: var(--button-primary-background);
-  color: var(--button-primary-foreground);
   border: 1px solid var(--button-primary-background);
+  border-radius: var(--border-radius-md);
   transition:
     background-color var(--default-hover-animation-duration)
     var(--default-timing-function),
@@ -211,9 +211,9 @@
 
 .selectFileButton[data-disabled='true'] {
   color: var(--button-disabled-foreground);
+  cursor: not-allowed;
   background-color: var(--button-disabled-background);
   border: 1px solid var(--button-border);
-  cursor: not-allowed;
 }
 
 .selectFileButton:hover:not([data-disabled='true']) {
@@ -235,25 +235,25 @@
 /* Icon container styles */
 .iconContainer {
   position: relative;
-  margin-bottom: var(--spacing-4);
   display: flex;
   align-items: center;
   justify-content: center;
   width: 134px;
   height: 93px;
+  margin-bottom: var(--spacing-4);
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
 }
 
 .fileIcon {
+  position: relative;
+  z-index: 1;
   width: 134px;
   height: 119px;
   color: var(--overlay-40);
   opacity: var(--opacity-60);
   transition: opacity var(--default-animation-duration)
     var(--default-timing-function);
-  position: relative;
-  z-index: 1;
 }
 
 .dropZone:hover .fileIcon {
@@ -263,61 +263,61 @@
 
 /* Back files animation */
 .fileIcon :global(.file-back-left) {
+  opacity: var(--opacity-70);
+  transform: rotate(-10deg) translateX(8px) translateY(7px);
   transform-origin: center bottom;
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
-  transform: rotate(-10deg) translateX(8px) translateY(7px);
-  opacity: var(--opacity-70);
 }
 
 .fileIcon :global(.file-back-right) {
+  opacity: var(--opacity-70);
+  transform: rotate(10deg) translateX(-8px) translateY(7px);
   transform-origin: center bottom;
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
-  transform: rotate(10deg) translateX(-8px) translateY(7px);
-  opacity: var(--opacity-70);
 }
 
 .fileIcon :global(.file-back-left-hover) {
-  transform: rotate(0deg) translateX(8px) translateY(7px);
   opacity: 0;
+  transform: rotate(0deg) translateX(8px) translateY(7px);
 }
 
 .fileIcon :global(.file-back-right-hover) {
-  transform: rotate(0deg) translateX(-8px) translateY(7px);
   opacity: 0;
+  transform: rotate(0deg) translateX(-8px) translateY(7px);
 }
 
 /* Extension tags styles */
 .extensionTags {
   position: absolute;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none;
+  left: 0;
   z-index: 2;
+  pointer-events: none;
 }
 
 .extensionTag {
   position: absolute;
-  background-color: var(--primary-overlay-20);
-  color: var(--button-primary-background);
+  display: flex;
+  align-items: center;
+  height: 21px;
+  padding: 0 var(--spacing-1);
+  font-family: var(--code-font);
   font-size: var(--font-size-2);
   font-weight: var(--font-weight-semibold);
-  font-family: var(--code-font);
-  padding: 0 var(--spacing-1);
-  border-radius: var(--border-radius-sm);
+  line-height: 21px;
+  color: var(--button-primary-background);
   letter-spacing: -0.55px;
   white-space: nowrap;
+  background-color: var(--primary-overlay-20);
+  border-radius: var(--border-radius-sm);
   opacity: 0;
   transform: scale(0.8);
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
-  line-height: 21px;
-  height: 21px;
-  display: flex;
-  align-items: center;
 }
 
 .dropZone:hover .extensionTag {
@@ -368,47 +368,47 @@
 
 .validSchemaMessage {
   display: flex;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
   padding: 0 var(--spacing-1);
 }
 
 .fetchStatus {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1half);
+  align-items: center;
 }
 
 .checkIcon {
-  color: var(--button-primary-background);
   width: var(--spacing-3);
   height: var(--spacing-3);
+  color: var(--button-primary-background);
 }
 
 .validSchemaText {
   font-size: var(--font-size-2);
-  color: var(--button-primary-background);
   font-weight: var(--font-weight-regular);
+  color: var(--button-primary-background);
   white-space: nowrap;
 }
 
 .invalidIcon {
-  color: var(--severity-warning-100);
   width: var(--spacing-3);
   height: var(--spacing-3);
+  color: var(--severity-warning-100);
 }
 
 .invalidSchemaText {
   font-size: var(--font-size-2);
-  color: var(--severity-warning-100);
   font-weight: var(--font-weight-regular);
+  color: var(--severity-warning-100);
   white-space: nowrap;
 }
 
 .detectedText {
   font-size: var(--font-size-2);
-  color: var(--global-mute-text);
   line-height: 1.6;
+  color: var(--global-mute-text);
 }
 
 .formatName {
@@ -416,10 +416,10 @@
 }
 
 .matchFiles {
+  width: 100%;
+  padding: var(--spacing-2);
   background-color: var(--overlay-5);
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-2);
-  width: 100%;
 }
 
 .matchFileItem {
@@ -430,32 +430,32 @@
 }
 
 .uploadedFile {
+  position: relative;
   display: flex;
-  align-items: center;
   gap: var(--spacing-1half);
+  align-items: center;
+  padding: var(--spacing-1half);
   background-color: var(--overlay-5);
   border: 1px solid var(--overlay-5);
   border-radius: var(--border-radius-base);
-  padding: var(--spacing-1half);
-  position: relative;
 }
 
 .fileName {
   font-size: var(--font-size-3);
-  color: var(--global-foreground);
   font-weight: var(--font-weight-regular);
+  color: var(--global-foreground);
 }
 
 .formatSelect {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
+  min-width: 127px;
   padding: var(--spacing-1) var(--spacing-2);
+  cursor: pointer;
   background-color: var(--global-background);
   border: 1px solid var(--pane-border);
   border-radius: var(--border-radius-base);
-  min-width: 127px;
-  cursor: pointer;
   transition: border-color var(--default-animation-duration)
     var(--default-timing-function);
 }
@@ -465,9 +465,9 @@
 }
 
 .formatText {
+  flex: 1;
   font-size: var(--font-size-3);
   color: var(--global-foreground);
-  flex: 1;
 }
 
 .chevronIcon {

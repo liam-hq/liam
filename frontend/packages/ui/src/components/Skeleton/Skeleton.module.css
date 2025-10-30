@@ -14,8 +14,8 @@
 
   position: relative;
   display: inline-block;
-  border-radius: var(--border-radius-base);
   background: var(--skeleton-start);
+  border-radius: var(--border-radius-base);
 }
 
 .box {
@@ -35,9 +35,9 @@
 .overlay {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   pointer-events: none;
   background: var(--skeleton-start);
+  border-radius: inherit;
   animation: pulse 2s ease-in-out infinite;
 }
 

@@ -1,15 +1,15 @@
 .wrapper {
-  margin-top: var(--spacing-12);
-  padding-top: var(--spacing-12);
-  border-top: 1px solid var(--global-border);
   width: 100%;
   max-width: 600px;
+  padding-top: var(--spacing-12);
+  margin-top: var(--spacing-12);
+  border-top: 1px solid var(--global-border);
 }
 
 .title {
+  margin-bottom: var(--spacing-6);
   font-size: var(--font-size-8);
   font-weight: 600;
-  margin-bottom: var(--spacing-6);
   color: var(--global-foreground);
 }
 
@@ -21,8 +21,8 @@
 
 .skeletonRow {
   display: flex;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
   padding: var(--spacing-4);
 }
 

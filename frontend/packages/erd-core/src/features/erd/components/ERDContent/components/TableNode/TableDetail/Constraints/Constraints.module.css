@@ -8,14 +8,14 @@
 
 .sectionTitle {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1);
-  color: var(--global-foreground);
+  align-items: center;
   font-family: var(--main-font);
   font-size: var(--font-size-2);
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+  color: var(--global-foreground);
 }
 
 .constraintsIcon {

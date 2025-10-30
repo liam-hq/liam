@@ -1,8 +1,7 @@
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "quickfix.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
+    "source.fixAll.biome": "explicit"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[javascript]": {
@@ -18,7 +17,10 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "[css]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.stylelint": "always"
+    }
   },
   "[jsonc]": {
     "editor.defaultFormatter": "biomejs.biome"
@@ -37,6 +39,8 @@
     }
   ],
   "biome.lsp.bin": "./frontend/internal-packages/configs/node_modules/.bin/biome",
+  "stylelint.configFile": "./.stylelintrc.json",
+  "stylelint.validate": ["css"],
   "cSpell.enabled": true,
   "cSpell.words": ["biomejs"],
   "cSpell.allowCompoundWords": true,

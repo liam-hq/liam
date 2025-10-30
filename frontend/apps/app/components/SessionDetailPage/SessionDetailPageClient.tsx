@@ -19,7 +19,6 @@ import { OUTPUT_TABS, type OutputTabValue } from './components/Output/constants'
 import { PANEL_LAYOUT_COOKIE_NAME } from './constants'
 import { useRealtimeVersionsWithSchema } from './hooks/useRealtimeVersionsWithSchema'
 import { useStream } from './hooks/useStream'
-import { SQL_REVIEW_COMMENTS } from './mock'
 import styles from './SessionDetailPageClient.module.css'
 import type { Version } from './types'
 import { determineWorkflowAction } from './utils/determineWorkflowAction'
@@ -198,7 +197,6 @@ export const SessionDetailPageClient: FC<Props> = ({
                   designSessionId={designSessionId}
                   schema={displayedSchema}
                   baselineSchema={baselineSchema}
-                  sqlReviewComments={SQL_REVIEW_COMMENTS}
                   versions={versions}
                   selectedVersion={selectedVersion}
                   onSelectedVersionChange={handleVersionChange}

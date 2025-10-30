@@ -8,9 +8,9 @@
 }
 
 .confirmLabel {
+  margin: 0;
   font-size: var(--font-size-3);
   color: var(--global-mute-text);
-  margin: 0;
 }
 
 .organizationName {
@@ -25,6 +25,6 @@
 .divider {
   width: 100%;
   height: 1px;
-  background-color: var(--global-border);
   margin-top: var(--spacing-4);
+  background-color: var(--global-border);
 }

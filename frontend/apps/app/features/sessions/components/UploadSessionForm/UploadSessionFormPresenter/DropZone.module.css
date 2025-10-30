@@ -1,19 +1,19 @@
 /* Drop zone styles */
 .dropZone {
-  border: 1px dashed var(--overlay-20);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-10) var(--spacing-4);
-  text-align: center;
-  background-color: transparent;
-  transition: all var(--default-animation-duration)
-    var(--default-timing-function);
-  cursor: inherit;
-  min-height: 300px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
+  min-height: 300px;
+  padding: var(--spacing-10) var(--spacing-4);
+  text-align: center;
+  cursor: inherit;
+  background-color: transparent;
+  border: 1px dashed var(--overlay-20);
+  border-radius: var(--border-radius-lg);
+  transition: all var(--default-animation-duration)
+    var(--default-timing-function);
 }
 
 .dropZone:hover {
@@ -21,21 +21,21 @@
 }
 
 .dropZone:focus-visible {
-  background-color: var(--overlay-5);
   outline: 2px solid var(--primary-accent);
   outline-offset: 2px;
+  background-color: var(--overlay-5);
   box-shadow: 0px 0px 100px 10px var(--primary-overlay-40);
 }
 
 .dropZoneActive {
-  border-color: var(--button-primary-background);
   background-color: var(--overlay-5);
+  border-color: var(--button-primary-background);
 }
 
 .dropZoneDisabled {
-  opacity: var(--opacity-60);
-  cursor: not-allowed;
   pointer-events: none;
+  cursor: not-allowed;
+  opacity: var(--opacity-60);
 }
 
 .dropZoneContent {
@@ -45,18 +45,18 @@
 }
 
 .dropZoneText {
+  margin: 0 0 var(--spacing-2) 0;
   font-size: var(--font-size-6);
   font-weight: var(--font-weight-medium);
-  color: var(--global-foreground);
-  margin: 0 0 var(--spacing-2) 0;
   line-height: 1.6;
+  color: var(--global-foreground);
 }
 
 .dropZoneSubtext {
-  font-size: var(--font-size-5);
-  color: var(--overlay-60);
   margin: 0 0 var(--spacing-4) 0;
+  font-size: var(--font-size-5);
   line-height: 1.6;
+  color: var(--overlay-60);
 }
 
 .selectFileButton {
@@ -68,12 +68,12 @@
   font-size: var(--font-size-4);
   font-weight: 500;
   line-height: normal;
-  border-radius: var(--border-radius-md);
+  color: var(--button-primary-foreground);
   cursor: pointer;
   /* Solid Primary style (default) */
   background-color: var(--button-primary-background);
-  color: var(--button-primary-foreground);
   border: 1px solid var(--button-primary-background);
+  border-radius: var(--border-radius-md);
   transition:
     background-color var(--default-hover-animation-duration)
     var(--default-timing-function),
@@ -87,8 +87,8 @@
 }
 
 .selectFileButtonOutline {
-  background-color: transparent;
   color: var(--button-secondary-foreground);
+  background-color: transparent;
   border: 1px solid var(--button-border);
 }
 
@@ -99,20 +99,20 @@
 
 .selectFileButtonDisabled {
   color: var(--button-disabled-foreground);
+  cursor: not-allowed;
   background-color: var(--button-disabled-background);
   border: 1px solid var(--button-border);
-  cursor: not-allowed;
 }
 
 /* Icon container styles */
 .iconContainer {
   position: relative;
-  margin-bottom: var(--spacing-4);
   display: flex;
   align-items: center;
   justify-content: center;
   width: 134px;
   height: 93px;
+  margin-bottom: var(--spacing-4);
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
 }
@@ -121,32 +121,32 @@
 .extensionTags {
   position: absolute;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none;
+  left: 0;
   z-index: 2;
+  pointer-events: none;
 }
 
 .extensionTag {
   position: absolute;
-  background-color: var(--primary-overlay-20);
-  color: var(--button-primary-background);
+  display: flex;
+  align-items: center;
+  height: 21px;
+  padding: 0 var(--spacing-1);
+  font-family: var(--code-font);
   font-size: var(--font-size-2);
   font-weight: 600;
-  font-family: var(--code-font);
-  padding: 0 var(--spacing-1);
-  border-radius: var(--border-radius-sm);
+  line-height: 21px;
+  color: var(--button-primary-background);
   letter-spacing: -0.55px;
   white-space: nowrap;
+  background-color: var(--primary-overlay-20);
+  border-radius: var(--border-radius-sm);
   opacity: 0;
   transform: scale(0.8);
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
-  line-height: 21px;
-  height: 21px;
-  display: flex;
-  align-items: center;
 }
 
 .dropZone:hover .extensionTag,

@@ -17,10 +17,10 @@
 
 .input {
   position: relative;
-  padding: var(--spacing-2) 0;
-  width: 100%;
-  border-radius: var(--border-radius-smbase);
   z-index: 1;
+  width: 100%;
+  padding: var(--spacing-2) 0;
+  border-radius: var(--border-radius-smbase);
 }
 
 .input:focus-visible {
@@ -29,28 +29,28 @@
 
 .modePrefix {
   flex-shrink: 0;
-  margin-right: var(--spacing-1);
-  padding: var(--spacing-2) 0;
   max-width: 220px;
+  padding: var(--spacing-2) 0;
+  margin-right: var(--spacing-1);
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
 
 .modePrefixSeparator {
   flex-shrink: 0;
-  margin-right: var(--spacing-1);
   padding: var(--spacing-2) 0;
+  margin-right: var(--spacing-1);
 }
 
 .suggestion {
   position: absolute;
   top: 0;
-  padding: var(--spacing-2) 0;
   max-width: 100%;
+  padding: var(--spacing-2) 0;
   overflow-x: hidden;
-  text-wrap: nowrap;
   text-overflow: ellipsis;
   color: var(--overlay-60);
+  text-wrap: nowrap;
 }
 
 .suggestion .inputValue {

@@ -1,16 +1,16 @@
 .wrapper {
   display: grid;
   grid-auto-flow: column;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
 }
 
 .zoomLevelText {
-  color: var(--global-foreground);
-  text-align: center;
   font-family: var(--code-font);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;
   line-height: 100%;
+  color: var(--global-foreground);
+  text-align: center;
 }

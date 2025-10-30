@@ -1,25 +1,25 @@
 .memberItem {
   display: flex;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
+  width: 100%;
   padding: var(--spacing-4);
   background-color: var(--global-muted-background);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-lg);
-  width: 100%;
 }
 
 .memberBody {
   display: flex;
-  flex-direction: column;
   flex: 1;
+  flex-direction: column;
 }
 
 .memberInfo {
   display: flex;
+  gap: var(--spacing-10);
   align-items: center;
   width: 100%;
-  gap: var(--spacing-10);
 }
 
 .nameEmail {

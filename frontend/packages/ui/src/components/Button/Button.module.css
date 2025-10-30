@@ -1,8 +1,8 @@
 .wrapper {
-  min-width: 60px;
   display: inline-flex;
   place-content: center;
   place-items: center;
+  min-width: 60px;
   font-weight: 500;
   line-height: normal;
   color: var(--button-primary-foreground);
@@ -127,8 +127,8 @@
   gap: var(--spacing-1);
   padding: var(--spacing-1) var(--spacing-1half);
   font-size: var(--font-size-2);
-  border-radius: var(--border-radius-smbase);
   line-height: 1;
+  border-radius: var(--border-radius-smbase);
 }
 
 .xs .icon {

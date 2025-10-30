@@ -9,8 +9,8 @@
 }
 
 .wrapper:last-child {
-  border-bottom-left-radius: var(--border-radius-md);
   border-bottom-right-radius: var(--border-radius-md);
+  border-bottom-left-radius: var(--border-radius-md);
 }
 
 .wrapper:hover {
@@ -33,16 +33,16 @@
 }
 
 .columnWrapper {
+  position: relative;
   display: grid;
   grid-template-columns: auto 1fr;
+  gap: var(--spacing-1half);
   align-items: center;
   padding: var(--spacing-2);
-  gap: var(--spacing-1half);
-  color: var(--global-foreground);
+  overflow-x: hidden;
   font-size: var(--font-size-3);
   line-height: normal;
-  position: relative;
-  overflow-x: hidden;
+  color: var(--global-foreground);
 }
 
 .diffBox {
@@ -72,9 +72,9 @@
 
 .columnNameWrapper {
   display: inline-flex;
-  justify-content: space-between;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
+  justify-content: space-between;
 }
 
 .wrapper:last-child .columnNameWrapper {
@@ -82,12 +82,12 @@
 }
 
 .columnType {
-  color: var(--overlay-70, rgba(255, 255, 255, 0.7));
-  text-align: right;
   font-family: var(--code-font);
   font-size: var(--font-size-1);
   font-weight: 400;
   line-height: normal;
+  color: var(--overlay-70, rgba(255, 255, 255, 0.7));
+  text-align: right;
   opacity: 0;
   transition: opacity 300ms var(--default-timing-function);
 }
@@ -102,15 +102,15 @@
 }
 
 .handle[data-handlepos='right'] {
-  transform: translate(50%, 0%);
   right: -17px;
   pointer-events: none;
+  transform: translate(50%, 0%);
 }
 
 .handle[data-handlepos='left'] {
-  transform: translate(-50%, 0%);
   left: -20px;
   pointer-events: none;
+  transform: translate(-50%, 0%);
 }
 
 .handleWithDiff[data-handlepos='left'] {

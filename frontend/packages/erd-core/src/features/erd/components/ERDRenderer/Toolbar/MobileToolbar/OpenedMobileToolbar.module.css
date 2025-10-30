@@ -1,31 +1,31 @@
 .wrapper {
   display: flex;
-  padding: var(--spacing-2, 8px);
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
   gap: var(--spacing-2, 8px);
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--spacing-2, 8px);
 }
 
 .zoomLevelText {
   display: flex;
+  gap: var(--spacing-1, 4px);
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: var(--spacing-1, 4px);
-  gap: var(--spacing-1, 4px);
-  justify-content: space-between;
-  align-items: center;
 }
 
 .zoom {
-  color: var(--overlay-60, rgba(255, 255, 255, 0.6));
   font-size: var(--font-size-3, 12px);
+  color: var(--overlay-60, rgba(255, 255, 255, 0.6));
 }
 
 .zoomPercent {
-  color: var(--global-foreground, #fff);
   font-family: var(--code-font, 'IBM Plex Mono');
-  text-align: center;
   font-size: var(--font-size-3, 12px);
+  color: var(--global-foreground, #fff);
+  text-align: center;
 }
 
 .divider {
@@ -43,20 +43,20 @@
 
 .showMode {
   display: flex;
-  padding-left: var(--spacing-1, 4px);
-  align-items: center;
   gap: var(--spacing-1, 4px);
+  align-items: center;
+  padding-left: var(--spacing-1, 4px);
 }
 
 .showModeMenuButton {
   display: flex;
+  gap: var(--spacing-1half, 6px);
+  align-items: center;
   width: 102px;
   padding: var(--spacing-1, 4px) var(--spacing-2, 8px);
-  align-items: center;
-  gap: var(--spacing-1half, 6px);
-  border-radius: var(--border-radius-base);
-  color: var(--button-secondary-foreground, #fff);
   font-size: var(--font-size-3, 12px);
+  color: var(--button-secondary-foreground, #fff);
+  border-radius: var(--border-radius-base);
 }
 
 .showModeMenuButton:focus-visible {
@@ -65,28 +65,28 @@
 
 .cheveron {
   display: flex;
+  align-items: center;
+  justify-content: center;
   width: 12px;
   height: 12px;
-  justify-content: center;
-  align-items: center;
 }
 
 .text {
-  color: var(--overlay-60, rgba(255, 255, 255, 0.6));
   font-size: var(--font-size-3, 12px);
+  color: var(--overlay-60, rgba(255, 255, 255, 0.6));
 }
 
 .closeButton {
   display: flex;
+  gap: var(--spacing-1half, 6px);
+  justify-content: center;
+  width: 100%;
   height: 23px;
   padding: var(--spacing-1, 4px) var(--spacing-2, 8px);
-  justify-content: center;
-  gap: var(--spacing-1half, 6px);
-  width: 100%;
-  border-radius: var(--border-radius-base, 4px);
-  border: 1px solid var(--button-border, #434546);
-  color: var(--button-secondary-foreground, #fff);
   font-size: var(--font-size-3, 12px);
+  color: var(--button-secondary-foreground, #fff);
+  border: 1px solid var(--button-border, #434546);
+  border-radius: var(--border-radius-base, 4px);
 }
 
 .closeButton:focus-visible {

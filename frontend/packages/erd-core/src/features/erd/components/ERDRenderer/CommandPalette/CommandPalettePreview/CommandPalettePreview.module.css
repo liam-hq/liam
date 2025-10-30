@@ -1,14 +1,14 @@
 .container {
-  height: 386px;
   width: 271px;
+  height: 386px;
   background-color: var(--global-background);
   border-radius: var(--border-radius-lg-plus);
 }
 
 .tableNodeWrapper {
-  padding: var(--spacing-10) var(--spacing-9);
-  height: 100%;
   width: 100%;
+  height: 100%;
+  padding: var(--spacing-10) var(--spacing-9);
   overflow-x: hidden;
   overflow-y: scroll;
   scrollbar-gutter: stable both-edges;
@@ -16,6 +16,6 @@
 
 .image,
 .video {
-  height: 100%;
   width: 100%;
+  height: 100%;
 }

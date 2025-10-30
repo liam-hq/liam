@@ -1,8 +1,8 @@
 .wrapper {
   display: flex;
-  padding: var(--spacing-3, 0.75rem);
-  align-items: center;
   gap: var(--spacing-3, 0.75rem);
+  align-items: center;
+  padding: var(--spacing-3, 0.75rem);
   border: solid 1px white;
   border-radius: var(--border-radius-base);
 }

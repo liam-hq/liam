@@ -7,20 +7,20 @@
   padding: var(--spacing-3) var(--spacing-3half) var(--spacing-3)
     var(--spacing-2);
   background-color: var(--global-muted-background);
-  border-radius: var(--border-radius-base);
   border-bottom: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-base);
 }
 
 .leftSection {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
   flex: 1;
+  gap: var(--spacing-2);
+  align-items: center;
 }
 
 .rightSection {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
   margin-left: auto;
 }

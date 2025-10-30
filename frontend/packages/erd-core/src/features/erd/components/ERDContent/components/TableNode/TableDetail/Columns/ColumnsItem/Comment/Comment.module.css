@@ -1,8 +1,8 @@
 .comment {
-  color: var(--color-white-alpha-70);
   font-size: var(--font-size-2);
   font-style: normal;
   line-height: 150%;
+  color: var(--color-white-alpha-70);
   word-break: normal;
   overflow-wrap: break-word;
 }

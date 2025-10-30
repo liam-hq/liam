@@ -375,5 +375,7 @@ Category: {category}
 Title: {title}
 Type: {type}
 
+{previousFailures}
+
 Generate a complete pgTAP test for this test case.
 `)

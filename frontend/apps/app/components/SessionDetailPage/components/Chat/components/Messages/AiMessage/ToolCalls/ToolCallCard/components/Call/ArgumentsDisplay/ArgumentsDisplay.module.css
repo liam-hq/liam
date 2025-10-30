@@ -1,22 +1,22 @@
 .wrapper {
   position: relative;
-  border-radius: var(--border-radius-base);
-  background-color: var(--color-gray-1000);
   padding: var(--spacing-2);
+  background-color: var(--color-gray-1000);
+  border-radius: var(--border-radius-base);
 }
 
 .container {
-  font-size: var(--font-size-2);
-  font-family: var(--code-font);
-  color: var(--color-gray-100);
-  overflow-x: auto;
-  overflow-y: auto;
+  box-sizing: border-box;
   max-width: 100%;
-  /* Smoother expand/collapse animation */
-  transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   /* Add small padding to ensure full scroll */
   padding-bottom: 1px;
-  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: auto;
+  font-family: var(--code-font);
+  font-size: var(--font-size-2);
+  color: var(--color-gray-100);
+  /* Smoother expand/collapse animation */
+  transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .wrapper[data-expanded='true'] .container {
@@ -31,11 +31,11 @@
 .gradientTop,
 .gradientBottom {
   position: absolute;
-  left: 0;
   right: 0;
+  left: 0;
+  z-index: 10;
   height: 30px;
   pointer-events: none;
-  z-index: 10;
 }
 
 .gradientTop {

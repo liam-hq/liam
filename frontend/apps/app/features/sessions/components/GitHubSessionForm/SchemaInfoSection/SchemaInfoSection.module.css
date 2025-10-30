@@ -7,15 +7,15 @@
 
 .statusMessage {
   display: flex;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
   padding: 0 var(--spacing-1);
 }
 
 .statusIndicator {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1half);
+  align-items: center;
 }
 
 .spinner {
@@ -27,34 +27,34 @@
 }
 
 .checkIcon {
-  color: var(--button-primary-background);
   width: var(--spacing-3);
   height: var(--spacing-3);
+  color: var(--button-primary-background);
 }
 
 .invalidIcon {
-  color: var(--severity-warning-100);
   width: var(--spacing-3);
   height: var(--spacing-3);
+  color: var(--severity-warning-100);
 }
 
 .validatingText {
   font-size: var(--font-size-3);
-  color: var(--overlay-50);
   font-weight: var(--font-weight-medium);
+  color: var(--overlay-50);
 }
 
 .validText {
   font-size: var(--font-size-2);
-  color: var(--button-primary-background);
   font-weight: var(--font-weight-regular);
+  color: var(--button-primary-background);
   white-space: nowrap;
 }
 
 .invalidText {
   font-size: var(--font-size-2);
-  color: var(--severity-warning-100);
   font-weight: var(--font-weight-regular);
+  color: var(--severity-warning-100);
   white-space: nowrap;
 }
 
@@ -64,8 +64,8 @@
 }
 
 .formatName {
-  color: var(--global-foreground);
   font-weight: var(--font-weight-medium);
+  color: var(--global-foreground);
 }
 
 .errorText {
@@ -74,59 +74,59 @@
 }
 
 .schemaInfo {
+  width: 100%;
+  padding: var(--spacing-2);
   background-color: var(--overlay-5);
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-2);
-  width: 100%;
 }
 
 .schemaItem {
   display: flex;
+  gap: var(--spacing-2);
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-2);
   width: 100%;
 }
 
 .schemaFile {
+  position: relative;
   display: flex;
-  align-items: center;
   gap: var(--spacing-1half);
-  background-color: var(--overlay-5);
-  border: 1px solid var(--overlay-5);
-  border-radius: var(--border-radius-base);
+  align-items: center;
   padding: var(--spacing-1half);
   padding-right: calc(
     var(--spacing-1half) +
     14px +
     var(--spacing-1half)
   ); /* RemoveButton width + gap */
-  position: relative;
+  background-color: var(--overlay-5);
+  border: 1px solid var(--overlay-5);
+  border-radius: var(--border-radius-base);
 }
 
 .fileName {
-  font-size: var(--font-size-3);
-  color: var(--global-foreground);
-  font-weight: var(--font-weight-regular);
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-regular);
+  color: var(--global-foreground);
   white-space: nowrap;
-  flex: 1;
 }
 
 .removeButton {
   position: absolute;
-  right: var(--spacing-1half);
   top: 50%;
+  right: var(--spacing-1half);
   transform: translateY(-50%);
 }
 
 /* Simple variant styles - for URL presenter */
 .simpleSchemaInfo {
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-3);
   background-color: var(--overlay-5);
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-3);
-  width: 100%;
 }
 
 .simpleSchemaItem {
@@ -147,12 +147,12 @@
   display: inline-flex;
   align-items: center;
   padding: 0;
-  background: none;
-  border: none;
   font-size: var(--font-size-3);
   color: var(--callout-warning-link);
-  cursor: pointer;
   text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
   transition: color var(--default-animation-duration)
     var(--default-timing-function);
 }

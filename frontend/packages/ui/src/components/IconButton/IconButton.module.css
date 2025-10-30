@@ -4,10 +4,10 @@
   place-items: center;
   width: 1.5rem;
   height: 1.5rem;
+  cursor: pointer !important;
   border-radius: var(--border-radius-base);
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
-  cursor: pointer !important;
 }
 
 .iconWrapper:disabled {

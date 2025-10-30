@@ -6,9 +6,9 @@
   position: absolute;
   display: block;
   content: '';
+  background-color: var(--primary-accent);
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(--primary-accent);
   animation: sizePulse 5400ms forwards;
 }
 

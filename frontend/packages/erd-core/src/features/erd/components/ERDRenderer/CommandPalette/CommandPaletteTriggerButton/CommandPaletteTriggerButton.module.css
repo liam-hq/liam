@@ -1,14 +1,14 @@
 .container {
   display: inline-flex;
-  height: 30px;
-  width: 240px;
-  padding: var(--spacing-0) var(--spacing-2);
   gap: var(--spacing-1);
-  border: 1px solid var(--pane-border);
-  border-radius: var(--border-radius-base);
+  align-items: center;
+  width: 240px;
+  height: 30px;
+  padding: var(--spacing-0) var(--spacing-2);
   color: var(--overlay-30);
   background-color: var(--global-background);
-  align-items: center;
+  border: 1px solid var(--pane-border);
+  border-radius: var(--border-radius-base);
   transition:
     color var(--default-hover-animation-duration) var(--default-timing-function),
     border-color var(--default-hover-animation-duration)
@@ -29,22 +29,22 @@
 }
 
 .searchIcon {
-  height: 12px;
   width: 12px;
+  height: 12px;
   color: var(--overlay-50);
 }
 
 .text {
-  font-size: var(--font-size-3);
   flex-grow: 1;
+  font-size: var(--font-size-3);
 }
 
 .keyIcon {
   display: inline-flex;
-  height: 21px;
-  width: 21px;
   align-items: center;
   justify-content: center;
+  width: 21px;
+  height: 21px;
   font-size: var(--font-size-2);
   color: var(--global-mute-text);
   background-color: var(--overlay-5);
