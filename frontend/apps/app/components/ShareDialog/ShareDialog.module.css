@@ -207,7 +207,6 @@
 }
 
 .dropdownContent {
-  width: var(--radix-dropdown-menu-trigger-width);
   background-color: var(--global-background);
   border: var(--border-width-base) solid var(--dropdown-border);
   border-radius: var(--border-radius-base);

@@ -1,17 +1,12 @@
 .card {
-  background-color: var(--color-bg-primary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .cardContent {
-  padding: var(--spacing-3xl);
 }
 
 .rowContainer {
   display: flex;
-  gap: var(--spacing-5xl);
   align-items: flex-start;
 }
 
@@ -21,8 +16,6 @@
 
 .cardTitle {
   font-size: var(--font-size-6);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -30,13 +23,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
 }
 
 .label {
   font-size: var(--font-size-5);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
 }
 
 .input {
@@ -45,17 +35,14 @@
 
 .helperText {
   font-size: var(--font-size-5);
-  color: var(--color-text-secondary);
   margin: 0;
 }
 
 .divider {
   height: 1px;
-  background-color: var(--color-border-primary);
 }
 
 .cardFooter {
-  padding: var(--spacing-xl) var(--spacing-3xl);
   display: flex;
   justify-content: flex-end;
 }

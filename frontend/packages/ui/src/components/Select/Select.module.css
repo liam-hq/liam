@@ -2,7 +2,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: var(--radius-2);
   padding: var(--spacing-2) var(--spacing-3);
   font-size: var(--font-size-4);
   line-height: 1;
@@ -10,7 +9,7 @@
   gap: var(--spacing-2);
   background-color: var(--color-gray-800);
   border: 1px solid var(--color-gray-700);
-  color: var(--color-white);
+  color: var(--global-foreground);
   cursor: pointer;
   transition: border-color 0.2s;
   min-width: 180px;
@@ -52,14 +51,14 @@
   overflow: hidden;
   background-color: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
-  border-radius: var(--radius-2);
-  box-shadow: var(--shadow-xl);
   z-index: var(--z-index-toast);
 }
 
 .contentPopper {
+  /* stylelint-disable csstools/value-no-unknown-custom-properties */
   width: var(--radix-select-trigger-width);
   max-height: var(--radix-select-content-available-height);
+  /* stylelint-enable csstools/value-no-unknown-custom-properties */
 }
 
 .viewport {
@@ -74,7 +73,7 @@
 .label {
   padding: var(--spacing-2) var(--spacing-3);
   font-size: var(--font-size-3);
-  font-weight: var(--font-weight-medium);
+  font-weight: 500;
   color: var(--color-gray-400);
 }
 
@@ -83,7 +82,7 @@
   display: flex;
   align-items: center;
   user-select: none;
-  border-radius: var(--radius-1);
+  border-radius: var(--border-radius-xs);
   padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-6);
   font-size: var(--font-size-4);
   outline: none;
@@ -127,7 +126,6 @@
 .checkIcon {
   width: 1rem;
   height: 1rem;
-  color: var(--color-white);
 }
 
 .scrollButton {

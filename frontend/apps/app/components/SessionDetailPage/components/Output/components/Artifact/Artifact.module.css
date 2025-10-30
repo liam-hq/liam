@@ -4,8 +4,6 @@
   width: 100%;
   height: 100%;
   background-color: var(--global-background);
-  border-radius: var(--border-radius-medium);
-  box-shadow: var(--shadow-level-1);
   overflow: hidden;
   container-type: inline-size;
   container-name: artifact;
@@ -18,7 +16,6 @@
   justify-content: space-between;
   width: 100%;
   padding: var(--spacing-2) var(--spacing-4) var(--spacing-2) var(--spacing-4);
-  border-bottom: 1px solid var(--global-border);
 }
 
 .contentWrapper {
@@ -130,7 +127,6 @@
   line-height: 1.75rem;
   letter-spacing: -0.015em;
   color: var(--global-foreground);
-  border-bottom: 1px solid var(--global-border-subtle);
   padding-bottom: var(--spacing-2);
 }
 
@@ -233,8 +229,6 @@
   margin: 0;
   font-size: var(--font-size-5);
   white-space: break-spaces;
-  background-color: var(--global-foreground-subtle);
-  border-radius: var(--border-radius-small);
   font-family: var(--code-font);
 }
 
@@ -279,7 +273,6 @@
 
 .body :global(table th) {
   font-weight: 600;
-  background-color: var(--global-background-subtle);
 }
 
 .body :global(table tr) {
@@ -287,13 +280,11 @@
 }
 
 .body :global(table tr:nth-child(2n)) {
-  background-color: var(--global-background-subtle);
 }
 
 /* Blockquotes */
 .body :global(blockquote) {
   padding: 0 1em;
-  color: var(--global-body-text-subtle);
   border-left: 0.25em solid var(--global-border);
   margin: 0 0 var(--spacing-2) 0;
 }
@@ -355,9 +346,7 @@
   line-height: 10px;
   color: var(--global-foreground);
   vertical-align: middle;
-  background-color: var(--global-background-subtle);
   border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-small);
   box-shadow: inset 0 -1px 0 var(--global-border);
   font-family: var(--code-font);
 }
@@ -444,7 +433,6 @@
 }
 
 .body :global(summary:hover) {
-  color: var(--primary-accent-hover);
 }
 
 .body :global(details[open] summary) {
@@ -472,12 +460,10 @@
 .body :global(ul ul li) {
   font-family: var(--code-font);
   font-size: var(--font-size-3);
-  color: var(--global-body-text-subtle);
 }
 
 /* Execution log styling */
 .executionLogTimestamp {
-  color: var(--global-mute-text);
   font-family: var(--code-font);
   font-size: var(--font-size-2);
   white-space: nowrap;
