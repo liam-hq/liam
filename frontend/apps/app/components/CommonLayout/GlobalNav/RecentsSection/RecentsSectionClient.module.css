@@ -56,69 +56,6 @@
   background-color: var(--overlay-60);
 }
 
-.sessionItem {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-2half);
-  text-decoration: none;
-  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-  transition: background-color var(--default-hover-animation-duration)
-    var(--default-timing-function);
-}
-
-.sessionItem:hover {
-  background-color: var(--pane-background-active);
-}
-
-.sessionItemActive {
-  position: relative;
-  background-color: var(--primary-overlay-10);
-}
-
-.sessionItemActive::before {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  content: '';
-  background-color: var(--primary-accent);
-}
-
-.sessionItemActive:hover {
-  background-color: var(--primary-overlay-20);
-}
-
-.sessionInfo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-  overflow: hidden;
-}
-
-.sessionName {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: var(--font-size-4);
-  font-weight: 500;
-  color: var(--global-foreground);
-  white-space: nowrap;
-}
-
-.sessionOwner {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: var(--font-size-2);
-  color: var(--overlay-60);
-  white-space: nowrap;
-}
-
-.sessionDate {
-  font-size: var(--font-size-2);
-  color: var(--overlay-60);
-}
-
 .loadingState,
 .emptyState {
   display: flex;

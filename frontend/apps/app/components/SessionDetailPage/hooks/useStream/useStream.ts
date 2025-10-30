@@ -10,15 +10,14 @@ import {
   MessageTupleManager,
   SSE_EVENTS,
 } from '@liam-hq/agent/client'
-import {
-  fromAsyncThrowable,
-  fromPromise,
-  fromThrowable,
-} from '@liam-hq/neverthrow'
-import { err, errAsync, ok, okAsync, type Result } from 'neverthrow'
+import { fromAsyncThrowable, fromThrowable } from '@liam-hq/neverthrow'
+import * as Sentry from '@sentry/nextjs'
+import { err, ok, type Result } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'
+import { createClient } from '../../../../libs/db/client'
+import { RunTracker } from '../../../../libs/runs/runService'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import {
   clearWorkflowInProgress,
@@ -92,6 +91,7 @@ export const useStream = ({
   const abortRef = useRef<AbortController | null>(null)
   const retryCountRef = useRef(0)
   const runIdRef = useRef<string | null>(null)
+  const supabase = useMemo(() => createClient(), [])
 
   const completeWorkflow = useCallback((sessionId: string) => {
     setIsStreaming(false)
@@ -118,38 +118,42 @@ export const useStream = ({
         return
       }
 
-      await fromPromise(
-        fetch(`/api/runs/${runId}/events`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventType: 'error' }),
-        }),
-      )
-        .andThen((response) => {
-          if (!response.ok) {
-            const error = Object.assign(
-              new Error('Failed to record run failure'),
-              {
-                statusCode: response.status,
-                statusText: response.statusText,
-              },
-            )
-            return errAsync(error)
-          }
-          return okAsync(undefined)
-        })
-        .match(
-          () => undefined,
-          (runEventError) => {
-            console.error('Failed to record run failure', {
-              runId,
-              context,
-              error: runEventError,
-            })
+      const userResult = await fromAsyncThrowable(() =>
+        supabase.auth.getUser(),
+      )()
+      const userId = userResult.isOk()
+        ? (userResult.value.data.user?.id ?? undefined)
+        : undefined
+      if (userResult.isErr()) {
+        Sentry.captureException(userResult.error, {
+          tags: { runId },
+          extra: {
+            location: 'useStream.reportRunFailure.userLookup',
+            context,
           },
-        )
+        })
+      }
+
+      const runTracker = RunTracker.resume({
+        supabase,
+        runId,
+        userId,
+      })
+
+      await fromAsyncThrowable(() => runTracker.fail())().match(
+        () => undefined,
+        (runEventError) => {
+          Sentry.captureException(runEventError, {
+            tags: { runId },
+            extra: {
+              location: 'useStream.reportRunFailure.fail',
+              context,
+            },
+          })
+        },
+      )
     },
-    [],
+    [supabase],
   )
 
   useNavigationGuard((_event) => {
@@ -364,11 +368,6 @@ export const useStream = ({
       const result = await runStreamAttempt('/api/chat/stream', params)
 
       if (result.isErr()) {
-        await reportRunFailure(runIdRef.current, {
-          reason: 'stream_start_failed',
-          type: result.error.type,
-          message: result.error.message,
-        })
         return err(result.error)
       }
 
@@ -380,7 +379,7 @@ export const useStream = ({
         designSessionId: params.designSessionId,
       })
     },
-    [replay, runStreamAttempt, reportRunFailure],
+    [replay, runStreamAttempt],
   )
 
   return {
