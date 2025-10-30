@@ -254,7 +254,7 @@ $$;
 ALTER FUNCTION "public"."apply_run_event_to_runs"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) RETURNS TABLE("design_session_id" "uuid", "latest_run_id" "uuid", "status" "public"."workflow_run_status")
+CREATE OR REPLACE FUNCTION "public"."fetch_latest_session_runs_status"("session_ids" "uuid"[]) RETURNS TABLE("design_session_id" "uuid", "latest_run_id" "uuid", "status" "public"."workflow_run_status")
     LANGUAGE "sql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -284,7 +284,7 @@ CREATE OR REPLACE FUNCTION "public"."fetch_latest_session_runs"("session_ids" "u
 $$;
 
 
-ALTER FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) OWNER TO "postgres";
+ALTER FUNCTION "public"."fetch_latest_session_runs_status"("session_ids" "uuid"[]) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_invitation_data"("p_token" "uuid") RETURNS "jsonb"
@@ -2610,8 +2610,8 @@ GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "anon";
 
 
 
-GRANT ALL ON FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."fetch_latest_session_runs"("session_ids" "uuid"[]) TO "service_role";
+GRANT ALL ON FUNCTION "public"."fetch_latest_session_runs_status"("session_ids" "uuid"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_latest_session_runs_status"("session_ids" "uuid"[]) TO "service_role";
 
 
 

@@ -752,7 +752,7 @@ export type Database = {
         }
         Returns: Json
       }
-      fetch_latest_session_runs: {
+      fetch_latest_session_runs_status: {
         Args: { session_ids: string[] }
         Returns: {
           design_session_id: string

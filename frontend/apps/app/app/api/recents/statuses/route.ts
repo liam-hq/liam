@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const supabase = await createClient()
 
   const { data, error } = await supabase.rpc(
-    'fetch_latest_session_runs',
+    'fetch_latest_session_runs_status',
     { session_ids: sessionIds },
   )
 
@@ -32,11 +32,8 @@ export async function POST(request: Request) {
 
   const normalized = rows.map((row) => ({
     design_session_id: row.design_session_id,
-    latest_run_id: row.latest_run_id ?? null,
-    status:
-      row.status === 'completed' || row.status === 'error'
-        ? row.status
-        : 'running',
+    latest_run_id: row.latest_run_id,
+    status: row.status,
   }))
 
   return NextResponse.json(normalized)

@@ -7,8 +7,11 @@ export type LatestSessionRun = {
   status: 'running' | 'completed' | 'error'
 }
 
-export type RawLatestSessionRun =
-  Database['public']['Functions']['fetch_latest_session_runs']['Returns'][number]
+export type RawLatestSessionRun = {
+  design_session_id: string
+  latest_run_id: string | null
+  status: Database['public']['Enums']['workflow_run_status']
+}
 
 type FetchLatestSessionRunMapOptions = {
   context: string
@@ -23,9 +26,12 @@ export const fetchLatestSessionRunMap = async (
     return new Map()
   }
 
-  const { data, error } = await supabase.rpc('fetch_latest_session_runs', {
-    session_ids: sessionIds,
-  })
+  const { data, error } = await supabase.rpc(
+    'fetch_latest_session_runs_status',
+    {
+      session_ids: sessionIds,
+    },
+  )
 
   if (error) {
     console.error(

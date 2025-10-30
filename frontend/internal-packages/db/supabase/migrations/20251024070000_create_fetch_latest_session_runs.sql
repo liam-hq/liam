@@ -1,4 +1,4 @@
-create or replace function public.fetch_latest_session_runs(session_ids uuid[])
+create or replace function public.fetch_latest_session_runs_status(session_ids uuid[])
 returns table (
   design_session_id uuid,
   latest_run_id uuid,
@@ -33,4 +33,4 @@ as $$
   where lr.run_rank = 1;
 $$;
 
-grant execute on function public.fetch_latest_session_runs(uuid[]) to authenticated, service_role;
+grant execute on function public.fetch_latest_session_runs_status(uuid[]) to authenticated, service_role;
