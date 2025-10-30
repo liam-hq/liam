@@ -1,8 +1,5 @@
 import { createClient } from '../../../../libs/db/server'
-import {
-  fetchRunStatusMap,
-  type WorkflowRunStatus,
-} from '../../../../libs/runs/fetchRunStatuses'
+import { fetchLatestSessionRunMap } from '../../../../libs/runs/fetchLatestSessionRuns'
 import type { SessionStatus } from '../../../ProjectSessionsPage/SessionStatusIndicator'
 import type { RecentSession, SessionFilterType } from './types'
 
@@ -164,41 +161,6 @@ const fetchSessionRows = async (
     .filter((session): session is SanitizedSession => Boolean(session))
 }
 
-const fetchLatestRunMap = async (
-  supabase: SupabaseClient,
-  sessionIds: string[],
-) => {
-  const runIdMap = new Map<string, string>()
-
-  if (sessionIds.length === 0) {
-    return runIdMap
-  }
-
-  const { data, error } = await supabase
-    .from('runs')
-    .select('id, design_session_id, started_at')
-    .in('design_session_id', sessionIds)
-    .order('started_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching latest runs for recents:', error)
-    return runIdMap
-  }
-
-  data?.forEach((run) => {
-    const designSessionId = toStringOrNull(run?.design_session_id)
-    const runId = toStringOrNull(run?.id)
-
-    if (!designSessionId || !runId || runIdMap.has(designSessionId)) {
-      return
-    }
-
-    runIdMap.set(designSessionId, runId)
-  })
-
-  return runIdMap
-}
-
 export const fetchRecentSessions = async (
   organizationId: string,
   options: FetchRecentSessionsOptions = {},
@@ -215,24 +177,19 @@ export const fetchRecentSessions = async (
 
   const sessionIds = sessions.map((session) => session.id)
 
-  const [statusRecordsMap, runIdMap] = await Promise.all([
-    fetchRunStatusMap(supabase, sessionIds, { context: 'recents' }),
-    fetchLatestRunMap(supabase, sessionIds),
-  ])
+  const sessionStatusMap = await fetchLatestSessionRunMap(
+    supabase,
+    sessionIds,
+    { context: 'recents' },
+  )
 
-  const toSessionStatus = (
-    status: WorkflowRunStatus | undefined,
-  ): SessionStatus => {
-    if (!status) {
-      return 'running'
+  const toSessionStatus = (status: string | undefined): SessionStatus => {
+    if (status === 'error') {
+      return 'error'
     }
 
     if (status === 'completed') {
       return 'completed'
-    }
-
-    if (status === 'error') {
-      return 'error'
     }
 
     return 'running'
@@ -244,8 +201,8 @@ export const fetchRecentSessions = async (
     created_at: session.created_at,
     project_id: session.project_id,
     organization_id: session.organization_id,
-    status: toSessionStatus(statusRecordsMap.get(session.id)?.status),
-    latest_run_id: runIdMap.get(session.id) ?? null,
+    status: toSessionStatus(sessionStatusMap.get(session.id)?.status),
+    latest_run_id: sessionStatusMap.get(session.id)?.latest_run_id ?? null,
     has_schema: session.has_schema,
     created_by_user: session.created_by_user,
   }))
