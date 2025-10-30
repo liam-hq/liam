@@ -12,13 +12,13 @@ import type { DbAgentState } from '../shared/dbAgentAnnotation'
  */
 export const routeAfterDesignSchema = (
   state: DbAgentState,
-): 'invokeSchemaDesignTool' | 'designSchema' | typeof END => {
+): 'invokeCreateMigrationTool' | 'designSchema' | typeof END => {
   const { messages } = state
   const lastMessage = messages[messages.length - 1]
 
   // If last message has tool calls, execute them
   if (lastMessage && hasToolCalls(lastMessage)) {
-    return 'invokeSchemaDesignTool'
+    return 'invokeCreateMigrationTool'
   }
 
   // No tool calls - AI has decided schema design is complete

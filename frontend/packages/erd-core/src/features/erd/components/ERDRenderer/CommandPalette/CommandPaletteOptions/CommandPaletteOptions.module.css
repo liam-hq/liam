@@ -1,8 +1,8 @@
 .item {
   display: flex;
-  padding: var(--spacing-2);
+  padding: var(--spacing-3);
   align-items: center;
-  line-height: 24px;
+  line-height: 16px;
   border-radius: var(--border-radius-base);
 }
 
@@ -22,11 +22,11 @@
 }
 
 .item .itemText {
+  display: inline-block;
   flex-grow: 1;
   font-size: var(--font-size-5);
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-wrap: wrap;
+  word-break: break-word;
 }
 
 .item .itemIcon {

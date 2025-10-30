@@ -2,7 +2,7 @@ import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { RETRY_POLICY } from '../utils/errorHandling'
 import { designSchemaNode } from './nodes/designSchemaNode'
-import { invokeSchemaDesignToolNode } from './nodes/invokeSchemaDesignToolNode'
+import { invokeCreateMigrationToolNode } from './nodes/invokeCreateMigrationToolNode'
 import { routeAfterDesignSchema } from './routing/routeAfterDesignSchema'
 import { dbAgentAnnotation } from './shared/dbAgentAnnotation'
 
@@ -11,7 +11,7 @@ import { dbAgentAnnotation } from './shared/dbAgentAnnotation'
  *
  * The DB Agent follows the ReAct pattern for iterative schema design:
  * 1. designSchema - Uses AI to design database schema and decide next action
- * 2. invokeSchemaDesignTool - Applies schema changes using tools
+ * 2. invokeCreateMigrationTool - Applies schema changes using tools
  * 3. Return to designSchema after each tool execution
  * 4. AI decides when design is complete by not calling tools
  *
@@ -28,18 +28,18 @@ export const createDbAgentGraph = (checkpointer?: BaseCheckpointSaver) => {
     .addNode('designSchema', designSchemaNode, {
       retryPolicy: RETRY_POLICY,
     })
-    .addNode('invokeSchemaDesignTool', invokeSchemaDesignToolNode, {
+    .addNode('invokeCreateMigrationTool', invokeCreateMigrationToolNode, {
       retryPolicy: RETRY_POLICY,
     })
 
     .addEdge(START, 'designSchema')
     .addConditionalEdges('designSchema', routeAfterDesignSchema, {
-      invokeSchemaDesignTool: 'invokeSchemaDesignTool',
+      invokeCreateMigrationTool: 'invokeCreateMigrationTool',
       designSchema: 'designSchema', // Self-loop for retry
       [END]: END, // Complete when AI decides no more tool calls needed
     })
     // Always return to designSchema after tool execution for multi-step design
-    .addEdge('invokeSchemaDesignTool', 'designSchema')
+    .addEdge('invokeCreateMigrationTool', 'designSchema')
 
   return checkpointer
     ? dbAgentGraph.compile({ checkpointer })

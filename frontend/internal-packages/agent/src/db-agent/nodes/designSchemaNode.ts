@@ -51,6 +51,6 @@ export async function designSchemaNode(
     ...state,
     messages: [...state.messages, response],
     // Reset success flag when retrying
-    schemaDesignSuccessful: false,
+    createMigrationSuccessful: false,
   }
 }

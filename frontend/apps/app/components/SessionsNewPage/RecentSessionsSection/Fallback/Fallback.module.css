@@ -1,0 +1,35 @@
+.wrapper {
+  margin-top: var(--spacing-12);
+  padding-top: var(--spacing-12);
+  border-top: 1px solid var(--global-border);
+  width: 100%;
+  max-width: 600px;
+}
+
+.title {
+  font-size: var(--font-size-8);
+  font-weight: 600;
+  margin-bottom: var(--spacing-6);
+  color: var(--global-foreground);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+}
+
+.skeletonContent {
+  flex: 1;
+}
+
+.skeletonSpacer {
+  height: var(--spacing-2);
+}

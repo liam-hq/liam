@@ -6,7 +6,7 @@ import type { Schema } from '@liam-hq/schema'
 import * as v from 'valibot'
 import { createClient } from '../../../../../libs/db/server'
 import {
-  createSessionWithSchema,
+  createSession,
   parseSchemaContent,
 } from '../../shared/services/sessionCreationHelpers'
 import {
@@ -177,7 +177,7 @@ export async function createGitHubSession(
   }
   const { schema, schemaFilePath } = schemaResult
 
-  return await createSessionWithSchema(
+  return await createSession(
     {
       projectId,
       parentDesignSessionId,

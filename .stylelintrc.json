@@ -1,0 +1,22 @@
+{
+  "defaultSeverity": "error",
+  "plugins": [
+    "stylelint-value-no-unknown-custom-properties"
+  ],
+  "rules": {
+    "csstools/value-no-unknown-custom-properties": [true, {
+      "importFrom": [
+        "frontend/packages/ui/src/styles/variables.css",
+        "frontend/packages/ui/src/styles/Dark/variables.css",
+        "frontend/packages/ui/src/styles/Mode 1/variables.css",
+        "frontend/packages/erd-core/src/styles/variables.css"
+      ]
+    }]
+  },
+  "ignoreFiles": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.next/**",
+    "**/docs/**"
+  ]
+}

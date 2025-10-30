@@ -5,7 +5,7 @@ import { processAnalyzedRequirementsTool } from '../tools/processAnalyzedRequire
 
 /**
  * Invoke Save Artifact Tool Node - Uses ToolNode to process analyzed requirements
- * This follows the same pattern as invokeSchemaDesignToolNode
+ * This follows the same pattern as invokeCreateMigrationToolNode
  */
 export const invokeSaveArtifactToolNode = async (
   state: PmAgentState,

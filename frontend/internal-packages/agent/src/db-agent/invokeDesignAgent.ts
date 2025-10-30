@@ -19,7 +19,7 @@ import {
   contextPromptTemplate,
   SYSTEM_PROMPT,
 } from './prompt'
-import { schemaDesignTool } from './tools/schemaDesignTool'
+import { createMigrationTool } from './tools/createMigrationTool'
 
 const AGENT_NAME = 'db' as const
 
@@ -28,7 +28,7 @@ const model = new ChatOpenAI({
   reasoning: { effort: 'low', summary: 'detailed' },
   useResponsesApi: true,
   streaming: true,
-}).bindTools([schemaDesignTool], {
+}).bindTools([createMigrationTool], {
   strict: true,
   tool_choice: 'auto',
 })

@@ -20,7 +20,7 @@
 }
 
 .cardTitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-6);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
@@ -34,7 +34,7 @@
 }
 
 .label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-5);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }
@@ -44,7 +44,7 @@
 }
 
 .helperText {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-5);
   color: var(--color-text-secondary);
   margin: 0;
 }

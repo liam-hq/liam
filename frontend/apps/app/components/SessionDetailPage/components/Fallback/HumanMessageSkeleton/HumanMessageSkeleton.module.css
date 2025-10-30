@@ -1,0 +1,15 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--spacing-2);
+}
+
+.avatarContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  min-height: 24px;
+  gap: var(--spacing-1);
+}

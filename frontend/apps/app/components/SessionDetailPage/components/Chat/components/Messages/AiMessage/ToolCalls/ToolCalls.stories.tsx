@@ -17,7 +17,7 @@ type Story = StoryObj<typeof ToolCalls>
 
 const schemaDesignCall: ToolCall = {
   id: 'call_1',
-  name: 'schemaDesignTool',
+  name: 'createMigrationTool',
   type: 'tool_call',
   args: {
     operations: [

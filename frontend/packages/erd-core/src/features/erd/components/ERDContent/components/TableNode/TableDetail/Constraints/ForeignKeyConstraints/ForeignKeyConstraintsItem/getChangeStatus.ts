@@ -2,13 +2,13 @@ import {
   type ChangeStatus,
   getConstraintRelatedChangeStatus,
   getTableRelatedChangeStatus,
-  type Operation,
+  type MigrationOperation,
 } from '@liam-hq/schema'
 
 type Params = {
   tableId: string
   constraintId: string
-  operations: Operation[]
+  operations: MigrationOperation[]
 }
 
 export function getChangeStatus({

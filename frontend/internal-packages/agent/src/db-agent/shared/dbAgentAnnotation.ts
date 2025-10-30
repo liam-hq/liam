@@ -13,8 +13,8 @@ export const dbAgentAnnotation = Annotation.Root({
     default: () => END,
   }),
 
-  // Flag to indicate successful schema design tool execution
-  schemaDesignSuccessful: Annotation<boolean>({
+  // Flag to indicate successful create migration tool execution
+  createMigrationSuccessful: Annotation<boolean>({
     reducer: (current, update) => update ?? current ?? false,
     default: () => false,
   }),

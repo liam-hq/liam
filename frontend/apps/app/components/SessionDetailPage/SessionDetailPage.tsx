@@ -10,19 +10,16 @@ import type { Schema } from '@liam-hq/schema'
 import { schemaSchema } from '@liam-hq/schema'
 import { err, ok, type Result } from 'neverthrow'
 import { cookies } from 'next/headers'
-import type { FC } from 'react'
+import { type FC, Suspense } from 'react'
 import { safeParse } from 'valibot'
 import { checkPublicShareStatus } from '../../features/public-share/actions'
 import { createClient } from '../../libs/db/server'
+import { Fallback } from './components/Fallback'
 import { DEFAULT_PANEL_SIZES, PANEL_LAYOUT_COOKIE_NAME } from './constants'
 import { ViewModeProvider } from './contexts/ViewModeContext'
 import { SessionDetailPageClient } from './SessionDetailPageClient'
 import { getBuildingSchema } from './services/buildingSchema/server/getBuildingSchema'
 import { getVersions } from './services/getVersions'
-
-type Props = {
-  designSessionId: string
-}
 
 // NOTE: Server Components can only pass plain objects to Client Components, not class instances
 // BaseMessage[] must be serialized to StoredMessage[] for the component boundary
@@ -94,7 +91,14 @@ async function loadSessionData(designSessionId: string): Promise<
   })
 }
 
-export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
+type InnerProps = Props & {
+  panelSizes: number[]
+}
+
+const SessionDetailPageInner: FC<InnerProps> = async ({
+  designSessionId,
+  panelSizes,
+}) => {
   const result = await loadSessionData(designSessionId)
 
   if (result.isErr()) {
@@ -116,6 +120,27 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
   const { isPublic: initialIsPublic } =
     await checkPublicShareStatus(designSessionId)
 
+  return (
+    <SessionDetailPageClient
+      buildingSchemaId={buildingSchema.id}
+      designSessionId={designSessionId}
+      initialMessages={messages}
+      initialAnalyzedRequirements={initialAnalyzedRequirements}
+      initialDisplayedSchema={initialSchema}
+      baselineSchema={baselineSchema}
+      initialVersions={versions}
+      initialIsPublic={initialIsPublic}
+      initialWorkflowError={workflowError}
+      panelSizes={panelSizes}
+    />
+  )
+}
+
+type Props = {
+  designSessionId: string
+}
+
+export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
   const cookieStore = await cookies()
   const layoutCookie = cookieStore.get(PANEL_LAYOUT_COOKIE_NAME)
   const panelSizes = (() => {
@@ -128,19 +153,13 @@ export const SessionDetailPage: FC<Props> = async ({ designSessionId }) => {
   })()
 
   return (
-    <ViewModeProvider mode="private">
-      <SessionDetailPageClient
-        buildingSchemaId={buildingSchema.id}
-        designSessionId={designSessionId}
-        initialMessages={messages}
-        initialAnalyzedRequirements={initialAnalyzedRequirements}
-        initialDisplayedSchema={initialSchema}
-        baselineSchema={baselineSchema}
-        initialVersions={versions}
-        initialIsPublic={initialIsPublic}
-        initialWorkflowError={workflowError}
-        panelSizes={panelSizes}
-      />
-    </ViewModeProvider>
+    <Suspense fallback={<Fallback panelSizes={panelSizes} />}>
+      <ViewModeProvider mode="private">
+        <SessionDetailPageInner
+          designSessionId={designSessionId}
+          panelSizes={panelSizes}
+        />
+      </ViewModeProvider>
+    </Suspense>
   )
 }

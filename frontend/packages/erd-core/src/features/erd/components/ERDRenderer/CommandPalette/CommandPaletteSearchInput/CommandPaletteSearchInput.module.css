@@ -31,12 +31,26 @@
   flex-shrink: 0;
   margin-right: var(--spacing-1);
   padding: var(--spacing-2) 0;
+  max-width: 220px;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+.modePrefixSeparator {
+  flex-shrink: 0;
+  margin-right: var(--spacing-1);
+  padding: var(--spacing-2) 0;
 }
 
 .suggestion {
   position: absolute;
   top: 0;
   padding: var(--spacing-2) 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  color: var(--overlay-60);
 }
 
 .suggestion .inputValue {
@@ -44,7 +58,7 @@
 }
 
 .suggestion .completionSuffix {
-  color: var(--overlay-60);
+  text-wrap: nowrap;
 }
 
 .searchIcon {

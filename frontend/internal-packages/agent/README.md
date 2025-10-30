@@ -62,7 +62,7 @@ interface WorkflowState {
 0. **validateInitialSchema**: Initial schema validation node that validates user-provided schema from initial_schema_snapshot using PostgreSQL deparser and PGLite execution - provides Instant Database initialization experience and terminates workflow on validation errors
 1. **leadAgent**: Lead Agent subgraph that routes requests to appropriate specialized agents
 2. **pmAgent**: PM Agent subgraph that handles requirements analysis - contains analyzeRequirements and invokeSaveArtifactTool nodes
-3. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeSchemaDesignTool nodes (performed by dbAgent)
+3. **dbAgent**: DB Agent subgraph that handles database schema design - contains designSchema and invokeCreateMigrationTool nodes (performed by dbAgent)
 4. **qaAgent**: QA Agent subgraph that handles testing and validation - contains testcaseGeneration (map-reduce) and validateSchema nodes
 5. **leadAgent (summarize)**: When QA completes, Lead Agent summarizes the workflow by generating a comprehensive summary
 
@@ -172,11 +172,11 @@ The `dbAgent` node is implemented as a **LangGraph subgraph** that encapsulates 
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	designSchema(designSchema)
-	invokeSchemaDesignTool(invokeSchemaDesignTool)
+	invokeCreateMigrationTool(invokeCreateMigrationTool)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> designSchema;
-	invokeSchemaDesignTool --> designSchema;
-	designSchema -.-> invokeSchemaDesignTool;
+	invokeCreateMigrationTool --> designSchema;
+	designSchema -.-> invokeCreateMigrationTool;
 	designSchema -.-> __end__;
 	designSchema -.-> designSchema;
 	classDef default fill:#f2f0ff,line-height:1.2;
@@ -192,18 +192,18 @@ graph TD;
 - **Performed by**: dbAgent (Database Schema Build Agent)
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 
-#### 2. invokeSchemaDesignTool Node
+#### 2. invokeCreateMigrationTool Node
 
 - **Purpose**: Executes schema design tools to apply changes to the database
-- **Performed by**: schemaDesignTool
+- **Performed by**: createMigrationTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Tool Integration**: Direct database schema modifications
 
 ### Subgraph Flow Patterns
 
-1. **Successful Design**: `START → designSchema → invokeSchemaDesignTool → END`
-2. **Retry on Error**: `START → designSchema → invokeSchemaDesignTool → designSchema → invokeSchemaDesignTool → END`
-3. **Retry on No Tool Call**: `START → designSchema → designSchema (retry) → invokeSchemaDesignTool → END`
+1. **Successful Design**: `START → designSchema → invokeCreateMigrationTool → END`
+2. **Retry on Error**: `START → designSchema → invokeCreateMigrationTool → designSchema → invokeCreateMigrationTool → END`
+3. **Retry on No Tool Call**: `START → designSchema → designSchema (retry) → invokeCreateMigrationTool → END`
 
 ### Subgraph Benefits
 
@@ -362,7 +362,7 @@ graph.addNode("qaAgent", qaAgentSubgraph); // No retry policy - handled internal
 
 - **analyzeRequirements**: Routes to `saveRequirementToArtifact` when requirements are successfully analyzed, retries `analyzeRequirements` with retry count tracking (max 3 attempts), fallback to `finalizeArtifacts` when max retries exceeded
 - **saveRequirementToArtifact**: Always routes to `dbAgent` after processing artifacts (workflow termination node pattern)
-- **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeSchemaDesignTool nodes, routes to `qaAgent` on completion
+- **dbAgent**: DB Agent subgraph handles internal routing between designSchema and invokeCreateMigrationTool nodes, routes to `qaAgent` on completion
 - **qaAgent**: QA Agent subgraph handles internal routing between generateTestcase, generateDml, invokeSaveDmlTool, and validateSchema nodes, always routes to `finalizeArtifacts`
 
 

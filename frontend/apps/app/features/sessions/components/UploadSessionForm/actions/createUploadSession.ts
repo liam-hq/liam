@@ -2,7 +2,7 @@
 
 import type { Schema } from '@liam-hq/schema'
 import {
-  createSessionWithSchema,
+  createSession,
   parseSchemaContent,
 } from '../../shared/services/sessionCreationHelpers'
 import {
@@ -48,7 +48,7 @@ export async function createUploadSession(
   }
   const schema = schemaResult
 
-  return await createSessionWithSchema(
+  return await createSession(
     {
       parentDesignSessionId,
       initialMessage,

@@ -1,5 +1,5 @@
 import {
-  getOperations,
+  getMigrationOperations,
   mergeSchemas,
   type Schema,
   schemaSchema,
@@ -24,7 +24,7 @@ export const SchemaProvider: FC<Props> = ({ children, current, baseline }) => {
       enums: {},
       extensions: {},
     }
-    const operations = getOperations(baseline ?? emptySchema, current)
+    const operations = getMigrationOperations(baseline ?? emptySchema, current)
     const merged = baseline ? mergeSchemas(baseline, current) : current
 
     return {

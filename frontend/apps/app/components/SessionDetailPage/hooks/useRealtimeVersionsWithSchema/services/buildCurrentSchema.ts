@@ -2,7 +2,7 @@
 
 import {
   applyPatchOperations,
-  operationsSchema,
+  migrationOperationsSchema,
   type Schema,
   schemaSchema,
 } from '@liam-hq/schema'
@@ -45,7 +45,7 @@ export async function buildCurrentSchema(targetVersion: Version) {
 
   const operationsArray = previousVersions
     .map((version) => {
-      const parsed = v.safeParse(operationsSchema, version.patch)
+      const parsed = v.safeParse(migrationOperationsSchema, version.patch)
       if (!parsed.success) return null
 
       return parsed.output

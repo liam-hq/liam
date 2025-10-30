@@ -1,5 +1,5 @@
 import type { Result } from 'neverthrow'
-import type { Operation } from '../operation/schema/index.js'
+import type { MigrationOperation } from '../migrationOperation/schema/index.js'
 import type { Schema } from '../schema/index.js'
 
 // Legacy types - TODO: Migrate all implementations to use the new types
@@ -23,9 +23,11 @@ export type LegacySchemaDeparser = (schema: Schema) => LegacyDeparserResult
  * TODO: Migrate existing implementations to use the new OperationDeparser type.
  */
 export type LegacyOperationDeparser = (
-  operation: Operation,
+  operation: MigrationOperation,
 ) => LegacyDeparserResult
 
 // New types using neverthrow
 export type SchemaDeparser = (schema: Schema) => Result<string, Error>
-export type OperationDeparser = (operation: Operation) => Result<string, Error>
+export type OperationDeparser = (
+  operation: MigrationOperation,
+) => Result<string, Error>

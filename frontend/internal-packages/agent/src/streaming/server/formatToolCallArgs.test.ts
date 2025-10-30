@@ -129,7 +129,7 @@ describe('formatToolCallArgs - Observable Behavior', () => {
   })
 
   describe('Real-world examples', () => {
-    it('formats schemaDesignTool args', () => {
+    it('formats createMigrationTool args', () => {
       const args = {
         operations: [
           { op: 'add', path: '/extensions/pgcrypto' },

@@ -1,0 +1,7 @@
+# Ignore docs app (uses fumadocs external library variables)
+frontend/apps/docs/**
+
+# Ignore node_modules, build outputs
+**/node_modules/**
+**/dist/**
+**/.next/**
