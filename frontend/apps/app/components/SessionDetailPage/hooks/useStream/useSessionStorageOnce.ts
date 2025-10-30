@@ -5,27 +5,8 @@ import {
   coerceMessageLikeToMessage,
   isHumanMessage,
 } from '@langchain/core/messages'
-import { fromThrowable } from '@liam-hq/neverthrow'
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 import { LG_INITIAL_MESSAGE_PREFIX } from '../../../../constants/storageKeys'
-
-const readStoredMessage = (key: string): BaseMessage | null => {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  const stored = sessionStorage.getItem(key)
-  if (!stored) {
-    return null
-  }
-
-  const parseJson = fromThrowable(JSON.parse)
-
-  return parseJson(stored)
-    .map((parsed) => coerceMessageLikeToMessage(parsed))
-    .map((message) => (isHumanMessage(message) ? message : null))
-    .unwrapOr(null)
-}
 
 /**
  * useStream-specific sessionStorage reading hook
@@ -35,9 +16,6 @@ export function useSessionStorageOnce(
   designSessionId: string,
 ): BaseMessage | null {
   const key = `${LG_INITIAL_MESSAGE_PREFIX}:${designSessionId}`
-  const snapshotRef = useRef<BaseMessage | null>(null)
-  const initializedRef = useRef(false)
-  const lastKeyRef = useRef(key)
 
   const subscribe = useCallback((_callback: () => void) => {
     // sessionStorage does not fire events within the same tab
@@ -45,12 +23,17 @@ export function useSessionStorageOnce(
   }, [])
 
   const getSnapshot = useCallback(() => {
-    // Cache the snapshot to ensure stable identity across renders
-    if (!initializedRef.current) {
-      snapshotRef.current = readStoredMessage(key)
-      initializedRef.current = true
+    if (typeof window === 'undefined') return null
+    const stored = sessionStorage.getItem(key)
+    if (!stored) return null
+
+    try {
+      const parsed = JSON.parse(stored)
+      const message = coerceMessageLikeToMessage(parsed)
+      return isHumanMessage(message) ? message : null
+    } catch {
+      return null
     }
-    return snapshotRef.current
   }, [key])
 
   const getServerSnapshot = useCallback(() => null, [])
@@ -62,16 +45,6 @@ export function useSessionStorageOnce(
   )
 
   const wasDeleted = useRef(false)
-
-  // Reset cache if the key changes
-  useEffect(() => {
-    if (lastKeyRef.current !== key) {
-      lastKeyRef.current = key
-      initializedRef.current = false
-      snapshotRef.current = null
-      wasDeleted.current = false
-    }
-  }, [key])
   useEffect(() => {
     if (!wasDeleted.current && message !== null) {
       sessionStorage.removeItem(key)
