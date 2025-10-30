@@ -18,6 +18,8 @@ const createMockState = (
   schemaIssues: [],
   generatedSqls: [],
   next: 'END',
+  batchId: 'test-batch-id',
+  totalTestcases: 0,
 })
 
 describe('getUnprocessedRequirements', () => {

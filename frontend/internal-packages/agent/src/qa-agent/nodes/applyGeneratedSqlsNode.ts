@@ -1,7 +1,20 @@
+import { clearBatch } from '../../utils/progressRuntime'
+import { dispatchBatchCompleteEvent } from '../../utils/progressTracking'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
 
-export const applyGeneratedSqlsNode = (state: QaAgentState) => {
-  const { generatedSqls, analyzedRequirements } = state
+export const applyGeneratedSqlsNode = async (state: QaAgentState) => {
+  const { generatedSqls, analyzedRequirements, batchId, totalTestcases } = state
+
+  if (batchId && totalTestcases) {
+    await dispatchBatchCompleteEvent(
+      {
+        total: totalTestcases,
+        message: `Test case generation complete: ${totalTestcases} test cases processed`,
+      },
+      'qa',
+    )
+    clearBatch(batchId)
+  }
 
   if (generatedSqls.length === 0) {
     return {}

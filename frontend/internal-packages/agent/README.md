@@ -234,20 +234,25 @@ The `qaAgent` node is implemented as a **LangGraph subgraph** that encapsulates 
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	testcaseGeneration(testcaseGeneration)
+	prepareTestcases(prepareTestcases)
+	testcaseGenerationWithSemaphore(testcaseGenerationWithSemaphore)
+	reportProgress(reportProgress)
 	applyGeneratedSqls(applyGeneratedSqls)
 	validateSchema(validateSchema)
 	invokeRunTestTool(invokeRunTestTool)
 	__end__([<p>__end__</p>]):::last
+	__start__ --> prepareTestcases;
 	applyGeneratedSqls --> validateSchema;
 	invokeRunTestTool --> __end__;
-	testcaseGeneration --> applyGeneratedSqls;
+	reportProgress --> applyGeneratedSqls;
+	testcaseGenerationWithSemaphore --> reportProgress;
 	validateSchema --> invokeRunTestTool;
-	__start__ -.-> testcaseGeneration;
-	__start__ -.-> applyGeneratedSqls;
-	__start__ -.-> validateSchema;
-	__start__ -.-> invokeRunTestTool;
-	__start__ -.-> __end__;
+	prepareTestcases -.-> testcaseGenerationWithSemaphore;
+	prepareTestcases -.-> reportProgress;
+	prepareTestcases -.-> applyGeneratedSqls;
+	prepareTestcases -.-> validateSchema;
+	prepareTestcases -.-> invokeRunTestTool;
+	prepareTestcases -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
@@ -255,18 +260,34 @@ graph TD;
 
 ### QA Agent Components
 
-#### 1. testcaseGeneration Node
+#### 1. prepareTestcases Node
 
-- **Purpose**: Implements map-reduce pattern for parallel testcase generation using a dedicated subgraph
-- **Performed by**: Multiple parallel instances of testcase generation subgraph
-- **Retry Policy**: maxAttempts: 3 (internal to subgraph)
-- **Output**: AI-generated test cases with DML operations using tool calls
+- **Purpose**: Prepares testcases for parallel processing and initializes progress tracking
+- **Performed by**: prepareTestcasesNode function
+- **Output**: Generates batchId, stores totalTestcases count, dispatches BATCH_START event
+- **Progress Tracking**: Initializes runtime state for semaphore and progress counters
 
-#### 2. applyGeneratedSqls Node
+#### 2. testcaseGenerationWithSemaphore Node
 
-- **Purpose**: Maps generated SQLs from testcaseGeneration to analyzedRequirements.testcases
+- **Purpose**: Wrapper node that enforces concurrency limit using semaphore around testcase generation
+- **Performed by**: Semaphore-wrapped invocation of testcaseGeneration subgraph
+- **Retry Policy**: maxAttempts: 3 (applied to the wrapper node)
+- **Concurrency Control**: Limits concurrent testcase generation to 3 using per-batch semaphore
+- **Parallel Execution**: Uses Send API for parallel distribution while enforcing concurrency limit
+
+#### 3. reportProgress Node
+
+- **Purpose**: Reports progress after each testcase generation completes
+- **Performed by**: reportProgressNode function
+- **Output**: Increments completed counter and dispatches PROGRESS event with current completed/total
+- **Progress Tracking**: Provides real-time feedback on testcase generation progress
+
+#### 4. applyGeneratedSqls Node
+
+- **Purpose**: Maps generated SQLs from testcaseGeneration to analyzedRequirements.testcases and completes batch
 - **Performed by**: applyGeneratedSqlsNode function
 - **Output**: Updates analyzedRequirements state with generated SQL for each testcase
+- **Cleanup**: Dispatches BATCH_COMPLETE event and clears runtime state to prevent memory leaks
 
 **Testcase Generation Subgraph Architecture:**
 
@@ -332,10 +353,12 @@ graph TD;
 
 ### QA Agent Flow Patterns
 
-1. **Map-Reduce Flow**: `START → testcaseGeneration (parallel) → applyGeneratedSqls → validateSchema → invokeRunTestTool → END`
-2. **Parallel Processing**: Multiple testcase generation instances run concurrently
-3. **SQL Mapping**: Generated SQLs are mapped to analyzedRequirements.testcases before validation
-4. **Split Validation**: Test case generation and execution are now separated - generation creates test cases, then validation triggers test execution via the new runTestTool
+1. **Send API Parallel Flow**: `START → prepareTestcases → [Send API parallel distribution] → testcaseGenerationWithSemaphore → reportProgress → applyGeneratedSqls → validateSchema → invokeRunTestTool → END`
+2. **Parallel Processing with Concurrency Control**: Uses Send API for parallel testcase generation while enforcing concurrent limit of 3 via semaphore
+3. **Progress Tracking**: Real-time progress updates (BATCH_START, PROGRESS, BATCH_COMPLETE) provide clear UX feedback without message flooding
+4. **SQL Mapping**: Generated SQLs are mapped to analyzedRequirements.testcases before validation
+5. **Split Validation**: Test case generation and execution are now separated - generation creates test cases, then validation triggers test execution via the new runTestTool
+6. **Memory Management**: Runtime state (semaphore and progress counters) is properly cleaned up after batch completion
 
 ### QA Agent Benefits
 

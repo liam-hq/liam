@@ -6,17 +6,19 @@ export type { TestCaseData } from './types'
 
 /**
  * Conditional edge function to create Send objects for parallel processing
- * This is called directly from START node
+ * This is called from prepareTestcases node via addConditionalEdges
  */
 export function continueToRequirements(state: QaAgentState) {
   const targetTestcases = getUnprocessedRequirements(state)
 
   // Use Send API to distribute each testcase for parallel SQL generation
-  // Each testcase will be processed by testcaseGeneration with isolated state
+  // Each testcase will be processed by testcaseGenerationWithSemaphore with shared state
   return targetTestcases.map(
     (testcaseData) =>
-      new Send('testcaseGeneration', {
-        // Each subgraph gets its own isolated state
+      new Send('testcaseGenerationWithSemaphore', {
+        batchId: state.batchId,
+        totalTestcases: state.totalTestcases,
+        // Each subgraph gets its own isolated state for testcase processing
         currentTestcase: testcaseData,
         schemaData: state.schemaData,
         goal: state.analyzedRequirements.goal,
