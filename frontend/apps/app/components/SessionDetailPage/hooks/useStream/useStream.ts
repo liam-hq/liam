@@ -10,10 +10,14 @@ import {
   MessageTupleManager,
   SSE_EVENTS,
 } from '@liam-hq/agent/client'
+import { fromAsyncThrowable, fromThrowable } from '@liam-hq/neverthrow'
+import * as Sentry from '@sentry/nextjs'
 import { err, ok, type Result } from 'neverthrow'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { object, safeParse, string } from 'valibot'
 import { useNavigationGuard } from '../../../../hooks/useNavigationGuard'
+import { createClient } from '../../../../libs/db/client'
+import { RunTracker } from '../../../../libs/runs/runService'
 import { ERROR_MESSAGES } from '../../components/Chat/constants/chatConstants'
 import {
   clearWorkflowInProgress,
@@ -42,11 +46,8 @@ type StreamAttemptStatus = 'complete' | 'shouldRetry'
 const extractStreamErrorMessage = (rawData: unknown): string => {
   const parsedData = (() => {
     if (typeof rawData !== 'string') return rawData
-    try {
-      return JSON.parse(rawData)
-    } catch {
-      return null
-    }
+    const parseResult = fromThrowable(JSON.parse)(rawData)
+    return parseResult.isOk() ? parseResult.value : null
   })()
 
   const schema = object({ message: string() })
@@ -89,6 +90,8 @@ export const useStream = ({
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const retryCountRef = useRef(0)
+  const runIdRef = useRef<string | null>(null)
+  const supabase = useMemo(() => createClient(), [])
 
   const completeWorkflow = useCallback((sessionId: string) => {
     setIsStreaming(false)
@@ -108,6 +111,50 @@ export const useStream = ({
   const clearError = useCallback(() => {
     setError(null)
   }, [])
+
+  const reportRunFailure = useCallback(
+    async (runId: string | null, context?: Record<string, unknown>) => {
+      if (!runId) {
+        return
+      }
+
+      const userResult = await fromAsyncThrowable(() =>
+        supabase.auth.getUser(),
+      )()
+      const userId = userResult.isOk()
+        ? (userResult.value.data.user?.id ?? undefined)
+        : undefined
+      if (userResult.isErr()) {
+        Sentry.captureException(userResult.error, {
+          tags: { runId },
+          extra: {
+            location: 'useStream.reportRunFailure.userLookup',
+            context,
+          },
+        })
+      }
+
+      const runTracker = RunTracker.resume({
+        supabase,
+        runId,
+        userId,
+      })
+
+      await fromAsyncThrowable(() => runTracker.fail())().match(
+        () => undefined,
+        (runEventError) => {
+          Sentry.captureException(runEventError, {
+            tags: { runId },
+            extra: {
+              location: 'useStream.reportRunFailure.fail',
+              context,
+            },
+          })
+        },
+      )
+    },
+    [supabase],
+  )
 
   useNavigationGuard((_event) => {
     if (isStreaming) {
@@ -213,48 +260,19 @@ export const useStream = ({
       setIsStreaming(true)
       setError(null)
 
-      try {
-        const res = await fetch(endpoint, {
+      runIdRef.current = null
+      const responseResult = await fromAsyncThrowable(() =>
+        fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(params),
           signal: controller.signal,
-        })
+        }),
+      )()
 
-        if (!res.body) {
-          abortWorkflow()
-          return err({
-            type: 'network',
-            message: ERROR_MESSAGES.FETCH_FAILED,
-            status: res.status,
-          })
-        }
-
-        const endEventReceived = await processStreamEvents(res)
-
-        if (!endEventReceived) {
-          if (controller.signal.aborted) {
-            abortWorkflow()
-            return err({
-              type: 'abort',
-              message: 'Request was aborted',
-            })
-          }
-
-          controller.abort()
-          abortRef.current = null
-          return ok('shouldRetry')
-        }
-
-        completeWorkflow(params.designSessionId)
-        return ok('complete')
-      } catch (unknownError) {
+      if (responseResult.isErr()) {
         abortWorkflow()
-
-        if (
-          unknownError instanceof Error &&
-          unknownError.name === 'AbortError'
-        ) {
+        if (responseResult.error.name === 'AbortError') {
           return err({
             type: 'abort',
             message: 'Request was aborted',
@@ -266,6 +284,39 @@ export const useStream = ({
           message: ERROR_MESSAGES.GENERAL,
         })
       }
+
+      const res = responseResult.value
+
+      const headerRunId = res.headers.get('x-run-id')
+      runIdRef.current = headerRunId
+
+      if (!res.body) {
+        abortWorkflow()
+        return err({
+          type: 'network',
+          message: ERROR_MESSAGES.FETCH_FAILED,
+          status: res.status,
+        })
+      }
+
+      const endEventReceived = await processStreamEvents(res)
+
+      if (!endEventReceived) {
+        if (controller.signal.aborted) {
+          abortWorkflow()
+          return err({
+            type: 'abort',
+            message: 'Request was aborted',
+          })
+        }
+
+        controller.abort()
+        abortRef.current = null
+        return ok('shouldRetry')
+      }
+
+      completeWorkflow(params.designSessionId)
+      return ok('complete')
     },
     [completeWorkflow, abortWorkflow, processStreamEvents],
   )
@@ -278,6 +329,11 @@ export const useStream = ({
         const result = await runStreamAttempt('/api/chat/replay', params)
 
         if (result.isErr()) {
+          await reportRunFailure(runIdRef.current, {
+            reason: 'replay_attempt_failed',
+            type: result.error.type,
+            message: result.error.message,
+          })
           return err(result.error)
         }
 
@@ -289,12 +345,16 @@ export const useStream = ({
       const timeoutMessage = ERROR_MESSAGES.CONNECTION_TIMEOUT
       abortWorkflow()
       setError(timeoutMessage)
+      await reportRunFailure(runIdRef.current, {
+        reason: 'replay_timeout',
+        message: timeoutMessage,
+      })
       return err({
         type: 'timeout',
         message: timeoutMessage,
       })
     },
-    [abortWorkflow, runStreamAttempt],
+    [abortWorkflow, runStreamAttempt, reportRunFailure],
   )
 
   const start = useCallback(
