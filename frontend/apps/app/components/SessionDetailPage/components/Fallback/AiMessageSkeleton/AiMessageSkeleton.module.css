@@ -1,17 +1,17 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  width: 100%;
   gap: var(--spacing-2);
+  width: 100%;
 }
 
 .avatarContainer {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  padding: 0;
-  min-height: 24px;
   gap: var(--spacing-1);
+  align-items: center;
+  min-height: 24px;
+  padding: 0;
 }
 
 .contentContainer {
@@ -21,13 +21,13 @@
 }
 
 .messagesWrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: var(--spacing-2);
+  align-items: stretch;
   width: 100%;
   max-width: 100%;
-  position: relative;
 }
 
 .responseMessageWrapper {

@@ -7,7 +7,7 @@ import {
   type FetchRecentSessionsOptions,
   fetchRecentSessions,
 } from './fetchRecentSessions'
-import type { RecentSession } from './types'
+import type { RecentSession, SessionFilterType } from './types'
 
 export async function loadMoreSessions(
   options: FetchRecentSessionsOptions,
@@ -29,7 +29,7 @@ export async function loadMoreSessions(
 }
 
 export async function fetchFilteredSessions(
-  filterType: string,
+  filterType: SessionFilterType,
 ): Promise<RecentSession[]> {
   const organizationIdResult = await getOrganizationId()
   if (organizationIdResult.isErr()) {

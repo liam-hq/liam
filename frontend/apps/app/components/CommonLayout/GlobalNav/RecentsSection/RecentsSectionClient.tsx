@@ -9,12 +9,17 @@ import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { urlgen } from '../../../../libs/routes'
 import { formatDateShort } from '../../../../libs/utils'
+import { setCookie } from '../../../../libs/utils/cookie'
 import itemStyles from '../Item.module.css'
 import { fetchFilteredSessions, loadMoreSessions } from './actions'
 import {
   type OrganizationMember,
   SessionFilterDropdown,
 } from './components/SessionFilterDropdown'
+import {
+  SESSION_FILTER_COOKIE,
+  SESSION_FILTER_COOKIE_MAX_AGE_SECONDS,
+} from './constants'
 import styles from './RecentsSectionClient.module.css'
 import type { RecentSession, SessionFilterType } from './types'
 
@@ -22,43 +27,58 @@ type RecentsSectionClientProps = {
   sessions: RecentSession[]
   organizationMembers: OrganizationMember[]
   currentUserId: string
+  initialFilterType: SessionFilterType
 }
 
 const PAGE_SIZE = 20
 const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
 
+const setSessionFilterCookie = (value: SessionFilterType) => {
+  setCookie(SESSION_FILTER_COOKIE, value, {
+    path: '/',
+    maxAge: SESSION_FILTER_COOKIE_MAX_AGE_SECONDS,
+  })
+}
+
 export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
   currentUserId,
+  initialFilterType,
 }: RecentsSectionClientProps) => {
   const pathname = usePathname()
   const [sessions, setSessions] = useState<RecentSession[]>(initialSessions)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialSessions.length >= PAGE_SIZE)
-  const [filterType, setFilterType] = useState<SessionFilterType>('me')
+  const [filterType, setFilterType] =
+    useState<SessionFilterType>(initialFilterType)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const sessionsListRef = useRef<HTMLElement | null>(null)
 
-  const handleFilterChange = useCallback(async (newFilterType: string) => {
-    setFilterType(newFilterType)
-    setIsLoading(true)
+  const handleFilterChange = useCallback(
+    async (newFilterType: SessionFilterType) => {
+      setFilterType(newFilterType)
+      setIsLoading(true)
 
-    const result = await fromPromise(fetchFilteredSessions(newFilterType))
+      setSessionFilterCookie(newFilterType)
 
-    result.match(
-      (newSessions) => {
-        setSessions(newSessions)
-        setHasMore(newSessions.length >= PAGE_SIZE)
-      },
-      (err) => {
-        Sentry.captureException(err)
-      },
-    )
+      const result = await fromPromise(fetchFilteredSessions(newFilterType))
 
-    setIsLoading(false)
-  }, [])
+      result.match(
+        (newSessions) => {
+          setSessions(newSessions)
+          setHasMore(newSessions.length >= PAGE_SIZE)
+        },
+        (err) => {
+          Sentry.captureException(err)
+        },
+      )
+
+      setIsLoading(false)
+    },
+    [],
+  )
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return

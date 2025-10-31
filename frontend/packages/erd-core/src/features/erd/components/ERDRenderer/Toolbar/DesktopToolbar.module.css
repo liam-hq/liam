@@ -1,12 +1,12 @@
 .root {
-  display: none;
-  padding: var(--spacing-1half) var(--spacing-2);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-lg);
-  background-color: var(--pane-background);
-  box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow);
   position: relative;
   bottom: 2rem;
+  display: none;
+  padding: var(--spacing-1half) var(--spacing-2);
+  background-color: var(--pane-background);
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow);
 }
 
 @media screen and (min-width: 768px) {

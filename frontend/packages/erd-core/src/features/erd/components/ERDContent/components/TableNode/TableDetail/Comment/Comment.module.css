@@ -5,13 +5,13 @@
 
 .text {
   padding: var(--spacing-2);
-  border-radius: var(--border-radius-base);
-  background: var(--pane-muted-background);
-  color: var(--color-white-alpha-70);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;
   line-height: 150%;
+  color: var(--color-white-alpha-70);
   word-break: normal;
   overflow-wrap: break-word;
+  background: var(--pane-muted-background);
+  border-radius: var(--border-radius-base);
 }

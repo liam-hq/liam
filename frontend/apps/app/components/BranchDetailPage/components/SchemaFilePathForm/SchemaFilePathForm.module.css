@@ -1,8 +1,8 @@
 .card {
+  overflow: hidden;
   background-color: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md);
-  overflow: hidden;
 }
 
 .cardContent {
@@ -20,15 +20,15 @@
 }
 
 .cardTitle {
+  margin: 0;
   font-size: var(--font-size-6);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0;
 }
 
 .inputContainer {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--spacing-md);
 }
@@ -44,9 +44,9 @@
 }
 
 .helperText {
+  margin: 0;
   font-size: var(--font-size-5);
   color: var(--color-text-secondary);
-  margin: 0;
 }
 
 .divider {
@@ -55,7 +55,7 @@
 }
 
 .cardFooter {
-  padding: var(--spacing-xl) var(--spacing-3xl);
   display: flex;
   justify-content: flex-end;
+  padding: var(--spacing-xl) var(--spacing-3xl);
 }

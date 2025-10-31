@@ -18,13 +18,13 @@
 }
 
 .errorMessage {
-  color: var(--danger-default);
-  font-size: var(--font-size-3);
   margin-top: var(--spacing-2);
+  font-size: var(--font-size-3);
+  color: var(--danger-default);
 }
 
 .successMessage {
-  color: var(--primary-accent);
-  font-size: var(--font-size-3);
   margin-top: var(--spacing-2);
+  font-size: var(--font-size-3);
+  color: var(--primary-accent);
 }

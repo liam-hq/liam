@@ -1,11 +1,11 @@
 .callout {
   display: flex;
   flex-direction: row;
-  align-items: center;
   gap: var(--spacing-4);
+  align-items: center;
+  width: 100%;
   padding: var(--spacing-4);
   border-radius: var(--border-radius-md);
-  width: 100%;
 }
 
 .iconContainer {
@@ -17,50 +17,50 @@
 
 .content {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--spacing-1);
   flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  justify-content: center;
 }
 
 .text {
+  margin: 0;
   font-family: var(--main-font);
-  font-weight: 400;
   font-size: var(--font-size-5);
+  font-weight: 400;
   line-height: 1.6;
   color: inherit;
-  margin: 0;
 }
 
 /* Variants */
 .default {
+  color: var(--color-gray-300);
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--color-gray-300);
 }
 
 .danger {
+  color: var(--color-red-milk-200);
   background-color: rgba(247, 80, 73, 0.1);
   border: 1px solid rgba(247, 80, 73, 0.2);
-  color: var(--color-red-milk-200);
 }
 
 .success {
+  color: var(--color-green-milk-200);
   background-color: rgba(29, 237, 131, 0.1);
   border: 1px solid rgba(29, 237, 131, 0.2);
-  color: var(--color-green-milk-200);
 }
 
 .info {
+  color: var(--color-blue-milk-200);
   background-color: rgba(20, 188, 255, 0.1);
   border: 1px solid rgba(20, 188, 255, 0.2);
-  color: var(--color-blue-milk-200);
 }
 
 .warning {
+  color: var(--color-yellow-milk-200);
   background-color: rgba(255, 215, 72, 0.1);
   border: 1px solid rgba(255, 215, 72, 0.2);
-  color: var(--color-yellow-milk-200);
 }
 
 /* Mobile styles */

@@ -1,16 +1,13 @@
 'use client'
-
 import type { Installation, Repository } from '@liam-hq/github'
 import {
   type FC,
   useActionState,
   useCallback,
   useEffect,
-  useState,
   useTransition,
 } from 'react'
 import { match, P } from 'ts-pattern'
-import { addProject } from './actions/addProject'
 import { getRepositories } from './actions/getRepositories'
 import { EmptyStateCard } from './components/EmptyStateCard'
 import { HeaderActions } from './components/HeaderActions'
@@ -21,25 +18,21 @@ import styles from './InstallationSelector.module.css'
 
 type Props = {
   installations: Installation[]
-  organizationId: string
+  selectedInstallation: Installation | null
   needsRefresh?: boolean
+  onSelectInstallation: (item: Installation | null) => void
+  onSelectRepository: (item: Repository) => void
 }
 
 type EmptyStateVariant = 'noInstaller' | 'reauth'
 
 export const InstallationSelector: FC<Props> = ({
   installations,
-  organizationId,
+  selectedInstallation,
   needsRefresh = false,
+  onSelectInstallation,
+  onSelectRepository,
 }) => {
-  const [selectedInstallation, setSelectedInstallation] =
-    useState<Installation | null>(() => {
-      if (needsRefresh) {
-        return null
-      }
-
-      return installations[0] ?? null
-    })
   const [isAddingProject, startAddingProjectTransition] = useTransition()
   const [, startTransition] = useTransition()
 
@@ -92,15 +85,15 @@ export const InstallationSelector: FC<Props> = ({
   const handleSelectInstallation = useCallback(
     (installation: Installation) => {
       if (needsRefresh) return
-      setSelectedInstallation(installation)
+      onSelectInstallation(installation)
     },
-    [needsRefresh],
+    [needsRefresh, onSelectInstallation],
   )
 
   useEffect(() => {
     if (emptyStateVariant === 'reauth' || emptyStateVariant === 'noInstaller') {
       if (selectedInstallation !== null) {
-        setSelectedInstallation(null)
+        onSelectInstallation(null)
       }
       return
     }
@@ -115,8 +108,13 @@ export const InstallationSelector: FC<Props> = ({
     }
 
     const nextInstallation = installations[0] ?? null
-    setSelectedInstallation(nextInstallation)
-  }, [emptyStateVariant, installations, selectedInstallation])
+    onSelectInstallation(nextInstallation)
+  }, [
+    emptyStateVariant,
+    installations,
+    selectedInstallation,
+    onSelectInstallation,
+  ])
 
   useEffect(() => {
     if (!selectedInstallation || needsRefresh) {
@@ -131,30 +129,6 @@ export const InstallationSelector: FC<Props> = ({
       })
     })
   }, [needsRefresh, repositoriesAction, selectedInstallation])
-
-  const handleSelectRepository = useCallback(
-    async (repository: Repository) => {
-      startAddingProjectTransition(async () => {
-        try {
-          const formData = new FormData()
-          formData.set('projectName', repository.name)
-          formData.set('repositoryName', repository.name)
-          formData.set('repositoryOwner', repository.owner.login)
-          formData.set('repositoryIdentifier', repository.id.toString())
-          formData.set(
-            'installationId',
-            selectedInstallation?.id.toString() || '',
-          )
-          formData.set('organizationId', organizationId.toString())
-
-          await addProject(formData)
-        } catch (error) {
-          console.error('Error adding project:', error)
-        }
-      })
-    },
-    [selectedInstallation, organizationId],
-  )
 
   const dropdownLabel = selectedInstallation
     ? match(selectedInstallation.account)
@@ -194,7 +168,7 @@ export const InstallationSelector: FC<Props> = ({
               error={repositoriesState.error}
               isAddingProject={isAddingProject}
               hasSelectedInstallation={Boolean(selectedInstallation)}
-              onSelectRepository={handleSelectRepository}
+              onSelectRepository={onSelectRepository}
             />
           )}
         </div>

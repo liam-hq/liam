@@ -5,16 +5,12 @@
 }
 
 .panel {
+  background-color: var(--global-background);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
-  background-color: var(--global-background);
 }
 
 .panelContent {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-6, 24px);
-  padding: var(--spacing-10, 40px);
   height: 500px;
   overflow-y: auto;
 }

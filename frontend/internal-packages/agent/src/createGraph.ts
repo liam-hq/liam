@@ -3,6 +3,7 @@ import type { RunnableConfig } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import { isEmptySchema } from '@liam-hq/schema'
+import { QA_AGENT_RECURSION_LIMIT } from './constants'
 import { createDbAgentGraph } from './db-agent/createDbAgentGraph'
 import { convertRequirementsToPrompt } from './db-agent/utils/convertAnalyzedRequirementsToPrompt'
 import { createLeadAgentGraph } from './lead-agent/createLeadAgentGraph'
@@ -42,7 +43,10 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
 
   const callQaAgent = async (state: WorkflowState, config: RunnableConfig) => {
     const modifiedState = { ...state, messages: [] }
-    const output = await qaAgentSubgraph.invoke(modifiedState, config)
+    const output = await qaAgentSubgraph.invoke(modifiedState, {
+      ...config,
+      recursionLimit: QA_AGENT_RECURSION_LIMIT,
+    })
 
     return { ...state, ...output }
   }

@@ -6,7 +6,7 @@ type CookieOptions = {
 /**
  * Set a cookie value
  */
-const setCookie = (
+export const setCookie = (
   name: string,
   value: string,
   options: CookieOptions = {},

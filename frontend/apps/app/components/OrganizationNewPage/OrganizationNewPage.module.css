@@ -1,41 +1,41 @@
 .container {
   display: flex;
-  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-20, 80px);
+  align-items: center;
+  padding: var(--spacing-20, 80px) var(--spacing-4, 16px);
   font-family: var(--main-font);
 }
 
 .title {
   display: flex;
-  height: 24px;
-  padding: 2px 823px 2px 0px;
   align-items: center;
   align-self: stretch;
+  height: 24px;
+  padding: 2px 823px 2px 0px;
 }
 
 .wrapper {
   display: flex;
-  width: 1080px;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--spacing-7, 28px);
+  align-items: flex-start;
+  width: 1080px;
 }
 
 .formContainer {
   width: 1080px;
+  overflow: hidden;
   background-color: var(--callout-default-background);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
-  overflow: hidden;
 }
 
 .formContent {
-  padding: var(--spacing-5);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-8);
+  padding: var(--spacing-5);
 }
 
 .formGroup {
@@ -45,24 +45,24 @@
 
 .heading {
   display: flex;
+  align-items: center;
   width: 200px;
   height: 36px;
   padding: 10px 71px 9px 0px;
-  align-items: center;
 }
 
 .label {
+  min-width: var(--spacing-30);
   font-size: var(--font-size-5);
   font-weight: 500;
   color: var(--global-foreground);
-  min-width: var(--spacing-30);
 }
 
 .inputWrapper {
   display: flex;
+  flex: 1; /* Take up remaining space */
   flex-direction: column;
   gap: var(--spacing-2);
-  flex: 1; /* Take up remaining space */
 }
 
 .helperText {
@@ -71,15 +71,15 @@
 }
 
 .divider {
+  width: 100%;
   height: 1px;
   background-color: var(--global-border);
-  width: 100%;
 }
 
 .buttonContainer {
-  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
   display: flex;
   justify-content: flex-end;
+  padding: var(--spacing-4) var(--spacing-8) var(--spacing-5);
 }
 
 .buttonCustom {
@@ -90,7 +90,7 @@
 }
 
 .error {
-  color: var(--danger-default);
-  font-size: var(--font-size-3);
   margin-top: var(--spacing-2);
+  font-size: var(--font-size-3);
+  color: var(--danger-default);
 }

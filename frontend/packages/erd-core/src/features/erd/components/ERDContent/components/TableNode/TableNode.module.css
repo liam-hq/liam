@@ -1,14 +1,14 @@
 .wrapper {
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--overlay-20);
-  min-width: 172px;
   width: auto;
+  min-width: 172px;
+  background: var(--node-background);
+  border: 1px solid var(--overlay-20);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.4);
+  opacity: 1;
   transition:
     border-color 300ms var(--default-timing-function),
     border-width 300ms var(--default-timing-function);
-  opacity: 1;
-  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.4);
-  background: var(--node-background);
 }
 
 :global([data-loading='true']) .wrapper {

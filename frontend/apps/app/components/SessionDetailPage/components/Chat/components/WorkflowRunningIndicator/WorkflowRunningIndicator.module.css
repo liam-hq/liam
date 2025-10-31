@@ -1,12 +1,12 @@
 .wrapper {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
 .dot {
-  border-radius: var(--border-radius-full);
   background-color: var(--overlay-60);
+  border-radius: var(--border-radius-full);
   animation: pulse 1.5s infinite ease-in-out;
 }
 

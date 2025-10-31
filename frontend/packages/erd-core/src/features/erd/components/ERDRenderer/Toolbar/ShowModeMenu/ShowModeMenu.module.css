@@ -6,11 +6,11 @@
 }
 
 .label {
-  color: var(--overlay-60);
   font-size: var(--font-size-3);
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+  color: var(--overlay-60);
 }
 
 .content {

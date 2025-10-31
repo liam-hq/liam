@@ -644,14 +644,25 @@ export type Database = {
         Returns: Json
       }
       add_project: {
-        Args: {
-          p_installation_id: number
-          p_organization_id: string
-          p_project_name: string
-          p_repository_identifier: number
-          p_repository_name: string
-          p_repository_owner: string
-        }
+        Args:
+          | {
+              p_installation_id: number
+              p_organization_id: string
+              p_project_name: string
+              p_repository_identifier: number
+              p_repository_name: string
+              p_repository_owner: string
+            }
+          | {
+              p_installation_id: number
+              p_organization_id: string
+              p_project_name: string
+              p_repository_identifier: number
+              p_repository_name: string
+              p_repository_owner: string
+              p_schema_file_path: string
+              p_schema_format: Database['public']['Enums']['schema_format_enum']
+            }
         Returns: Json
       }
       get_invitation_data: {

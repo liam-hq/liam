@@ -8,28 +8,28 @@
 }
 
 .spinnerBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 300px;
   height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: transparent;
   pointer-events: none;
+  background-color: transparent;
 }
 
 .circleBorder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100px;
   height: 100px;
   padding: 1px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
   background: linear-gradient(
     0deg,
     rgba(29, 237, 131, 0.05) 33%,
     rgba(29, 237, 131, 1) 100%
   );
+  border-radius: 50%;
   animation: spin 1.2s linear 0s infinite;
 }
 

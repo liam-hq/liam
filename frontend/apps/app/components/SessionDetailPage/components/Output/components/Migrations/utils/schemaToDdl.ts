@@ -1,5 +1,5 @@
 import type { Schema } from '@liam-hq/schema'
-import { postgresqlSchemaDeparser } from '@liam-hq/schema'
+import { postgresqlSchemaDiffDeparser } from '@liam-hq/schema'
 
 type SchemaToDdlResult = {
   ddl: string
@@ -7,16 +7,19 @@ type SchemaToDdlResult = {
 }
 
 /**
- * Convert schema to DDL statements using the @liam-hq/schema PostgreSQL deparser
+ * Convert schema diff to DDL migration statements using the @liam-hq/schema PostgreSQL diff deparser
  */
-export const schemaToDdl = (schema: Schema): SchemaToDdlResult => {
-  const result = postgresqlSchemaDeparser(schema)
+export const schemaToDdl = (
+  before: Schema,
+  after: Schema,
+): SchemaToDdlResult => {
+  const result = postgresqlSchemaDiffDeparser(before, after)
 
   // Add trailing newline for consistency
   const ddl = result.value ? `${result.value}\n` : ''
 
   return {
     ddl,
-    errors: result.errors.map((err) => err.message),
+    errors: result.errors.map((err: { message: string }) => err.message),
   }
 }

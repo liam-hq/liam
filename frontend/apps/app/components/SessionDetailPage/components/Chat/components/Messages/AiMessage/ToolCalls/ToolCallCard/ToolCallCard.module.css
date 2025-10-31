@@ -1,8 +1,8 @@
 .container {
+  overflow: hidden;
+  background-color: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
   border-radius: var(--border-radius-md);
-  background-color: var(--color-gray-900);
-  overflow: hidden;
   transition: border-color 0.15s ease;
 }
 
@@ -16,17 +16,17 @@
 }
 
 .container[data-status='error'] {
-  border-color: var(--color-vermilion-900, #d55235);
   background-color: var(--color-vermilion-alpha-10, rgba(213, 82, 53, 0.1));
+  border-color: var(--color-vermilion-900, #d55235);
 }
 
 .header {
   width: 100%;
   padding: var(--spacing-3);
+  text-align: left;
+  cursor: pointer;
   background: transparent;
   border: none;
-  cursor: pointer;
-  text-align: left;
   transition: color 0.15s ease;
 }
 
@@ -55,24 +55,24 @@
 
 .headerLeft {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1-5, 6px);
+  align-items: center;
 }
 
 .iconWrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 20px;
   height: 20px;
-  position: relative;
 }
 
 .icon {
+  position: absolute;
   width: 16px;
   height: 16px;
   color: var(--color-gray-100);
-  position: absolute;
   opacity: 0;
   transition:
     opacity 0.25s ease,
@@ -99,8 +99,8 @@
 
 .titleWrapper {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
 }
 
 .toolName {
@@ -133,17 +133,17 @@
 
 .headerRight {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
 }
 
 .badgeError {
   padding: 2px 8px;
-  border-radius: var(--border-radius-sm);
-  background-color: var(--color-vermilion-alpha-20, rgba(213, 82, 53, 0.2));
-  color: var(--color-vermilion-900, #d55235);
   font-size: var(--font-size-2);
   font-weight: 500;
+  color: var(--color-vermilion-900, #d55235);
+  background-color: var(--color-vermilion-alpha-20, rgba(213, 82, 53, 0.2));
+  border-radius: var(--border-radius-sm);
 }
 
 .contentWrapper {
@@ -165,11 +165,11 @@
 .container[data-expanded='true'] .content {
   position: relative;
   max-height: none; /* Remove height limit when expanded */
-  opacity: 1;
   padding: 0 var(--spacing-3) var(--spacing-3);
   margin: 0;
-  overflow-y: visible;
   overflow-x: hidden;
+  overflow-y: visible;
+  opacity: 1;
   /* Ensure smooth scrolling stays at bottom during animation */
   overflow-anchor: none;
   scroll-behavior: smooth;
@@ -177,10 +177,10 @@
 
 .container[data-expanded='false'] .content {
   max-height: 0;
-  opacity: 0;
   padding: 0 var(--spacing-3) 0;
   margin: 0;
   pointer-events: none;
+  opacity: 0;
 }
 
 /* Reduced motion support */

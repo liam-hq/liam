@@ -5,7 +5,7 @@
 }
 
 .content[data-vaul-drawer] {
+  user-select: auto;
   transition-duration: 165ms;
   animation-duration: 165ms;
-  user-select: auto;
 }

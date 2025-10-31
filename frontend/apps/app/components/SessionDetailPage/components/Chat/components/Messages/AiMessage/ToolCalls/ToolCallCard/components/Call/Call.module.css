@@ -2,17 +2,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-2);
   height: 22px; /* Fixed height to prevent layout shift */
+  margin-bottom: var(--spacing-2);
 }
 
 .title {
   display: block;
   font-size: var(--font-size-2);
   font-weight: 600;
+  color: var(--color-gray-300);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-gray-300);
 }
 
 .button {
@@ -20,11 +20,11 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-1);
-  border-radius: var(--border-radius-sm);
-  border: none;
-  background: transparent;
   color: var(--color-gray-400);
   cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
   transition:
     color 0.15s ease,
     transform 0.15s ease;

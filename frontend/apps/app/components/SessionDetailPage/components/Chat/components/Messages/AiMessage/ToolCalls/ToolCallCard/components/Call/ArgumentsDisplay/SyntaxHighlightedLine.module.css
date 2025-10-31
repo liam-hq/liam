@@ -1,8 +1,8 @@
 .line {
-  padding: var(--spacing-1) 0;
   min-height: 1.5em;
-  white-space: nowrap;
+  padding: var(--spacing-1) 0;
   overflow: visible;
+  white-space: nowrap;
 }
 
 .static {
@@ -10,8 +10,8 @@
 }
 
 .syntaxAction {
-  color: #ff6b9d;
   font-weight: 600;
+  color: #ff6b9d;
 }
 
 .syntaxIdentifier {

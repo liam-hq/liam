@@ -4,27 +4,27 @@
 
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 2rem;
 }
 
 .title {
-  font-size: 1.5rem;
   margin: 0;
+  font-size: 1.5rem;
 }
 
 .createButton {
   padding: 0.5rem 1rem;
-  background-color: #2563eb;
   color: white;
-  border-radius: 4px;
   text-decoration: none;
+  background-color: #2563eb;
+  border-radius: 4px;
 }
 
 .emptyState {
-  text-align: center;
   padding: 3rem;
+  text-align: center;
   background-color: #f9fafb;
   border-radius: 8px;
 }
@@ -37,10 +37,10 @@
 
 .organizationCard {
   padding: 1.5rem;
+  color: inherit;
+  text-decoration: none;
   background-color: #f9fafb;
   border-radius: 8px;
-  text-decoration: none;
-  color: inherit;
   transition: background-color 0.2s;
 }
 
@@ -49,6 +49,6 @@
 }
 
 .organizationCard h2 {
-  font-size: 1.25rem;
   margin: 0;
+  font-size: 1.25rem;
 }

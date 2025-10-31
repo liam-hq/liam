@@ -1,59 +1,59 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
   gap: var(--spacing-5, 20px);
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .message1 {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--spacing-1, 4px);
+  align-items: flex-start;
 }
 
 .message1Title {
-  color: var(--callout-warning-text, #c3b476);
   font-family: var(--message-font, Montserrat);
   font-size: var(--font-size-6);
   font-weight: 700;
   line-height: 160%;
+  color: var(--callout-warning-text, #c3b476);
 }
 
 .message1Sentence {
-  color: var(--callout-warning-text, #c3b476);
   font-size: var(--font-size-4);
   font-weight: 400;
   line-height: 160%;
+  color: var(--callout-warning-text, #c3b476);
 }
 
 .message2 {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--spacing-1, 4px);
+  align-items: flex-start;
 }
 
 .message2Title {
-  color: var(--callout-warning-text, #c3b476);
   font-size: var(--font-size-6);
   font-weight: 700;
   line-height: 160%;
+  color: var(--callout-warning-text, #c3b476);
 }
 
 .message2Sentence {
-  color: var(--callout-warning-text, #c3b476);
   font-size: var(--font-size-4);
   font-weight: 400;
   line-height: 160%;
+  color: var(--callout-warning-text, #c3b476);
 }
 
 .callout {
-  color: var(--callout-warning-link, #e7ddb3);
   font-size: var(--font-size-3);
   font-weight: 400;
   line-height: normal;
+  color: var(--callout-warning-link, #e7ddb3);
   text-decoration: underline;
   text-decoration-color: var(
     --callout-warning-underline,
@@ -64,23 +64,23 @@
 .message3 {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--spacing-1, 4px);
+  align-items: flex-start;
   align-self: stretch;
 }
 
 .message3Title {
-  color: var(--callout-warning-text, #c3b476);
   font-size: var(--font-size-4);
   font-weight: 700;
   line-height: 160%;
+  color: var(--callout-warning-text, #c3b476);
 }
 
 .message3Sentence {
-  color: var(--callout-warning-text, #c3b476);
   font-size: var(--font-size-4);
   font-weight: 400;
   line-height: 160%;
+  color: var(--callout-warning-text, #c3b476);
 }
 
 @media screen and (min-width: 768px) {

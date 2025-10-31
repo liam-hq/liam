@@ -1,31 +1,31 @@
 .item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  height: 32px;
   padding: var(--spacing-2);
   font-size: var(--font-size-4);
+  color: var(--global-foreground);
   cursor: default;
   background: var(--global-background);
   border-radius: var(--border-radius-base);
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
-  color: var(--global-foreground);
-  height: 32px;
 }
 
 .content {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
 }
 
 .icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--overlay-20);
   width: 16px;
   height: 16px;
+  color: var(--overlay-20);
 }
 
 .iconSpacer {

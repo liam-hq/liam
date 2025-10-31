@@ -1,51 +1,51 @@
 .code {
+  display: inline-block;
   font-family: 'IBM Plex Mono', monospace;
   font-weight: 500;
-  border-radius: var(--border-radius-base);
-  display: inline-block;
+  line-height: 1;
   text-align: center;
   white-space: nowrap;
-  line-height: 1;
+  border-radius: var(--border-radius-base);
 }
 
 /* Sizes */
 .sm {
-  font-size: var(--font-size-2);
   padding: 4px;
+  font-size: var(--font-size-2);
 }
 
 .md {
-  font-size: var(--font-size-3);
   padding: 6px;
+  font-size: var(--font-size-3);
 }
 
 .lg {
-  font-size: var(--font-size-4);
   padding: 8px;
+  font-size: var(--font-size-4);
 }
 
 /* Style: Outline */
 .outline.default {
-  background-color: var(--overlay-10);
   color: var(--global-mute-text);
+  background-color: var(--overlay-10);
   border: 1px solid var(--overlay-20);
 }
 
 .outline.primary {
-  background-color: var(--primary-overlay-10);
   color: var(--primary-color);
+  background-color: var(--primary-overlay-10);
   border: 1px solid var(--primary-overlay-20);
 }
 
 /* Style: Fill */
 .fill.default {
-  background-color: var(--overlay-20);
   color: var(--global-foreground);
+  background-color: var(--overlay-20);
   border: 1px solid transparent;
 }
 
 .fill.primary {
-  background-color: var(--primary-overlay-20);
   color: var(--primary-color);
+  background-color: var(--primary-overlay-20);
   border: 1px solid transparent;
 }

@@ -18,9 +18,11 @@ export const EmptyStateCard: FC<EmptyStateCardProps> = ({
   actionText,
 }) => {
   return (
-    <div className={styles.emptyState}>
-      <JackAndOctcat className={styles.emptyIllustration} />
-      <p className={styles.emptyDescription}>{description}</p>
+    <div className={styles.wrapper}>
+      <div className={styles.content}>
+        <JackAndOctcat className={styles.emptyIllustration} />
+        <p className={styles.emptyDescription}>{description}</p>
+      </div>
       <Button
         variant="solid-primary"
         size="md"

@@ -24,18 +24,15 @@ export const RepositoryList: FC<RepositoryListProps> = ({
   }
 
   return (
-    <div className={styles.repositoriesSection}>
-      <h3 className={styles.sectionTitle}>Repositories</h3>
-      <div className={styles.repositoriesList}>
-        {repositories.map((repo) => (
-          <RepositoryItem
-            key={repo.id}
-            name={repo.name}
-            onClick={() => onSelectRepository(repo)}
-            isLoading={isAddingProject}
-          />
-        ))}
-      </div>
+    <div className={styles.wrapper}>
+      {repositories.map((repo) => (
+        <RepositoryItem
+          key={repo.id}
+          item={repo}
+          onClick={() => onSelectRepository(repo)}
+          isLoading={isAddingProject}
+        />
+      ))}
     </div>
   )
 }

@@ -12,20 +12,20 @@
 }
 
 .tabsTrigger {
+  position: relative;
   display: flex;
+  gap: var(--spacing-1half);
+  align-items: center;
   padding: var(--spacing-1half) var(--spacing-3) var(--spacing-1half)
     var(--spacing-2);
-  position: relative;
   font-size: var(--font-size-4);
   font-weight: 500;
   color: var(--global-mute-text);
+  cursor: pointer;
   background: transparent;
   border: none;
   border-radius: var(--border-radius-md);
-  cursor: pointer;
   transition: all 0.2s ease;
-  align-items: center;
-  gap: var(--spacing-1half);
 }
 
 .tabsTrigger:disabled,
@@ -44,12 +44,12 @@
 }
 
 .tabsTrigger[data-state='active']::after {
-  content: '';
   position: absolute;
   bottom: -6px;
   left: 0;
   width: 100%;
   height: 1px;
+  content: '';
   background-color: var(--primary-accent);
 }
 

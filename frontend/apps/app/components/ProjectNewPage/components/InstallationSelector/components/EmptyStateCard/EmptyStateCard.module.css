@@ -1,10 +1,19 @@
-.emptyState {
+.wrapper {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-10);
   align-items: center;
-  gap: var(--spacing-4, 16px);
+  justify-content: center;
+  height: 100%;
+  padding: var(--spacing-10);
   text-align: center;
-  margin: auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  align-items: center;
 }
 
 .emptyIllustration {
@@ -13,8 +22,7 @@
 }
 
 .emptyDescription {
-  color: var(--global-mute-text);
   font-size: var(--font-size-4, 13px);
   line-height: 1.6;
-  max-width: 360px;
+  color: var(--global-mute-text);
 }

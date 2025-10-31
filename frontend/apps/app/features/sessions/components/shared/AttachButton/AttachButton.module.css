@@ -3,15 +3,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: var(--spacing-8);
+  height: var(--spacing-8);
   padding: var(--spacing-2);
+  cursor: pointer;
   background: transparent;
   border: none;
   border-radius: var(--border-radius-md);
-  cursor: pointer;
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
-  width: var(--spacing-8);
-  height: var(--spacing-8);
 }
 
 .button:hover {
@@ -30,9 +30,9 @@
 }
 
 .icon {
+  flex-shrink: 0;
   width: var(--spacing-4);
   height: var(--spacing-4);
-  flex-shrink: 0;
   color: var(--overlay-50);
   transition: color var(--default-hover-animation-duration)
     var(--default-timing-function);

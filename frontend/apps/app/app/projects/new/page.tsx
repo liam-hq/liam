@@ -15,8 +15,6 @@ export default async function NewProjectPage() {
     redirect(urlgen('login'))
   }
 
-  const organizationId = organizationIdResult.value
-
   const supabase = await createClient()
   const {
     data: { user },
@@ -51,10 +49,6 @@ export default async function NewProjectPage() {
     )
 
   return (
-    <ProjectNewPage
-      installations={installations}
-      organizationId={organizationId}
-      needsRefresh={needsRefresh}
-    />
+    <ProjectNewPage installations={installations} needsRefresh={needsRefresh} />
   )
 }

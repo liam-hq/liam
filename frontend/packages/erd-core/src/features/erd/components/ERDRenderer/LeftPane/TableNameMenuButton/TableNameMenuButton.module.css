@@ -1,9 +1,9 @@
 .tableName {
-  white-space: nowrap;
+  flex: 1;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 100%;
-  flex: 1;
+  white-space: nowrap;
 }
 
 .button {

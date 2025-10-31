@@ -5,32 +5,32 @@
   min-width: 20px;
   height: 20px;
   padding: 0 var(--spacing-half);
-  border-radius: 10px;
+  margin-left: var(--spacing-1);
   font-size: var(--font-size-2);
   font-weight: 600;
   line-height: 1;
   color: white;
-  margin-left: var(--spacing-1);
+  border-radius: 10px;
 }
 
 /* Using the color scheme from the Figma design */
 
 .default {
-  background-color: var(--overlay-10);
   color: var(--overlay-70);
+  background-color: var(--overlay-10);
 }
 
 .yellow {
-  background-color: var(--color-gold-alpha-20);
   color: var(--callout-warning-text);
+  background-color: var(--color-gold-alpha-20);
 }
 
 .green {
-  background-color: var(--callout-success-background);
   color: var(--primary-accent);
+  background-color: var(--callout-success-background);
 }
 
 .purple {
-  background-color: var(--color-purple-alpha-20);
   color: var(--primary-accent);
+  background-color: var(--color-purple-alpha-20);
 }

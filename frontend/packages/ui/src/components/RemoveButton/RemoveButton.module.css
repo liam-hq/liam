@@ -1,11 +1,11 @@
 .removeButton {
-  border-radius: var(--border-radius-full);
-  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   padding: 0;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius-full);
   transition: all var(--default-animation-duration)
     var(--default-timing-function);
 }

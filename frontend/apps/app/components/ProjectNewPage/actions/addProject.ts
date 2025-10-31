@@ -2,9 +2,9 @@
 
 import { redirect } from 'next/navigation'
 import * as v from 'valibot'
-import { getOrganizationId } from '../../../../../features/organizations/services/getOrganizationId'
-import { createClient } from '../../../../../libs/db/server'
-import { urlgen } from '../../../../../libs/routes'
+import { getOrganizationId } from '../../../features/organizations/services/getOrganizationId'
+import { createClient } from '../../../libs/db/server'
+import { urlgen } from '../../../libs/routes'
 
 // Define schema for RPC function response validation
 const addProjectResultSchema = v.union([
@@ -12,6 +12,7 @@ const addProjectResultSchema = v.union([
     success: v.literal(true),
     project_id: v.string(),
     repository_id: v.string(),
+    schema_file_path_id: v.string(),
   }),
   v.object({
     success: v.literal(false),
@@ -32,6 +33,8 @@ export const addProject = async (
   const repositoryOwner = formData.get('repositoryOwner') as string
   const installationId = formData.get('installationId') as string
   const repositoryIdentifier = formData.get('repositoryIdentifier') as string
+  const schemaFilePath = formData.get('schemaFilePath') as string
+  const schemaFormat = formData.get('schemaFormat') as string
 
   // Get organization ID
   const organizationIdResult = await getOrganizationId()
@@ -53,6 +56,8 @@ export const addProject = async (
     p_installation_id: Number(installationId),
     p_repository_identifier: Number(repositoryIdentifier),
     p_organization_id: organizationId,
+    p_schema_file_path: schemaFilePath,
+    p_schema_format: schemaFormat,
   })
 
   if (error) {

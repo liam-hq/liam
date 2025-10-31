@@ -24,9 +24,9 @@
       "count": 7
     }
   },
-  "components/ProjectNewPage/components/InstallationSelector/actions/addProject.ts": {
+  "components/ProjectNewPage/actions/addProject.ts": {
     "@typescript-eslint/consistent-type-assertions": {
-      "count": 5
+      "count": 7
     }
   },
   "components/ProjectsPage/ProjectsPage.module.css": {

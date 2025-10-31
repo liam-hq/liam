@@ -11,15 +11,15 @@
 }
 
 .outputSection {
-  min-height: 0;
-  border-left: solid 1px var(--pane-border);
-  overflow: hidden;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-left: solid 1px var(--pane-border);
 }
 
 .chatSection {
-  min-height: 0;
   height: 100%;
+  min-height: 0;
 }
 
 .columns[data-layout='one-column'] .chatSection {

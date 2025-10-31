@@ -1,25 +1,25 @@
 .trigger {
   display: flex;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
+  min-width: 127px;
   padding: var(--spacing-1half) var(--spacing-2);
+  cursor: pointer;
   background-color: var(--global-background);
   border: 1px solid var(--pane-border);
   border-radius: var(--border-radius-md);
-  cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 127px;
 }
 
 .trigger:hover {
-  border-color: var(--pane-border-hover);
   background-color: var(--global-background);
+  border-color: var(--pane-border-hover);
 }
 
 .trigger:focus {
   outline: none;
-  border-color: var(--pane-border);
   background-color: var(--global-background);
+  border-color: var(--pane-border);
 }
 
 .trigger:focus-visible {
@@ -29,11 +29,11 @@
 }
 
 .label {
+  flex: 1;
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 400;
   color: var(--global-foreground);
-  flex: 1;
   text-align: left;
 }
 
@@ -44,11 +44,11 @@
 
 .dropdown {
   min-width: 127px;
+  padding: var(--spacing-1);
   background-color: var(--global-background);
   border: 1px solid var(--pane-border);
   border-radius: var(--border-radius-md);
   box-shadow: 0px 4px 20px 0px var(--shadow-context-menu-shadow);
-  padding: var(--spacing-1);
 }
 
 .menuItem {
@@ -57,8 +57,8 @@
   justify-content: space-between;
   width: 100%;
   padding: var(--spacing-2);
-  border-radius: var(--border-radius-base);
   cursor: pointer;
+  border-radius: var(--border-radius-base);
   transition: background-color 0.2s ease;
 }
 
@@ -72,8 +72,8 @@
 
 .menuContent {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
 }
 
 .menuLabel {
@@ -85,6 +85,6 @@
 }
 
 .checkIcon {
-  color: var(--primary-color);
   flex-shrink: 0;
+  color: var(--primary-color);
 }

@@ -1,23 +1,23 @@
 .wrapper {
-  font-family: var(--main-font, Inter);
   display: flex;
-  padding: var(--spacing-5, 20px);
   flex-direction: column;
-  height: 100%;
-  justify-content: flex-start;
   align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  padding: var(--spacing-5, 20px);
+  font-family: var(--main-font, Inter);
   background-color: var(--global-background);
 }
 
 .main {
-  display: flex;
-  padding: var(--spacing-5, 20px);
-  align-items: flex-start;
-  gap: var(--spacing-2, 8px);
-  border-left: 1px solid var(--callout-warning-border, rgba(255, 215, 72, 0.2));
-  background: var(--callout-warning-background, rgba(255, 215, 72, 0.1));
-  max-width: 100%;
   box-sizing: border-box;
+  display: flex;
+  gap: var(--spacing-2, 8px);
+  align-items: flex-start;
+  max-width: 100%;
+  padding: var(--spacing-5, 20px);
+  background: var(--callout-warning-background, rgba(255, 215, 72, 0.1));
+  border-left: 1px solid var(--callout-warning-border, rgba(255, 215, 72, 0.2));
 }
 
 .iconWrapper {
@@ -26,20 +26,20 @@
 
 @media screen and (min-width: 768px) {
   .wrapper {
-    padding: 0px var(--spacing-6, 24px);
-    justify-content: center;
     gap: var(--spacing-10, 40px);
+    justify-content: center;
+    padding: 0px var(--spacing-6, 24px);
   }
 
   .main {
-    padding: var(--spacing-8, 32px);
     gap: var(--spacing-6, 24px);
+    padding: var(--spacing-8, 32px);
   }
 
   .iconWrapper {
-    width: 24px;
     display: flex;
-    padding-top: var(--spacing-1, 4px);
     align-items: center;
+    width: 24px;
+    padding-top: var(--spacing-1, 4px);
   }
 }

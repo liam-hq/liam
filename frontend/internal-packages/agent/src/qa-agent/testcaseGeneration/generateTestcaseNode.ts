@@ -9,6 +9,7 @@ import { yamlSchemaDeparser } from '@liam-hq/schema'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
 import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 import { saveTestcaseTool } from '../tools/saveTestcaseTool'
+import { formatPreviousFailures } from '../utils/formatPreviousFailures'
 import {
   humanPromptTemplateForTestcaseGeneration,
   SYSTEM_PROMPT_FOR_TESTCASE_GENERATION,
@@ -42,12 +43,15 @@ export async function generateTestcaseNode(
   }
   const schemaContext = schemaContextResult.value
 
+  const previousFailures = formatPreviousFailures(currentTestcase.testcase)
+
   const contextMessage = await humanPromptTemplateForTestcaseGeneration.format({
     schemaContext,
     goal,
     category: currentTestcase.category,
     title: currentTestcase.testcase.title,
     type: currentTestcase.testcase.type,
+    previousFailures,
   })
 
   const cleanedMessages = removeReasoningFromMessages(messages)

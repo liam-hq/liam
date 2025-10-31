@@ -5,8 +5,8 @@
 }
 
 :global([data-loading='true']) .edge {
-  stroke: transparent;
   opacity: 0;
+  stroke: transparent;
 }
 
 .edge.hovered {

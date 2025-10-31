@@ -1,10 +1,10 @@
 .content {
+  z-index: var(--z-index-popover);
+  padding: var(--spacing-1);
   /* Basic popover content styles */
   background: var(--global-background, #141616);
   border: var(--border-width-base) solid
     var(--global-border, rgba(255, 255, 255, 0.05));
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-1);
   box-shadow: 0 4px 20px 0 var(--shadow-context-menu-shadow);
-  z-index: var(--z-index-popover);
 }

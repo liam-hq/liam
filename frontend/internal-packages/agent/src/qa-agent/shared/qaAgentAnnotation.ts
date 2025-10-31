@@ -28,6 +28,11 @@ export const qaAgentAnnotation = Annotation.Root({
   designSessionId: Annotation<string>,
   schemaIssues: qaSchemaIssuesAnnotation,
   generatedSqls: generatedSqlsAnnotation,
+  failureAnalysis: Annotation<
+    { failedSqlTestIds: string[]; failedSchemaTestIds: string[] } | undefined
+  >({
+    reducer: (x, y) => y ?? x,
+  }),
   next: Annotation<string>({
     reducer: (x, y) => y ?? x ?? END,
     default: () => END,

@@ -19,8 +19,8 @@
   width: 100%;
   height: 100%;
   transition-duration: 200ms;
-  animation-timing-function: linear;
   transition-property: width;
+  animation-timing-function: linear;
 }
 
 [data-collapsible='offcanvas'] .sidebarGap {
@@ -28,16 +28,16 @@
 }
 
 .sidebarWrapper {
+  left: 0;
+  z-index: var(--z-index-sidebar);
+  display: flex;
   width: 100%;
   height: 100vh;
-  z-index: var(--z-index-sidebar);
-  transition-duration: 200ms;
-  animation-timing-function: linear;
-  transition-property: left, right, width;
-  display: flex;
-  left: 0;
   color: var(--global-foreground);
   border-right: 1px solid var(--pane-border);
+  transition-duration: 200ms;
+  transition-property: left, right, width;
+  animation-timing-function: linear;
 }
 
 [data-collapsible='offcanvas'] .sidebarWrapper {
@@ -45,17 +45,17 @@
 }
 
 .sidebar {
-  background: var(--pane-background);
-  width: 100%;
-  height: 100svh;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100svh;
+  background: var(--pane-background);
 }
 
 .sidebarContent {
   flex: 1 1 0%;
-  overflow-y: auto;
   padding-bottom: var(--spacing-10);
+  overflow-y: auto;
   touch-action: pan-y;
 }
 
@@ -64,13 +64,13 @@
 }
 
 .sidebarMenuButton {
-  padding: var(--spacing-2);
   display: flex;
   gap: var(--spacing-1);
   align-items: center;
+  width: 100%;
+  padding: var(--spacing-2);
   font-size: var(--font-size-2);
   color: var(--link-default);
-  width: 100%;
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
 }
@@ -84,8 +84,8 @@
 }
 
 .sidebarMenuAction {
-  border-radius: var(--border-radius-base);
   padding: 0 var(--spacing-1, 4px);
+  border-radius: var(--border-radius-base);
 }
 
 .sidebarMenuAction:focus-visible {
@@ -117,7 +117,7 @@
 }
 
 .sidebarFooter {
-  color: var(--overlay-70);
   padding: var(--spacing-2);
+  color: var(--overlay-70);
   border-top: 1px solid var(--global-border);
 }

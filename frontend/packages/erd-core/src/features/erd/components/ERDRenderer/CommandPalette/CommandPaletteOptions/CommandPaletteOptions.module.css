@@ -1,23 +1,23 @@
 .item {
   display: flex;
-  padding: var(--spacing-3);
   align-items: center;
+  padding: var(--spacing-3);
   line-height: 16px;
   border-radius: var(--border-radius-base);
 }
 
 .item.indent {
-  padding-left: var(--spacing-6);
   position: relative;
+  padding-left: var(--spacing-6);
 }
 
 .item.indent:before {
-  content: '';
   position: absolute;
   top: 0;
   left: var(--spacing-4);
   width: 1px;
   height: 100%;
+  content: '';
   background-color: var(--overlay-10);
 }
 
@@ -25,24 +25,24 @@
   display: inline-block;
   flex-grow: 1;
   font-size: var(--font-size-5);
-  text-wrap: wrap;
   word-break: break-word;
+  text-wrap: wrap;
 }
 
 .item .itemIcon {
   flex-shrink: 0;
-  margin-right: var(--spacing-2);
   width: 16px;
   height: 16px;
+  margin-right: var(--spacing-2);
   color: var(--overlay-40);
 }
 
 .item .keyIcon {
   display: inline-flex;
-  height: 21px;
-  width: 21px;
   align-items: center;
   justify-content: center;
+  width: 21px;
+  height: 21px;
   font-size: var(--font-size-2);
   color: var(--global-mute-text);
   background-color: var(--overlay-5);

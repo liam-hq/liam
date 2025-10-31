@@ -6,6 +6,7 @@ import {
   getTestConfig,
   outputStreamEvents,
 } from '../../test-utils/workflowTestHelpers'
+import { QA_AGENT_RECURSION_LIMIT } from '../constants'
 import { createQaAgentGraph } from './createQaAgentGraph'
 import type { QaAgentState } from './shared/qaAgentAnnotation'
 
@@ -472,6 +473,7 @@ describe('createQaAgentGraph Integration', () => {
       designSessionId: context.designSessionId,
       schemaIssues: [],
       generatedSqls: [],
+      failureAnalysis: undefined,
       next: END,
     }
 
@@ -480,6 +482,7 @@ describe('createQaAgentGraph Integration', () => {
       ...config,
       streamMode: 'messages',
       version: 'v2',
+      recursionLimit: QA_AGENT_RECURSION_LIMIT,
     })
 
     // Assert (Output)

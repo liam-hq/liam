@@ -1,3 +1,4 @@
+import { aRepository } from '@liam-hq/github'
 import type { Meta, StoryObj } from '@storybook/nextjs'
 import { RepositoryItem } from './RepositoryItem'
 
@@ -14,9 +15,9 @@ const meta = {
     ),
   ],
   argTypes: {
-    name: {
-      control: 'text',
-      description: 'Repository name',
+    item: {
+      control: 'object',
+      description: 'GitHub repository object',
     },
     isLoading: {
       control: 'boolean',
@@ -27,28 +28,35 @@ const meta = {
       description: 'Callback when import button is clicked',
     },
   },
+  args: {
+    item: aRepository(),
+  },
 } satisfies Meta<typeof RepositoryItem>
 
 export default meta
 type Story = StoryObj<typeof RepositoryItem>
 
-export const Default: Story = {
-  args: {
-    name: 'acme-corp/main-app',
-    isLoading: false,
-  },
-}
+export const Default: Story = {}
 
 export const Loading: Story = {
   args: {
-    name: 'acme-corp/main-app',
     isLoading: true,
   },
 }
 
 export const LongName: Story = {
   args: {
-    name: 'very-long-organization-name/very-long-repository-name',
-    isLoading: false,
+    item: aRepository({
+      name: 'very-long-organization-name/very-long-repository-name',
+      private: true,
+    }),
+  },
+}
+
+export const Private: Story = {
+  args: {
+    item: aRepository({
+      private: true,
+    }),
   },
 }

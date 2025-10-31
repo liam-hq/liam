@@ -1,7 +1,7 @@
 .menuButton {
   display: flex;
-  padding: var(--spacing-1, 4px);
   align-items: center;
+  padding: var(--spacing-1, 4px);
   border-radius: var(--border-radius-base);
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
@@ -21,15 +21,15 @@
 
 .menuButtonWithText {
   display: flex;
-  padding: var(--spacing-2, 8px) var(--spacing-1, 4px);
+  gap: var(--spacing-2, 8px);
   align-items: center;
   align-self: flex-start;
-  gap: var(--spacing-2, 8px);
-  color: var(--global-foreground, #fff);
-  font-size: var(--font-size-2, 11px);
-  border-radius: var(--border-radius-base);
   width: auto;
   min-width: fit-content;
+  padding: var(--spacing-2, 8px) var(--spacing-1, 4px);
+  font-size: var(--font-size-2, 11px);
+  color: var(--global-foreground, #fff);
+  border-radius: var(--border-radius-base);
 }
 
 .menuButtonWithText:focus-visible {

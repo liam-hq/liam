@@ -7,7 +7,7 @@
 }
 
 .label {
-  color: var(--global-foreground);
   font-family: var(--main-font);
   font-size: var(--font-size-2);
+  color: var(--global-foreground);
 }

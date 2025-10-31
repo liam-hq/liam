@@ -1,8 +1,8 @@
 .container {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .hidden {

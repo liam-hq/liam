@@ -1,6 +1,7 @@
 export {
   postgresqlMigrationOperationDeparser,
   postgresqlSchemaDeparser,
+  postgresqlSchemaDiffDeparser,
 } from './deparser/postgresql/index.js'
 export type {
   LegacyOperationDeparser,

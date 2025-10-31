@@ -1,20 +1,20 @@
 .container {
   display: flex;
+  flex-direction: column;
+  gap: var(--spacing-20);
+  align-items: center;
   width: 100%;
   max-width: 1080px;
   height: 100%;
   padding: var(--spacing-20) var(--spacing-12);
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-20);
   margin: 0 auto;
 }
 
 .heading {
   font-size: var(--font-size-8);
   font-weight: 500;
-  color: var(--global-foreground);
   line-height: 100%;
+  color: var(--global-foreground);
 }
 
 .contentContainer {
@@ -28,41 +28,41 @@
 .projectsContainer {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
   gap: var(--spacing-5);
+  align-items: flex-start;
   align-self: stretch;
+  justify-content: flex-start;
   height: 100%;
 }
 
 .projectsHeader {
   display: flex;
   flex-direction: row;
-  align-items: center;
   gap: var(--spacing-4);
+  align-items: center;
   width: 100%;
 }
 
 .searchInput {
   display: flex;
+  flex: 1;
   flex-direction: row;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
+  height: 36px;
   padding: var(--spacing-2) var(--spacing-3);
   background-color: var(--global-background);
   border: var(--border-width-base) solid var(--global-border);
   border-radius: var(--border-radius-md);
-  flex: 1;
-  height: 36px;
 }
 
 .searchInput > input {
+  width: 100%;
+  font-size: var(--font-size-4);
+  color: var(--global-foreground);
+  outline: none;
   background: transparent;
   border: none;
-  outline: none;
-  color: var(--global-foreground);
-  font-size: var(--font-size-4);
-  width: 100%;
 }
 
 .searchInput > input::placeholder {
@@ -70,9 +70,9 @@
 }
 
 .searchIcon {
-  color: var(--overlay-50);
   width: 0.75rem;
   height: 0.75rem;
+  color: var(--overlay-50);
 }
 
 /* TODO: Ideally, we want to use the Button from @liam-hq/ui, but since the content is a link, we're implementing a custom version here. */
@@ -80,16 +80,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 36px;
   padding: var(--spacing-2) var(--spacing-3);
-  background-color: var(--button-primary-background);
-  color: var(--button-primary-foreground);
-  border: var(--border-width-base) solid var(--button-primary-background);
-  border-radius: var(--border-radius-md);
   font-size: var(--font-size-4);
   font-weight: 500;
+  color: var(--button-primary-foreground);
   text-decoration: none;
+  background-color: var(--button-primary-background);
+  border: var(--border-width-base) solid var(--button-primary-background);
+  border-radius: var(--border-radius-md);
   transition: background-color 0.2s ease;
-  height: 36px;
 }
 
 .newProjectButton:hover {

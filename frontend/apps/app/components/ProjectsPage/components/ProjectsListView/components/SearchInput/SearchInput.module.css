@@ -3,26 +3,26 @@
 }
 
 .searchInput {
+  position: relative;
   display: flex;
+  flex: 1;
   flex-direction: row;
-  align-items: center;
   gap: var(--spacing-1);
+  align-items: center;
+  height: 36px;
   padding: var(--spacing-2) var(--spacing-3);
   background-color: var(--global-background);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
-  flex: 1;
-  height: 36px;
-  position: relative;
 }
 
 .searchInput > input {
+  width: 100%;
+  font-size: var(--font-size-4);
+  color: var(--global-foreground);
+  outline: none;
   background: transparent;
   border: none;
-  outline: none;
-  color: var(--global-foreground);
-  font-size: var(--font-size-4);
-  width: 100%;
 }
 
 .searchInput > input::placeholder {
@@ -30,9 +30,9 @@
 }
 
 .searchIcon {
-  color: var(--overlay-50);
   width: 0.75rem;
   height: 0.75rem;
+  color: var(--overlay-50);
 }
 
 .loading {

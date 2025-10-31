@@ -18,6 +18,8 @@ import { WorkflowTerminationError } from '../utils/errorHandling'
 import { parseTapOutput } from '../utils/tapParser'
 import { getToolConfigurable } from './getToolConfigurable'
 
+const TOOL_NAME = 'runTestTool'
+
 const isResultWithRows = (value: unknown): value is { rows: unknown[] } => {
   return (
     typeof value === 'object' &&
@@ -261,7 +263,7 @@ export const runTestTool: StructuredTool = tool(
     if (toolConfigurableResult.isErr()) {
       throw new WorkflowTerminationError(
         toolConfigurableResult.error,
-        'runTestTool',
+        TOOL_NAME,
       )
     }
 
@@ -280,6 +282,8 @@ export const runTestTool: StructuredTool = tool(
     if (totalTests === 0) {
       const toolMessage = new ToolMessage({
         id: uuidv4(),
+        name: TOOL_NAME,
+        status: 'success',
         content: 'No test cases to execute.',
         tool_call_id: toolCallId,
       })
@@ -327,6 +331,8 @@ export const runTestTool: StructuredTool = tool(
 
     const toolMessage = new ToolMessage({
       id: uuidv4(),
+      name: TOOL_NAME,
+      status: failedTests === 0 ? 'success' : 'error',
       content: summary,
       tool_call_id: toolCallId,
     })
@@ -346,7 +352,7 @@ export const runTestTool: StructuredTool = tool(
     })
   },
   {
-    name: 'runTestTool',
+    name: TOOL_NAME,
     description:
       'Execute all test cases with their DML operations to validate database schema. Runs DDL setup followed by individual test case execution, continuing on failures to provide complete test results.',
     schema: toolSchema,

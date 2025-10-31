@@ -22,8 +22,6 @@
   gap: var(--spacing-8);
   width: 400px;
   padding: var(--spacing-10);
-  border-radius: var(--border-radius-xl, 0.75rem);
-  border: 1px solid var(--primary-color, #1ded83);
   background: var(
     --Auth-Background,
     linear-gradient(
@@ -32,6 +30,8 @@
       var(--primary-gradation-overlay-end, rgba(29, 237, 131, 0)) 99.35%
     )
   );
+  border: 1px solid var(--primary-color, #1ded83);
+  border-radius: var(--border-radius-xl, 0.75rem);
   box-shadow:
     0px 0px 20px 0px rgba(29, 237, 131, 0.4),
     0px 4px 80px 0px rgba(29, 237, 131, 0.1) inset;
@@ -41,8 +41,8 @@
 .titleWrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-3);
+  align-items: center;
 }
 
 .logoMark {
@@ -51,11 +51,11 @@
 }
 
 .title {
-  text-align: center;
   margin-bottom: var(--spacing-6);
-  color: var(--global-foreground);
   font-size: var(--font-size-8);
   font-weight: var(--text-weight-en-medium);
+  color: var(--global-foreground);
+  text-align: center;
 }
 
 .oauthList {
@@ -78,27 +78,27 @@
 }
 
 .label {
-  color: var(--global-foreground);
   font-size: var(--font-size-4);
+  color: var(--global-foreground);
 }
 
 .passwordHeader {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
 .divider {
   display: flex;
   align-items: center;
-  color: var(--overlay-70);
   margin: var(--spacing-4) 0;
+  color: var(--overlay-70);
 }
 
 .divider::before,
 .divider::after {
-  content: '';
   flex: 1;
+  content: '';
   border-bottom: 1px solid var(--global-border);
 }
 
@@ -109,17 +109,17 @@
 
 .oauthButton {
   display: flex;
+  gap: var(--spacing-2);
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2);
   width: 100%;
   padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-base);
-  border: 1px solid var(--global-border);
-  background-color: transparent;
-  color: var(--global-foreground);
   font-size: var(--font-size-4);
+  color: var(--global-foreground);
   cursor: pointer;
+  background-color: transparent;
+  border: 1px solid var(--global-border);
+  border-radius: var(--border-radius-base);
   transition: background-color 0.2s;
 }
 

@@ -3,12 +3,12 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
+  container-name: artifact;
+  container-type: inline-size;
+  overflow: hidden;
   background-color: var(--global-background);
   border-radius: var(--border-radius-medium);
   box-shadow: var(--shadow-level-1);
-  overflow: hidden;
-  container-type: inline-size;
-  container-name: artifact;
 }
 
 .head {
@@ -23,9 +23,9 @@
 
 .contentWrapper {
   display: flex;
-  width: 100%;
-  justify-content: center;
   flex: 1;
+  justify-content: center;
+  width: 100%;
   padding-right: var(--spacing-4);
   overflow-y: auto;
 }
@@ -50,9 +50,9 @@
 
 @container artifact (min-width: 768px) {
   .desktopToc {
-    display: block;
     position: sticky;
     top: 64px;
+    display: block;
   }
 }
 
@@ -64,13 +64,13 @@
   width: 100%;
   padding: var(--spacing-6) var(--spacing-8);
   font-family: var(--main-font);
-  font-weight: 400;
   font-size: var(--font-size-5);
+  font-weight: 400;
   line-height: 1.75;
   color: var(--global-body-text);
+  word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  word-break: break-word;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -79,17 +79,17 @@
 .body :global(pre),
 .body :global(pre code),
 .body :global(pre > div) {
+  word-break: normal !important;
   word-wrap: normal !important;
   overflow-wrap: normal !important;
-  word-break: normal !important;
   white-space: pre !important;
 }
 
 /* Additional rule for code blocks using syntax highlighter */
 .body :global([class*='language-']) {
+  word-break: normal !important;
   word-wrap: normal !important;
   overflow-wrap: normal !important;
-  word-break: normal !important;
 }
 
 /* Global header styles */
@@ -112,45 +112,45 @@
 
 /* Business Requirement (h1) */
 .body :global(h1) {
-  margin: var(--spacing-10) 0 var(--spacing-6) 0;
-  font-weight: 700;
-  font-size: var(--font-size-10);
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-  color: var(--global-foreground);
-  border-bottom: 1px solid var(--global-border);
   padding-bottom: var(--spacing-3);
+  margin: var(--spacing-10) 0 var(--spacing-6) 0;
+  font-size: var(--font-size-10);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--global-foreground);
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid var(--global-border);
 }
 
 /* Requirements, Functional Requirements (h2) */
 .body :global(h2) {
-  margin: var(--spacing-10) 0 var(--spacing-4) 0;
-  font-weight: 700;
-  font-size: var(--font-size-9);
-  line-height: 1.75rem;
-  letter-spacing: -0.015em;
-  color: var(--global-foreground);
-  border-bottom: 1px solid var(--global-border-subtle);
   padding-bottom: var(--spacing-2);
+  margin: var(--spacing-10) 0 var(--spacing-4) 0;
+  font-size: var(--font-size-9);
+  font-weight: 700;
+  line-height: 1.75rem;
+  color: var(--global-foreground);
+  letter-spacing: -0.015em;
+  border-bottom: 1px solid var(--global-border-subtle);
 }
 
 /* Requirements Categories (h3) */
 .body :global(h3) {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-  font-weight: 600;
   font-size: var(--font-size-8);
+  font-weight: 600;
   line-height: 1.65;
-  letter-spacing: -0.01em;
   color: var(--global-foreground);
+  letter-spacing: -0.01em;
 }
 
 /* Individual Requirements (h4) */
 .body :global(h4) {
   margin-top: 1.2em;
   margin-bottom: 0.4em;
-  font-weight: 600;
   font-size: var(--font-size-7);
+  font-weight: 600;
   line-height: 1.6;
   color: var(--global-foreground);
 }
@@ -159,8 +159,8 @@
 .body :global(h5) {
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
-  font-weight: 600;
   font-size: var(--font-size-6);
+  font-weight: 600;
   line-height: 1.5;
   color: var(--global-foreground);
 }
@@ -169,8 +169,8 @@
 .body :global(h6) {
   margin-top: 1rem;
   margin-bottom: 0.5rem;
-  font-weight: 600;
   font-size: var(--font-size-5);
+  font-weight: 600;
   line-height: 1.4;
   color: var(--global-foreground);
 }
@@ -184,8 +184,8 @@
 /* Lists */
 .body :global(ul),
 .body :global(ol) {
-  margin: var(--spacing-4) 0;
   padding-left: var(--spacing-6);
+  margin: var(--spacing-4) 0;
   line-height: 1.75;
 }
 
@@ -231,11 +231,11 @@
 .body :global(tt) {
   padding: 0.2em 0.4em;
   margin: 0;
+  font-family: var(--code-font);
   font-size: var(--font-size-5);
   white-space: break-spaces;
   background-color: var(--global-foreground-subtle);
   border-radius: var(--border-radius-small);
-  font-family: var(--code-font);
 }
 
 .body :global(pre) {
@@ -252,11 +252,11 @@
   padding: 0;
   margin: 0;
   overflow: visible;
+  font-size: var(--font-size-6);
   line-height: inherit;
   word-wrap: normal;
   background-color: transparent;
   border: 0;
-  font-size: var(--font-size-6);
 }
 
 /* Tables */
@@ -264,9 +264,9 @@
   display: block;
   width: max-content;
   max-width: 100%;
-  overflow: auto;
   margin-top: 0;
   margin-bottom: var(--spacing-2);
+  overflow: auto;
   border-spacing: 0;
   border-collapse: collapse;
 }
@@ -293,9 +293,9 @@
 /* Blockquotes */
 .body :global(blockquote) {
   padding: 0 1em;
+  margin: 0 0 var(--spacing-2) 0;
   color: var(--global-body-text-subtle);
   border-left: 0.25em solid var(--global-border);
-  margin: 0 0 var(--spacing-2) 0;
 }
 
 .body :global(blockquote > :first-child) {
@@ -317,9 +317,9 @@
 
 /* Images */
 .body :global(img) {
+  box-sizing: content-box;
   max-width: 100%;
   height: auto;
-  box-sizing: content-box;
   background-color: var(--global-background);
 }
 
@@ -351,15 +351,15 @@
 .body :global(kbd) {
   display: inline-block;
   padding: 3px 5px;
+  font-family: var(--code-font);
   font-size: var(--font-size-2);
   line-height: 10px;
-  color: var(--global-foreground);
   vertical-align: middle;
+  color: var(--global-foreground);
   background-color: var(--global-background-subtle);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-small);
   box-shadow: inset 0 -1px 0 var(--global-border);
-  font-family: var(--code-font);
 }
 
 /* Definition Lists */
@@ -386,9 +386,9 @@
 /* Superscript and Subscript */
 .body :global(sup),
 .body :global(sub) {
+  position: relative;
   font-size: var(--font-size-3);
   line-height: 0;
-  position: relative;
   vertical-align: baseline;
 }
 
@@ -402,9 +402,9 @@
 
 /* Task lists */
 .body :global(.task-list-item) {
-  list-style-type: none;
   position: relative;
   padding-left: 1.5em;
+  list-style-type: none;
 }
 
 .body :global(.task-list-item input[type='checkbox']) {
@@ -414,9 +414,9 @@
 
 /* Mark */
 .body :global(mark) {
-  background-color: #fff8c5;
-  color: var(--global-foreground);
   padding: 0.2em 0;
+  color: var(--global-foreground);
+  background-color: #fff8c5;
 }
 
 /* Abbreviation */
@@ -426,8 +426,8 @@
 }
 
 .body :global(abbr[title]) {
-  border-bottom: none;
   text-decoration: underline dotted;
+  border-bottom: none;
 }
 
 /* Details and Summary */
@@ -438,9 +438,9 @@
 
 .body :global(summary) {
   display: list-item;
-  cursor: pointer;
-  font-weight: 600;
   margin-bottom: var(--spacing-1);
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .body :global(summary:hover) {
@@ -477,31 +477,31 @@
 
 /* Execution log styling */
 .executionLogTimestamp {
-  color: var(--global-mute-text);
-  font-family: var(--code-font);
-  font-size: var(--font-size-2);
-  white-space: nowrap;
   flex-shrink: 0;
   margin-left: auto;
+  font-family: var(--code-font);
+  font-size: var(--font-size-2);
+  color: var(--global-mute-text);
+  white-space: nowrap;
 }
 
 .body .executionLogSuccess {
-  color: var(--severity-positive-100) !important;
   font-family: var(--code-font);
   font-size: var(--font-size-3);
+  color: var(--severity-positive-100) !important;
 }
 
 .body .executionLogFailed {
-  color: var(--danger-high-contrast-text) !important;
   font-family: var(--code-font);
   font-size: var(--font-size-3);
+  color: var(--danger-high-contrast-text) !important;
 }
 
 /* Execution Logs heading styling */
 .executionLogsHeading {
+  padding-left: var(--spacing-1) !important;
   margin-top: var(--spacing-6) !important;
   margin-bottom: 0 !important;
-  padding-left: var(--spacing-1) !important;
   font-size: var(--font-size-4);
 }
 
@@ -528,31 +528,31 @@
 
 /* Execution Logs label styling */
 .body :global(.execution-logs-label) {
-  font-size: var(--font-size-4);
   display: block;
+  font-size: var(--font-size-4);
 }
 
 /* Execution Logs list */
 .body :global(.execution-logs-list) {
-  margin: 0;
   padding-left: 0;
+  margin: 0;
   list-style: none;
 }
 
 /* Override padding for execution logs ul - target ul containing executionLogItem */
 .body ul:has(.executionLogItem) {
+  padding-bottom: var(--spacing-5);
   padding-left: var(--spacing-1) !important;
   list-style: none !important;
-  padding-bottom: var(--spacing-5);
 }
 
 /* Execution Logs list items */
 .executionLogItem {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: var(--spacing-4);
-  list-style: none;
-  margin: 0;
+  align-items: flex-start;
+  justify-content: space-between;
   padding-left: 0;
+  margin: 0;
+  list-style: none;
 }

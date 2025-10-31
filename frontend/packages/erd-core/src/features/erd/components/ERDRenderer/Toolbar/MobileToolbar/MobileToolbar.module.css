@@ -1,21 +1,21 @@
 .root {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: var(--z-index-toolbar-closed);
   display: none;
+  flex-direction: column;
+  gap: var(--spacing-2, 8px);
+  justify-content: center;
+  min-height: 40px;
+  overflow: hidden;
+  background-color: var(--pane-background);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-lg);
-  background-color: var(--pane-background);
   box-shadow: 0px 4px 20px 0px var(--shadow-basic-shadow);
-  position: absolute;
-  left: 16px;
-  bottom: 16px;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--spacing-2, 8px);
   transition:
     width 150ms ease,
     height 150ms ease; /* Smooth resizing animation */
-  overflow: hidden;
-  min-height: 40px;
-  z-index: var(--z-index-toolbar-closed);
 }
 
 @media screen and (max-width: 767px) {
@@ -25,11 +25,11 @@
 }
 
 .ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 40px;
   height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .positionRelative {
@@ -43,15 +43,15 @@
 }
 
 .open {
+  z-index: var(--z-index-toolbar-opened);
   width: 157px;
   height: 245px;
-  z-index: var(--z-index-toolbar-opened);
 }
 
 .openShowModeMenu {
+  z-index: var(--z-index-toolbar-opened);
   width: 157px;
   height: 178px;
-  z-index: var(--z-index-toolbar-opened);
 }
 
 /* Fade-in animation for elements when they become visible */
@@ -72,17 +72,17 @@
 }
 
 .content.active {
-  opacity: 1; /* Make content fully visible */
   visibility: visible; /* Ensure element is displayed */
   pointer-events: auto; /* Enable interactions */
+  opacity: 1; /* Make content fully visible */
 }
 
 .overlay {
   position: fixed;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
-  background: transparent;
+  left: 0;
   z-index: var(--z-index-overlay);
+  background: transparent;
 }

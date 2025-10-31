@@ -1,12 +1,12 @@
 .item {
   display: flex;
   align-items: center;
-  padding: var(--spacing-2);
   width: 36px;
   height: 36px;
-  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2);
   color: var(--global-foreground);
   cursor: pointer;
+  border-radius: var(--border-radius-md);
   transition: background-color var(--default-hover-animation-duration)
     var(--default-timing-function);
 }
@@ -20,8 +20,8 @@
     [data-radix-menu-content][data-state='open']
   )
   .item {
-  width: auto;
   gap: var(--spacing-2half);
+  width: auto;
 }
 
 .iconContainer > svg {
@@ -35,8 +35,8 @@
 
 .labelArea {
   display: flex;
-  align-items: center;
   gap: var(--spacing-2);
+  align-items: center;
   opacity: 0;
   transition: opacity 0.1s var(--default-timing-function);
 }
@@ -50,8 +50,8 @@
 }
 
 .label {
-  font-size: var(--font-size-4, 0.8125rem);
-  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: var(--font-size-4, 0.8125rem);
+  font-weight: 500;
 }

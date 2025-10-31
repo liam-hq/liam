@@ -17,6 +17,7 @@ const createMockState = (
   designSessionId: 'test-session',
   schemaIssues: [],
   generatedSqls: [],
+  failureAnalysis: undefined,
   next: 'END',
 })
 

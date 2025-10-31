@@ -21,6 +21,7 @@ export async function validateSchemaNode(
       {
         id: toolCallId,
         name: 'runTestTool',
+        type: 'tool_call',
         args: {},
       },
     ],
