@@ -1,5 +1,14 @@
+'use client'
+
 import clsx from 'clsx'
-import { type ChangeEvent, type FC, useId, useRef, useState } from 'react'
+import {
+  type ChangeEvent,
+  type FC,
+  useCallback,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import { useAutoResizeTextarea } from '../../shared/hooks/useAutoResizeTextarea'
@@ -69,9 +78,12 @@ export const PasteSessionFormPresenter: FC<Props> = ({
     },
   )
 
-  const handleSchemaEditorChange = (value: string) => {
-    setSchemaContent(value)
-  }
+  const handleSchemaEditorChange = useCallback(
+    (value: string) => {
+      setSchemaContent(value)
+    },
+    [setSchemaContent],
+  )
 
   const { ref: schemaEditorRef } = useSchemaEditor({
     value: schemaContent,

@@ -30,7 +30,7 @@ const getLanguageExtension = (format: FormatType): Extension[] => {
 const buildExtensions = (
   format: FormatType,
   disabled: boolean,
-  onChange: (value: string) => void,
+  onChangeRef: React.MutableRefObject<(value: string) => void>,
 ): Extension[] => {
   const extensions: Extension[] = [
     lineNumbers(),
@@ -46,7 +46,7 @@ const buildExtensions = (
     extensions.push(
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
-          onChange(update.state.doc.toString())
+          onChangeRef.current(update.state.doc.toString())
         }
       }),
     )
@@ -63,11 +63,17 @@ export const useSchemaEditor = ({
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const [view, setView] = useState<EditorView>()
+  const onChangeRef = useRef(onChange)
 
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: value is intentionally excluded to prevent editor recreation on every keystroke. Value changes are handled by a separate effect below.
   useEffect(() => {
     if (!ref.current) return
 
-    const extensions = buildExtensions(format, disabled, onChange)
+    const extensions = buildExtensions(format, disabled, onChangeRef)
     const state = EditorState.create({
       doc: value,
       extensions,
@@ -83,7 +89,7 @@ export const useSchemaEditor = ({
     return () => {
       editorView.destroy()
     }
-  }, [format, disabled, onChange, value])
+  }, [format, disabled])
 
   useEffect(() => {
     if (!view) return
