@@ -10,11 +10,11 @@ export type { TestCaseData } from './types'
  * Conditional edge function to create Send objects for parallel processing
  * This is called directly from START node
  */
-export async function continueToRequirements(state: QaAgentState) {
+export function continueToRequirements(state: QaAgentState) {
   const targetTestcases = getUnprocessedRequirements(state)
 
-  // Send start message once before parallel processing
-  await dispatchCustomEvent(
+  // Send start message once before parallel processing (fire-and-forget)
+  void dispatchCustomEvent(
     'messages',
     new AIMessageChunk({
       id: crypto.randomUUID(),
@@ -32,6 +32,7 @@ export async function continueToRequirements(state: QaAgentState) {
         currentTestcase: testcaseData,
         schemaData: state.schemaData,
         goal: state.analyzedRequirements.goal,
+        messages: [], // Keep messages empty to prevent auto-concat to parent
         internalMessages: [], // Start with empty messages for isolation
       }),
   )

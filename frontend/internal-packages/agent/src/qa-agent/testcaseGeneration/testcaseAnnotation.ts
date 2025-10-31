@@ -1,5 +1,5 @@
 import type { BaseMessage } from '@langchain/core/messages'
-import { Annotation } from '@langchain/langgraph'
+import { Annotation, MessagesAnnotation } from '@langchain/langgraph'
 import type { Schema } from '@liam-hq/schema'
 import type { SchemaIssue } from '../../workflowSchemaIssuesAnnotation'
 import type { TestCaseData } from '../distributeRequirements'
@@ -31,6 +31,7 @@ export const generatedSqlsAnnotation = Annotation<Array<GeneratedSql>>({
 })
 
 export const testcaseAnnotation = Annotation.Root({
+  ...MessagesAnnotation.spec,
   internalMessages: Annotation<BaseMessage[]>({
     reducer: (x, y) => x.concat(y),
     default: () => [],

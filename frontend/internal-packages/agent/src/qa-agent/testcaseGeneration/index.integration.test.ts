@@ -42,6 +42,7 @@ describe('testcaseGeneration Integration', () => {
     })
 
     const state: TestcaseState = {
+      messages: [],
       internalMessages: [],
       currentTestcase: {
         category: 'tasks',
