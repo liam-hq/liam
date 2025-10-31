@@ -378,24 +378,18 @@ CREATE POLICY "service_role_can_delete_all_run_events"
   FOR DELETE TO service_role
   USING (true);
 
--- 5) Grants for tables and helper functions (mirrors existing Supabase expectations).
-GRANT ALL ON TABLE public.runs TO anon;
 GRANT ALL ON TABLE public.runs TO authenticated;
 GRANT ALL ON TABLE public.runs TO service_role;
 
-GRANT ALL ON TABLE public.run_events TO anon;
 GRANT ALL ON TABLE public.run_events TO authenticated;
 GRANT ALL ON TABLE public.run_events TO service_role;
 
-GRANT ALL ON FUNCTION public.set_runs_organization_id() TO anon;
 GRANT ALL ON FUNCTION public.set_runs_organization_id() TO authenticated;
 GRANT ALL ON FUNCTION public.set_runs_organization_id() TO service_role;
 
-GRANT ALL ON FUNCTION public.set_run_events_organization_id() TO anon;
 GRANT ALL ON FUNCTION public.set_run_events_organization_id() TO authenticated;
 GRANT ALL ON FUNCTION public.set_run_events_organization_id() TO service_role;
 
-GRANT ALL ON FUNCTION public.apply_run_event_to_runs() TO anon;
 GRANT ALL ON FUNCTION public.apply_run_event_to_runs() TO authenticated;
 GRANT ALL ON FUNCTION public.apply_run_event_to_runs() TO service_role;
 

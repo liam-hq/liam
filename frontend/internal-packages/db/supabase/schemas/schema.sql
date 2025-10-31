@@ -255,7 +255,7 @@ ALTER FUNCTION "public"."apply_run_event_to_runs"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."fetch_latest_session_runs_status"("session_ids" "uuid"[]) RETURNS TABLE("design_session_id" "uuid", "run_id" "uuid", "latest_status" "public"."workflow_run_status")
-    LANGUAGE "sql" SECURITY DEFINER
+    LANGUAGE "sql"
     SET "search_path" TO 'public'
     AS $$
   with latest_runs as (
@@ -2606,7 +2606,6 @@ GRANT ALL ON FUNCTION "public"."add_project"("p_project_name" "text", "p_reposit
 
 GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "service_role";
-GRANT ALL ON FUNCTION "public"."apply_run_event_to_runs"() TO "anon";
 
 
 
@@ -2673,13 +2672,11 @@ GRANT ALL ON FUNCTION "public"."set_project_repository_mappings_organization_id"
 
 GRANT ALL ON FUNCTION "public"."set_run_events_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_run_events_organization_id"() TO "service_role";
-GRANT ALL ON FUNCTION "public"."set_run_events_organization_id"() TO "anon";
 
 
 
 GRANT ALL ON FUNCTION "public"."set_runs_organization_id"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."set_runs_organization_id"() TO "service_role";
-GRANT ALL ON FUNCTION "public"."set_runs_organization_id"() TO "anon";
 
 
 
@@ -2854,13 +2851,11 @@ GRANT SELECT ON TABLE "public"."public_share_settings" TO "anon";
 
 GRANT ALL ON TABLE "public"."run_events" TO "authenticated";
 GRANT ALL ON TABLE "public"."run_events" TO "service_role";
-GRANT ALL ON TABLE "public"."run_events" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."runs" TO "authenticated";
 GRANT ALL ON TABLE "public"."runs" TO "service_role";
-GRANT ALL ON TABLE "public"."runs" TO "anon";
 
 
 

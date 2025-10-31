@@ -5,7 +5,6 @@ returns table (
   latest_status public.workflow_run_status
 )
 language sql
-security definer
 set search_path = public
 as $$
   with latest_runs as (
