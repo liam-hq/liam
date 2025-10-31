@@ -10,9 +10,9 @@ import type { testcaseAnnotation } from './testcaseAnnotation'
 export const routeAfterGenerate = (
   state: typeof testcaseAnnotation.State,
 ): 'invokeSaveTool' | typeof END => {
-  const { messages } = state
+  const { internalMessages } = state
 
-  const lastMessage = messages[messages.length - 1]
+  const lastMessage = internalMessages[internalMessages.length - 1]
 
   // Check if the last message has tool calls
   if (lastMessage && hasToolCalls(lastMessage)) {
