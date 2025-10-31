@@ -1,4 +1,3 @@
-import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import { ToolMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { type StructuredTool, tool } from '@langchain/core/tools'
@@ -7,7 +6,6 @@ import { toAsync } from '@liam-hq/neverthrow'
 import { ResultAsync } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 import * as v from 'valibot'
-import { SSE_EVENTS } from '../../streaming/constants'
 import { WorkflowTerminationError } from '../../utils/errorHandling'
 import { toJsonSchema } from '../../utils/jsonSchema'
 import { withSentryCaptureException } from '../../utils/withSentryCaptureException'
@@ -55,14 +53,7 @@ export const saveTestcaseTool: StructuredTool = tool(
         const errorMessage = `Invalid tool input: ${parsed.issues
           .map((issue) => issue.message)
           .join(', ')}`
-        const toolMessage = new ToolMessage({
-          id: uuidv4(),
-          name: TOOL_NAME,
-          status: 'error',
-          content: errorMessage,
-          tool_call_id: toolCallId,
-        })
-        await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+        // Removed dispatchCustomEvent to prevent message flooding during parallel execution
         throw new WorkflowTerminationError(new Error(errorMessage), TOOL_NAME)
       }
 
@@ -73,14 +64,7 @@ export const saveTestcaseTool: StructuredTool = tool(
         toAsync(validatePgTapTest(sql)),
       ])
       if (result.isErr()) {
-        const toolMessage = new ToolMessage({
-          id: uuidv4(),
-          name: TOOL_NAME,
-          status: 'error',
-          content: result.error.join('\n'),
-          tool_call_id: toolCallId,
-        })
-        await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+        // Removed dispatchCustomEvent to prevent message flooding during parallel execution
         // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
         throw new Error(result.error.join('\n'))
       }
@@ -99,12 +83,12 @@ export const saveTestcaseTool: StructuredTool = tool(
         content: `Successfully saved SQL for test case "${title}" in category "${category}"`,
         tool_call_id: toolCallId,
       })
-      await dispatchCustomEvent(SSE_EVENTS.MESSAGES, toolMessage)
+      // Removed dispatchCustomEvent to prevent message flooding during parallel execution
 
       return new Command({
         update: {
           generatedSqls: [{ testcaseId, sql }],
-          messages: [toolMessage],
+          internalMessages: [toolMessage],
         },
       })
     })

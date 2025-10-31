@@ -5,7 +5,7 @@ import type { testcaseAnnotation } from './testcaseAnnotation'
 
 /**
  * Save Tool Node for testcase generation
- * Executes the saveTestcaseTool within the isolated subgraph context with streaming support
+ * Executes the saveTestcaseTool within the isolated subgraph context
  * Maps internalMessages to messages for ToolNode compatibility
  */
 export const saveToolNode = async (
@@ -19,19 +19,15 @@ export const saveToolNode = async (
     messages: state.internalMessages,
   }
 
-  const stream = await toolNode.stream(toolNodeInput, config)
+  const result = await toolNode.invoke(toolNodeInput, config)
 
-  let result = {}
-
-  for await (const chunk of stream) {
-    result = chunk
-  }
-
-  if ('messages' in result) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- ToolNode result type is not well-typed
+  if ('messages' in result && Array.isArray(result.messages)) {
     return {
       ...result,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- ToolNode result type is not well-typed
       internalMessages: result.messages,
-      messages: [],
+      messages: [], // Prevent messages from propagating to parent graph
     }
   }
 
