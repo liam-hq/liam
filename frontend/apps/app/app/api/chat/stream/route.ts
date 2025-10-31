@@ -5,12 +5,14 @@ import {
   deepModelingStream,
 } from '@liam-hq/agent'
 import { SSE_EVENTS } from '@liam-hq/agent/client'
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import * as Sentry from '@sentry/nextjs'
 import { after, NextResponse } from 'next/server'
 import * as v from 'valibot'
 import { line } from '../../../../features/stream/utils/line'
 import { withTimeoutAndAbort } from '../../../../features/stream/utils/withTimeoutAndAbort'
 import { createClient } from '../../../../libs/db/server'
+import { RunTracker } from '../../../../libs/runs/runService'
 
 // https://vercel.com/docs/functions/configuring-functions/duration#maximum-duration-for-different-runtimes
 export const maxDuration = 800
@@ -61,12 +63,70 @@ export async function POST(request: Request) {
     )
   }
 
+  let shouldMarkError = false
+
   const organizationId = designSession.organization_id
+
+  let runTracker: RunTracker | null = null
+
+  const recordRunError = async (
+    context?: Record<string, unknown>,
+  ): Promise<void> => {
+    if (!runTracker) return
+    const tracker = runTracker
+    const failResult = await fromAsyncThrowable(() => tracker.fail())()
+    if (failResult.isErr()) {
+      Sentry.captureException(failResult.error, {
+        tags: { designSessionId },
+        level: 'warning',
+        extra: {
+          location: 'chat/stream run fail',
+          context,
+        },
+      })
+    }
+  }
+
+  const recordRunSuccess = async () => {
+    if (!runTracker) return
+    const tracker = runTracker
+    const completeResult = await fromAsyncThrowable(() => tracker.complete())()
+    if (completeResult.isErr()) {
+      Sentry.captureException(completeResult.error, {
+        tags: { designSessionId },
+        level: 'warning',
+        extra: { location: 'chat/stream run complete' },
+      })
+    }
+  }
+
+  const runTrackerResult = await fromAsyncThrowable(() =>
+    RunTracker.start({
+      supabase,
+      designSessionId,
+      userId,
+    }),
+  )()
+
+  if (runTrackerResult.isErr()) {
+    Sentry.captureException(runTrackerResult.error, {
+      tags: { designSessionId },
+      level: 'warning',
+      extra: { location: 'chat/stream run start' },
+    })
+    runTracker = null
+  } else {
+    runTracker = runTrackerResult.value
+  }
 
   const repositories = createSupabaseRepositories(supabase, organizationId)
   const result = await repositories.schema.getSchema(designSessionId)
 
   if (result.isErr()) {
+    await recordRunError({
+      reason: 'schema_fetch_failed',
+      message: result.error.message,
+    })
     return NextResponse.json({ error: result.error.message }, { status: 500 })
   }
 
@@ -95,6 +155,10 @@ export async function POST(request: Request) {
     const events = await deepModelingStream(params, config)
 
     for await (const ev of events) {
+      if (ev.event === SSE_EVENTS.ERROR) {
+        shouldMarkError = true
+      }
+
       // Check if request was aborted during iteration
       if (signal.aborted) {
         controller.enqueue(
@@ -119,6 +183,16 @@ export async function POST(request: Request) {
 
       if (result.isErr()) {
         const err = result.error
+        const message = err.message?.toLowerCase() ?? ''
+        const isAbortError =
+          err.name === 'AbortError' ||
+          message.includes('abort') ||
+          message.includes('timeout') // allow replay to recover after abort
+
+        if (!isAbortError) {
+          shouldMarkError = true
+        }
+
         Sentry.captureException(err, {
           tags: { designSchemaId: designSessionId },
         })
@@ -126,6 +200,12 @@ export async function POST(request: Request) {
         controller.enqueue(
           enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
         )
+      }
+
+      if (shouldMarkError) {
+        await recordRunError()
+      } else {
+        await recordRunSuccess()
       }
 
       controller.close()

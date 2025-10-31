@@ -6,6 +6,8 @@ import type { CheckpointsOverride } from './checkpoints'
 import type { CheckpointWritesOverride } from './checkpointWrites'
 import type { DesignSessionsOverride } from './designSessions'
 import type { ProjectRepositoryMappingsOverride } from './projectRepositoryMappings'
+import type { RunEventsOverride } from './runEvents'
+import type { RunsOverride } from './runs'
 import type { SchemaFilePathsOverride } from './schemaFilePaths'
 
 export type AppDatabaseOverrides = MergeDeep<
@@ -16,5 +18,7 @@ export type AppDatabaseOverrides = MergeDeep<
     BuildingSchemasOverride &
     CheckpointsOverride &
     CheckpointBlobsOverride &
-    CheckpointWritesOverride
+    CheckpointWritesOverride &
+    RunsOverride &
+    RunEventsOverride
 >

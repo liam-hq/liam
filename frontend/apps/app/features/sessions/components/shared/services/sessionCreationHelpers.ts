@@ -2,9 +2,11 @@
 
 import path from 'node:path'
 import type { SupabaseClientType } from '@liam-hq/db'
+import { fromPromise } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
 import { parse, setPrismWasmUrl } from '@liam-hq/schema/parser'
 import { createClient } from '../../../../../libs/db/server'
+import { RunTracker } from '../../../../../libs/runs/runService'
 import { getOrganizationId } from '../../../../organizations/services/getOrganizationId'
 import type {
   CreateSessionState,
@@ -108,6 +110,42 @@ const createBuildingSchema = async (
   return buildingSchema
 }
 
+const initializeSessionRun = async (
+  supabase: SupabaseClientType,
+  {
+    designSessionId,
+    currentUserId,
+  }: {
+    designSessionId: string
+    currentUserId: string
+  },
+): Promise<CreateSessionState | null> => {
+  const runInitializationResult = await fromPromise(
+    RunTracker.start({
+      supabase,
+      designSessionId,
+      userId: currentUserId,
+    }),
+    (unknownError) =>
+      unknownError instanceof Error
+        ? unknownError
+        : new Error('Unknown error while starting RunTracker'),
+  )
+
+  if (runInitializationResult.isErr()) {
+    console.error(
+      'Error initializing workflow run for design session:',
+      runInitializationResult.error,
+    )
+    return {
+      success: false,
+      error: 'Failed to initialize workflow run for the new session',
+    }
+  }
+
+  return null
+}
+
 export const parseSchemaContent = async (
   content: string,
   format: SchemaFormat,
@@ -167,6 +205,15 @@ export const createSession = async (
     extensions: {},
   }
   const schemaFilePath = schemaSource?.schemaFilePath ?? null
+
+  const runInitializationResult = await initializeSessionRun(supabase, {
+    designSessionId,
+    currentUserId,
+  })
+
+  if (runInitializationResult) {
+    return runInitializationResult
+  }
 
   const buildingSchemaResult = await createBuildingSchema(
     designSessionId,

@@ -1,14 +1,14 @@
 'use client'
 
-import { fromPromise } from '@liam-hq/neverthrow'
+import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { Skeleton } from '@liam-hq/ui'
 import * as Sentry from '@sentry/nextjs'
 import clsx from 'clsx'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createClient as createSupabaseClient } from '../../../../libs/db/client'
 import { urlgen } from '../../../../libs/routes'
-import { formatDateShort } from '../../../../libs/utils'
+import type { LatestSessionRun } from '../../../../libs/runs/fetchLatestSessionRuns'
 import { setCookie } from '../../../../libs/utils/cookie'
 import itemStyles from '../Item.module.css'
 import { fetchFilteredSessions, loadMoreSessions } from './actions'
@@ -20,6 +20,7 @@ import {
   SESSION_FILTER_COOKIE,
   SESSION_FILTER_COOKIE_MAX_AGE_SECONDS,
 } from './constants'
+import { RecentSessionItem } from './RecentSessionItem'
 import styles from './RecentsSectionClient.module.css'
 import type { RecentSession, SessionFilterType } from './types'
 
@@ -27,11 +28,42 @@ type RecentsSectionClientProps = {
   sessions: RecentSession[]
   organizationMembers: OrganizationMember[]
   currentUserId: string
+  organizationId: string
   initialFilterType: SessionFilterType
 }
 
 const PAGE_SIZE = 20
 const SKELETON_KEYS = ['skeleton-1', 'skeleton-2', 'skeleton-3']
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const isLatestSessionRun = (value: unknown): value is LatestSessionRun => {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  const status = value['latest_status']
+  const latestRunId = value['run_id']
+
+  return (
+    typeof value['design_session_id'] === 'string' &&
+    (typeof latestRunId === 'string' || latestRunId === null) &&
+    (status === 'running' || status === 'completed' || status === 'error')
+  )
+}
+
+const toSessionStatus = (status: unknown): RecentSession['status'] => {
+  if (status === 'error') {
+    return 'error'
+  }
+
+  if (status === 'completed' || status === 'success') {
+    return 'completed'
+  }
+
+  return 'running'
+}
 
 const setSessionFilterCookie = (value: SessionFilterType) => {
   setCookie(SESSION_FILTER_COOKIE, value, {
@@ -44,6 +76,7 @@ export const RecentsSectionClient = ({
   sessions: initialSessions,
   organizationMembers,
   currentUserId,
+  organizationId,
   initialFilterType,
 }: RecentsSectionClientProps) => {
   const pathname = usePathname()
@@ -55,6 +88,8 @@ export const RecentsSectionClient = ({
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const sessionsListRef = useRef<HTMLElement | null>(null)
+  const sessionsRef = useRef(initialSessions)
+  const runIdToSessionMap = useRef(new Map<string, string>())
 
   const handleFilterChange = useCallback(
     async (newFilterType: SessionFilterType) => {
@@ -63,18 +98,19 @@ export const RecentsSectionClient = ({
 
       setSessionFilterCookie(newFilterType)
 
-      const result = await fromPromise(fetchFilteredSessions(newFilterType))
+      const sessionsResult = await fromAsyncThrowable(() =>
+        fetchFilteredSessions(newFilterType),
+      )()
 
-      result.match(
-        (newSessions) => {
-          setSessions(newSessions)
-          setHasMore(newSessions.length >= PAGE_SIZE)
-        },
-        (err) => {
-          Sentry.captureException(err)
-        },
-      )
+      if (sessionsResult.isErr()) {
+        Sentry.captureException(sessionsResult.error)
+        setIsLoading(false)
+        return
+      }
 
+      const newSessions = sessionsResult.value
+      setSessions(newSessions)
+      setHasMore(newSessions.length >= PAGE_SIZE)
       setIsLoading(false)
     },
     [],
@@ -85,30 +121,43 @@ export const RecentsSectionClient = ({
 
     setIsLoading(true)
 
-    const result = await fromPromise(
+    const newSessionsResult = await fromAsyncThrowable(() =>
       loadMoreSessions({
         limit: PAGE_SIZE,
-        offset: sessions.length,
+        offset: sessionsRef.current.length,
         filterType,
       }),
-    )
+    )()
 
-    result.match(
-      (newSessions) => {
-        if (newSessions.length === 0) {
-          setHasMore(false)
-        } else {
-          setSessions((prev) => [...prev, ...newSessions])
-          setHasMore(newSessions.length >= PAGE_SIZE)
-        }
-      },
-      (err) => {
-        Sentry.captureException(err)
-      },
-    )
+    if (newSessionsResult.isErr()) {
+      Sentry.captureException(newSessionsResult.error)
+      setIsLoading(false)
+      return
+    }
 
+    const newSessions = newSessionsResult.value
+
+    if (newSessions.length === 0) {
+      setHasMore(false)
+      setIsLoading(false)
+      return
+    }
+
+    setSessions((prevSessions) => [...prevSessions, ...newSessions])
+    setHasMore(newSessions.length >= PAGE_SIZE)
     setIsLoading(false)
-  }, [isLoading, hasMore, sessions.length, filterType])
+  }, [filterType, hasMore, isLoading])
+
+  useEffect(() => {
+    sessionsRef.current = sessions
+    const runMap = runIdToSessionMap.current
+    runMap.clear()
+    sessions.forEach((session) => {
+      if (session.run_id) {
+        runMap.set(session.run_id, session.id)
+      }
+    })
+  }, [sessions])
 
   useEffect(() => {
     const currentLoadMoreRef = loadMoreRef.current
@@ -139,6 +188,185 @@ export const RecentsSectionClient = ({
     }
   }, [loadMore])
 
+  useEffect(() => {
+    const supabase = createSupabaseClient()
+
+    const getRecord = (value: unknown) => (isRecord(value) ? value : null)
+
+    const extractNewRow = (payload: unknown) => {
+      if (!isRecord(payload)) {
+        return null
+      }
+
+      return getRecord(payload['new'])
+    }
+
+    const getStringField = (record: Record<string, unknown>, key: string) => {
+      const value = record[key]
+      return typeof value === 'string' ? value : null
+    }
+
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <todo>
+    const refreshSession = async (designSessionId: string) => {
+      if (
+        !sessionsRef.current.some((session) => session.id === designSessionId)
+      ) {
+        return
+      }
+
+      const responseResult = await fromAsyncThrowable(() =>
+        fetch('/api/recents/statuses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionIds: [designSessionId] }),
+        }),
+      )()
+
+      if (responseResult.isErr()) {
+        console.error(
+          'Failed to refresh session via statuses API:',
+          responseResult.error,
+        )
+        return
+      }
+
+      const response = responseResult.value
+
+      if (!response.ok) {
+        const bodyResult = await fromAsyncThrowable(() => response.text())()
+        if (bodyResult.isErr()) {
+          console.error(
+            `Failed to refresh session via statuses API (status ${response.status}): unable to read error body`,
+            bodyResult.error,
+          )
+        } else {
+          console.error(
+            `Failed to refresh session via statuses API (status ${response.status}):`,
+            bodyResult.value,
+          )
+        }
+        return
+      }
+
+      const payloadResult = await fromAsyncThrowable(
+        (): Promise<unknown> => response.json(),
+      )()
+
+      if (payloadResult.isErr()) {
+        console.error(
+          'Failed to parse session statuses response:',
+          payloadResult.error,
+        )
+        return
+      }
+
+      const payload = payloadResult.value
+      if (!Array.isArray(payload)) {
+        console.error('Statuses API response was not an array')
+        return
+      }
+
+      const row = payload.find(isLatestSessionRun)
+      if (!row) {
+        return
+      }
+
+      const fetchedRunId = typeof row.run_id === 'string' ? row.run_id : null
+
+      if (fetchedRunId) {
+        runIdToSessionMap.current.set(fetchedRunId, designSessionId)
+      }
+
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === designSessionId
+            ? {
+                ...session,
+                status: toSessionStatus(row.latest_status),
+                run_id: fetchedRunId ?? session.run_id,
+              }
+            : session,
+        ),
+      )
+    }
+
+    const resolveSessionIdForRun = async (
+      runId: string,
+    ): Promise<string | null> => {
+      const cachedSessionId = runIdToSessionMap.current.get(runId)
+      if (cachedSessionId) {
+        return cachedSessionId
+      }
+
+      const { data, error } = await supabase
+        .from('runs')
+        .select('design_session_id')
+        .eq('id', runId)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error resolving session for run event:', error)
+        return null
+      }
+
+      const designSessionId =
+        typeof data?.design_session_id === 'string'
+          ? data.design_session_id
+          : null
+
+      if (designSessionId) {
+        runIdToSessionMap.current.set(runId, designSessionId)
+      }
+
+      return designSessionId
+    }
+
+    const runsChannel = supabase
+      .channel(`run_events_recents_${organizationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'run_events',
+          filter: `organization_id=eq.${organizationId}`,
+        },
+        async (payload) => {
+          // Realtime payload is only a trigger; fetch the authoritative status
+          // via the session statuses API for the affected design session.
+          const newRow = extractNewRow(payload)
+          if (!newRow) {
+            return
+          }
+
+          const runId = getStringField(newRow, 'run_id')
+          if (!runId) {
+            return
+          }
+
+          const designSessionId = await resolveSessionIdForRun(runId)
+          if (!designSessionId) {
+            return
+          }
+
+          if (
+            !sessionsRef.current.some(
+              (session) => session.id === designSessionId,
+            )
+          ) {
+            return
+          }
+
+          await refreshSession(designSessionId)
+        },
+      )
+      .subscribe()
+
+    return () => {
+      void supabase.removeChannel(runsChannel)
+    }
+  }, [organizationId])
+
   return (
     <>
       <div className={clsx(itemStyles.item, styles.recentsCollapsed)}>
@@ -166,31 +394,15 @@ export const RecentsSectionClient = ({
                   id: session.id,
                 })
                 const isActive = pathname === sessionUrl
-                const sessionDate = formatDateShort(session.created_at)
                 const showOwner = filterType !== 'me'
-                const ownerName = session.created_by_user?.name || 'Unknown'
 
                 return (
-                  <Link
+                  <RecentSessionItem
                     key={session.id}
-                    href={sessionUrl}
-                    className={clsx(
-                      styles.sessionItem,
-                      isActive && styles.sessionItemActive,
-                    )}
-                    aria-label={`${session.name}, created on ${sessionDate}${showOwner ? ` by ${ownerName}` : ''}`}
-                    aria-current={isActive ? 'page' : undefined}
-                  >
-                    <div className={styles.sessionInfo}>
-                      <span className={styles.sessionName}>{session.name}</span>
-                      {showOwner && (
-                        <span className={styles.sessionOwner}>{ownerName}</span>
-                      )}
-                    </div>
-                    <span className={styles.sessionDate} aria-hidden="true">
-                      {sessionDate}
-                    </span>
-                  </Link>
+                    session={session}
+                    isActive={isActive}
+                    showOwner={showOwner}
+                  />
                 )
               })}
               {hasMore && (

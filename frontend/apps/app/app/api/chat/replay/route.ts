@@ -14,6 +14,7 @@ import * as v from 'valibot'
 import { line } from '../../../../features/stream/utils/line'
 import { withTimeoutAndAbort } from '../../../../features/stream/utils/withTimeoutAndAbort'
 import { createClient } from '../../../../libs/db/server'
+import { RunTracker } from '../../../../libs/runs/runService'
 
 export const maxDuration = 800
 const REPLAY_TIMEOUT_MS = 700000
@@ -53,6 +54,53 @@ export async function POST(request: Request) {
 
   const userId = authResult.value.id
 
+  let runTracker: RunTracker | null = null
+
+  const recordRunError = async (
+    context?: Record<string, unknown>,
+  ): Promise<void> => {
+    if (!runTracker) return
+    const tracker = runTracker
+    const failResult = await fromAsyncThrowable(() => tracker.fail())()
+    if (failResult.isErr()) {
+      Sentry.captureException(failResult.error, {
+        tags: { designSessionId },
+        extra: { location: 'chat/replay run fail', context },
+      })
+    }
+  }
+
+  const recordRunSuccess = async () => {
+    if (!runTracker) return
+    const tracker = runTracker
+    const completeResult = await fromAsyncThrowable(() => tracker.complete())()
+    if (completeResult.isErr()) {
+      Sentry.captureException(completeResult.error, {
+        tags: { designSessionId },
+        extra: { location: 'chat/replay run complete' },
+      })
+    }
+  }
+
+  const runTrackerResult = await fromAsyncThrowable(() =>
+    RunTracker.start({
+      supabase,
+      designSessionId,
+      userId,
+    }),
+  )()
+
+  if (runTrackerResult.isErr()) {
+    Sentry.captureException(runTrackerResult.error, {
+      tags: { designSessionId },
+      extra: { location: 'chat/replay run start' },
+    })
+    runTracker = null
+  } else {
+    runTracker = runTrackerResult.value
+  }
+
+  let shouldMarkError = false
   const buildingSchemaResult = await toResultAsync<{
     id: string
     organization_id: string
@@ -66,6 +114,11 @@ export async function POST(request: Request) {
   )
 
   if (buildingSchemaResult.isErr()) {
+    shouldMarkError = true
+    await recordRunError({
+      reason: 'building_schema_not_found',
+    })
+
     return NextResponse.json(
       { error: 'Building schema not found for design session' },
       { status: 404 },
@@ -97,6 +150,7 @@ export async function POST(request: Request) {
     const checkpointId = await findLatestCheckpointId()
 
     if (!checkpointId) {
+      shouldMarkError = true
       const message = 'No checkpoint found for replay'
       controller.enqueue(enc.encode(line(SSE_EVENTS.ERROR, { message })))
       return
@@ -116,6 +170,10 @@ export async function POST(request: Request) {
     const events = await deepModelingReplayStream(checkpointer, replayParams)
 
     for await (const ev of events) {
+      if (ev.event === SSE_EVENTS.ERROR) {
+        shouldMarkError = true
+      }
+
       if (signal.aborted) {
         controller.enqueue(
           enc.encode(
@@ -133,14 +191,22 @@ export async function POST(request: Request) {
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const result = await withTimeoutAndAbort(
+      await withTimeoutAndAbort(
         (signal: AbortSignal) => processReplayEvents(controller, signal),
         REPLAY_TIMEOUT_MS,
         request.signal,
-      )
+      ).mapErr((err) => {
+        // allow replay to recover after abort
+        const message = err.message?.toLowerCase() ?? ''
+        const isAbortError =
+          err.name === 'AbortError' ||
+          message.includes('abort') ||
+          message.includes('timeout')
 
-      if (result.isErr()) {
-        const err = result.error
+        if (!isAbortError) {
+          shouldMarkError = true
+        }
+
         Sentry.captureException(err, {
           tags: { designSchemaId: designSessionId },
         })
@@ -148,8 +214,15 @@ export async function POST(request: Request) {
         controller.enqueue(
           enc.encode(line(SSE_EVENTS.ERROR, { message: err.message })),
         )
-      }
 
+        return err
+      })
+
+      if (shouldMarkError) {
+        await recordRunError()
+      } else {
+        await recordRunSuccess()
+      }
       controller.close()
     },
   })

@@ -568,6 +568,104 @@ export type Database = {
           },
         ]
       }
+      run_events: {
+        Row: {
+          created_at: string
+          created_by_user_id: string | null
+          id: string
+          organization_id: string
+          run_id: string
+          status: Database['public']['Enums']['workflow_run_status']
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          organization_id: string
+          run_id: string
+          status: Database['public']['Enums']['workflow_run_status']
+        }
+        Update: {
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          organization_id?: string
+          run_id?: string
+          status?: Database['public']['Enums']['workflow_run_status']
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'run_events_created_by_user_id_fkey'
+            columns: ['created_by_user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'run_events_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'run_events_run_id_fkey'
+            columns: ['run_id']
+            isOneToOne: false
+            referencedRelation: 'runs'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      runs: {
+        Row: {
+          created_by_user_id: string | null
+          design_session_id: string
+          ended_at: string | null
+          id: string
+          organization_id: string
+          started_at: string
+        }
+        Insert: {
+          created_by_user_id?: string | null
+          design_session_id: string
+          ended_at?: string | null
+          id?: string
+          organization_id: string
+          started_at?: string
+        }
+        Update: {
+          created_by_user_id?: string | null
+          design_session_id?: string
+          ended_at?: string | null
+          id?: string
+          organization_id?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'runs_created_by_user_id_fkey'
+            columns: ['created_by_user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'runs_design_session_id_fkey'
+            columns: ['design_session_id']
+            isOneToOne: true
+            referencedRelation: 'design_sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'runs_organization_id_fkey'
+            columns: ['organization_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       schema_file_paths: {
         Row: {
           created_at: string
@@ -654,6 +752,14 @@ export type Database = {
         }
         Returns: Json
       }
+      fetch_latest_session_runs_status: {
+        Args: { session_ids: string[] }
+        Returns: {
+          design_session_id: string
+          latest_status: Database['public']['Enums']['workflow_run_status']
+          run_id: string
+        }[]
+      }
       get_invitation_data: {
         Args: { p_token: string }
         Returns: Json
@@ -689,7 +795,7 @@ export type Database = {
     Enums: {
       assistant_role_enum: 'db' | 'pm' | 'qa'
       schema_format_enum: 'schemarb' | 'postgres' | 'prisma' | 'tbls'
-      workflow_run_status: 'pending' | 'success' | 'error'
+      workflow_run_status: 'running' | 'completed' | 'error'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -822,7 +928,7 @@ export const Constants = {
     Enums: {
       assistant_role_enum: ['db', 'pm', 'qa'],
       schema_format_enum: ['schemarb', 'postgres', 'prisma', 'tbls'],
-      workflow_run_status: ['pending', 'success', 'error'],
+      workflow_run_status: ['running', 'completed', 'error'],
     },
   },
 } as const
