@@ -2,7 +2,7 @@ import { HumanMessage } from '@langchain/core/messages'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { RunCollectorCallbackHandler } from '@langchain/core/tracers/run_collector'
 import { END } from '@langchain/langgraph'
-import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, ok, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import { DEFAULT_RECURSION_LIMIT } from '../constants'
 import type {
   AgentWorkflowParams,

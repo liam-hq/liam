@@ -15,6 +15,7 @@
     "./nextjs": "./src/nextjs/index.ts"
   },
   "dependencies": {
+    "@liam-hq/neverthrow": "workspace:*",
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-toolbar": "1.1.11",
@@ -22,7 +23,6 @@
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
     "elkjs": "0.10.0",
-    "neverthrow": "8.2.0",
     "nuqs": "2.4.3",
     "pako": "2.1.0",
     "react": "19.1.1",

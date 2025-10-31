@@ -8,7 +8,6 @@
     "@octokit/auth-app": "7.2.2",
     "@octokit/openapi-types": "25.1.0",
     "@octokit/rest": "21.1.1",
-    "neverthrow": "8.2.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {

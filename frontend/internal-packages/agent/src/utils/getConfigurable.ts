@@ -1,6 +1,6 @@
 import type { RunnableConfig } from '@langchain/core/runnables'
-import type { Result } from 'neverthrow'
-import { err, ok } from 'neverthrow'
+import type { Result } from '@liam-hq/neverthrow'
+import { err, ok } from '@liam-hq/neverthrow'
 import type { WorkflowConfigurable } from '../types'
 
 /**

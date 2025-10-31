@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
 import { join, resolve } from 'node:path'
-import { fromPromise } from '@liam-hq/neverthrow'
+import { fromPromise, ResultAsync } from '@liam-hq/neverthrow'
 import { type Schema, schemaSchema } from '@liam-hq/schema'
 import { config } from 'dotenv'
 import { Client } from 'langsmith'
-import { ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import type { LangSmithDatasetConfig } from '../langsmith/types.ts'
 import {

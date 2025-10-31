@@ -1,9 +1,9 @@
 import { resolve } from 'node:path'
 import { createClient, type SupabaseClientType } from '@liam-hq/db'
+import type { Result } from '@liam-hq/neverthrow'
+import { err, errAsync, ok, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
 import { config } from 'dotenv'
-import type { Result } from 'neverthrow'
-import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { createSupabaseRepositories } from '../../src/repositories/factory'
 
 // Load environment variables from ../../../../../.env and .env.local

@@ -6,8 +6,7 @@ import {
   SystemMessage,
 } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
-import { fromAsyncThrowable } from '@liam-hq/neverthrow'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { fromAsyncThrowable, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 import { SSE_EVENTS } from '../streaming/constants'
 import type { Reasoning } from '../types'

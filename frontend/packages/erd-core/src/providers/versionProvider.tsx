@@ -1,4 +1,4 @@
-import { err, ok, type Result } from 'neverthrow'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import { createContext, type FC, type ReactNode, useContext } from 'react'
 import type { Version } from '../schemas/version'
 

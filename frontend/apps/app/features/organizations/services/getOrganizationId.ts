@@ -1,5 +1,5 @@
 import { toResultAsync } from '@liam-hq/db'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import { createClient } from '../../../libs/db/server'
 import { getOrganizationIdFromCookie } from './getOrganizationIdFromCookie'
 

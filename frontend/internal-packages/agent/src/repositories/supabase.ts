@@ -1,6 +1,7 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
 import type { SupabaseClientType } from '@liam-hq/db'
 import type { Json } from '@liam-hq/db/supabase/database.types'
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
 import {
   applyPatchOperations,
@@ -8,7 +9,6 @@ import {
   schemaSchema,
 } from '@liam-hq/schema'
 import { compare } from 'fast-json-patch'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import * as v from 'valibot'
 import { SupabaseCheckpointSaver } from '../checkpoint/SupabaseCheckpointSaver'
 import { ensurePathStructure } from '../utils/pathPreparation'

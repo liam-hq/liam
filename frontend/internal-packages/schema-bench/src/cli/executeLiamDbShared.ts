@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { join, resolve } from 'node:path'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import { config } from 'dotenv'
-import { err, ok, type Result } from 'neverthrow'
 import * as v from 'valibot'
 import { execute, type LiamDbExecutorInput } from '../executors/liamDb/index.ts'
 import { loadJsonFiles, saveOutputFile } from './utils'

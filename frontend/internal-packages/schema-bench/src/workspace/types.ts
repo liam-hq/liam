@@ -1,5 +1,5 @@
+import type { Result } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
-import type { Result } from 'neverthrow'
 
 export type WorkspaceConfig = {
   workspacePath: string

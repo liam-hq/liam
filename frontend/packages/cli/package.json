@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@liam-hq/erd-core": "workspace:*",
+    "@liam-hq/neverthrow": "workspace:*",
     "@liam-hq/schema": "workspace:*",
     "@prisma/internals": "6.8.2",
     "@swc/core": "1.12.11",
@@ -33,7 +34,6 @@
     "ink": "6.0.1",
     "ink-gradient": "3.0.0",
     "inquirer": "12.6.3",
-    "neverthrow": "8.2.0",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "valibot": "1.1.0",

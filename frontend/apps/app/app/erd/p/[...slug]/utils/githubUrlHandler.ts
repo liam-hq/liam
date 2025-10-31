@@ -4,9 +4,8 @@ import {
   type GitHubRepoInfo,
   getFolderContents,
 } from '@liam-hq/github'
-import { fromThrowable } from '@liam-hq/neverthrow'
+import { err, fromThrowable, ok, type Result } from '@liam-hq/neverthrow'
 import { detectFormat } from '@liam-hq/schema/parser'
-import { err, ok, type Result } from 'neverthrow'
 
 const SECURITY_LIMITS = {
   MAX_RECURSION_DEPTH: 5,

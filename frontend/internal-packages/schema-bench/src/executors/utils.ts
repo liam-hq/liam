@@ -1,4 +1,9 @@
-import { err, ok, type Result, Result as ResultClass } from 'neverthrow'
+import {
+  err,
+  ok,
+  type Result,
+  Result as ResultClass,
+} from '@liam-hq/neverthrow'
 
 /**
  * Log input processing with truncated preview

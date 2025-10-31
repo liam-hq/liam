@@ -16,6 +16,7 @@
     "./src/styles/globals.css": "./src/styles/globals.css"
   },
   "dependencies": {
+    "@liam-hq/neverthrow": "workspace:*",
     "@radix-ui/react-collapsible": "1.1.12",
     "@radix-ui/react-context-menu": "2.2.16",
     "@radix-ui/react-dialog": "1.1.15",
@@ -31,7 +32,6 @@
     "clsx": "2.1.1",
     "destyle.css": "4.0.1",
     "lucide-react": "0.511.0",
-    "neverthrow": "8.2.0",
     "react": "19.1.1",
     "react-resizable-panels": "3.0.6",
     "ts-pattern": "5.7.1",

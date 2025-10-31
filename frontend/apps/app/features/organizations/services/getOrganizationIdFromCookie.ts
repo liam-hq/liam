@@ -1,4 +1,4 @@
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 import { cookies } from 'next/headers'
 import { ORGANIZATION_ID_KEY } from '../constants'
 

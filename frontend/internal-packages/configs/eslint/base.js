@@ -85,8 +85,7 @@ export function createBaseConfig(options = {}) {
 						paths: [
 							{
 								name: "neverthrow",
-								importNames: ["fromThrowable", "fromAsyncThrowable"],
-								message: "Use @liam-hq/neverthrow instead for consistent error handling",
+								message: "Import from @liam-hq/neverthrow instead",
 							},
 						],
 					},

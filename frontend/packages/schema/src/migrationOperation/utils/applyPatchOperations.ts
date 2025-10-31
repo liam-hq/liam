@@ -1,6 +1,6 @@
+import type { Result } from '@liam-hq/neverthrow'
 import { fromThrowable } from '@liam-hq/neverthrow'
 import pkg, { type Operation } from 'fast-json-patch'
-import type { Result } from 'neverthrow'
 
 const { applyPatch } = pkg // see https://github.com/Starcounter-Jack/JSON-Patch/issues/310
 

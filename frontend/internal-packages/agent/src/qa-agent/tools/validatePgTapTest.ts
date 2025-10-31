@@ -1,4 +1,4 @@
-import { err, ok, type Result } from 'neverthrow'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 
 const PGTAP_FUNCTIONS = [
   'lives_ok',

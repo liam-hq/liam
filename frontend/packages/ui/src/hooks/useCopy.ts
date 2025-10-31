@@ -1,4 +1,4 @@
-import { fromPromise } from 'neverthrow'
+import { fromPromise } from '@liam-hq/neverthrow'
 import { useCallback, useState } from 'react'
 import type { ToastPosition } from '../components/Toast/types'
 import { useToast } from '../components/Toast/useToast'

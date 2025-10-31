@@ -1,4 +1,4 @@
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from '@liam-hq/neverthrow'
 
 /**
  * Options for toResultAsync function

@@ -26,7 +26,7 @@ export const noThrowErrorPlugin = {
             ) {
               context.report({
                 node,
-                message: 'Use neverthrow Result types (err, ok, ResultAsync) instead of throwing Error. Import from "neverthrow".',
+                message: 'Use neverthrow Result types (err, ok, ResultAsync) instead of throwing Error. Import from "@liam-hq/neverthrow".',
               })
             }
           },

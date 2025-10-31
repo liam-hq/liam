@@ -1,7 +1,7 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph-checkpoint'
+import type { ResultAsync } from '@liam-hq/neverthrow'
 import type { Schema } from '@liam-hq/schema'
 import type { Operation } from 'fast-json-patch'
-import type { ResultAsync } from 'neverthrow'
 
 export type SchemaData = {
   id: string

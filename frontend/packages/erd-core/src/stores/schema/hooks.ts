@@ -1,4 +1,4 @@
-import { err, ok, type Result } from 'neverthrow'
+import { err, ok, type Result } from '@liam-hq/neverthrow'
 import { useContext } from 'react'
 import { SchemaContext, type SchemaContextValue } from './context'
 
