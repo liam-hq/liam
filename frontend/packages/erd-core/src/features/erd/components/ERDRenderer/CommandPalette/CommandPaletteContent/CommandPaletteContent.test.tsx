@@ -189,29 +189,12 @@ describe('input mode and filters', () => {
       expect(screen.queryByRole('option')).not.toBeInTheDocument()
       expect(screen.getByText('No results found.')).toBeInTheDocument()
     })
-
-    // TODO: implement table input mode and remove this test
-    it('does not switch to "table" mode when pressing Tab key', async () => {
-      const user = userEvent.setup()
-      render(<CommandPaletteContent />, { wrapper })
-
-      // switch to "command" input mode
-      await user.keyboard('{Tab}')
-
-      // command options still be displayed because table mode is not activated
-      expect(
-        screen.getByRole('option', { name: 'Copy Link ⌘ C' }),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole('option', { name: 'Zoom to Fit ⇧ 1' }),
-      ).toBeInTheDocument()
-    })
   })
 
   describe('table input mode', () => {
     it('renders selected table option and its column options', async () => {
       const user = userEvent.setup()
-      render(<CommandPaletteContent isTableModeActivatable />, { wrapper })
+      render(<CommandPaletteContent />, { wrapper })
 
       // switch to "table" input mode of the "users" table
       await user.keyboard('users')
@@ -226,7 +209,7 @@ describe('input mode and filters', () => {
 
     it('filters column options by user input in the combobox while keeping the selected table option visible', async () => {
       const user = userEvent.setup()
-      render(<CommandPaletteContent isTableModeActivatable />, { wrapper })
+      render(<CommandPaletteContent />, { wrapper })
 
       // switch to "table" input mode of the "users" table
       await user.keyboard('users')
@@ -262,7 +245,7 @@ describe('preview', () => {
 
     it('renders a table preview when a column option is selected', async () => {
       const user = userEvent.setup()
-      render(<CommandPaletteContent isTableModeActivatable />, { wrapper })
+      render(<CommandPaletteContent />, { wrapper })
       const previewContainer = screen.getByTestId('CommandPalettePreview')
 
       // renders the "users" preview when the "users/name" option is selected

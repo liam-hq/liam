@@ -46,13 +46,7 @@ const tableInputModeFilter: typeof cmdkBaseFilter = (value, ...rest) => {
   return 0
 }
 
-type Props = {
-  isTableModeActivatable?: boolean
-}
-
-export const CommandPaletteContent: FC<Props> = ({
-  isTableModeActivatable = false,
-}) => {
+export const CommandPaletteContent: FC = () => {
   const [inputMode, setInputMode] = useState<CommandPaletteInputMode>({
     type: 'default',
   })
@@ -84,7 +78,6 @@ export const CommandPaletteContent: FC<Props> = ({
           suggestion={suggestion}
           setMode={setInputMode}
           onBlur={(event) => event.target.focus()}
-          isTableModeActivatable={isTableModeActivatable}
         />
         <DialogClose asChild>
           <Button
