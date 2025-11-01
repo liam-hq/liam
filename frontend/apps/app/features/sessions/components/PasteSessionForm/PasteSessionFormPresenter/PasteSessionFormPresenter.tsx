@@ -1,11 +1,21 @@
+'use client'
+
 import clsx from 'clsx'
-import { type ChangeEvent, type FC, useId, useRef, useState } from 'react'
+import {
+  type ChangeEvent,
+  type FC,
+  useCallback,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
 import { useAutoResizeTextarea } from '../../shared/hooks/useAutoResizeTextarea'
 import { useEnterKeySubmission } from '../../shared/hooks/useEnterKeySubmission'
 import { SessionFormActions } from '../../shared/SessionFormActions'
 import styles from './PasteSessionFormPresenter.module.css'
+import { useSchemaEditor } from './useSchemaEditor'
 
 type Props = {
   formError?: string
@@ -29,18 +39,14 @@ const usePasteForm = () => {
     setSelectedFormat('postgres')
   }
 
-  const handleSchemaContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setSchemaContent(e.target.value)
-  }
-
   return {
     schemaContent,
     textContent,
     selectedFormat,
     setTextContent,
     setSelectedFormat,
+    setSchemaContent,
     handleReset,
-    handleSchemaContentChange,
   }
 }
 
@@ -59,8 +65,8 @@ export const PasteSessionFormPresenter: FC<Props> = ({
     selectedFormat,
     setTextContent,
     setSelectedFormat,
+    setSchemaContent,
     handleReset,
-    handleSchemaContentChange,
   } = usePasteForm()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -71,6 +77,20 @@ export const PasteSessionFormPresenter: FC<Props> = ({
       setTextContent(e.target.value)
     },
   )
+
+  const handleSchemaEditorChange = useCallback(
+    (value: string) => {
+      setSchemaContent(value)
+    },
+    [setSchemaContent],
+  )
+
+  const { ref: schemaEditorRef } = useSchemaEditor({
+    value: schemaContent,
+    onChange: handleSchemaEditorChange,
+    disabled: isPending,
+    format: selectedFormat,
+  })
 
   const hasContent =
     schemaContent.trim().length > 0 || textContent.trim().length > 0
@@ -96,20 +116,19 @@ export const PasteSessionFormPresenter: FC<Props> = ({
         style={createAccessibleOpacityTransition(!isTransitioning)}
       >
         <input type="hidden" name="schemaFormat" value={selectedFormat} />
+        <input type="hidden" name="schemaContent" value={schemaContent} />
         <div className={styles.schemaSection}>
           <div className={styles.schemaInputWrapper}>
             <label htmlFor={schemaContentId} className={styles.label}>
               Schema Content
             </label>
-            <textarea
+            <div
               id={schemaContentId}
-              name="schemaContent"
-              value={schemaContent}
-              onChange={handleSchemaContentChange}
-              placeholder="Paste your schema here (SQL, schema.rb, Prisma, or TBLS format)..."
-              className={styles.schemaTextarea}
-              disabled={isPending}
-              rows={12}
+              ref={schemaEditorRef}
+              className={clsx(
+                styles.schemaEditorWrapper,
+                isPending && styles.disabled,
+              )}
             />
           </div>
           <div className={styles.formatSelectorWrapper}>

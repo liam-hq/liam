@@ -40,3 +40,31 @@ export const Pending: Story = {
     formAction: () => {},
   },
 }
+
+export const WithSQLSchema: Story = {
+  args: {
+    isPending: false,
+    formAction: () => {},
+  },
+  render: (args) => {
+    return (
+      <div style={{ width: '800px' }}>
+        <PasteSessionFormPresenter {...args} />
+      </div>
+    )
+  },
+}
+
+export const WithPrismaSchema: Story = {
+  args: {
+    isPending: false,
+    formAction: () => {},
+  },
+  render: (args) => {
+    return (
+      <div style={{ width: '800px' }}>
+        <PasteSessionFormPresenter {...args} />
+      </div>
+    )
+  },
+}
