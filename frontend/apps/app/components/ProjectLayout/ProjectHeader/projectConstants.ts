@@ -1,4 +1,3 @@
-import { BookMarked, ErdIcon, MessagesSquare } from '@liam-hq/ui'
 import { type InferOutput, literal, union } from 'valibot'
 
 export const PROJECT_TAB = {
@@ -7,7 +6,7 @@ export const PROJECT_TAB = {
   SESSIONS: 'sessions',
 } as const
 
-export const ProjectTabSchema = union([
+const ProjectTabSchema = union([
   literal(PROJECT_TAB.PROJECT),
   literal(PROJECT_TAB.SCHEMA),
   literal(PROJECT_TAB.SESSIONS),
@@ -15,14 +14,13 @@ export const ProjectTabSchema = union([
 
 export type ProjectTabValue = InferOutput<typeof ProjectTabSchema>
 
-type ProjectTab = {
+export type ProjectTab = {
   value: ProjectTabValue
   label: string
-  icon: typeof BookMarked | typeof ErdIcon | typeof MessagesSquare
 }
 
 export const PROJECT_TABS: ProjectTab[] = [
-  { value: PROJECT_TAB.PROJECT, label: 'Project', icon: BookMarked },
-  { value: PROJECT_TAB.SCHEMA, label: 'Schema', icon: ErdIcon },
-  { value: PROJECT_TAB.SESSIONS, label: 'Sessions', icon: MessagesSquare },
+  { value: PROJECT_TAB.PROJECT, label: 'Project' },
+  { value: PROJECT_TAB.SCHEMA, label: 'Schema' },
+  { value: PROJECT_TAB.SESSIONS, label: 'Sessions' },
 ]

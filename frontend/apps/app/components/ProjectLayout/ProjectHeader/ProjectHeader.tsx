@@ -1,11 +1,9 @@
-import { TabsList, TabsTrigger } from '@liam-hq/ui'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { FC } from 'react'
 import { createClient } from '../../../libs/db/server'
-import { urlgen } from '../../../libs/routes/urlgen'
 import styles from './ProjectHeader.module.css'
 import { PROJECT_TABS } from './projectConstants'
+import { TabItem } from './TabItem'
 
 type ProjectHeaderProps = {
   projectId: string
@@ -57,71 +55,23 @@ async function getProject(projectId: string) {
 
 export const ProjectHeader: FC<ProjectHeaderProps> = async ({
   projectId,
-  branchOrCommit = 'main', // TODO: get default branch from API(using currentOrganization)
+  branchOrCommit = 'main',
 }) => {
   const project = await getProject(projectId)
 
   return (
     <div className={styles.wrapper}>
-      <TabsList className={styles.tabsList}>
-        {PROJECT_TABS.map((tab) => {
-          const Icon = tab.icon
-          const isSchemaTab = tab.value === 'schema'
-          const isDisabled = isSchemaTab && !project.schemaPath
-          let href: string
-
-          switch (tab.value) {
-            case 'project':
-              href = urlgen('projects/[projectId]/ref/[branchOrCommit]', {
-                projectId,
-                branchOrCommit,
-              })
-              break
-            case 'schema':
-              href = urlgen(
-                'projects/[projectId]/ref/[branchOrCommit]/schema/[...schemaFilePath]',
-                {
-                  projectId,
-                  branchOrCommit,
-                  schemaFilePath: project.schemaPath?.path || '',
-                },
-              )
-              break
-            case 'sessions':
-              href = urlgen(
-                'projects/[projectId]/ref/[branchOrCommit]/sessions',
-                {
-                  projectId,
-                  branchOrCommit,
-                },
-              )
-              break
-          }
-
-          const tabTrigger = (
-            <TabsTrigger
-              value={tab.value}
-              className={styles.tabsTrigger}
-              disabled={isDisabled}
-              aria-disabled={isDisabled}
-            >
-              <Icon size={16} />
-              {tab.label}
-            </TabsTrigger>
-          )
-
-          return (
-            <Link
-              href={href}
-              key={tab.value}
-              aria-disabled={isDisabled}
-              tabIndex={isDisabled ? -1 : undefined}
-            >
-              {tabTrigger}
-            </Link>
-          )
-        })}
-      </TabsList>
+      <div className={styles.list}>
+        {PROJECT_TABS.map((tab) => (
+          <TabItem
+            key={tab.value}
+            item={tab}
+            projectId={projectId}
+            branchOrCommit={branchOrCommit}
+            schemaFilePath={project.schemaPath?.path}
+          />
+        ))}
+      </div>
     </div>
   )
 }
