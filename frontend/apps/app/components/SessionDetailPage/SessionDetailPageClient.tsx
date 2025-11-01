@@ -204,6 +204,8 @@ export const SessionDetailPageClient: FC<Props> = ({
                   onTabChange={setActiveTab}
                   initialIsPublic={initialIsPublic}
                   analyzedRequirements={analyzedRequirements}
+                  messages={messages}
+                  isStreaming={isStreaming}
                 />
               </div>
             </ResizablePanel>

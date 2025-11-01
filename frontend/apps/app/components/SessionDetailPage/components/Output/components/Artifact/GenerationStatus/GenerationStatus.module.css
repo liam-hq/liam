@@ -1,0 +1,51 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: var(--color-surface-secondary);
+  margin-bottom: 12px;
+}
+
+.statusText {
+  font-size: 14px;
+  font-weight: 500;
+  background: linear-gradient(
+    90deg,
+    var(--color-text-primary) 0%,
+    var(--color-accent-primary) 25%,
+    var(--color-text-primary) 50%,
+    var(--color-accent-primary) 75%,
+    var(--color-text-primary) 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s linear infinite;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-primary);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
