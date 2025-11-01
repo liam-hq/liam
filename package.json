@@ -46,7 +46,7 @@
     "vercel:env-pull": "vercel env pull .env",
     "vercel:link": "vercel link -p liam-app -S \"liambx\" -y"
   },
-  "packageManager": "pnpm@10.18.2",
+  "packageManager": "pnpm@10.18.3",
   "pnpm": {
     "onlyBuiltDependencies": [
       "supabase"
