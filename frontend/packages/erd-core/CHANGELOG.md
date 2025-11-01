@@ -1,5 +1,13 @@
 # @liam-hq/erd-core
 
+## 0.6.16
+
+### Patch Changes
+
+- [#3833](https://github.com/liam-hq/liam/pull/3833) - - 🐛 Fix focus trap and enable click-outside-to-close for Table Detail Drawer / Thanks [@devin-ai-integration](https://github.com/apps/devin-ai-integration)!
+- [#3897](https://github.com/liam-hq/liam/pull/3897) - - 💄 style(CommandPalette): handle long names / Thanks [@tnyo43](https://github.com/tnyo43)!
+  - Wrap and truncate long text in options and input suggestions
+
 ## 0.6.15
 
 ### Patch Changes
