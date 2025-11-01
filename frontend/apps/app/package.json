@@ -10,7 +10,7 @@
     "@codemirror/view": "6.38.5",
     "@electric-sql/pglite": "0.3.10",
     "@langchain/core": "0.3.78",
-    "@lezer/highlight": "1.2.1",
+    "@lezer/highlight": "1.2.2",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/db": "workspace:*",
     "@liam-hq/erd-core": "workspace:*",
