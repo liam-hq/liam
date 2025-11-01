@@ -20,7 +20,7 @@
 }
 
 :not([data-disable-hover]) > .globalNav:hover {
-  width: 11rem;
+  width: 15rem;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
 }
 

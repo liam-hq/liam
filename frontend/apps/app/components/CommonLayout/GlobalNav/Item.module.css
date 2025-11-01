@@ -22,6 +22,7 @@
   .item {
   gap: var(--spacing-2half);
   width: auto;
+  justify-content: center;
 }
 
 .iconContainer > svg {
@@ -35,8 +36,10 @@
 
 .labelArea {
   display: flex;
-  gap: var(--spacing-2);
   align-items: center;
+  gap: var(--spacing-2);
+  flex: 1;
+  min-width: 0;
   opacity: 0;
   transition: opacity 0.1s var(--default-timing-function);
 }
@@ -50,6 +53,8 @@
 }
 
 .label {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--font-size-4, 0.8125rem);
