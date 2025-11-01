@@ -42,7 +42,7 @@ jobs:
         run: bash .github/scripts/setup-claude.sh
 
       - name: Run Claude Code Action
-        uses: anthropics/claude-code-action@777ffcbfc9d2e2b07f3cfec41b7c7eadedd1f0dc # v1.0.12
+        uses: anthropics/claude-code-action@e8bad572273ce919ba15fec95aef0ce974464753 # v1.0.13
         id: claude-code
         env:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
