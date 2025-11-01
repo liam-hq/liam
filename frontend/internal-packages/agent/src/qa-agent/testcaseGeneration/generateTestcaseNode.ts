@@ -1,4 +1,6 @@
 import {
+  AIMessage,
+  type AIMessageChunk,
   type BaseMessage,
   HumanMessage,
   SystemMessage,
@@ -7,7 +9,6 @@ import { ChatOpenAI } from '@langchain/openai'
 import { fromAsyncThrowable } from '@liam-hq/neverthrow'
 import { yamlSchemaDeparser } from '@liam-hq/schema'
 import { removeReasoningFromMessages } from '../../utils/messageCleanup'
-import { streamLLMResponse } from '../../utils/streamingLlmUtils'
 import { saveTestcaseTool } from '../tools/saveTestcaseTool'
 import { formatPreviousFailures } from '../utils/formatPreviousFailures'
 import {
@@ -34,8 +35,8 @@ const model = new ChatOpenAI({
  */
 export async function generateTestcaseNode(
   state: typeof testcaseAnnotation.State,
-): Promise<{ messages: BaseMessage[] }> {
-  const { currentTestcase, schemaData, goal, messages } = state
+): Promise<{ internalMessages: BaseMessage[] }> {
+  const { currentTestcase, schemaData, goal, internalMessages } = state
 
   const schemaContextResult = yamlSchemaDeparser(schemaData)
   if (schemaContextResult.isErr()) {
@@ -54,7 +55,7 @@ export async function generateTestcaseNode(
     previousFailures,
   })
 
-  const cleanedMessages = removeReasoningFromMessages(messages)
+  const cleanedMessages = removeReasoningFromMessages(internalMessages)
 
   const streamModel = fromAsyncThrowable(() => {
     return model.stream(
@@ -81,12 +82,21 @@ export async function generateTestcaseNode(
     )
   }
 
-  const response = await streamLLMResponse(streamResult.value, {
-    agentName: 'qa',
-    eventType: 'messages',
+  let accumulatedChunk: AIMessageChunk | null = null
+  for await (const chunk of streamResult.value) {
+    accumulatedChunk = accumulatedChunk ? accumulatedChunk.concat(chunk) : chunk
+  }
+
+  const response = new AIMessage({
+    content: accumulatedChunk?.content || '',
+    additional_kwargs: accumulatedChunk?.additional_kwargs || {},
+    name: 'qa',
+    ...(accumulatedChunk?.tool_calls && {
+      tool_calls: accumulatedChunk.tool_calls,
+    }),
   })
 
   return {
-    messages: [response],
+    internalMessages: [response],
   }
 }
