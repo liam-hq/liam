@@ -38,6 +38,18 @@
   color: var(--global-foreground);
 }
 
+.linkIcon {
+  width: 12px;
+  height: 12px;
+  margin-left: var(--spacing-1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.link:hover + .linkIcon {
+  opacity: 1;
+}
+
 .iconContainer {
   display: grid;
   grid-auto-flow: column;
@@ -49,6 +61,22 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.1s var(--default-timing-function);
+}
+
+/* enable to scroll to the top header element */
+/* 0px (= 41px * 0) for the first CollapsibleHeader component */
+.header {
+  scroll-margin-top: 0;
+}
+
+/* 41px (= 41px * 1) for the second CollapsibleHeader component */
+.header + .content + .header {
+  scroll-margin-top: 41px;
+}
+
+/* 82px (= 41px * 2) for the third CollapsibleHeader component */
+.header + .content + .header + .content + .header {
+  scroll-margin-top: 82px;
 }
 
 /* enable to scroll to the top children element */

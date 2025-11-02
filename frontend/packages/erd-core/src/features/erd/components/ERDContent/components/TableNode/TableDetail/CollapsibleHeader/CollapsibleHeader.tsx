@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, IconButton } from '@liam-hq/ui'
+import { ChevronDown, ChevronUp, IconButton, Link } from '@liam-hq/ui'
 import clsx from 'clsx'
 import {
   type ComponentProps,
@@ -12,6 +12,7 @@ import styles from './CollapsibleHeader.module.css'
 
 type CollapsibleHeaderProps = {
   title: string
+  id?: string
   icon: ReactNode
   children: ReactNode
   isContentVisible: boolean
@@ -22,6 +23,7 @@ type CollapsibleHeaderProps = {
 
 export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
   title,
+  id,
   icon,
   children,
   isContentVisible,
@@ -46,6 +48,7 @@ export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
     <>
       {/* biome-ignore lint/a11y/useSemanticElements: Using div with button role to avoid button-in-button nesting */}
       <div
+        id={id}
         className={styles.header}
         style={{ top: stickyTopHeight }}
         role="button"
@@ -55,7 +58,22 @@ export const CollapsibleHeader: FC<CollapsibleHeaderProps> = ({
       >
         <div className={styles.iconTitleContainer}>
           {icon}
-          <h2 className={styles.heading}>{title}</h2>
+          <h2 className={styles.heading}>
+            {id ? (
+              <>
+                <a
+                  className={styles.link}
+                  href={`#${id}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {title}
+                </a>
+                <Link className={styles.linkIcon} />
+              </>
+            ) : (
+              title
+            )}
+          </h2>
         </div>
         <div className={styles.iconContainer}>
           {additionalButtons}
