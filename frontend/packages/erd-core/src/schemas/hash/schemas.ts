@@ -1,7 +1,11 @@
 import { custom } from 'valibot'
 
-type HashType = 'columns' | 'indexes'
-const hashTypes = ['columns', 'indexes'] as const satisfies HashType[]
+type HashType = 'columns' | 'indexes' | 'constraints'
+const hashTypes = [
+  'columns',
+  'indexes',
+  'constraints',
+] as const satisfies HashType[]
 
 type HashSchemaType =
   | `${string}__${HashType}` // category level hash
