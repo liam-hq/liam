@@ -1,6 +1,7 @@
 import type { Table } from '@liam-hq/schema'
 import { Rows3 as Rows3Icon } from '@liam-hq/ui'
 import type { FC } from 'react'
+import { getTableColumnHeaderElementId } from '../../../../../../utils/url'
 import { CollapsibleHeader } from '../CollapsibleHeader'
 import { ColumnsItem } from './ColumnsItem'
 
@@ -13,6 +14,7 @@ export const Columns: FC<Props> = ({ table }) => {
   const contentMaxHeight = Object.keys(table.columns).length * 300
   return (
     <CollapsibleHeader
+      id={getTableColumnHeaderElementId(table.name)}
       title="Columns"
       icon={<Rows3Icon width={12} />}
       isContentVisible={true}

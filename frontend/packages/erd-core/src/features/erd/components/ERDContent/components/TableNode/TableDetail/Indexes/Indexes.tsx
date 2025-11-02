@@ -1,6 +1,7 @@
 import type { Indexes as IndexesType } from '@liam-hq/schema'
 import { FileText } from '@liam-hq/ui'
 import type { FC } from 'react'
+import { getTableIndexHeaderElementId } from '../../../../../../utils/url'
 import { CollapsibleHeader } from '../CollapsibleHeader'
 import { IndexesItem } from './IndexesItem'
 
@@ -14,7 +15,8 @@ export const Indexes: FC<Props> = ({ tableId, indexes }) => {
 
   return (
     <CollapsibleHeader
-      title="Indexes #"
+      title="Indexes"
+      id={getTableIndexHeaderElementId(tableId)}
       icon={<FileText width={12} />}
       isContentVisible={true}
       // NOTE: Header height for Columns section:

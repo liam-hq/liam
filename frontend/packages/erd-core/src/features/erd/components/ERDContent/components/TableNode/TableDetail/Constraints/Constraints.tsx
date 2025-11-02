@@ -1,6 +1,7 @@
 import type { Table } from '@liam-hq/schema'
 import { Lock } from '@liam-hq/ui'
 import type React from 'react'
+import { getTableConstraintHeaderElementId } from '../../../../../../utils/url'
 import { CollapsibleHeader } from '../CollapsibleHeader'
 import { CheckConstraints } from './CheckConstraints'
 import { ForeignKeyConstraints } from './ForeignKeyConstraints'
@@ -33,7 +34,8 @@ export const Constraints: React.FC<Props> = ({ table }) => {
 
   return (
     <CollapsibleHeader
-      title="Constraints #"
+      title="Constraints"
+      id={getTableConstraintHeaderElementId(tableId)}
       icon={<Lock width={12} />}
       isContentVisible={true}
       // NOTE: Header height for Columns and Indexes section:
