@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react'
 import { CommonLayout } from '../../components/CommonLayout'
+import { RemountOnRefresh } from './RemountOnRefresh'
 
-export default async function Layout({
+export default function Layout({
   children,
-  searchParams,
 }: Readonly<{
   children: ReactNode
-  searchParams: Promise<{ refresh?: string }>
 }>) {
-  const params = await searchParams
-  const refreshKey = params.refresh
-
-  return <CommonLayout key={refreshKey}>{children}</CommonLayout>
+  return (
+    <RemountOnRefresh>
+      <CommonLayout>{children}</CommonLayout>
+    </RemountOnRefresh>
+  )
 }
