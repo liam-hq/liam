@@ -24,7 +24,9 @@ export const useSessionNavigation = (state: CreateSessionState) => {
         JSON.stringify(humanMessage),
       )
 
-      router.push(state.redirectTo)
+      const url = new URL(state.redirectTo, window.location.origin)
+      url.searchParams.set('refresh', Date.now().toString())
+      router.push(url.pathname + url.search)
     })
   }, [state, router])
 
