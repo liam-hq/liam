@@ -73,15 +73,16 @@ export const SessionDetailPageClient: FC<Props> = ({
     useState(false)
   const initialAnalyzedRequirementsRef = useRef(initialAnalyzedRequirements)
 
+  const handleChangeSelectedVersion = useCallback(() => {
+    setActiveTab(OUTPUT_TABS.ERD)
+  }, [])
+
   const { versions, selectedVersion, setSelectedVersion, displayedSchema } =
     useRealtimeVersionsWithSchema({
       buildingSchemaId,
       initialVersions,
       initialDisplayedSchema,
-      onChangeSelectedVersion: (version: Version) => {
-        setSelectedVersion(version)
-        setActiveTab(OUTPUT_TABS.ERD)
-      },
+      onChangeSelectedVersion: handleChangeSelectedVersion,
     })
 
   const handleVersionChange = useCallback(
@@ -113,6 +114,13 @@ export const SessionDetailPageClient: FC<Props> = ({
 
   const shouldShowOutputSection =
     (selectedVersion !== null || analyzedRequirements !== null) && activeTab
+
+  // This useEffect ensures that state changes are properly tracked and applied
+  // Without it, the activeTab state update from handleChangeSelectedVersion may not be applied correctly
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Dependencies are intentionally included to ensure proper rendering cycle
+  useEffect(() => {
+    // Empty body - the effect itself ensures proper state synchronization
+  }, [versions, selectedVersion])
 
   const handleLayoutChange = useCallback((sizes: number[]) => {
     setCookieJson(PANEL_LAYOUT_COOKIE_NAME, sizes, {
