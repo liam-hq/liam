@@ -58,7 +58,9 @@
 .schemaEditorWrapper {
   width: 100%;
   min-height: 300px;
-  overflow: hidden;
+  max-height: 600px;
+  overflow: auto;
+  resize: vertical;
   background-color: var(--global-background);
   border: 1px solid var(--global-border);
   border-radius: var(--border-radius-md);
@@ -70,12 +72,24 @@
 }
 
 .schemaEditorWrapper:focus-within {
-  border-color: var(--pane-border-hover);
+  border-color: var(--global-border);
 }
 
 .schemaEditorWrapper.disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.schemaEditorWrapper :global(.cm-editor) {
+  height: 100%;
+}
+
+.schemaEditorWrapper :global(.cm-scroller) {
+  overflow: auto;
+}
+
+.schemaEditorWrapper :global(.cm-editor.cm-focused) {
+  outline: none;
 }
 
 .formatDropdown {
