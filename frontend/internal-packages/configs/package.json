@@ -9,14 +9,14 @@
     "./tsconfig/base.json": "./tsconfig/base.json"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.5",
+    "@biomejs/biome": "2.2.6",
     "@css-modules-kit/eslint-plugin": "0.3.0",
     "@eslint/compat": "1.4.0",
     "@eslint/css": "0.13.0",
     "@tsconfig/strictest": "2.0.6",
-    "@typescript-eslint/eslint-plugin": "8.46.0",
-    "@typescript-eslint/parser": "8.46.0",
-    "eslint": "9.37.0",
+    "@typescript-eslint/eslint-plugin": "8.46.1",
+    "@typescript-eslint/parser": "8.46.1",
+    "eslint": "9.38.0",
     "eslint-plugin-unicorn": "58.0.0"
   },
   "files": [

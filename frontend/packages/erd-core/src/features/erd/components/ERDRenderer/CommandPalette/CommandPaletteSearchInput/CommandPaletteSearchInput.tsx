@@ -18,16 +18,12 @@ type Props = ComponentProps<typeof Command.Input> & {
   mode: CommandPaletteInputMode
   suggestion: CommandPaletteSuggestion | null
   setMode: (mode: CommandPaletteInputMode) => void
-
-  // TODO: remove this prop and always activate table mode when releasing the feature
-  isTableModeActivatable?: boolean
 }
 
 export const CommandPaletteSearchInput: FC<Props> = ({
   mode,
   suggestion,
   setMode,
-  isTableModeActivatable = false,
   ...inputProps
 }) => {
   const [value, setValue] = useState('')
@@ -44,9 +40,6 @@ export const CommandPaletteSearchInput: FC<Props> = ({
   }, [mode])
 
   const suggestionValue = useMemo(() => {
-    // TODO: remove this statement when releasing the feature
-    if (!isTableModeActivatable) return null
-
     if (!suggestion) return null
 
     // no need to show completion cases
@@ -58,7 +51,7 @@ export const CommandPaletteSearchInput: FC<Props> = ({
       : suggestion.type === 'index'
         ? suggestion.indexName
         : suggestion.name
-  }, [mode, suggestion, isTableModeActivatable])
+  }, [mode, suggestion])
 
   const completionSuffix = useMemo(() => {
     if (!suggestionValue) return
@@ -82,15 +75,12 @@ export const CommandPaletteSearchInput: FC<Props> = ({
             return
           }
 
-          // TODO: remove this condition and always activate table mode when releasing the feature
-          if (isTableModeActivatable) {
-            if (event.key === 'Tab' && suggestion?.type === 'table') {
-              // switch to "table" mode if a table is suggested and Tab key is pressed
-              event.preventDefault()
-              setMode({ type: 'table', tableName: suggestion.name })
-              setValue('')
-              return
-            }
+          if (event.key === 'Tab' && suggestion?.type === 'table') {
+            // switch to "table" mode if a table is suggested and Tab key is pressed
+            event.preventDefault()
+            setMode({ type: 'table', tableName: suggestion.name })
+            setValue('')
+            return
           }
 
           break
@@ -109,24 +99,14 @@ export const CommandPaletteSearchInput: FC<Props> = ({
         }
       }
 
-      // TODO: remove this condition and always activate table mode when releasing the feature
-      if (isTableModeActivatable) {
-        // it completes input value with suggestion when Tab key is pressed but the the input mode is not "default" or the suggestion type is not "table"
-        if (event.key === 'Tab' && suggestionValue) {
-          event.preventDefault()
-          setValue(suggestionValue)
-          return
-        }
+      // it completes input value with suggestion when Tab key is pressed but the the input mode is not "default" or the suggestion type is not "table"
+      if (event.key === 'Tab' && suggestionValue) {
+        event.preventDefault()
+        setValue(suggestionValue)
+        return
       }
     },
-    [
-      mode.type,
-      value,
-      setMode,
-      suggestion,
-      isTableModeActivatable,
-      suggestionValue,
-    ],
+    [mode.type, value, setMode, suggestion, suggestionValue],
   )
 
   return (

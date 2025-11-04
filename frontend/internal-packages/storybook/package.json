@@ -7,14 +7,14 @@
     "react-dom": "19.1.1"
   },
   "devDependencies": {
-    "@storybook/addon-docs": "9.1.10",
-    "@storybook/addon-links": "9.1.10",
-    "@storybook/nextjs": "9.1.10",
+    "@storybook/addon-docs": "9.1.13",
+    "@storybook/addon-links": "9.1.13",
+    "@storybook/nextjs": "9.1.13",
     "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.1",
+    "@types/react-dom": "19.2.2",
     "msw": "2.11.5",
     "msw-storybook-addon": "2.0.6",
-    "storybook": "9.1.10",
+    "storybook": "9.1.13",
     "typescript": "5.9.3",
     "zod": "3.25.76"
   },

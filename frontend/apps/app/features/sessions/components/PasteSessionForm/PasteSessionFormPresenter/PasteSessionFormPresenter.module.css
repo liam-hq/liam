@@ -78,45 +78,9 @@
   opacity: 0.6;
 }
 
-.formatSelectorWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.formatLabel {
-  font-size: var(--font-size-4);
-  font-weight: 500;
-  color: var(--global-foreground);
-}
-
-.formatSelect {
-  width: 100%;
-  max-width: 300px;
-  padding: var(--spacing-2) var(--spacing-3);
-  font-family: inherit;
-  font-size: var(--font-size-4);
-  line-height: 1.5;
-  color: var(--global-foreground);
-  cursor: pointer;
-  background-color: var(--global-background);
-  border: 1px solid var(--global-border);
-  border-radius: var(--border-radius-md);
-  transition: border-color 0.2s ease;
-}
-
-.formatSelect:hover {
-  border-color: var(--overlay-30);
-}
-
-.formatSelect:focus {
-  outline: none;
-  border-color: var(--pane-border-hover);
-}
-
-.formatSelect:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.formatDropdown {
+  align-self: flex-start;
+  width: fit-content;
 }
 
 .divider {

@@ -19,11 +19,11 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.5",
+    "@biomejs/biome": "2.2.6",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.18.10",
+    "@types/node": "22.18.11",
     "concurrently": "9.2.1",
-    "eslint": "9.37.0",
+    "eslint": "9.38.0",
     "typescript": "5.9.3"
   },
   "scripts": {

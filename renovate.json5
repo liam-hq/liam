@@ -64,7 +64,8 @@
         "node",
         "knip",
         "anthropics/claude-code-action",
-        "anthropics/claude-code-security-review"
+        "anthropics/claude-code-security-review",
+        "esbuild"
       ],
       "matchDepTypes": [
         "devDependencies"

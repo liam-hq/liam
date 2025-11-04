@@ -6,13 +6,13 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.20.0",
+    "@modelcontextprotocol/sdk": "1.20.1",
     "zod": "4.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.5",
+    "@biomejs/biome": "2.2.6",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.18.10",
+    "@types/node": "22.18.11",
     "concurrently": "9.2.1",
     "tsx": "4.20.6",
     "typescript": "5.9.3"

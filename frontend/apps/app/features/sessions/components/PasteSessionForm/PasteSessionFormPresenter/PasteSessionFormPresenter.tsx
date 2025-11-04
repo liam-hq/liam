@@ -11,6 +11,7 @@ import {
 } from 'react'
 import type { FormatType } from '../../../../../components/FormatIcon/FormatIcon'
 import { createAccessibleOpacityTransition } from '../../../../../utils/accessibleTransitions'
+import { FormatSelectDropdown } from '../../shared/FormatSelectDropdown/FormatSelectDropdown'
 import { useAutoResizeTextarea } from '../../shared/hooks/useAutoResizeTextarea'
 import { useEnterKeySubmission } from '../../shared/hooks/useEnterKeySubmission'
 import { SessionFormActions } from '../../shared/SessionFormActions'
@@ -22,10 +23,6 @@ type Props = {
   isPending: boolean
   formAction: (formData: FormData) => void
   isTransitioning?: boolean
-}
-
-const isFormatType = (value: string): value is FormatType => {
-  return ['postgres', 'schemarb', 'prisma', 'tbls'].includes(value)
 }
 
 const usePasteForm = () => {
@@ -58,7 +55,6 @@ export const PasteSessionFormPresenter: FC<Props> = ({
 }) => {
   const initialMessageId = useId()
   const schemaContentId = useId()
-  const formatSelectId = useId()
   const {
     schemaContent,
     textContent,
@@ -131,27 +127,11 @@ export const PasteSessionFormPresenter: FC<Props> = ({
               )}
             />
           </div>
-          <div className={styles.formatSelectorWrapper}>
-            <label htmlFor={formatSelectId} className={styles.formatLabel}>
-              Schema Format
-            </label>
-            <select
-              id={formatSelectId}
-              value={selectedFormat}
-              onChange={(e) => {
-                const value = e.target.value
-                if (isFormatType(value)) {
-                  setSelectedFormat(value)
-                }
-              }}
-              disabled={isPending}
-              className={styles.formatSelect}
-            >
-              <option value="postgres">SQL (PostgreSQL)</option>
-              <option value="schemarb">schema.rb (Ruby on Rails)</option>
-              <option value="prisma">Prisma</option>
-              <option value="tbls">TBLS</option>
-            </select>
+          <div className={styles.formatDropdown}>
+            <FormatSelectDropdown
+              selectedFormat={selectedFormat}
+              onFormatChange={setSelectedFormat}
+            />
           </div>
         </div>
         <div className={styles.divider} />

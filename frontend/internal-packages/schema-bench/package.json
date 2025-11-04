@@ -17,9 +17,9 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.5",
+    "@biomejs/biome": "2.2.6",
     "@liam-hq/configs": "workspace:*",
-    "eslint": "9.37.0",
+    "eslint": "9.38.0",
     "vitest": "3.2.4"
   },
   "scripts": {
