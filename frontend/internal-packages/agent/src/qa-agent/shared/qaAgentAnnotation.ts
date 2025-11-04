@@ -4,6 +4,7 @@ import type { AnalyzedRequirements } from '../../schemas/analyzedRequirements'
 import {
   generatedSqlsAnnotation,
   qaSchemaIssuesAnnotation,
+  skipReasonsAnnotation,
 } from '../testcaseGeneration/testcaseAnnotation'
 
 /**
@@ -28,6 +29,7 @@ export const qaAgentAnnotation = Annotation.Root({
   designSessionId: Annotation<string>,
   schemaIssues: qaSchemaIssuesAnnotation,
   generatedSqls: generatedSqlsAnnotation,
+  skipReasons: skipReasonsAnnotation,
   failureAnalysis: Annotation<
     { failedSqlTestIds: string[]; failedSchemaTestIds: string[] } | undefined
   >({

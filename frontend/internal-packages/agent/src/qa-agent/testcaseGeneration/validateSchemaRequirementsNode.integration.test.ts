@@ -96,6 +96,7 @@ describe('validateSchemaRequirementsNode Integration', () => {
       schemaData: mockSchema,
       schemaIssues: [],
       generatedSqls: [],
+      skipReasons: [],
     }
 
     // Act
@@ -199,6 +200,7 @@ describe('validateSchemaRequirementsNode Integration', () => {
       schemaData: mockSchema,
       schemaIssues: [],
       generatedSqls: [],
+      skipReasons: [],
     }
 
     // Act

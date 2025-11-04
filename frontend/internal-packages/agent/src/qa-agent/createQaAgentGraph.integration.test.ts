@@ -473,6 +473,7 @@ describe('createQaAgentGraph Integration', () => {
       designSessionId: context.designSessionId,
       schemaIssues: [],
       generatedSqls: [],
+      skipReasons: [],
       failureAnalysis: undefined,
       next: END,
     }

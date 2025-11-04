@@ -235,6 +235,22 @@ const executeTestCases = async (
   )) {
     updatedTestcases[category] = await Promise.all(
       testcases.map(async (testcase) => {
+        // Skip test execution if skipReason is present
+        if (testcase.skipReason) {
+          return {
+            ...testcase,
+            testResults: [
+              ...testcase.testResults,
+              {
+                executedAt: new Date().toISOString(),
+                success: false as const,
+                message: '',
+                skipReason: testcase.skipReason,
+              },
+            ],
+          }
+        }
+
         const testResult = await executeTestCase(
           ddlStatements,
           testcase,

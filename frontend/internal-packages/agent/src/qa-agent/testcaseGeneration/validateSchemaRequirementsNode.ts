@@ -87,9 +87,15 @@ Can this schema fulfill this test case for SQL generation?
     description: validationResult.issueDescription,
   }
 
+  const skipReason = {
+    testcaseId: currentTestcase.testcase.id,
+    reason: validationResult.issueDescription,
+  }
+
   return new Command({
     update: {
       schemaIssues: [schemaIssue],
+      skipReasons: [skipReason],
     },
     goto: END,
   })

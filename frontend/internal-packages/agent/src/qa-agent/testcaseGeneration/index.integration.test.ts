@@ -57,6 +57,7 @@ describe('testcaseGeneration Integration', () => {
       schemaData: mockSchema,
       schemaIssues: [],
       generatedSqls: [],
+      skipReasons: [],
     }
 
     // Act

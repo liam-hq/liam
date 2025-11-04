@@ -1,6 +1,7 @@
 import type { AnalyzedRequirements, TestCase } from '@liam-hq/agent/client'
 import {
   FAILURE_ICON,
+  SKIP_ICON,
   SUCCESS_ICON,
   TEST_RESULTS_SECTION_TITLE,
 } from '../constants'
@@ -29,7 +30,11 @@ function formatTestCase(
     sections.push('')
 
     testCase.testResults.forEach((result) => {
-      const statusIcon = result.success ? SUCCESS_ICON : FAILURE_ICON
+      const statusIcon = result.skipReason
+        ? SKIP_ICON
+        : result.success
+          ? SUCCESS_ICON
+          : FAILURE_ICON
       const executedAt = new Date(result.executedAt).toLocaleString('en-US', {
         year: 'numeric',
         month: '2-digit',
@@ -41,7 +46,7 @@ function formatTestCase(
       })
 
       sections.push(`${statusIcon} **${executedAt}**`)
-      sections.push(`> ${result.message}`)
+      sections.push(`> ${result.skipReason ?? result.message}`)
       sections.push('')
     })
   }

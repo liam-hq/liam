@@ -5,6 +5,7 @@ const testResultSchema = v.object({
   executedAt: v.pipe(v.string(), v.isoTimestamp()),
   success: v.boolean(),
   message: v.string(),
+  skipReason: v.optional(v.string()),
 })
 
 // Test case schema
@@ -14,6 +15,7 @@ export const testCaseSchema = v.object({
   type: v.picklist(['INSERT', 'UPDATE', 'DELETE', 'SELECT']),
   sql: v.string(),
   testResults: v.array(testResultSchema),
+  skipReason: v.optional(v.string()),
 })
 
 export type TestCase = v.InferOutput<typeof testCaseSchema>

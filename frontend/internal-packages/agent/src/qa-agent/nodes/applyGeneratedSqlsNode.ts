@@ -1,32 +1,46 @@
+import type { TestCase } from '../../schemas/analyzedRequirements'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
 
-export const applyGeneratedSqlsNode = (state: QaAgentState) => {
-  const { generatedSqls, analyzedRequirements } = state
+const updateTestcase = (
+  testcases: Record<string, TestCase[]>,
+  testcaseId: string,
+  updates: Partial<TestCase>,
+) => {
+  for (const [category, categoryTestcases] of Object.entries(testcases)) {
+    const testcaseIndex = categoryTestcases.findIndex(
+      (tc) => tc.id === testcaseId,
+    )
+    if (testcaseIndex !== -1) {
+      const existingTestcase = categoryTestcases[testcaseIndex]
+      if (!existingTestcase) continue
 
-  if (generatedSqls.length === 0) {
+      testcases[category] = [...categoryTestcases]
+      testcases[category][testcaseIndex] = {
+        ...existingTestcase,
+        ...updates,
+      }
+      break
+    }
+  }
+}
+
+export const applyGeneratedSqlsNode = (state: QaAgentState) => {
+  const { generatedSqls, skipReasons, analyzedRequirements } = state
+
+  if (generatedSqls.length === 0 && skipReasons.length === 0) {
     return {}
   }
 
   const updatedTestcases = { ...analyzedRequirements.testcases }
 
+  // Apply generated SQLs
   for (const { testcaseId, sql } of generatedSqls) {
-    for (const [category, testcases] of Object.entries(updatedTestcases)) {
-      const testcaseIndex = testcases.findIndex((tc) => tc.id === testcaseId)
-      if (testcaseIndex !== -1) {
-        const updatedTestcase = testcases[testcaseIndex]
-        if (!updatedTestcase) continue
+    updateTestcase(updatedTestcases, testcaseId, { sql })
+  }
 
-        updatedTestcases[category] = [...testcases]
-        updatedTestcases[category][testcaseIndex] = {
-          id: updatedTestcase.id,
-          title: updatedTestcase.title,
-          type: updatedTestcase.type,
-          testResults: updatedTestcase.testResults,
-          sql,
-        }
-        break
-      }
-    }
+  // Apply skip reasons
+  for (const { testcaseId, reason } of skipReasons) {
+    updateTestcase(updatedTestcases, testcaseId, { skipReason: reason })
   }
 
   return {

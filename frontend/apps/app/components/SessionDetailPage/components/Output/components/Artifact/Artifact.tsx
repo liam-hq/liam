@@ -17,6 +17,8 @@ import styles from './Artifact.module.css'
 import {
   FAILURE_ICON,
   FAILURE_STATUS,
+  SKIP_ICON,
+  SKIP_STATUS,
   SUCCESS_ICON,
   SUCCESS_STATUS,
   TEST_RESULTS_SECTION_TITLE,
@@ -103,20 +105,24 @@ export const Artifact: FC<Props> = ({ doc, error }) => {
                   // Check if this is an execution log entry
                   const successPattern = `${SUCCESS_ICON} ${SUCCESS_STATUS}`
                   const failurePattern = `${FAILURE_ICON} ${FAILURE_STATUS}`
+                  const skipPattern = `${SKIP_ICON} ${SKIP_STATUS}`
                   const executionLogPattern = new RegExp(
-                    `^(.+?):\\s*(${successPattern}|${failurePattern})\\s*-\\s*(.+)$`,
+                    `^(.+?):\\s*(${successPattern}|${failurePattern}|${skipPattern})\\s*-\\s*(.+)$`,
                   )
                   const executionLogMatch = text.match(executionLogPattern)
                   if (executionLogMatch) {
                     const [, timestamp, status, message] = executionLogMatch
                     const isSuccess = status?.includes(successPattern)
+                    const isSkip = status?.includes(skipPattern)
                     return (
                       <li className={styles.executionLogItem} {...rest}>
                         <span
                           className={
                             isSuccess
                               ? styles.executionLogSuccess
-                              : styles.executionLogFailed
+                              : isSkip
+                                ? styles.executionLogSkipped
+                                : styles.executionLogFailed
                           }
                         >
                           {status} - {message}

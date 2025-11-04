@@ -42,7 +42,25 @@ export const createGraph = (checkpointer?: BaseCheckpointSaver) => {
   }
 
   const callQaAgent = async (state: WorkflowState, config: RunnableConfig) => {
-    const modifiedState = { ...state, messages: [] }
+    // Clear skipReason from all test cases to enable retry after DB agent improvements
+    const clearedTestcases = Object.fromEntries(
+      Object.entries(state.analyzedRequirements.testcases).map(
+        ([category, testcases]) => [
+          category,
+          testcases.map((tc) => ({ ...tc, skipReason: undefined })),
+        ],
+      ),
+    )
+
+    const modifiedState = {
+      ...state,
+      messages: [],
+      analyzedRequirements: {
+        ...state.analyzedRequirements,
+        testcases: clearedTestcases,
+      },
+    }
+
     const output = await qaAgentSubgraph.invoke(modifiedState, {
       ...config,
       recursionLimit: QA_AGENT_RECURSION_LIMIT,

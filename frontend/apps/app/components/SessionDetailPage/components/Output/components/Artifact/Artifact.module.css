@@ -497,6 +497,12 @@
   color: var(--danger-high-contrast-text) !important;
 }
 
+.body .executionLogSkipped {
+  font-family: var(--code-font);
+  font-size: var(--font-size-3);
+  color: var(--severity-warning-100) !important;
+}
+
 /* Execution Logs heading styling */
 .executionLogsHeading {
   padding-left: var(--spacing-1) !important;

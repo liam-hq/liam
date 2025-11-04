@@ -1,5 +1,7 @@
 export const TEST_RESULTS_SECTION_TITLE = 'Test Results'
 export const SUCCESS_ICON = '✅'
 export const FAILURE_ICON = '❌'
+export const SKIP_ICON = '⏩'
 export const SUCCESS_STATUS = 'Success'
 export const FAILURE_STATUS = 'Failed'
+export const SKIP_STATUS = 'Skipped'
