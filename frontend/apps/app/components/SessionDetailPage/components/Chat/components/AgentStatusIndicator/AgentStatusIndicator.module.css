@@ -1,0 +1,15 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--pane-background);
+  border-top: 1px solid var(--global-border);
+}
+
+.agentName {
+  font-size: var(--font-size-sm);
+  color: var(--overlay-60);
+  font-weight: 500;
+}

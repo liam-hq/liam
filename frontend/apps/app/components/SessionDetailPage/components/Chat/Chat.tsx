@@ -1,10 +1,12 @@
 'use client'
 
 import type { BaseMessage } from '@langchain/core/messages'
+import { isAIMessage } from '@langchain/core/messages'
 import type { FC } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { OutputTabValue } from '../Output/constants'
 import styles from './Chat.module.css'
+import { AgentStatusIndicator } from './components/AgentStatusIndicator'
 import { ErrorDisplay } from './components/ErrorDisplay'
 import { Messages } from './components/Messages'
 import { ScrollToBottomButton } from './components/ScrollToBottomButton'
@@ -18,6 +20,27 @@ type Props = {
   onNavigate: (tab: OutputTabValue) => void
 }
 
+type AgentRole = 'db' | 'pm' | 'qa' | 'lead'
+
+const isValidAgentRole = (role: string): role is AgentRole => {
+  return ['db', 'pm', 'qa', 'lead'].includes(role)
+}
+
+const getCurrentAgent = (messages: BaseMessage[]): AgentRole | null => {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (!message) continue
+    if (
+      isAIMessage(message) &&
+      message.name &&
+      isValidAgentRole(message.name)
+    ) {
+      return message.name
+    }
+  }
+  return null
+}
+
 export const Chat: FC<Props> = ({
   messages,
   isWorkflowRunning = false,
@@ -28,6 +51,8 @@ export const Chat: FC<Props> = ({
     messages.length,
   )
   const [showScrollButton, setShowScrollButton] = useState(false)
+
+  const currentAgent = useMemo(() => getCurrentAgent(messages), [messages])
 
   const recomputeScrollButton = useCallback(() => {
     const el = containerRef.current
@@ -67,6 +92,9 @@ export const Chat: FC<Props> = ({
           onClick={scrollToBottom}
         />
       </div>
+      {isWorkflowRunning && currentAgent && (
+        <AgentStatusIndicator currentAgent={currentAgent} />
+      )}
     </div>
   )
 }
