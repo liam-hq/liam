@@ -53,7 +53,6 @@ export const saveTestcaseTool: StructuredTool = tool(
         const errorMessage = `Invalid tool input: ${parsed.issues
           .map((issue) => issue.message)
           .join(', ')}`
-        // Removed dispatchCustomEvent to prevent message flooding during parallel execution
         throw new WorkflowTerminationError(new Error(errorMessage), TOOL_NAME)
       }
 
@@ -64,7 +63,6 @@ export const saveTestcaseTool: StructuredTool = tool(
         toAsync(validatePgTapTest(sql)),
       ])
       if (result.isErr()) {
-        // Removed dispatchCustomEvent to prevent message flooding during parallel execution
         // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
         throw new Error(result.error.join('\n'))
       }
@@ -83,7 +81,6 @@ export const saveTestcaseTool: StructuredTool = tool(
         content: `Successfully saved SQL for test case "${title}" in category "${category}"`,
         tool_call_id: toolCallId,
       })
-      // Removed dispatchCustomEvent to prevent message flooding during parallel execution
 
       return new Command({
         update: {
