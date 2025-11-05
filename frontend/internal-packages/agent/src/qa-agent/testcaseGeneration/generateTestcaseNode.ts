@@ -1,6 +1,4 @@
 import {
-  AIMessage,
-  type AIMessageChunk,
   type BaseMessage,
   HumanMessage,
   SystemMessage,
@@ -57,8 +55,8 @@ export async function generateTestcaseNode(
 
   const cleanedMessages = removeReasoningFromMessages(internalMessages)
 
-  const streamModel = fromAsyncThrowable(() => {
-    return model.stream(
+  const invokeModel = fromAsyncThrowable(() => {
+    return model.invoke(
       [
         new SystemMessage(SYSTEM_PROMPT_FOR_TESTCASE_GENERATION),
         new HumanMessage(contextMessage),
@@ -66,37 +64,21 @@ export async function generateTestcaseNode(
         ...cleanedMessages,
       ],
       {
-        options: {
-          timeout: 120000, // 120s
-        },
+        timeout: 120000, // 120s
       },
     )
   })
 
-  const streamResult = await streamModel()
+  const result = await invokeModel()
 
-  if (streamResult.isErr()) {
+  if (result.isErr()) {
     // eslint-disable-next-line no-throw-error/no-throw-error -- Required for LangGraph retry mechanism
     throw new Error(
-      `Failed to generate SQL for ${currentTestcase.category}/${currentTestcase.testcase.title}: ${streamResult.error.message}`,
+      `Failed to generate SQL for ${currentTestcase.category}/${currentTestcase.testcase.title}: ${result.error.message}`,
     )
   }
 
-  let accumulatedChunk: AIMessageChunk | null = null
-  for await (const chunk of streamResult.value) {
-    accumulatedChunk = accumulatedChunk ? accumulatedChunk.concat(chunk) : chunk
-  }
-
-  const response = new AIMessage({
-    content: accumulatedChunk?.content || '',
-    additional_kwargs: accumulatedChunk?.additional_kwargs || {},
-    name: 'qa',
-    ...(accumulatedChunk?.tool_calls && {
-      tool_calls: accumulatedChunk.tool_calls,
-    }),
-  })
-
   return {
-    internalMessages: [response],
+    internalMessages: [result.value],
   }
 }
