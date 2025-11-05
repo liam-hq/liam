@@ -39,7 +39,6 @@ export function continueToRequirements(state: QaAgentState) {
         currentTestcase: testcaseData,
         schemaData: state.schemaData,
         goal: state.analyzedRequirements.goal,
-        messages: [], // Keep messages empty to prevent auto-concat to parent
         internalMessages: [], // Start with empty messages for isolation
       }),
   )

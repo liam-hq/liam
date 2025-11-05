@@ -81,7 +81,6 @@ describe('validateSchemaRequirementsNode Integration', () => {
     }
 
     const state: TestcaseState = {
-      messages: [],
       internalMessages: [],
       currentTestcase: {
         category: 'tasks',
@@ -184,7 +183,6 @@ describe('validateSchemaRequirementsNode Integration', () => {
     }
 
     const state: TestcaseState = {
-      messages: [],
       internalMessages: [],
       currentTestcase: {
         category: 'project-management',

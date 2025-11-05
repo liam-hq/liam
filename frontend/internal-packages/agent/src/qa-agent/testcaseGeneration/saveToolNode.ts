@@ -24,10 +24,8 @@ export const saveToolNode = async (
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- ToolNode result type is not well-typed
   if ('messages' in result && Array.isArray(result.messages)) {
     return {
-      ...result,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- ToolNode result type is not well-typed
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- ToolNode result type is not well-typed
       internalMessages: result.messages,
-      messages: [], // Prevent messages from propagating to parent graph
     }
   }
 
