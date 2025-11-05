@@ -1,3 +1,4 @@
+import { dispatchCustomEvent } from '@langchain/core/callbacks/dispatch'
 import { AIMessage } from '@langchain/core/messages'
 import { Send } from '@langchain/langgraph'
 import type { QaAgentState } from '../shared/qaAgentAnnotation'
@@ -9,17 +10,19 @@ export type { TestCaseData } from './types'
  * Prepare testcase generation by adding a start message to state
  * This node runs before distributing requirements to parallel subgraphs
  */
-export function prepareTestcaseGeneration(state: QaAgentState) {
+export async function prepareTestcaseGeneration(state: QaAgentState) {
   const targetTestcases = getUnprocessedRequirements(state)
 
+  const message = new AIMessage({
+    id: crypto.randomUUID(),
+    name: 'qa',
+    content: `Generating test cases (processing ${targetTestcases.length} requirements)...`,
+  })
+
+  await dispatchCustomEvent('messages', message)
+
   return {
-    messages: [
-      new AIMessage({
-        id: crypto.randomUUID(),
-        name: 'qa',
-        content: `Generating test cases (processing ${targetTestcases.length} requirements)...`,
-      }),
-    ],
+    messages: [message],
   }
 }
 
