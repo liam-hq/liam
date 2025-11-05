@@ -92,6 +92,11 @@
   outline: none;
 }
 
+.schemaEditorWrapper :global([contenteditable='true']:focus),
+.schemaEditorWrapper :global([contenteditable='true']:focus-visible) {
+  outline: none;
+}
+
 .formatDropdown {
   align-self: flex-start;
   width: fit-content;
