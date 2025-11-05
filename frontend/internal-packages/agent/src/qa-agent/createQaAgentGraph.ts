@@ -1,6 +1,9 @@
 import { END, START, StateGraph } from '@langchain/langgraph'
 import { RETRY_POLICY } from '../utils/errorHandling'
-import { continueToRequirements } from './distributeRequirements'
+import {
+  continueToRequirements,
+  prepareTestcaseGeneration,
+} from './distributeRequirements'
 import { analyzeTestFailuresNode } from './nodes/analyzeTestFailuresNode'
 import { applyGeneratedSqlsNode } from './nodes/applyGeneratedSqlsNode'
 import { invokeRunTestToolNode } from './nodes/invokeRunTestToolNode'
@@ -15,6 +18,7 @@ export const createQaAgentGraph = () => {
 
   qaAgentGraph
     // Add nodes for map-reduce pattern
+    .addNode('prepareTestcaseGeneration', prepareTestcaseGeneration)
     .addNode('testcaseGeneration', testcaseGeneration)
 
     .addNode('applyGeneratedSqls', applyGeneratedSqlsNode)
@@ -29,9 +33,12 @@ export const createQaAgentGraph = () => {
     .addNode('resetFailedSqlTests', resetFailedSqlTestsNode)
 
     // Define edges for map-reduce flow
-    // Use conditional edge with Send API for parallel execution from START
-    // Send targets the testcaseGeneration
-    .addConditionalEdges(START, continueToRequirements)
+    // START → prepareTestcaseGeneration to add start message to state
+    .addEdge(START, 'prepareTestcaseGeneration')
+
+    // Use conditional edge with Send API for parallel execution
+    // Send targets the testcaseGeneration subgraph
+    .addConditionalEdges('prepareTestcaseGeneration', continueToRequirements)
 
     // After all parallel subgraph executions complete, apply generated SQLs
     .addEdge('testcaseGeneration', 'applyGeneratedSqls')
@@ -51,8 +58,8 @@ export const createQaAgentGraph = () => {
       [END]: END,
     })
 
-    // After resetting failed SQL tests, go back to testcaseGeneration to regenerate
-    .addConditionalEdges('resetFailedSqlTests', continueToRequirements)
+    // After resetting failed SQL tests, prepare again before regenerating
+    .addEdge('resetFailedSqlTests', 'prepareTestcaseGeneration')
 
   return qaAgentGraph.compile()
 }

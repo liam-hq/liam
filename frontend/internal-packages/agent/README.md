@@ -234,6 +234,7 @@ The `qaAgent` node is implemented as a **LangGraph subgraph** that encapsulates 
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
+	prepareTestcaseGeneration(prepareTestcaseGeneration)
 	testcaseGeneration(testcaseGeneration)
 	applyGeneratedSqls(applyGeneratedSqls)
 	validateSchema(validateSchema)
@@ -241,25 +242,21 @@ graph TD;
 	analyzeTestFailures(analyzeTestFailures)
 	resetFailedSqlTests(resetFailedSqlTests)
 	__end__([<p>__end__</p>]):::last
+	__start__ --> prepareTestcaseGeneration;
 	applyGeneratedSqls --> validateSchema;
 	invokeRunTestTool --> analyzeTestFailures;
+	resetFailedSqlTests --> prepareTestcaseGeneration;
 	testcaseGeneration --> applyGeneratedSqls;
 	validateSchema --> invokeRunTestTool;
-	__start__ -.-> testcaseGeneration;
-	__start__ -.-> applyGeneratedSqls;
-	__start__ -.-> validateSchema;
-	__start__ -.-> invokeRunTestTool;
-	__start__ -.-> analyzeTestFailures;
-	__start__ -.-> resetFailedSqlTests;
-	__start__ -.-> __end__;
+	prepareTestcaseGeneration -.-> testcaseGeneration;
+	prepareTestcaseGeneration -.-> applyGeneratedSqls;
+	prepareTestcaseGeneration -.-> validateSchema;
+	prepareTestcaseGeneration -.-> invokeRunTestTool;
+	prepareTestcaseGeneration -.-> analyzeTestFailures;
+	prepareTestcaseGeneration -.-> resetFailedSqlTests;
+	prepareTestcaseGeneration -.-> __end__;
 	analyzeTestFailures -.-> resetFailedSqlTests;
 	analyzeTestFailures -.-> __end__;
-	resetFailedSqlTests -.-> testcaseGeneration;
-	resetFailedSqlTests -.-> applyGeneratedSqls;
-	resetFailedSqlTests -.-> validateSchema;
-	resetFailedSqlTests -.-> invokeRunTestTool;
-	resetFailedSqlTests -.-> analyzeTestFailures;
-	resetFailedSqlTests -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
@@ -267,14 +264,20 @@ graph TD;
 
 ### QA Agent Components
 
-#### 1. testcaseGeneration Node
+#### 1. prepareTestcaseGeneration Node
+
+- **Purpose**: Adds a start message to state before distributing requirements to parallel subgraphs
+- **Performed by**: prepareTestcaseGeneration function
+- **Output**: Updates messages state with a notification message indicating testcase generation has started
+
+#### 2. testcaseGeneration Node
 
 - **Purpose**: Implements map-reduce pattern for parallel testcase generation using a dedicated subgraph
 - **Performed by**: Multiple parallel instances of testcase generation subgraph
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Output**: AI-generated test cases with DML operations using tool calls
 
-#### 2. applyGeneratedSqls Node
+#### 3. applyGeneratedSqls Node
 
 - **Purpose**: Maps generated SQLs from testcaseGeneration to analyzedRequirements.testcases
 - **Performed by**: applyGeneratedSqlsNode function
@@ -307,49 +310,49 @@ graph TD;
 - **generateTestcase**: Generates test cases and DML operations using GPT-5-nano with specialized prompts
 - **invokeSaveTool**: Executes saveTestcaseTool to persist generated test cases with DML operations
 
-#### 3. validateSchemaRequirements Node
+#### 4. validateSchemaRequirements Node
 
 - **Purpose**: Pre-validation node that checks if schema can fulfill requirements before test generation
 - **Performed by**: Schema validation logic with requirement analysis
 - **Retry Policy**: maxAttempts: 3 (internal to testcaseGeneration subgraph)
 - **Decision Making**: Routes to generateTestcase if sufficient, or END if schema is insufficient
 
-#### 4. generateTestcase Node
+#### 5. generateTestcase Node
 
 - **Purpose**: Generates test cases and DML operations for a single requirement
 - **Performed by**: GPT-5-nano with specialized test case generation prompts
 - **Retry Policy**: maxAttempts: 3 (internal to testcaseGeneration subgraph)
 - **Tool Integration**: Uses saveTestcaseTool for structured test case output
 
-#### 5. invokeSaveTool Node
+#### 6. invokeSaveTool Node
 
 - **Purpose**: Executes saveTestcaseTool to persist generated test cases
 - **Performed by**: ToolNode with saveTestcaseTool
 - **Retry Policy**: maxAttempts: 3 (internal to testcaseGeneration subgraph)
 - **Output**: Saves test cases with DML operations to workflow state
 
-#### 6. validateSchema Node
+#### 7. validateSchema Node
 
 - **Purpose**: Creates AI message to trigger test execution for schema validation
 - **Performed by**: validateSchemaNode function
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Output**: Generates tool call for runTestTool execution
 
-#### 7. invokeRunTestTool Node
+#### 8. invokeRunTestTool Node
 
 - **Purpose**: Executes DML statements and validates schema functionality
 - **Performed by**: ToolNode with runTestTool
 - **Retry Policy**: maxAttempts: 3 (internal to subgraph)
 - **Validation**: Schema integrity and DML execution results
 
-#### 8. analyzeTestFailures Node
+#### 9. analyzeTestFailures Node
 
 - **Purpose**: Analyzes test execution results and identifies failed tests for retry
 - **Performed by**: analyzeTestFailuresNode function
 - **Output**: Sets `failureAnalysis` with `failedSqlTestIds` and `failedSchemaTestIds` arrays
 - **Routing**: Routes to `resetFailedSqlTests` if failures exist, otherwise to `END`
 
-#### 9. resetFailedSqlTests Node
+#### 10. resetFailedSqlTests Node
 
 - **Purpose**: Resets SQL fields for failed tests to enable regeneration
 - **Performed by**: resetFailedSqlTestsNode function

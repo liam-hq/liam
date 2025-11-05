@@ -7,6 +7,7 @@ describe('createQaAgentGraph', () => {
   const expectedMermaidDiagram = `%%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
 	__start__([<p>__start__</p>]):::first
+	prepareTestcaseGeneration(prepareTestcaseGeneration)
 	testcaseGeneration(testcaseGeneration)
 	applyGeneratedSqls(applyGeneratedSqls)
 	validateSchema(validateSchema)
@@ -14,25 +15,21 @@ graph TD;
 	analyzeTestFailures(analyzeTestFailures)
 	resetFailedSqlTests(resetFailedSqlTests)
 	__end__([<p>__end__</p>]):::last
+	__start__ --> prepareTestcaseGeneration;
 	applyGeneratedSqls --> validateSchema;
 	invokeRunTestTool --> analyzeTestFailures;
+	resetFailedSqlTests --> prepareTestcaseGeneration;
 	testcaseGeneration --> applyGeneratedSqls;
 	validateSchema --> invokeRunTestTool;
-	__start__ -.-> testcaseGeneration;
-	__start__ -.-> applyGeneratedSqls;
-	__start__ -.-> validateSchema;
-	__start__ -.-> invokeRunTestTool;
-	__start__ -.-> analyzeTestFailures;
-	__start__ -.-> resetFailedSqlTests;
-	__start__ -.-> __end__;
+	prepareTestcaseGeneration -.-> testcaseGeneration;
+	prepareTestcaseGeneration -.-> applyGeneratedSqls;
+	prepareTestcaseGeneration -.-> validateSchema;
+	prepareTestcaseGeneration -.-> invokeRunTestTool;
+	prepareTestcaseGeneration -.-> analyzeTestFailures;
+	prepareTestcaseGeneration -.-> resetFailedSqlTests;
+	prepareTestcaseGeneration -.-> __end__;
 	analyzeTestFailures -.-> resetFailedSqlTests;
 	analyzeTestFailures -.-> __end__;
-	resetFailedSqlTests -.-> testcaseGeneration;
-	resetFailedSqlTests -.-> applyGeneratedSqls;
-	resetFailedSqlTests -.-> validateSchema;
-	resetFailedSqlTests -.-> invokeRunTestTool;
-	resetFailedSqlTests -.-> analyzeTestFailures;
-	resetFailedSqlTests -.-> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;
 	classDef last fill:#bfb6fc;
