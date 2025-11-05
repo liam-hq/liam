@@ -1,5 +1,6 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { ChatOpenAI } from '@langchain/openai'
+import { fromPromise } from '@liam-hq/neverthrow'
 import * as v from 'valibot'
 import type { AnalyzedRequirements } from '../../schemas/analyzedRequirements'
 import { toJsonSchema } from '../../utils/jsonSchema'
@@ -100,17 +101,25 @@ ${failuresContext}
 Classify each test failure as either SQL_ISSUE or SCHEMA_ISSUE.
 `
 
-  const result = await model.invoke([
-    new SystemMessage(SYSTEM_PROMPT),
-    new HumanMessage(contextMessage),
-  ])
+  const result = await fromPromise(
+    model.invoke([
+      new SystemMessage(SYSTEM_PROMPT),
+      new HumanMessage(contextMessage),
+    ]),
+  )
+
+  if (result.isErr()) {
+    throw result.error
+  }
+
+  const classifications = result.value
 
   const expectedIds = new Set(failedTests.map((test) => test.testcaseId))
   const seenIds = new Set<string>()
   const sqlIssueIds: string[] = []
   const schemaIssueIds: string[] = []
 
-  for (const classification of result.classifications) {
+  for (const classification of classifications.classifications) {
     if (
       !expectedIds.has(classification.testcaseId) ||
       seenIds.has(classification.testcaseId)
