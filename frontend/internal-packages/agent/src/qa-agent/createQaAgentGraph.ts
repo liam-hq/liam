@@ -3,6 +3,7 @@ import { RETRY_POLICY } from '../utils/errorHandling'
 import { continueToRequirements } from './distributeRequirements'
 import { analyzeTestFailuresNode } from './nodes/analyzeTestFailuresNode'
 import { applyGeneratedSqlsNode } from './nodes/applyGeneratedSqlsNode'
+import { convertToSchemaIssuesNode } from './nodes/convertToSchemaIssuesNode'
 import { invokeRunTestToolNode } from './nodes/invokeRunTestToolNode'
 import { resetFailedSqlTestsNode } from './nodes/resetFailedSqlTestsNode'
 import { routeAfterAnalyzeFailures } from './routing/routeAfterAnalyzeFailures'
@@ -27,6 +28,7 @@ export const createQaAgentGraph = () => {
     })
     .addNode('analyzeTestFailures', analyzeTestFailuresNode)
     .addNode('resetFailedSqlTests', resetFailedSqlTestsNode)
+    .addNode('convertToSchemaIssues', convertToSchemaIssuesNode)
 
     // Define edges for map-reduce flow
     // Use conditional edge with Send API for parallel execution from START
@@ -48,11 +50,15 @@ export const createQaAgentGraph = () => {
     // Route based on failure analysis
     .addConditionalEdges('analyzeTestFailures', routeAfterAnalyzeFailures, {
       resetFailedSqlTests: 'resetFailedSqlTests',
+      convertToSchemaIssues: 'convertToSchemaIssues',
       [END]: END,
     })
 
     // After resetting failed SQL tests, go back to testcaseGeneration to regenerate
     .addConditionalEdges('resetFailedSqlTests', continueToRequirements)
+
+    // After converting to schema issues, END (leadAgent will handle schema issues)
+    .addEdge('convertToSchemaIssues', END)
 
   return qaAgentGraph.compile()
 }
