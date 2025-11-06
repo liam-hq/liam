@@ -10,6 +10,7 @@ import type { FC } from 'react'
 import { CommandPaletteTriggerButton } from '../CommandPalette'
 import styles from './AppBar.module.css'
 import { CopyLinkButton } from './CopyLinkButton'
+import { ExportButton } from './ExportButton'
 import { GithubButton } from './GithubButton'
 import { HelpButton } from './HelpButton'
 import { MenuButton } from './MenuButton'
@@ -49,9 +50,8 @@ export const AppBar: FC = () => {
           <GithubButton />
           <ReleaseNoteButton />
           <HelpButton />
+          <ExportButton />
         </div>
-        {/* TODO: enable once implemented */}
-        {/* <ExportButton /> */}
         <CopyLinkButton />
       </div>
     </header>

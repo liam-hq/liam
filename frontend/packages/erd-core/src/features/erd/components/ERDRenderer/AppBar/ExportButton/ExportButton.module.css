@@ -1,3 +1,30 @@
-.menuContent {
-  min-width: 9.75rem;
+.iconWrapper {
+  display: grid;
+  place-content: center;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--border-radius-base);
+  transition: background-color var(--default-hover-animation-duration)
+    var(--default-timing-function);
+}
+
+.iconWrapper:focus-visible {
+  outline: 1px solid var(--primary-color);
+}
+
+.iconWrapper:hover {
+  background-color: var(--pane-background-active);
+
+  .icon {
+    color: var(--global-foreground);
+  }
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--overlay-70);
+  transition: color var(--default-hover-animation-duration)
+    var(--default-timing-function);
 }
