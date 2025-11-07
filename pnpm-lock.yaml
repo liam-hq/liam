@@ -860,6 +860,9 @@ importers:
 
   frontend/packages/erd-core:
     dependencies:
+      '@liam-hq/neverthrow':
+        specifier: workspace:*
+        version: link:../../internal-packages/neverthrow
       '@liam-hq/ui':
         specifier: workspace:*
         version: link:../ui

@@ -15,6 +15,7 @@
     "./nextjs": "./src/nextjs/index.ts"
   },
   "dependencies": {
+    "@liam-hq/neverthrow": "workspace:*",
     "@liam-hq/ui": "workspace:*",
     "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-toolbar": "1.1.11",
