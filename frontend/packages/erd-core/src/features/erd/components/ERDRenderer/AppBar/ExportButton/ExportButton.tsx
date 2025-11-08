@@ -1,5 +1,5 @@
 import { fromPromise } from '@liam-hq/neverthrow'
-import { yamlSchemaDeparser } from '@liam-hq/schema'
+import { postgresqlSchemaDeparser, yamlSchemaDeparser } from '@liam-hq/schema'
 import {
   Copy,
   Download,
@@ -18,7 +18,33 @@ export const ExportButton: FC = () => {
   const toast = useToast()
   const schema = useSchemaOrThrow()
 
-  const handleCopyPostgreSQL = async () => {}
+  const handleCopyPostgreSQL = async () => {
+    const result = postgresqlSchemaDeparser(schema.current)
+    const ddl = result.value ? `${result.value}\n` : ''
+
+    const clipboardResult = await fromPromise(
+      navigator.clipboard.writeText(ddl),
+    )
+
+    clipboardResult.match(
+      () => {
+        toast({
+          title: 'PostgreSQL DDL copied!',
+          description: 'Schema DDL has been copied to clipboard',
+          status: 'success',
+        })
+      },
+      (error: Error) => {
+        console.error('Failed to copy PostgreSQL DDL to clipboard:', error)
+        toast({
+          title: 'Copy failed',
+          description: `Failed to copy DDL to clipboard: ${error.message}`,
+          status: 'error',
+        })
+      },
+    )
+  }
+
   const handleCopyYaml = async () => {
     const yamlResult = yamlSchemaDeparser(schema.current)
 

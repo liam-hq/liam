@@ -17,6 +17,47 @@ const wrapper: FC<PropsWithChildren> = ({ children }) => (
   </ToastProvider>
 )
 
+describe('PostgreSQL export', () => {
+  it('should handle successful PostgreSQL DDL copy', async () => {
+    const user = userEvent.setup()
+    render(<ExportButton />, { wrapper })
+
+    await user.click(screen.getByRole('button'))
+    await user.click(screen.getByText('Copy PostgreSQL'))
+
+    const clipboard = await navigator.clipboard.readText()
+    expect(clipboard).toContain('CREATE TABLE "users"') // check clipboard content, should contain DDL for users table
+
+    // check toast
+    expect(
+      await screen.findByText('PostgreSQL DDL copied!'),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByText('Schema DDL has been copied to clipboard'),
+    ).toBeInTheDocument()
+  })
+
+  it('should show error toast if clipboard write fails', async () => {
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValueOnce(
+      new Error('Clipboard write failed'),
+    )
+
+    const user = userEvent.setup()
+    render(<ExportButton />, { wrapper })
+
+    await user.click(screen.getByRole('button'))
+    await user.click(screen.getByText('Copy PostgreSQL'))
+
+    // check toast
+    expect(await screen.findByText('Copy failed')).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        'Failed to copy DDL to clipboard: Clipboard write failed',
+      ),
+    ).toBeInTheDocument()
+  })
+})
+
 describe('YAML export', () => {
   it('should handle successful YAML copy', async () => {
     const user = userEvent.setup()
@@ -36,7 +77,7 @@ describe('YAML export', () => {
   })
 
   it('should show error toast if clipboard write fails', async () => {
-    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValueOnce(
       new Error('Clipboard write failed'),
     )
 
