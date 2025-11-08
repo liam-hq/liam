@@ -3,7 +3,7 @@ import { ToastProvider } from '@liam-hq/ui'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { FC, PropsWithChildren } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { SchemaProvider } from '../../../../../../stores'
 import { ExportButton } from './ExportButton'
 
@@ -30,8 +30,30 @@ describe('YAML export', () => {
 
     // check toast
     expect(await screen.findByText('YAML copied!')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Schema YAML has been copied to clipboard'),
+    ).toBeInTheDocument()
+  })
+
+  it('should show error toast if clipboard write fails', async () => {
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(
+      new Error('Clipboard write failed'),
+    )
+
+    const user = userEvent.setup()
+    render(<ExportButton />, { wrapper })
+
+    await user.click(screen.getByRole('button'))
+    await user.click(screen.getByText('Copy YAML'))
+
+    // check toast
+    expect(await screen.findByText('Copy failed')).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        'Failed to copy YAML to clipboard: Clipboard write failed',
+      ),
+    ).toBeInTheDocument()
   })
 
   it.todo('should show error toast if YAML generation fails')
-  it.todo('should show error toast if clipboard write fails')
 })
