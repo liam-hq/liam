@@ -5,7 +5,7 @@
   "dependencies": {
     "@codemirror/lang-sql": "6.10.0",
     "@codemirror/language": "6.11.3",
-    "@codemirror/lint": "6.9.0",
+    "@codemirror/lint": "6.9.1",
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.38.6",
     "@electric-sql/pglite": "0.3.12",
