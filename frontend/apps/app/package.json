@@ -52,7 +52,7 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "eslint": "9.38.0",
-    "msw": "2.11.6",
+    "msw": "2.12.1",
     "typed-css-modules": "0.9.1",
     "typescript": "5.9.3",
     "vitest": "3.2.4"

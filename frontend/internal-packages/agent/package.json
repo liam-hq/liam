@@ -33,7 +33,7 @@
     "@types/node": "22.18.11",
     "@types/uuid": "10.0.0",
     "eslint": "9.38.0",
-    "msw": "2.11.6",
+    "msw": "2.12.1",
     "typescript": "5.9.3",
     "vitest": "3.2.4",
     "yoctocolors": "2.1.2"
