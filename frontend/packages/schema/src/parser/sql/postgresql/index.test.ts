@@ -1230,4 +1230,48 @@ CREATE TYPE status AS ENUM ('active', 'inactive');
       })
     })
   })
+
+  describe('issue #4000: large INSERT INTO statements', () => {
+    it('should handle very long INSERT INTO schema_migrations statements', async () => {
+      const migrationCount = 3000
+      const migrationValues = []
+      for (let i = 1; i <= migrationCount; i++) {
+        migrationValues.push(`('migration_${i}')`)
+      }
+
+      const sql = /* sql */ `
+        -- Dummy PostgreSQL structure.sql for reproduction
+        CREATE EXTENSION IF NOT EXISTS "plpgsql" WITH SCHEMA pg_catalog;
+
+        CREATE TABLE public.users (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255),
+            email VARCHAR(255)
+        );
+
+        CREATE TABLE public.posts (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES public.users(id),
+            title VARCHAR(255),
+            body TEXT
+        );
+
+        -- Insert migrations
+        INSERT INTO schema_migrations VALUES
+        ${migrationValues.join(',\n')};
+      `
+
+      const { value, errors } = await processor(sql)
+
+      expect(errors).toEqual([])
+
+      // Verify that the tables were parsed correctly
+      expect(value.tables).toHaveProperty('users')
+      expect(value.tables).toHaveProperty('posts')
+      expect(value.tables['users']?.columns).toHaveProperty('id')
+      expect(value.tables['users']?.columns).toHaveProperty('name')
+      expect(value.tables['users']?.columns).toHaveProperty('email')
+      expect(value.tables['posts']?.columns).toHaveProperty('user_id')
+    })
+  })
 })
