@@ -1,10 +1,11 @@
-import type { Node } from '@xyflow/react'
+import { useNodes } from '@xyflow/react'
 import { useCallback } from 'react'
 import { useUserEditingOrThrow } from '../../../../stores'
 import { useCustomReactflow } from '../../../reactflow/hooks'
 import { updateNodesHiddenState } from '../../components/ERDContent/utils' // invalid import path
 
-export const useTableVisibility = (nodes: Node[]) => {
+export const useTableVisibility = () => {
+  const nodes = useNodes()
   const { setHiddenNodeIds, resetSelectedNodeIds } = useUserEditingOrThrow()
   const { setNodes } = useCustomReactflow()
 

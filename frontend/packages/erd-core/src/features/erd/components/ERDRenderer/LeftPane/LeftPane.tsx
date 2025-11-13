@@ -92,7 +92,7 @@ export const LeftPane = () => {
   const allCount = tableNodes.length
   const visibleCount = tableNodes.filter((node) => !node.hidden).length
 
-  const { showAllNodes, hideAllNodes } = useTableVisibility(nodes)
+  const { showAllNodes, hideAllNodes } = useTableVisibility()
 
   const showSelectedTables = useCallback(() => {
     if (selectedNodeIds.size > 0) {
