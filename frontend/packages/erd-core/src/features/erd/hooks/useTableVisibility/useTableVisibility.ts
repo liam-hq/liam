@@ -1,11 +1,27 @@
 import { useNodes } from '@xyflow/react'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useUserEditingOrThrow } from '../../../../stores'
 import { useCustomReactflow } from '../../../reactflow/hooks'
 import { updateNodesHiddenState } from '../../components/ERDContent/utils' // invalid import path
+import { isTableNode } from '../../utils';
 
 export const useTableVisibility = () => {
   const nodes = useNodes()
+
+  const visibilityStatus: 'all-hidden' | 'all-visible' | 'partially-visible' = useMemo(() => {
+    const tableNodes = nodes.filter((node) => isTableNode(node))
+    const visibleTableNodes = tableNodes.filter((node) => !node.hidden)
+
+    if (visibleTableNodes.length === 0) {
+      return 'all-hidden'
+    } else if (visibleTableNodes.length === tableNodes.length) {
+      return 'all-visible'
+    }
+
+    return 'partially-visible'
+  }, [nodes])
+
+
   const { setHiddenNodeIds, resetSelectedNodeIds } = useUserEditingOrThrow()
   const { setNodes } = useCustomReactflow()
 
@@ -32,5 +48,5 @@ export const useTableVisibility = () => {
     updateVisibility(nodes.map((node) => node.id))
   }, [resetSelectedNodeIds, updateVisibility]);
 
-  return { showAllNodes, hideAllNodes }
+  return { visibilityStatus, showAllNodes, hideAllNodes }
 }
