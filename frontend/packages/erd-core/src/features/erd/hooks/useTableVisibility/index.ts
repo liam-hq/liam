@@ -1,2 +1,1 @@
-export * from './useTableSelection'
 export * from './useTableVisibility'

@@ -1,5 +1,6 @@
 import { useSubscribeCopyLinkCommand } from './useSubscribeCopyLinkCommand'
 import { useSubscribeShowModeCommand } from './useSubscribeSwitchShowMode'
+import { useSubscribeTableVisibility } from './useSubscribeTableVisibility';
 import { useSubscribeTidyUpCommand } from './useSubscribeTidyUpCommand'
 import { useSubscribeZoomToFitCommand } from './useSubscribeZoomToFitCommand'
 
@@ -8,4 +9,5 @@ export const useSubscribeCommands = () => {
   useSubscribeShowModeCommand()
   useSubscribeTidyUpCommand()
   useSubscribeZoomToFitCommand()
+  useSubscribeTableVisibility()
 }
