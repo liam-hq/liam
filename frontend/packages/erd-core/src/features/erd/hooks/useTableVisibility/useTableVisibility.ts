@@ -3,37 +3,33 @@ import { useCallback } from 'react'
 import { useUserEditingOrThrow } from '../../../../stores'
 import { useCustomReactflow } from '../../../reactflow/hooks'
 import { updateNodesHiddenState } from '../../components/ERDContent/utils' // invalid import path
-import type { TableNodeType } from '../../types'
 
-export const useTableVisibility = (
-  nodes: Node[],
-  tableNodes: TableNodeType[],
-) => {
-  const allCount = tableNodes.length
-  const visibleCount = tableNodes.filter((node) => !node.hidden).length
-
+export const useTableVisibility = (nodes: Node[]) => {
   const { setHiddenNodeIds, resetSelectedNodeIds } = useUserEditingOrThrow()
   const { setNodes } = useCustomReactflow()
 
-  const showOrHideAllNodes = useCallback(() => {
+  const updateVisibility = useCallback(
+    (hiddenNodeIds: string[]) => {
+      const updatedNodes = updateNodesHiddenState({
+        nodes,
+        hiddenNodeIds: hiddenNodeIds,
+        shouldHideGroupNodeId: true,
+      })
+      setNodes(updatedNodes)
+      setHiddenNodeIds(hiddenNodeIds)
+    },
+    [nodes, setNodes, setHiddenNodeIds],
+  )
+
+  const showAllNodes = useCallback(() => {
     resetSelectedNodeIds()
+    updateVisibility([])
+  }, [resetSelectedNodeIds, updateVisibility]);
 
-    const shouldHide = visibleCount === allCount
-    const updatedNodes = updateNodesHiddenState({
-      nodes,
-      hiddenNodeIds: shouldHide ? nodes.map((node) => node.id) : [],
-      shouldHideGroupNodeId: true,
-    })
-    setNodes(updatedNodes)
-    setHiddenNodeIds(shouldHide ? nodes.map((node) => node.id) : [])
-  }, [
-    nodes,
-    visibleCount,
-    allCount,
-    setNodes,
-    setHiddenNodeIds,
-    resetSelectedNodeIds,
-  ])
+  const hideAllNodes = useCallback(() => {
+    resetSelectedNodeIds()
+    updateVisibility(nodes.map((node) => node.id))
+  }, [resetSelectedNodeIds, updateVisibility]);
 
-  return { showOrHideAllNodes }
+  return { showAllNodes, hideAllNodes }
 }

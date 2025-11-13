@@ -92,7 +92,7 @@ export const LeftPane = () => {
   const allCount = tableNodes.length
   const visibleCount = tableNodes.filter((node) => !node.hidden).length
 
-  const { showOrHideAllNodes } = useTableVisibility(nodes, tableNodes)
+  const { showAllNodes, hideAllNodes } = useTableVisibility(nodes)
 
   const showSelectedTables = useCallback(() => {
     if (selectedNodeIds.size > 0) {
@@ -125,7 +125,7 @@ export const LeftPane = () => {
                     : 'Show All Tables'
                 }
                 tabIndex={0}
-                onClick={showOrHideAllNodes}
+                onClick={visibleCount === allCount ? hideAllNodes : showAllNodes}
               >
                 {visibleCount === allCount ? (
                   <EyeOff className={styles.icon} />
