@@ -19,6 +19,7 @@ import { useCallback, useMemo } from 'react'
 import { useVersionOrThrow } from '../../../../../providers'
 import { useUserEditingOrThrow } from '../../../../../stores'
 import { useCustomReactflow } from '../../../../reactflow/hooks'
+import { useTableVisibility } from '../../../hooks'
 import { isTableNode } from '../../../utils'
 import { updateNodesHiddenState } from '../../ERDContent/utils'
 import { CopyLinkButton } from './CopyLinkButton'
@@ -28,8 +29,7 @@ import { TableNameMenuButton } from './TableNameMenuButton'
 
 export const LeftPane = () => {
   const { version } = useVersionOrThrow()
-  const { selectedNodeIds, setHiddenNodeIds, resetSelectedNodeIds } =
-    useUserEditingOrThrow()
+  const { selectedNodeIds, setHiddenNodeIds } = useUserEditingOrThrow()
 
   const { setNodes } = useCustomReactflow()
 
@@ -92,24 +92,7 @@ export const LeftPane = () => {
   const allCount = tableNodes.length
   const visibleCount = tableNodes.filter((node) => !node.hidden).length
 
-  const showOrHideAllNodes = useCallback(() => {
-    resetSelectedNodeIds()
-    const shouldHide = visibleCount === allCount
-    const updatedNodes = updateNodesHiddenState({
-      nodes,
-      hiddenNodeIds: shouldHide ? nodes.map((node) => node.id) : [],
-      shouldHideGroupNodeId: true,
-    })
-    setNodes(updatedNodes)
-    setHiddenNodeIds(shouldHide ? nodes.map((node) => node.id) : null)
-  }, [
-    nodes,
-    visibleCount,
-    allCount,
-    setNodes,
-    setHiddenNodeIds,
-    resetSelectedNodeIds,
-  ])
+  const { showOrHideAllNodes } = useTableVisibility(nodes, tableNodes)
 
   const showSelectedTables = useCallback(() => {
     if (selectedNodeIds.size > 0) {
