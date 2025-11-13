@@ -1,5 +1,7 @@
 import {
   Copy,
+  Eye,
+  EyeOff,
   KeyRound,
   PanelTop,
   RectangleHorizontal,
@@ -14,16 +16,40 @@ import { useCopyLink } from '../hooks/useCopyLink'
 import { useFitScreen } from '../hooks/useFitScreen'
 import { getSuggestionText } from '../utils'
 import styles from './CommandPaletteOptions.module.css'
+import { useTableVisibility } from '../../../../hooks';
 
 export const CommandPaletteCommandOptions: FC = () => {
   const { copyLink } = useCopyLink('command-palette')
   const { zoomToFit, tidyUp } = useFitScreen()
   const { setShowMode } = useUserEditingOrThrow()
+  const { showAllNodes, hideAllNodes } = useTableVisibility()
 
   const { setOpen } = useCommandPaletteOrThrow()
 
   return (
     <Command.Group heading="Commands">
+      <Command.Item
+        className={styles.item}
+        value={getSuggestionText({ type: 'command', name: 'Show All' })}
+        onSelect={() => {
+          showAllNodes()
+          setOpen(false)
+        }}
+      >
+        <Eye className={styles.itemIcon} />
+        <span className={styles.itemText}>Show All</span>
+      </Command.Item>
+      <Command.Item
+        className={styles.item}
+        value={getSuggestionText({ type: 'command', name: 'Hide All' })}
+        onSelect={() => {
+          hideAllNodes()
+          setOpen(false)
+        }}
+      >
+        <EyeOff className={styles.itemIcon} />
+        <span className={styles.itemText}>Hide All</span>
+      </Command.Item>
       <Command.Item
         className={styles.item}
         value={getSuggestionText({ type: 'command', name: 'copy link' })}
