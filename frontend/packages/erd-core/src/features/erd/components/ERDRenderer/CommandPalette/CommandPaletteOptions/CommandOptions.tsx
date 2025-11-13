@@ -39,6 +39,8 @@ export const CommandPaletteCommandOptions: FC = () => {
         >
           <Eye className={styles.itemIcon} />
           <span className={styles.itemText}>Show All</span>
+        <span className={styles.keyIcon}>⇧</span>
+        <span className={styles.keyIcon}>A</span>
         </Command.Item>
       )}
       {visibilityStatus !== 'all-hidden' && (
@@ -52,6 +54,8 @@ export const CommandPaletteCommandOptions: FC = () => {
         >
           <EyeOff className={styles.itemIcon} />
           <span className={styles.itemText}>Hide All</span>
+        <span className={styles.keyIcon}>⇧</span>
+        <span className={styles.keyIcon}>H</span>
         </Command.Item>
       )}
       <Command.Item
