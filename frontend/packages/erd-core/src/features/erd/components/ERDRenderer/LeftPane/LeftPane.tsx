@@ -19,6 +19,7 @@ import { useCallback, useMemo } from 'react'
 import { useVersionOrThrow } from '../../../../../providers'
 import { useUserEditingOrThrow } from '../../../../../stores'
 import { useCustomReactflow } from '../../../../reactflow/hooks'
+import { useTableVisibility } from '../../../hooks/useTableVisibility/useTableVisibility'
 import { isTableNode } from '../../../utils'
 import { updateNodesHiddenState } from '../../ERDContent/utils'
 import { CopyLinkButton } from './CopyLinkButton'
@@ -28,8 +29,7 @@ import { TableNameMenuButton } from './TableNameMenuButton'
 
 export const LeftPane = () => {
   const { version } = useVersionOrThrow()
-  const { selectedNodeIds, setHiddenNodeIds, resetSelectedNodeIds } =
-    useUserEditingOrThrow()
+  const { selectedNodeIds, setHiddenNodeIds } = useUserEditingOrThrow()
 
   const { setNodes } = useCustomReactflow()
 
@@ -92,24 +92,7 @@ export const LeftPane = () => {
   const allCount = tableNodes.length
   const visibleCount = tableNodes.filter((node) => !node.hidden).length
 
-  const showOrHideAllNodes = useCallback(() => {
-    resetSelectedNodeIds()
-    const shouldHide = visibleCount === allCount
-    const updatedNodes = updateNodesHiddenState({
-      nodes,
-      hiddenNodeIds: shouldHide ? nodes.map((node) => node.id) : [],
-      shouldHideGroupNodeId: true,
-    })
-    setNodes(updatedNodes)
-    setHiddenNodeIds(shouldHide ? nodes.map((node) => node.id) : null)
-  }, [
-    nodes,
-    visibleCount,
-    allCount,
-    setNodes,
-    setHiddenNodeIds,
-    resetSelectedNodeIds,
-  ])
+  const { visibilityStatus, showAllNodes, hideAllNodes } = useTableVisibility()
 
   const showSelectedTables = useCallback(() => {
     if (selectedNodeIds.size > 0) {
@@ -133,29 +116,35 @@ export const LeftPane = () => {
           <SidebarGroupLabel className={styles.groupLabel} asChild>
             <span>Tables</span>
             <span className={styles.tablesHeaderRow}>
-              <button
-                type="button"
-                className={styles.showAllButton}
-                aria-label={
-                  visibleCount === allCount
-                    ? 'Hide All Tables'
-                    : 'Show All Tables'
-                }
-                tabIndex={0}
-                onClick={showOrHideAllNodes}
-              >
-                {visibleCount === allCount ? (
+              {visibilityStatus === 'all-visible' ? (
+                <button
+                  type="button"
+                  className={styles.showAllButton}
+                  aria-label="Hide All Tables"
+                  tabIndex={0}
+                  onClick={hideAllNodes}
+                >
                   <EyeOff className={styles.icon} />
-                ) : (
+                  <span className={styles.showAllText}>Hide All</span>
+                  <span className={styles.visibleCount}>
+                    ({visibleCount}/{allCount} visible)
+                  </span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.showAllButton}
+                  aria-label="Show All Tables"
+                  tabIndex={0}
+                  onClick={showAllNodes}
+                >
                   <Eye className={styles.icon} />
-                )}
-                <span className={styles.showAllText}>
-                  {visibleCount === allCount ? 'Hide All' : 'Show All'}
-                </span>
-                <span className={styles.visibleCount}>
-                  ({visibleCount}/{allCount} visible)
-                </span>
-              </button>
+                  <span className={styles.showAllText}>Show All</span>
+                  <span className={styles.visibleCount}>
+                    ({visibleCount}/{allCount} visible)
+                  </span>
+                </button>
+              )}
             </span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
