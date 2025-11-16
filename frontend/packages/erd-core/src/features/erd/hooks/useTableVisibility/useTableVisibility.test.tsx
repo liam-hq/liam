@@ -89,8 +89,8 @@ describe('visibilityStatus', () => {
   })
 })
 
-describe('showOrHideAllNodes', () => {
-  it('should make all nodes hidden when all nodes are currently visible', async () => {
+describe('showAllNodes', () => {
+  it('should make all nodes hidden', async () => {
     mockDefaultNodes.mockReturnValueOnce([
       {
         id: '1',
@@ -111,27 +111,27 @@ describe('showOrHideAllNodes', () => {
     const { result } = renderHook(() => useTableVisibility(), { wrapper })
 
     expect(result.current.visibilityStatus).toBe('partially-visible')
-    act(() => {
-      result.current.showOrHideAllNodes()
-    })
+    act(() => result.current.showAllNodes())
 
     expect(result.current.visibilityStatus).toBe('all-visible')
     // hidden query parameter should be removed
     await waitFor(() => {
       expect(onUrlUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ queryString: '' }),
+        expect.objectContaining({ queryString: '?hidden=' }),
       )
     })
   })
+})
 
-  it('should make all nodes hidden when all nodes are currently visible', async () => {
+describe('hideAllNodes', () => {
+  it('should make all nodes hidden', async () => {
     mockDefaultNodes.mockReturnValueOnce([
       {
         id: '1',
         type: 'table',
         data: {},
         position: { x: 0, y: 0 },
-        hidden: false,
+        hidden: true,
       },
       {
         id: '2',
@@ -144,10 +144,8 @@ describe('showOrHideAllNodes', () => {
 
     const { result } = renderHook(() => useTableVisibility(), { wrapper })
 
-    expect(result.current.visibilityStatus).toBe('all-visible')
-    act(() => {
-      result.current.showOrHideAllNodes()
-    })
+    expect(result.current.visibilityStatus).toBe('partially-visible')
+    act(() => result.current.hideAllNodes())
 
     expect(result.current.visibilityStatus).toBe('all-hidden')
     // hidden query parameter should be added with all node ids

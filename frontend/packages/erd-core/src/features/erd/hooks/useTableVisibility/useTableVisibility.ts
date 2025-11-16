@@ -27,23 +27,28 @@ export const useTableVisibility = () => {
   const { setHiddenNodeIds, resetSelectedNodeIds } = useUserEditingOrThrow()
   const { setNodes } = useCustomReactflow()
 
-  const showOrHideAllNodes = useCallback(() => {
-    resetSelectedNodeIds()
-    const shouldHide = visibilityStatus === 'all-visible'
-    const updatedNodes = updateNodesHiddenState({
-      nodes,
-      hiddenNodeIds: shouldHide ? nodes.map((node) => node.id) : [],
-      shouldHideGroupNodeId: true,
-    })
-    setNodes(updatedNodes)
-    setHiddenNodeIds(shouldHide ? nodes.map((node) => node.id) : null)
-  }, [
-    nodes,
-    visibilityStatus,
-    setNodes,
-    setHiddenNodeIds,
-    resetSelectedNodeIds,
-  ])
+  const updateVisibility = useCallback(
+    (hiddenNodeIds: string[]) => {
+      const updatedNodes = updateNodesHiddenState({
+        nodes,
+        hiddenNodeIds: hiddenNodeIds,
+        shouldHideGroupNodeId: true,
+      })
+      setNodes(updatedNodes)
+      setHiddenNodeIds(hiddenNodeIds)
+    },
+    [nodes, setNodes, setHiddenNodeIds],
+  )
 
-  return { visibilityStatus, showOrHideAllNodes }
+  const showAllNodes = useCallback(() => {
+    resetSelectedNodeIds()
+    updateVisibility([])
+  }, [resetSelectedNodeIds, updateVisibility])
+
+  const hideAllNodes = useCallback(() => {
+    resetSelectedNodeIds()
+    updateVisibility(nodes.map((node) => node.id))
+  }, [nodes, resetSelectedNodeIds, updateVisibility])
+
+  return { visibilityStatus, showAllNodes, hideAllNodes }
 }
