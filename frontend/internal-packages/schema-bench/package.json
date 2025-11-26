@@ -14,7 +14,7 @@
     "neverthrow": "8.2.0",
     "openai": "5.9.2",
     "tsx": "4.20.6",
-    "valibot": "1.1.0"
+    "valibot": "1.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
