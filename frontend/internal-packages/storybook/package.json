@@ -14,7 +14,7 @@
     "@types/react-dom": "19.2.2",
     "msw": "2.11.6",
     "msw-storybook-addon": "2.0.6",
-    "storybook": "9.1.15",
+    "storybook": "9.1.17",
     "typescript": "5.9.3",
     "zod": "3.25.76"
   },
