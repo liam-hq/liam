@@ -1,14 +1,19 @@
+import {
+  detectFormat,
+  ProcessError,
+  parse,
+  setPrismWasmUrl,
+  supportedFormatSchema,
+  pgParse,
+} from './parser/index.js'
+import type { SupportedFormat, PgParseResult } from './parser/index.js'
+
 export {
   detectFormat,
   ProcessError,
   parse,
-  type SupportedFormat,
   setPrismWasmUrl,
   supportedFormatSchema,
-} from './parser/index.js'
-
-// Export PostgreSQL-specific parser
-export {
-  type PgParseResult,
-  parse as pgParse,
-} from './parser/sql/postgresql/parser.js'
+  pgParse,
+}
+export type { SupportedFormat, PgParseResult }
