@@ -4,3 +4,6 @@ packages:
   - "frontend/packages/__mocks__/*"
   - "frontend/internal-packages/*"
 minimumReleaseAge: 2880 # 2 days
+minimumReleaseAgeExclude:
+  # Renovate security update: @langchain/core@0.3.80
+  - "@langchain/core@0.3.80"
