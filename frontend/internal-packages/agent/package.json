@@ -24,7 +24,7 @@
     "langsmith": "0.3.73",
     "neverthrow": "8.2.0",
     "uuid": "11.1.0",
-    "valibot": "1.1.0"
+    "valibot": "1.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
