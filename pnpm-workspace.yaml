@@ -7,3 +7,5 @@ minimumReleaseAge: 2880 # 2 days
 minimumReleaseAgeExclude:
   # Renovate security update: @modelcontextprotocol/sdk@1.26.0
   - "@modelcontextprotocol/sdk@1.26.0"
+  # Renovate security update: undici@7.18.2
+  - undici@7.18.2
