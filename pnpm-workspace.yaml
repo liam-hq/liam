@@ -7,3 +7,5 @@ minimumReleaseAge: 2880 # 2 days
 minimumReleaseAgeExclude:
   # Renovate security update: @modelcontextprotocol/sdk@1.26.0
   - "@modelcontextprotocol/sdk@1.26.0"
+  # Renovate security update: @sentry/node@10.27.0
+  - "@sentry/node@10.27.0"
