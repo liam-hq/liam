@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "devDependencies": {
-    "@biomejs/biome": "2.2.6",
+    "@biomejs/biome": "2.3.14",
     "@liam-hq/configs": "workspace:*",
-    "@playwright/test": "1.56.1",
-    "@types/node": "22.18.11",
-    "eslint": "9.38.0",
+    "@playwright/test": "1.58.2",
+    "@types/node": "22.19.10",
+    "eslint": "9.39.2",
     "typescript": "5.9.3"
   },
   "scripts": {
