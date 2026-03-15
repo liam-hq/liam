@@ -10,6 +10,7 @@ export type DrizzleTableDefinition = {
   indexes: Record<string, DrizzleIndexDefinition>
   constraints?: Record<string, Constraint>
   compositePrimaryKey?: CompositePrimaryKeyDefinition
+  foreignKeys?: DrizzleForeignKeyDefinition[]
   comment?: string | undefined
   schemaName?: string // Schema name for namespace handling
 }
@@ -58,7 +59,17 @@ export type DrizzleSchemaDefinition = {
 
 export type CompositePrimaryKeyDefinition = {
   type: 'primaryKey'
+  name?: string
   columns: string[]
+}
+
+export type DrizzleForeignKeyDefinition = {
+  name?: string
+  columns: string[]
+  targetTable: string
+  targetColumns: string[]
+  onDelete?: string
+  onUpdate?: string
 }
 
 /**

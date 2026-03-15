@@ -5,9 +5,13 @@
 import type { CallExpression, Expression, ObjectExpression } from '@swc/core'
 import type { Constraint } from '../../../schema/index.js'
 import {
+  extractColumnNames,
+  extractConfigObject,
+  extractTableAndColumns,
   getArgumentExpression,
   getIdentifierName,
   getStringValue,
+  isCallToFunction,
   isMysqlTableCall,
   isObjectExpression,
   isSchemaTableCall,
@@ -20,6 +24,7 @@ import type {
   DrizzleCheckConstraintDefinition,
   DrizzleColumnDefinition,
   DrizzleEnumDefinition,
+  DrizzleForeignKeyDefinition,
   DrizzleIndexDefinition,
   DrizzleTableDefinition,
 } from './types.js'
@@ -61,12 +66,14 @@ const parseTableExtensions = (
   indexes: Record<string, DrizzleIndexDefinition>
   constraints?: Record<string, Constraint>
   compositePrimaryKey?: CompositePrimaryKeyDefinition
+  foreignKeys?: DrizzleForeignKeyDefinition[]
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: TODO: Refactor to reduce complexity
 } => {
   const result: {
     indexes: Record<string, DrizzleIndexDefinition>
     constraints?: Record<string, Constraint>
     compositePrimaryKey?: CompositePrimaryKeyDefinition
+    foreignKeys?: DrizzleForeignKeyDefinition[]
   } = {
     indexes: {},
   }
@@ -119,6 +126,48 @@ const parseTableExtensions = (
                 name: uniqueConstraint.name,
                 columnNames: uniqueConstraint.columnNames,
               }
+            }
+          }
+        }
+      }
+    } else if (returnExpr.type === 'ArrayExpression') {
+      for (const element of returnExpr.elements) {
+        if (!element) continue
+        const elemExpr = getArgumentExpression(element)
+        if (elemExpr?.type === 'CallExpression') {
+          const fkDef = parseForeignKeyDefinition(elemExpr)
+          if (fkDef) {
+            result.foreignKeys = result.foreignKeys ?? []
+            result.foreignKeys.push(fkDef)
+          }
+          const indexDef = parseIndexDefinition(elemExpr, 'auto')
+          if (indexDef) {
+            if (isCompositePrimaryKey(indexDef)) {
+              result.compositePrimaryKey = indexDef
+            } else if (isDrizzleIndex(indexDef)) {
+              result.indexes[indexDef.name] = indexDef
+            }
+          }
+          const checkConstraint = parseCheckConstraint(elemExpr, 'auto')
+          if (checkConstraint) {
+            result.constraints = result.constraints ?? {}
+            result.constraints[checkConstraint.name] = {
+              type: 'CHECK',
+              name: checkConstraint.name,
+              detail: checkConstraint.condition,
+            }
+          }
+          const uniqueConstraint = parseUniqueConstraint(
+            elemExpr,
+            'auto',
+            tableColumns,
+          )
+          if (uniqueConstraint) {
+            result.constraints = result.constraints ?? {}
+            result.constraints[uniqueConstraint.name] = {
+              type: 'UNIQUE',
+              name: uniqueConstraint.name,
+              columnNames: uniqueConstraint.columnNames,
             }
           }
         }
@@ -208,6 +257,9 @@ export const parseMysqlTableCall = (
       if (extensions.compositePrimaryKey) {
         table.compositePrimaryKey = extensions.compositePrimaryKey
       }
+      if (extensions.foreignKeys) {
+        table.foreignKeys = extensions.foreignKeys
+      }
     }
   }
 
@@ -266,10 +318,91 @@ export const parseSchemaTableCall = (
       if (extensions.compositePrimaryKey) {
         table.compositePrimaryKey = extensions.compositePrimaryKey
       }
+      if (extensions.foreignKeys) {
+        table.foreignKeys = extensions.foreignKeys
+      }
     }
   }
 
   return table
+}
+
+/**
+ * Parse foreignKey() call expression
+ */
+const parseForeignKeyDefinition = (
+  callExpr: CallExpression,
+): DrizzleForeignKeyDefinition | null => {
+  if (!isCallToFunction(callExpr, 'foreignKey')) return null
+
+  const configExpr = extractConfigObject(callExpr)
+  if (!configExpr) return null
+
+  const definition = parseForeignKeyConfig(configExpr)
+
+  return isValidForeignKeyDefinition(definition) ? definition : null
+}
+
+/**
+ * Parse foreignKey configuration object
+ */
+const parseForeignKeyProp = (
+  propName: string,
+  propValue: Expression,
+): Partial<DrizzleForeignKeyDefinition> => {
+  switch (propName) {
+    case 'name':
+      return isStringLiteral(propValue) ? { name: propValue.value } : {}
+    case 'columns':
+      return { columns: extractColumnNames(propValue) }
+    case 'foreignColumns': {
+      const { tableName, columnNames } = extractTableAndColumns(propValue)
+      return {
+        ...(tableName !== null ? { targetTable: tableName } : {}),
+        targetColumns: columnNames,
+      }
+    }
+    case 'onDelete':
+      return isStringLiteral(propValue) ? { onDelete: propValue.value } : {}
+    case 'onUpdate':
+      return isStringLiteral(propValue) ? { onUpdate: propValue.value } : {}
+    default:
+      return {}
+  }
+}
+
+const parseForeignKeyConfig = (
+  configExpr: ObjectExpression,
+): Partial<DrizzleForeignKeyDefinition> => {
+  let definition: Partial<DrizzleForeignKeyDefinition> = {
+    columns: [],
+    targetColumns: [],
+    targetTable: '',
+  }
+
+  for (const prop of configExpr.properties) {
+    if (prop.type !== 'KeyValueProperty') continue
+
+    const propName = prop.key.type === 'Identifier' ? prop.key.value : null
+    if (!propName) continue
+
+    definition = { ...definition, ...parseForeignKeyProp(propName, prop.value) }
+  }
+
+  return definition
+}
+
+/**
+ * Validate foreign key definition
+ */
+const isValidForeignKeyDefinition = (
+  definition: Partial<DrizzleForeignKeyDefinition>,
+): definition is DrizzleForeignKeyDefinition => {
+  return !!(
+    definition.targetTable &&
+    definition.columns?.length &&
+    definition.targetColumns?.length
+  )
 }
 
 /**
@@ -294,8 +427,11 @@ const parseIndexDefinition = (
           const columns = config['columns'].filter(
             (col): col is string => typeof col === 'string',
           )
+          const pkName =
+            typeof config['name'] === 'string' ? config['name'] : undefined
           return {
             type: 'primaryKey',
+            ...(pkName !== undefined && { name: pkName }),
             columns,
           }
         }

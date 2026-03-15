@@ -137,7 +137,8 @@ const convertToTable = (
       .filter((name) => name && name.length > 0)
 
     // Create composite primary key constraint
-    const constraintName = `${tableDef.name}_pkey`
+    const constraintName =
+      tableDef.compositePrimaryKey.name ?? `${tableDef.name}_pkey`
     constraints[constraintName] = {
       type: 'PRIMARY KEY',
       name: constraintName,
@@ -150,6 +151,35 @@ const convertToTable = (
       columns: actualColumnNames,
       unique: true,
       type: '',
+    }
+  }
+
+  // Handle table-level foreign key definitions
+  if (tableDef.foreignKeys) {
+    for (const fkDef of tableDef.foreignKeys) {
+      const targetTableName =
+        variableToTableMapping[fkDef.targetTable] ?? fkDef.targetTable
+      const columnNames = fkDef.columns.map(
+        (jsName) => tableDef.columns[jsName]?.name ?? jsName,
+      )
+      const constraintName =
+        fkDef.name ??
+        `${tableDef.name}_${columnNames.join('_')}_${fkDef.targetTable}_${fkDef.targetColumns.join('_')}_fk`
+
+      const constraint: ForeignKeyConstraint = {
+        type: 'FOREIGN KEY',
+        name: constraintName,
+        columnNames,
+        targetTableName,
+        targetColumnNames: fkDef.targetColumns,
+        updateConstraint: fkDef.onUpdate
+          ? convertReferenceOption(fkDef.onUpdate)
+          : 'NO_ACTION',
+        deleteConstraint: fkDef.onDelete
+          ? convertReferenceOption(fkDef.onDelete)
+          : 'NO_ACTION',
+      }
+      constraints[constraintName] = constraint
     }
   }
 

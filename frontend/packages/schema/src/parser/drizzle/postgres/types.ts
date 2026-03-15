@@ -2,11 +2,15 @@
  * Type definitions for Drizzle ORM schema parsing
  */
 
+import type { Constraint } from '../../../schema/index.js'
+
 export type DrizzleTableDefinition = {
   name: string
   columns: Record<string, DrizzleColumnDefinition>
   indexes: Record<string, DrizzleIndexDefinition>
   compositePrimaryKey?: CompositePrimaryKeyDefinition
+  foreignKeys?: DrizzleForeignKeyDefinition[]
+  constraints?: Record<string, Constraint>
   comment?: string | undefined
 }
 
@@ -41,9 +45,25 @@ export type DrizzleEnumDefinition = {
   values: string[]
 }
 
+export type DrizzleCheckConstraintDefinition = {
+  type: 'check'
+  name: string
+  condition: string
+}
+
 export type CompositePrimaryKeyDefinition = {
   type: 'primaryKey'
+  name?: string
   columns: string[]
+}
+
+export type DrizzleForeignKeyDefinition = {
+  name?: string
+  columns: string[]
+  targetTable: string
+  targetColumns: string[]
+  onDelete?: string
+  onUpdate?: string
 }
 
 /**

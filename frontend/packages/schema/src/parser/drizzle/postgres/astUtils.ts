@@ -195,3 +195,85 @@ export const parseMethodChain = (
 
   return methods
 }
+
+/**
+ * Check if a call expression calls a function with a specific name
+ */
+export const isCallToFunction = (
+  callExpr: CallExpression,
+  functionName: string,
+): boolean => {
+  return (
+    isIdentifier(callExpr.callee) &&
+    callExpr.callee.value === functionName &&
+    callExpr.arguments.length > 0
+  )
+}
+
+/**
+ * Extract column names from an array expression of member expressions
+ * Handles patterns like: [table.column1, table.column2]
+ */
+export const extractColumnNames = (expr: Expression): string[] => {
+  if (!isArrayExpression(expr)) return []
+
+  const columns: string[] = []
+
+  for (const elem of expr.elements) {
+    if (!elem) continue
+    const elemExpr = getArgumentExpression(elem)
+    if (!elemExpr) continue
+    if (!isMemberExpression(elemExpr)) continue
+    if (!isIdentifier(elemExpr.property)) continue
+
+    columns.push(elemExpr.property.value)
+  }
+
+  return columns
+}
+
+/**
+ * Extract table and column names from member expressions in an array
+ * Returns the first table name found and all column names
+ * Handles patterns like: [table.col1, table.col2] or mixed [table1.col1, table2.col2]
+ */
+export const extractTableAndColumns = (
+  expr: Expression,
+): { tableName: string | null; columnNames: string[] } => {
+  if (!isArrayExpression(expr)) {
+    return { tableName: null, columnNames: [] }
+  }
+
+  const columnNames: string[] = []
+  let tableName: string | null = null
+
+  for (const elem of expr.elements) {
+    if (!elem) continue
+    const elemExpr = getArgumentExpression(elem)
+
+    if (
+      elemExpr &&
+      isMemberExpression(elemExpr) &&
+      isIdentifier(elemExpr.object) &&
+      isIdentifier(elemExpr.property)
+    ) {
+      tableName = tableName ?? elemExpr.object.value
+      columnNames.push(elemExpr.property.value)
+    }
+  }
+
+  return { tableName, columnNames }
+}
+
+/**
+ * Extract configuration object from a call expression's first argument
+ */
+export const extractConfigObject = (
+  callExpr: CallExpression,
+): ObjectExpression | null => {
+  if (callExpr.arguments.length === 0) return null
+
+  const configArg = callExpr.arguments[0]
+  const configExpr = getArgumentExpression(configArg)
+  return isObjectExpression(configExpr) ? configExpr : null
+}

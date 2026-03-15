@@ -1117,6 +1117,199 @@ describe.each(Object.entries(dbConfigs))(
         expect(foreignKeyCount).toBe(2)
       })
 
+      it('table-level foreignKey() with array syntax (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar, foreignKey } from '${config.imports.core}';
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+        });
+
+        export const posts = ${config.functions.table}('posts', {
+          id: ${config.types.idColumn()},
+          authorId: ${config.types.integer}('author_id').notNull(),
+          title: varchar('title', { length: 255 }),
+        }, (table) => [
+          foreignKey({
+            columns: [table.authorId],
+            foreignColumns: [users.id],
+          })
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        expect(value.tables['posts']?.constraints).toHaveProperty(
+          'posts_author_id_users_id_fk',
+        )
+        expect(
+          value.tables['posts']?.constraints['posts_author_id_users_id_fk'],
+        ).toEqual({
+          type: 'FOREIGN KEY',
+          name: 'posts_author_id_users_id_fk',
+          columnNames: ['author_id'],
+          targetTableName: 'users',
+          targetColumnNames: ['id'],
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'NO_ACTION',
+        })
+      })
+
+      it('table-level foreignKey() with custom name (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar, foreignKey } from '${config.imports.core}';
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+        });
+
+        export const posts = ${config.functions.table}('posts', {
+          id: ${config.types.idColumn()},
+          authorId: ${config.types.integer}('author_id').notNull(),
+          title: varchar('title', { length: 255 }),
+        }, (table) => [
+          foreignKey({
+            columns: [table.authorId],
+            foreignColumns: [users.id],
+            name: 'custom_fk',
+          })
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        expect(value.tables['posts']?.constraints).toHaveProperty('custom_fk')
+        expect(value.tables['posts']?.constraints['custom_fk']).toEqual({
+          type: 'FOREIGN KEY',
+          name: 'custom_fk',
+          columnNames: ['author_id'],
+          targetTableName: 'users',
+          targetColumnNames: ['id'],
+          updateConstraint: 'NO_ACTION',
+          deleteConstraint: 'NO_ACTION',
+        })
+      })
+
+      it('table-level foreignKey() with composite columns (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar, foreignKey } from '${config.imports.core}';
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          firstName: varchar('first_name', { length: 255 }).notNull(),
+          lastName: varchar('last_name', { length: 255 }).notNull(),
+        });
+
+        export const posts = ${config.functions.table}('posts', {
+          id: ${config.types.idColumn()},
+          authorFirstName: varchar('author_first_name', { length: 255 }).notNull(),
+          authorLastName: varchar('author_last_name', { length: 255 }).notNull(),
+          title: varchar('title', { length: 255 }),
+        }, (table) => [
+          foreignKey({
+            columns: [table.authorFirstName, table.authorLastName],
+            foreignColumns: [users.firstName, users.lastName],
+          })
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        const fkConstraint = Object.values(
+          value.tables['posts']?.constraints ?? {},
+        ).find((c) => c.type === 'FOREIGN KEY')
+        expect(fkConstraint).toBeDefined()
+        if (fkConstraint && fkConstraint.type === 'FOREIGN KEY') {
+          expect(fkConstraint.columnNames).toEqual([
+            'author_first_name',
+            'author_last_name',
+          ])
+          expect(fkConstraint.targetColumnNames).toEqual([
+            'first_name',
+            'last_name',
+          ])
+          expect(fkConstraint.targetTableName).toBe('users')
+        }
+      })
+
+      it('table-level foreignKey() coexisting with index() in array syntax (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar, foreignKey, ${config.functions.index} } from '${config.imports.core}';
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+        });
+
+        export const posts = ${config.functions.table}('posts', {
+          id: ${config.types.idColumn()},
+          authorId: ${config.types.integer}('author_id').notNull(),
+          title: varchar('title', { length: 255 }),
+        }, (table) => [
+          foreignKey({
+            columns: [table.authorId],
+            foreignColumns: [users.id],
+          }),
+          ${config.functions.index}('posts_author_idx').on(table.authorId),
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        // Verify foreign key constraint
+        const fkConstraint = Object.values(
+          value.tables['posts']?.constraints ?? {},
+        ).find((c) => c.type === 'FOREIGN KEY')
+        expect(fkConstraint).toBeDefined()
+
+        // Verify index
+        expect(value.tables['posts']?.indexes).toHaveProperty(
+          'posts_author_idx',
+        )
+      })
+
+      it('table-level foreignKey() where variable name differs from table name (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar, foreignKey } from '${config.imports.core}';
+
+        export const usersTable = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+        });
+
+        export const posts = ${config.functions.table}('posts', {
+          id: ${config.types.idColumn()},
+          authorId: ${config.types.integer}('author_id').notNull(),
+          title: varchar('title', { length: 255 }),
+        }, (table) => [
+          foreignKey({
+            columns: [table.authorId],
+            foreignColumns: [usersTable.id],
+          })
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        // The auto-generated constraint name uses the JS variable name ('usersTable'),
+        // not the DB table name ('users'). This is consistent with inline .references() FK behavior.
+        expect(value.tables['posts']?.constraints).toHaveProperty(
+          'posts_author_id_usersTable_id_fk',
+        )
+
+        const fkConstraint =
+          value.tables['posts']?.constraints['posts_author_id_usersTable_id_fk']
+        expect(fkConstraint).toBeDefined()
+        if (fkConstraint && fkConstraint.type === 'FOREIGN KEY') {
+          // targetTableName resolves to the actual DB table name via variableToTableMapping
+          expect(fkConstraint.targetTableName).toBe('users')
+          expect(fkConstraint.columnNames).toEqual(['author_id'])
+          expect(fkConstraint.targetColumnNames).toEqual(['id'])
+        }
+      })
+
       // table-level unique constraints test
       // TODO: postgres - add support for unique() function to enable this test for PostgreSQL
       if (dbType === 'mysql') {
@@ -1156,6 +1349,201 @@ describe.each(Object.entries(dbConfigs))(
           ).toEqual({
             type: 'UNIQUE',
             name: 'users_email_unique',
+            columnNames: ['email'],
+          })
+        })
+      }
+
+      it('table-level foreignKey() with onDelete/onUpdate in array syntax (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar, foreignKey } from '${config.imports.core}';
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          name: varchar('name', { length: 255 }),
+        });
+
+        export const posts = ${config.functions.table}('posts', {
+          id: ${config.types.idColumn()},
+          authorId: ${config.types.integer}('author_id').notNull(),
+          title: varchar('title', { length: 255 }),
+        }, (table) => [
+          foreignKey({
+            columns: [table.authorId],
+            foreignColumns: [users.id],
+            onDelete: 'cascade',
+            onUpdate: 'restrict',
+          })
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        const fkConstraint = Object.values(
+          value.tables['posts']?.constraints ?? {},
+        ).find((c) => c.type === 'FOREIGN KEY')
+        expect(fkConstraint).toBeDefined()
+        if (fkConstraint && fkConstraint.type === 'FOREIGN KEY') {
+          expect(fkConstraint.deleteConstraint).toBe('CASCADE')
+          expect(fkConstraint.updateConstraint).toBe('RESTRICT')
+        }
+      })
+
+      // MySQL and PostgreSQL: check() and unique() in array syntax
+      it('index() in array syntax (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, varchar, ${config.functions.index} } from '${config.imports.core}';
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          firstName: varchar('first_name', { length: 255 }),
+          lastName: varchar('last_name', { length: 255 }),
+          email: varchar('email', { length: 255 }),
+        }, (table) => [
+          ${config.functions.index}('name_idx').on(table.firstName, table.lastName),
+          ${config.functions.index}('email_idx').on(table.email),
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        expect(value.tables['users']?.indexes).toHaveProperty('name_idx')
+        expect(value.tables['users']?.indexes['name_idx']).toEqual(
+          anIndex({
+            name: 'name_idx',
+            columns: ['first_name', 'last_name'],
+            unique: false,
+          }),
+        )
+        expect(value.tables['users']?.indexes).toHaveProperty('email_idx')
+        expect(value.tables['users']?.indexes['email_idx']).toEqual(
+          anIndex({
+            name: 'email_idx',
+            columns: ['email'],
+            unique: false,
+          }),
+        )
+      })
+
+      it('uniqueIndex() in array syntax (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.id}, varchar, ${config.functions.uniqueIndex} } from '${config.imports.core}';
+
+        export const users = ${config.functions.table}('users', {
+          id: ${config.types.idColumn()},
+          email: varchar('email', { length: 255 }),
+        }, (table) => [
+          ${config.functions.uniqueIndex}('email_unique_idx').on(table.email),
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        expect(value.tables['users']?.indexes['email_unique_idx']).toEqual(
+          anIndex({
+            name: 'email_unique_idx',
+            columns: ['email'],
+            unique: true,
+          }),
+        )
+      })
+
+      it('composite primaryKey() in array syntax (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.integer}, ${config.functions.primaryKey} } from '${config.imports.core}';
+
+        export const orderItems = ${config.functions.table}('order_items', {
+          orderId: ${config.types.integer}('order_id').notNull(),
+          itemId: ${config.types.integer}('item_id').notNull(),
+          quantity: ${config.types.integer}('quantity'),
+        }, (table) => [
+          ${config.functions.primaryKey}({ columns: [table.orderId, table.itemId] }),
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        expect(value.tables['order_items']?.constraints).toHaveProperty(
+          'order_items_pkey',
+        )
+        expect(
+          value.tables['order_items']?.constraints['order_items_pkey'],
+        ).toEqual({
+          type: 'PRIMARY KEY',
+          name: 'order_items_pkey',
+          columnNames: ['order_id', 'item_id'],
+        })
+      })
+
+      it('composite primaryKey() with custom name in array syntax (v1)', async () => {
+        const schema = `
+        import { ${config.functions.table}, ${config.types.integer}, ${config.functions.primaryKey} } from '${config.imports.core}';
+
+        export const booksToAuthors = ${config.functions.table}('books_to_authors', {
+          authorId: ${config.types.integer}('author_id').notNull(),
+          bookId: ${config.types.integer}('book_id').notNull(),
+        }, (table) => [
+          ${config.functions.primaryKey}({ name: 'books_authors_pk', columns: [table.bookId, table.authorId] }),
+        ]);
+        `
+
+        const { value } = await config.processor(schema)
+
+        expect(value.tables['books_to_authors']?.constraints).toHaveProperty(
+          'books_authors_pk',
+        )
+        expect(
+          value.tables['books_to_authors']?.constraints['books_authors_pk'],
+        ).toEqual({
+          type: 'PRIMARY KEY',
+          name: 'books_authors_pk',
+          columnNames: ['book_id', 'author_id'],
+        })
+      })
+
+      if (dbType === 'mysql' || dbType === 'postgres') {
+        it('table-level check() in array syntax (v1)', async () => {
+          const schema = `
+          import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, ${config.functions.check}, sql } from '${config.imports.core}';
+
+          export const users = ${config.functions.table}('users', {
+            id: ${config.types.idColumn()},
+            age: ${config.types.integer}('age').notNull(),
+          }, (table) => [
+            ${config.functions.check}('age_check', sql\`age >= 0 AND age <= 150\`),
+          ]);
+          `
+
+          const { value } = await config.processor(schema)
+
+          expect(value.tables['users']?.constraints).toHaveProperty('age_check')
+          expect(value.tables['users']?.constraints['age_check']).toEqual({
+            type: 'CHECK',
+            name: 'age_check',
+            detail: 'age >= 0 AND age <= 150',
+          })
+        })
+
+        it('table-level unique() in array syntax (v1)', async () => {
+          const schema = `
+          import { ${config.functions.table}, ${config.types.id}, varchar, unique } from '${config.imports.core}';
+
+          export const users = ${config.functions.table}('users', {
+            id: ${config.types.idColumn()},
+            email: varchar('email', { length: 255 }),
+          }, (table) => [
+            unique('email_unique').on(table.email),
+          ]);
+          `
+
+          const { value } = await config.processor(schema)
+
+          expect(value.tables['users']?.constraints).toHaveProperty(
+            'email_unique',
+          )
+          expect(value.tables['users']?.constraints['email_unique']).toEqual({
+            type: 'UNIQUE',
+            name: 'email_unique',
             columnNames: ['email'],
           })
         })
