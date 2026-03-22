@@ -318,12 +318,41 @@ export const parseSchemaTableCall = (
 const parseForeignKeyDefinition = (
   callExpr: CallExpression,
 ): DrizzleForeignKeyDefinition | null => {
-  if (!isCallToFunction(callExpr, 'foreignKey')) return null
+  let currentExpr: Expression = callExpr
+  const methodCalls: Array<{ method: string; expr: CallExpression }> = []
 
-  const configExpr = extractConfigObject(callExpr)
+  // Traverse the method chain to find foreignKey(), onDelete(), and onUpdate() calls
+  while (
+    currentExpr.type === 'CallExpression' &&
+    currentExpr.callee.type === 'MemberExpression' &&
+    currentExpr.callee.property.type === 'Identifier'
+  ) {
+    const methodName = currentExpr.callee.property.value
+    methodCalls.unshift({ method: methodName, expr: currentExpr })
+    currentExpr = currentExpr.callee.object
+  }
+
+  if (currentExpr.type !== 'CallExpression') return null
+  if (!isCallToFunction(currentExpr, 'foreignKey')) return null
+
+  const configExpr = extractConfigObject(currentExpr)
   if (!configExpr) return null
 
-  const definition = parseForeignKeyConfig(configExpr)
+  const definition: Partial<DrizzleForeignKeyDefinition> =
+    parseForeignKeyConfig(configExpr)
+
+  for (const { method, expr } of methodCalls) {
+    const arg = expr.arguments[0]
+      ? getArgumentExpression(expr.arguments[0])
+      : null
+    if (
+      (method === 'onDelete' || method === 'onUpdate') &&
+      arg &&
+      isStringLiteral(arg)
+    ) {
+      definition[method] = arg.value
+    }
+  }
 
   return isValidForeignKeyDefinition(definition) ? definition : null
 }
@@ -347,10 +376,6 @@ const parseForeignKeyProp = (
         targetColumns: columnNames,
       }
     }
-    case 'onDelete':
-      return isStringLiteral(propValue) ? { onDelete: propValue.value } : {}
-    case 'onUpdate':
-      return isStringLiteral(propValue) ? { onUpdate: propValue.value } : {}
     default:
       return {}
   }

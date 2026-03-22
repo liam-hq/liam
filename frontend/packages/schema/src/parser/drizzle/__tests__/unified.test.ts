@@ -1371,9 +1371,7 @@ describe.each(Object.entries(dbConfigs))(
           foreignKey({
             columns: [table.authorId],
             foreignColumns: [users.id],
-            onDelete: 'cascade',
-            onUpdate: 'restrict',
-          })
+          }).onDelete('cascade').onUpdate('restrict')
         ]);
         `
 
