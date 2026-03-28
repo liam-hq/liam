@@ -1522,6 +1522,28 @@ describe.each(Object.entries(dbConfigs))(
           })
         })
 
+        it('table-level check() with column interpolation in sql template (v1)', async () => {
+          const schema = `
+          import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, ${config.functions.check}, sql } from '${config.imports.core}';
+
+          export const users = ${config.functions.table}('users', {
+            id: ${config.types.idColumn()},
+            age: ${config.types.integer}('age').notNull(),
+          }, (table) => [
+            ${config.functions.check}('age_check', sql\`\${table.age} >= 0 AND \${table.age} <= 150\`),
+          ]);
+          `
+
+          const { value } = await config.processor(schema)
+
+          expect(value.tables['users']?.constraints).toHaveProperty('age_check')
+          expect(value.tables['users']?.constraints['age_check']).toEqual({
+            type: 'CHECK',
+            name: 'age_check',
+            detail: 'age >= 0 AND age <= 150',
+          })
+        })
+
         it('table-level unique() in array syntax (v1)', async () => {
           const schema = `
           import { ${config.functions.table}, ${config.types.id}, varchar, unique } from '${config.imports.core}';

@@ -9,6 +9,7 @@ import type {
   Import,
   ObjectExpression,
   Super,
+  TemplateLiteral,
 } from '@swc/core'
 import { getPropertyValue, hasProperty, isObject } from './types.js'
 
@@ -218,6 +219,33 @@ export const extractTableAndColumns = (
   }
 
   return { tableName, columnNames }
+}
+
+/**
+ * Reconstruct a sql template literal condition string from quasis and expressions.
+ * For MemberExpression like table.age, extracts the JS property name (e.g., "age").
+ * Falls back to "?" for other expression types.
+ * e.g. sql`${table.age} >= 0` → "age >= 0"
+ */
+export const reconstructSqlTemplate = (template: TemplateLiteral): string => {
+  const parts: string[] = []
+  for (let i = 0; i < template.quasis.length; i++) {
+    const quasi = template.quasis[i]
+    if (quasi) parts.push(quasi.raw)
+    if (i < template.expressions.length) {
+      const expr = template.expressions[i]
+      if (
+        expr &&
+        expr.type === 'MemberExpression' &&
+        expr.property.type === 'Identifier'
+      ) {
+        parts.push(expr.property.value)
+      } else {
+        parts.push('?')
+      }
+    }
+  }
+  return parts.join('')
 }
 
 /**

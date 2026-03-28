@@ -15,6 +15,7 @@ import {
   isObjectExpression,
   isSchemaTableCall,
   isStringLiteral,
+  reconstructSqlTemplate,
 } from './astUtils.js'
 import { parseColumnFromProperty } from './columnParser.js'
 import { parseObjectExpression } from './expressionParser.js'
@@ -578,28 +579,7 @@ const parseCheckConstraint = (
           conditionExpr.tag.type === 'Identifier' &&
           conditionExpr.tag.value === 'sql'
         ) {
-          // Extract the condition from template literal
-          if (
-            conditionExpr.template.type === 'TemplateLiteral' &&
-            conditionExpr.template.quasis.length > 0
-          ) {
-            const firstQuasi = conditionExpr.template.quasis[0]
-            if (firstQuasi && firstQuasi.type === 'TemplateElement') {
-              // SWC TemplateElement has different structure than TypeScript's
-              // We need to access the raw string from the SWC AST structure
-              // Use property access with type checking to avoid type assertions
-              const hasRaw =
-                'raw' in firstQuasi && typeof firstQuasi.raw === 'string'
-              const hasCooked =
-                'cooked' in firstQuasi && typeof firstQuasi.cooked === 'string'
-
-              if (hasRaw) {
-                condition = firstQuasi.raw || ''
-              } else if (hasCooked) {
-                condition = firstQuasi.cooked || ''
-              }
-            }
-          }
+          condition = reconstructSqlTemplate(conditionExpr.template)
         }
         // Handle direct function call like sql('condition')
         else if (
