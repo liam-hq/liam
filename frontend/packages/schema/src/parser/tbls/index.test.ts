@@ -618,6 +618,54 @@ describe(processor, () => {
         expect(value.tables['posts']?.constraints).toEqual(expected)
       })
 
+      it('INTERLEAVE constraint', async () => {
+        const { value } = await processor(
+          JSON.stringify({
+            name: 'testdb',
+            tables: [
+              {
+                name: 'singers',
+                type: 'TABLE',
+                columns: [{ name: 'singer_id', type: 'int', nullable: false }],
+              },
+              {
+                name: 'albums',
+                type: 'TABLE',
+                columns: [
+                  { name: 'singer_id', type: 'int', nullable: false },
+                  { name: 'album_id', type: 'int', nullable: false },
+                ],
+                constraints: [
+                  {
+                    type: 'INTERLEAVE',
+                    name: 'albums_interleave',
+                    def: 'INTERLEAVE IN PARENT singers ON DELETE CASCADE',
+                    table: 'albums',
+                    referenced_table: 'singers',
+                    columns: ['singer_id', 'album_id'],
+                    referenced_columns: ['singer_id'],
+                  },
+                ],
+              },
+            ],
+          }),
+        )
+
+        const expected = {
+          albums_interleave: {
+            type: 'FOREIGN KEY',
+            name: 'albums_interleave',
+            columnNames: ['singer_id', 'album_id'],
+            targetTableName: 'singers',
+            targetColumnNames: ['singer_id'],
+            updateConstraint: 'NO_ACTION',
+            deleteConstraint: 'CASCADE',
+          },
+        }
+
+        expect(value.tables['albums']?.constraints).toEqual(expected)
+      })
+
       it('UNIQUE constraint', async () => {
         const { value } = await processor(
           JSON.stringify({

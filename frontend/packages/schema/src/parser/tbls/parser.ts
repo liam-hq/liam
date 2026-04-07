@@ -212,6 +212,59 @@ function processCheckConstraint(constraint: {
 }
 
 /**
+ * Process an INTERLEAVE constraint as a FOREIGN KEY fallback.
+ *
+ * tbls can represent Cloud Spanner parent-child relationships as
+ * INTERLEAVE constraints, but Liam's internal schema model does not
+ * support INTERLEAVE as a first-class constraint type.
+ *
+ * To keep the fix scoped to the tbls parser and reuse the existing
+ * relationship generation pipeline, INTERLEAVE is normalized into a
+ * FOREIGN KEY-shaped constraint here.
+ *
+ * If we fully support Spanner INTERLEAVE in Liam, we should reconsider this approach
+ * and potentially add INTERLEAVE as a first-class constraint type in the schema model.
+ *
+ * @see https://github.com/liam-hq/liam/issues/2411#issuecomment-3082740297
+ */
+function processInterleaveConstraint(constraint: {
+  type: string
+  name: string
+  columns?: string[]
+  def: string
+  referenced_table?: string
+  referenced_columns?: string[]
+}): [string, Constraints[string]] | null {
+  if (
+    constraint.type === 'INTERLEAVE' &&
+    constraint.columns &&
+    constraint.columns.length > 0 &&
+    constraint.referenced_columns &&
+    constraint.referenced_columns.length > 0 &&
+    constraint.referenced_table
+  ) {
+    const { updateConstraint, deleteConstraint } = extractForeignKeyActions(
+      constraint.def,
+    )
+
+    return [
+      constraint.name,
+      {
+        type: 'FOREIGN KEY',
+        name: constraint.name,
+        columnNames: constraint.columns,
+        targetTableName: constraint.referenced_table,
+        targetColumnNames: constraint.referenced_columns,
+        updateConstraint,
+        deleteConstraint,
+      },
+    ]
+  }
+
+  return null
+}
+
+/**
  * Process constraints for a table
  */
 function processConstraints(
@@ -244,6 +297,8 @@ function processConstraints(
       result = processUniqueConstraint(constraint)
     } else if (constraint.type === 'CHECK') {
       result = processCheckConstraint(constraint)
+    } else if (constraint.type === 'INTERLEAVE') {
+      result = processInterleaveConstraint(constraint)
     }
 
     // Add constraint to the collection if valid
