@@ -4,3 +4,8 @@ packages:
   - "frontend/packages/__mocks__/*"
   - "frontend/internal-packages/*"
 minimumReleaseAge: 2880 # 2 days
+minimumReleaseAgeExclude:
+  # Renovate security update: @modelcontextprotocol/sdk@1.26.0
+  - "@modelcontextprotocol/sdk@1.26.0"
+  # Renovate security update: storybook@9.1.19
+  - storybook@9.1.19
