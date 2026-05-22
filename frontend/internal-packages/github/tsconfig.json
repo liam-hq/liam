@@ -4,6 +4,7 @@
     "outDir": "dist",
     "declaration": true,
     "target": "ES2022",
+    "lib": ["dom", "es2022"],
     "moduleResolution": "node"
   },
   "include": ["src/**/*"],
