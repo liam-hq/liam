@@ -9,3 +9,5 @@ minimumReleaseAgeExclude:
   - "@modelcontextprotocol/sdk@1.26.0"
   # Renovate security update: storybook@9.1.19
   - storybook@9.1.19
+  # Renovate security update: valibot@1.2.0
+  - valibot@1.2.0
