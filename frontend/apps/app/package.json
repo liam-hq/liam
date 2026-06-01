@@ -9,7 +9,7 @@
     "@codemirror/state": "6.5.2",
     "@codemirror/view": "6.38.6",
     "@electric-sql/pglite": "0.3.12",
-    "@langchain/core": "0.3.78",
+    "@langchain/core": "0.3.80",
     "@lezer/highlight": "1.2.2",
     "@liam-hq/agent": "workspace:*",
     "@liam-hq/db": "workspace:*",
