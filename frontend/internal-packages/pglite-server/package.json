@@ -16,7 +16,7 @@
     "@liam-hq/configs": "workspace:*",
     "eslint": "9.38.0",
     "typescript": "5.9.3",
-    "vitest": "3.2.4"
+    "vitest": "3.2.6"
   },
   "scripts": {
     "fmt": "concurrently \"pnpm:fmt:*\"",

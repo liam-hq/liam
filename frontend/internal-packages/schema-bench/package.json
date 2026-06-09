@@ -20,7 +20,7 @@
     "@biomejs/biome": "2.2.6",
     "@liam-hq/configs": "workspace:*",
     "eslint": "9.38.0",
-    "vitest": "3.2.4"
+    "vitest": "3.2.6"
   },
   "scripts": {
     "evaluateSchema": "tsx src/cli/evaluateSchema.ts",

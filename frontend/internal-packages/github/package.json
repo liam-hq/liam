@@ -17,7 +17,7 @@
     "@types/node": "22.18.11",
     "eslint": "9.38.0",
     "typescript": "5.9.3",
-    "vitest": "3.2.4"
+    "vitest": "3.2.6"
   },
   "scripts": {
     "build": "tsc",

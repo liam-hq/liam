@@ -19,7 +19,7 @@
     "supabase": "2.50.14",
     "type-fest": "4.41.0",
     "typescript": "5.9.3",
-    "vitest": "3.2.4"
+    "vitest": "3.2.6"
   },
   "scripts": {
     "build": "tsc",
