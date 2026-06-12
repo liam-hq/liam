@@ -131,6 +131,34 @@ describe(processor, () => {
       })
     })
 
+    it('unnamed indexes in array callback form do not collide', async () => {
+      const { value } = await processor(`
+        import { sqliteTable, integer, text, index } from 'drizzle-orm/sqlite-core';
+
+        export const users = sqliteTable('users', {
+          id: integer('id').primaryKey({ autoIncrement: true }),
+          firstName: text('first_name'),
+          email: text('email'),
+        }, (table) => [
+          index().on(table.firstName),
+          index().on(table.email),
+        ]);
+      `)
+
+      expect(value.tables['users']?.indexes['users_firstName_index']).toEqual({
+        name: 'users_firstName_index',
+        columns: ['first_name'],
+        unique: false,
+        type: '',
+      })
+      expect(value.tables['users']?.indexes['users_email_index']).toEqual({
+        name: 'users_email_index',
+        columns: ['email'],
+        unique: false,
+        type: '',
+      })
+    })
+
     it('column modes are parsed as underlying SQLite types', async () => {
       const { value } = await processor(`
         import { sqliteTable, integer, text, blob } from 'drizzle-orm/sqlite-core';

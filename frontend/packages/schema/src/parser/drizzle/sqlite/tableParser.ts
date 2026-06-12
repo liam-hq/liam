@@ -132,7 +132,11 @@ const addIndexDefinition = (
   if (isCompositePrimaryKey(indexDef)) {
     table.compositePrimaryKey = indexDef
   } else if (isDrizzleIndex(indexDef)) {
-    table.indexes[indexDef.name] = indexDef
+    // index() can omit the name in the array form; synthesize a deterministic
+    // one so unnamed indexes don't collide on the same empty key
+    const name =
+      indexDef.name || `${table.name}_${indexDef.columns.join('_')}_index`
+    table.indexes[name] = { ...indexDef, name }
   }
 }
 
