@@ -48,6 +48,29 @@ describe('Drizzle auto-detection', () => {
     )
   })
 
+  it('should detect SQLite schema and use SQLite parser', async () => {
+    const sqliteSchema = `
+      import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+
+      export const users = sqliteTable('users', {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        name: text('name').notNull(),
+      });
+    `
+
+    const { value, errors } = await processor(sqliteSchema)
+
+    expect(errors).toHaveLength(0)
+    expect(value.tables).toHaveProperty('users')
+    expect(value.tables['users']?.columns).toHaveProperty('id')
+    expect(value.tables['users']?.columns).toHaveProperty('name')
+
+    // Check that SQLite-specific features are parsed correctly
+    expect(value.tables['users']?.columns['id']?.default).toBe(
+      'autoincrement()',
+    )
+  })
+
   it('should default to PostgreSQL for ambiguous schemas', async () => {
     const ambiguousSchema = `
       // No specific imports or table functions
@@ -87,5 +110,20 @@ describe('Drizzle auto-detection', () => {
 
     // Should be detected as PostgreSQL even without imports
     expect(value).toBeDefined()
+  })
+
+  it('should detect SQLite by table function names', async () => {
+    const sqliteSchemaWithFunctions = `
+      export const users = sqliteTable('users', {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+      });
+    `
+
+    const { value } = await processor(sqliteSchemaWithFunctions)
+
+    // Should be detected as SQLite even without imports
+    expect(value.tables['users']?.columns['id']?.default).toBe(
+      'autoincrement()',
+    )
   })
 })

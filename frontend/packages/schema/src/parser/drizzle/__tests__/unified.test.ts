@@ -4,11 +4,12 @@ import { aColumn, anIndex, aSchema, aTable } from '../../../schema/index.js'
 import { createParserTestCases } from '../../__tests__/index.js'
 import { processor as mysqlProcessor } from '../mysql/index.js'
 import { processor as postgresProcessor } from '../postgres/index.js'
+import { processor as sqliteProcessor } from '../sqlite/index.js'
 
 /**
- * Unified test suite for MySQL and PostgreSQL Drizzle parsers
+ * Unified test suite for MySQL, PostgreSQL, and SQLite Drizzle parsers
  * This test suite reduces code duplication by running the same test cases
- * against both database parsers with parameterized configurations.
+ * against all database parsers with parameterized configurations.
  */
 
 // Database configuration for parameterized tests
@@ -30,12 +31,13 @@ const dbConfigs = {
     },
     types: {
       id: 'int',
-      idColumn: () => "int('id').primaryKey().autoincrement()",
+      idColumn: (name = 'id') => `int('${name}').primaryKey().autoincrement()`,
       varchar: 'varchar',
       text: 'text',
       integer: 'int',
       bigint: 'bigint',
       boolean: 'boolean',
+      booleanColumn: (name: string) => `boolean('${name}')`,
       timestamp: 'timestamp',
       decimal: 'decimal',
       json: 'json',
@@ -105,12 +107,13 @@ const dbConfigs = {
     },
     types: {
       id: 'serial',
-      idColumn: () => "serial('id').primaryKey()",
+      idColumn: (name = 'id') => `serial('${name}').primaryKey()`,
       varchar: 'varchar',
       text: 'text',
       integer: 'integer',
       bigint: 'bigint',
       boolean: 'boolean',
+      booleanColumn: (name: string) => `boolean('${name}')`,
       timestamp: 'timestamp',
       decimal: 'decimal',
       json: 'json',
@@ -163,6 +166,83 @@ const dbConfigs = {
         },
       }),
   },
+  sqlite: {
+    name: 'SQLite',
+    processor: sqliteProcessor,
+    imports: {
+      core: 'drizzle-orm/sqlite-core',
+      relations: 'drizzle-orm',
+    },
+    functions: {
+      table: 'sqliteTable',
+      enum: '', // SQLite has no native enum type
+      index: 'index',
+      uniqueIndex: 'uniqueIndex',
+      primaryKey: 'primaryKey',
+      check: 'check',
+    },
+    types: {
+      id: 'integer',
+      idColumn: (name = 'id') =>
+        `integer('${name}').primaryKey({ autoIncrement: true })`,
+      varchar: 'text',
+      text: 'text',
+      integer: 'integer',
+      bigint: 'blob',
+      boolean: 'integer',
+      booleanColumn: (name: string) =>
+        `integer('${name}', { mode: 'boolean' })`,
+      timestamp: 'integer',
+      decimal: 'numeric',
+      json: 'text',
+    },
+    expectedTypes: {
+      id: 'integer',
+      varchar: (length: number) => `text(${length})`,
+      text: 'text',
+      integer: 'integer',
+      bigint: 'blob',
+      boolean: 'integer',
+      timestamp: 'integer',
+      decimal: (_precision: number, _scale: number) => 'numeric',
+      json: 'text',
+      enum: 'text',
+    },
+    userTableBase: (override?: Partial<Table>) =>
+      aSchema({
+        tables: {
+          users: aTable({
+            name: 'users',
+            columns: {
+              id: aColumn({
+                name: 'id',
+                type: 'integer',
+                default: 'autoincrement()',
+                notNull: true,
+              }),
+              ...override?.columns,
+            },
+            indexes: {
+              users_pkey: anIndex({
+                name: 'users_pkey',
+                columns: ['id'],
+                unique: true,
+              }),
+              ...override?.indexes,
+            },
+            constraints: {
+              PRIMARY_id: {
+                type: 'PRIMARY KEY',
+                name: 'PRIMARY_id',
+                columnNames: ['id'],
+              },
+              ...override?.constraints,
+            },
+            comment: override?.comment ?? null,
+          }),
+        },
+      }),
+  },
 } as const
 
 describe.each(Object.entries(dbConfigs))(
@@ -173,11 +253,11 @@ describe.each(Object.entries(dbConfigs))(
     describe(`should parse ${config.name} schema correctly`, () => {
       it('basic table with columns', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar} } from '${config.imports.core}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }).notNull(),
+          name: ${config.types.varchar}('name', { length: 255 }).notNull(),
         });
       `
 
@@ -252,11 +332,11 @@ describe.each(Object.entries(dbConfigs))(
 
       it('default value as boolean', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, boolean } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.boolean} } from '${config.imports.core}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          active: boolean('active').default(true).notNull(),
+          active: ${config.types.booleanColumn('active')}.default(true).notNull(),
         });
       `
 
@@ -305,11 +385,11 @@ describe.each(Object.entries(dbConfigs))(
 
       it('unique constraint', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar} } from '${config.imports.core}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          email: varchar('email', { length: 255 }).unique(),
+          email: ${config.types.varchar}('email', { length: 255 }).unique(),
         });
       `
 
@@ -339,18 +419,18 @@ describe.each(Object.entries(dbConfigs))(
         const foreignKeyRef = `${config.types.integer}('user_id').references(() => users.id)`
 
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, ${config.types.varchar} } from '${config.imports.core}';
         import { relations } from '${config.imports.relations}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }),
+          name: ${config.types.varchar}('name', { length: 255 }),
         });
 
         export const posts = ${config.functions.table}('posts', {
           id: ${config.types.idColumn()},
           userId: ${foreignKeyRef},
-          title: varchar('title', { length: 255 }),
+          title: ${config.types.varchar}('title', { length: 255 }),
         });
 
         export const usersRelations = relations(users, ({ many }) => ({
@@ -388,13 +468,13 @@ describe.each(Object.entries(dbConfigs))(
 
       it('composite index', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar, ${config.functions.index} } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, ${config.functions.index} } from '${config.imports.core}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          firstName: varchar('first_name', { length: 255 }),
-          lastName: varchar('last_name', { length: 255 }),
-          email: varchar('email', { length: 255 }),
+          firstName: ${config.types.varchar}('first_name', { length: 255 }),
+          lastName: ${config.types.varchar}('last_name', { length: 255 }),
+          email: ${config.types.varchar}('email', { length: 255 }),
         }, (table) => ({
           nameIdx: ${config.functions.index}('name_idx').on(table.firstName, table.lastName),
           emailIdx: ${config.functions.index}('email_idx').on(table.email),
@@ -414,11 +494,17 @@ describe.each(Object.entries(dbConfigs))(
       })
 
       it('multiple data types', async () => {
+        // Skip for SQLite since boolean, timestamp, and decimal are not SQLite types
+        // (SQLite core types are covered in sqlite/__tests__/index.test.ts)
+        if (dbType === 'sqlite') {
+          return
+        }
+
         const schema = `
         import { 
           ${config.functions.table}, 
           ${config.types.id}, 
-          varchar, 
+          ${config.types.varchar},
           text, 
           ${config.types.integer}, 
           ${config.types.bigint}, 
@@ -430,7 +516,7 @@ describe.each(Object.entries(dbConfigs))(
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }).notNull(),
+          name: ${config.types.varchar}('name', { length: 255 }).notNull(),
           bio: text('bio'),
           age: ${config.types.integer}('age'),
           salary: ${config.types.bigint}('salary', { mode: 'number' }),
@@ -494,17 +580,22 @@ describe.each(Object.entries(dbConfigs))(
       })
 
       it('enum type', async () => {
+        // Skip for SQLite since it has no native enum type
+        if (dbType === 'sqlite') {
+          return
+        }
+
         const enumFunction = config.functions.enum
         const enumType = dbType === 'mysql' ? 'enum' : 'role'
 
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar, ${enumFunction} } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, ${enumFunction} } from '${config.imports.core}';
 
         ${dbType === 'postgres' ? `export const roleEnum = ${enumFunction}('role', ['user', 'admin']);` : ''}
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }),
+          name: ${config.types.varchar}('name', { length: 255 }),
           role: ${
             dbType === 'mysql'
               ? `${enumFunction}('role', ['user', 'admin']).default('user')`
@@ -546,13 +637,13 @@ describe.each(Object.entries(dbConfigs))(
       if (dbType === 'postgres') {
         it('postgres enum definitions (declared enum pattern)', async () => {
           const schema = `
-          import { pgTable, serial, varchar, pgEnum } from 'drizzle-orm/pg-core';
+          import { pgTable, serial, ${config.types.varchar}, pgEnum } from 'drizzle-orm/pg-core';
 
           export const roleEnum = pgEnum('role', ['user', 'admin', 'moderator']);
 
           export const users = pgTable('users', {
             id: serial('id').primaryKey(),
-            name: varchar('name', { length: 255 }),
+            name: ${config.types.varchar}('name', { length: 255 }),
             role: roleEnum('role').default('user'),
           });
         `
@@ -570,14 +661,14 @@ describe.each(Object.entries(dbConfigs))(
 
         it('postgres multiple enum definitions', async () => {
           const schema = `
-          import { pgTable, serial, varchar, pgEnum } from 'drizzle-orm/pg-core';
+          import { pgTable, serial, ${config.types.varchar}, pgEnum } from 'drizzle-orm/pg-core';
 
           export const roleEnum = pgEnum('role', ['user', 'admin']);
           export const statusEnum = pgEnum('status', ['active', 'inactive', 'pending']);
 
           export const users = pgTable('users', {
             id: serial('id').primaryKey(),
-            name: varchar('name', { length: 255 }),
+            name: ${config.types.varchar}('name', { length: 255 }),
             role: roleEnum('role').default('user'),
             status: statusEnum('status').default('active'),
           });
@@ -606,11 +697,11 @@ describe.each(Object.entries(dbConfigs))(
       if (dbType === 'mysql') {
         it('mysql enum definitions (inline enum pattern)', async () => {
           const schema = `
-          import { mysqlTable, int, varchar, mysqlEnum } from 'drizzle-orm/mysql-core';
+          import { mysqlTable, int, ${config.types.varchar}, mysqlEnum } from 'drizzle-orm/mysql-core';
 
           export const users = mysqlTable('users', {
             id: int('id').primaryKey().autoincrement(),
-            name: varchar('name', { length: 255 }),
+            name: ${config.types.varchar}('name', { length: 255 }),
             role: mysqlEnum('role', ['user', 'admin', 'moderator']).default('user'),
           });
         `
@@ -628,11 +719,11 @@ describe.each(Object.entries(dbConfigs))(
 
         it('mysql multiple enum definitions', async () => {
           const schema = `
-          import { mysqlTable, int, varchar, mysqlEnum } from 'drizzle-orm/mysql-core';
+          import { mysqlTable, int, ${config.types.varchar}, mysqlEnum } from 'drizzle-orm/mysql-core';
 
           export const users = mysqlTable('users', {
             id: int('id').primaryKey().autoincrement(),
-            name: varchar('name', { length: 255 }),
+            name: ${config.types.varchar}('name', { length: 255 }),
             role: mysqlEnum('role', ['user', 'admin']).default('user'),
             status: mysqlEnum('status', ['active', 'inactive', 'pending']).default('active'),
           });
@@ -659,21 +750,21 @@ describe.each(Object.entries(dbConfigs))(
       }
 
       it('empty enum definition (Postgres only - MySQL requires at least one value)', async () => {
-        // Skip for MySQL since empty enums are not valid
-        if (dbType === 'mysql') {
+        // Skip for MySQL since empty enums are not valid, and for SQLite since it has no enums
+        if (dbType !== 'postgres') {
           return
         }
 
         const enumFunction = config.functions.enum
 
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar, ${enumFunction} } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, ${enumFunction} } from '${config.imports.core}';
 
         export const emptyEnum = ${enumFunction}('empty_enum', []);
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }),
+          name: ${config.types.varchar}('name', { length: 255 }),
           empty_field: emptyEnum('empty_field'),
         });
       `
@@ -691,18 +782,18 @@ describe.each(Object.entries(dbConfigs))(
 
       it('foreign key constraint (one-to-one)', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, ${config.types.varchar} } from '${config.imports.core}';
         import { relations } from '${config.imports.relations}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }),
+          name: ${config.types.varchar}('name', { length: 255 }),
         });
 
         export const profiles = ${config.functions.table}('profiles', {
           id: ${config.types.idColumn()},
           userId: ${config.types.integer}('user_id').references(() => users.id).unique(),
-          bio: varchar('bio', { length: 500 }),
+          bio: ${config.types.varchar}('bio', { length: 500 }),
         });
 
         export const usersRelations = relations(users, ({ one }) => ({
@@ -752,11 +843,11 @@ describe.each(Object.entries(dbConfigs))(
 
       it('foreign key constraint with cascade actions', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, ${config.types.varchar} } from '${config.imports.core}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }),
+          name: ${config.types.varchar}('name', { length: 255 }),
         });
 
         export const posts = ${config.functions.table}('posts', {
@@ -765,7 +856,7 @@ describe.each(Object.entries(dbConfigs))(
             onDelete: 'cascade',
             onUpdate: 'restrict',
           }),
-          title: varchar('title', { length: 255 }),
+          title: ${config.types.varchar}('title', { length: 255 }),
         });
       `
 
@@ -786,17 +877,17 @@ describe.each(Object.entries(dbConfigs))(
 
       it('many-to-many relationship with junction table', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar, ${config.functions.primaryKey} } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, ${config.types.varchar}, ${config.functions.primaryKey} } from '${config.imports.core}';
         import { relations } from '${config.imports.relations}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }),
+          name: ${config.types.varchar}('name', { length: 255 }),
         });
 
         export const tags = ${config.functions.table}('tags', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 100 }).unique(),
+          name: ${config.types.varchar}('name', { length: 100 }).unique(),
         });
 
         export const userTags = ${config.functions.table}('user_tags', {
@@ -898,11 +989,11 @@ describe.each(Object.entries(dbConfigs))(
 
       it('unique index', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar, ${config.functions.uniqueIndex} } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, ${config.functions.uniqueIndex} } from '${config.imports.core}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          email: varchar('email', { length: 255 }),
+          email: ${config.types.varchar}('email', { length: 255 }),
         }, (table) => ({
           emailIdx: ${config.functions.uniqueIndex}('email_unique_idx').on(table.email),
         }));
@@ -921,18 +1012,18 @@ describe.each(Object.entries(dbConfigs))(
 
       it('one-to-one relation without explicit fields/references', async () => {
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, varchar } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.integer}, ${config.types.varchar} } from '${config.imports.core}';
         import { relations } from '${config.imports.relations}';
 
         export const users = ${config.functions.table}('users', {
           id: ${config.types.idColumn()},
-          name: varchar('name', { length: 255 }),
+          name: ${config.types.varchar}('name', { length: 255 }),
         });
 
         export const instructors = ${config.functions.table}('instructors', {
           id: ${config.types.idColumn()},
           userId: ${config.types.integer}('user_id').references(() => users.id).unique(),
-          specialization: varchar('specialization', { length: 255 }),
+          specialization: ${config.types.varchar}('specialization', { length: 255 }),
         });
 
         export const usersRelations = relations(users, ({ one, many }) => ({
@@ -985,23 +1076,18 @@ describe.each(Object.entries(dbConfigs))(
       })
 
       it('foreign key with different column names (JS property vs DB column)', async () => {
-        const userIdColumn =
-          dbType === 'mysql'
-            ? `${config.types.id}('user_id').primaryKey().autoincrement()`
-            : `${config.types.id}('user_id').primaryKey()`
-
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar, ${config.types.integer} } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, ${config.types.integer} } from '${config.imports.core}';
 
         export const users = ${config.functions.table}('users', {
-          userId: ${userIdColumn}, // JS property: userId, DB column: user_id
-          email: varchar('email', { length: 255 }).notNull(),
+          userId: ${config.types.idColumn('user_id')}, // JS property: userId, DB column: user_id
+          email: ${config.types.varchar}('email', { length: 255 }).notNull(),
         });
 
         export const posts = ${config.functions.table}('posts', {
           id: ${config.types.idColumn()},
           authorId: ${config.types.integer}('author_id').references(() => users.userId), // Referencing JS property
-          title: varchar('title', { length: 255 }),
+          title: ${config.types.varchar}('title', { length: 255 }),
         });
       `
 
@@ -1023,13 +1109,13 @@ describe.each(Object.entries(dbConfigs))(
       if (dbType === 'mysql') {
         it('check constraints', async () => {
           const schema = `
-          import { ${config.functions.table}, ${config.types.id}, varchar, ${config.functions.check} } from '${config.imports.core}';
+          import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, ${config.functions.check} } from '${config.imports.core}';
           import { sql } from '${config.imports.relations}';
 
           export const users = ${config.functions.table}('users', {
             id: ${config.types.idColumn()},
             age: ${config.types.integer}('age'),
-            username: varchar('username', { length: 50 }).notNull(),
+            username: ${config.types.varchar}('username', { length: 50 }).notNull(),
           }, (table) => ({
             ageCheck: ${config.functions.check}('users_age_check', sql\`age >= 0 AND age <= 150\`),
             usernameCheck: ${config.functions.check}('users_username_check', sql\`CHAR_LENGTH(username) >= 3\`),
@@ -1064,10 +1150,15 @@ describe.each(Object.entries(dbConfigs))(
 
       // Add multi-schema tests for each database type
       it(`multiple ${config.name} schemas`, async () => {
+        // Skip for SQLite since it has no schema concept
+        if (dbType === 'sqlite') {
+          return
+        }
+
         const schemaFunction = dbType === 'mysql' ? 'mysqlSchema' : 'pgSchema'
 
         const schema = `
-        import { ${config.functions.table}, ${config.types.id}, varchar, ${config.types.integer}, ${schemaFunction} } from '${config.imports.core}';
+        import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, ${config.types.integer}, ${schemaFunction} } from '${config.imports.core}';
 
         // Define schemas
         export const authSchema = ${schemaFunction}('auth');
@@ -1076,14 +1167,14 @@ describe.each(Object.entries(dbConfigs))(
         // Auth schema table
         export const authUsers = authSchema.table('users', {
           id: ${config.types.idColumn()},
-          email: varchar('email', { length: 255 }).notNull(),
+          email: ${config.types.varchar}('email', { length: 255 }).notNull(),
         });
 
         // Public schema tables with foreign keys
         export const publicPosts = publicSchema.table('posts', {
           id: ${config.types.idColumn()},
           userId: ${config.types.integer}('user_id').references(() => authUsers.id),
-          title: varchar('title', { length: 255 }),
+          title: ${config.types.varchar}('title', { length: 255 }),
         });
 
         export const publicComments = publicSchema.table('comments', {
@@ -1122,13 +1213,13 @@ describe.each(Object.entries(dbConfigs))(
       if (dbType === 'mysql') {
         it('table-level unique constraints', async () => {
           const schema = `
-          import { ${config.functions.table}, ${config.types.id}, varchar, unique } from '${config.imports.core}';
+          import { ${config.functions.table}, ${config.types.id}, ${config.types.varchar}, unique } from '${config.imports.core}';
 
           export const users = ${config.functions.table}('users', {
             id: ${config.types.idColumn()},
-            firstName: varchar('first_name', { length: 255 }),
-            lastName: varchar('last_name', { length: 255 }),
-            email: varchar('email', { length: 255 }),
+            firstName: ${config.types.varchar}('first_name', { length: 255 }),
+            lastName: ${config.types.varchar}('last_name', { length: 255 }),
+            email: ${config.types.varchar}('email', { length: 255 }),
           }, (table) => ({
             fullNameUnique: unique('users_full_name_unique').on(table.firstName, table.lastName),
             emailUnique: unique('users_email_unique').on(table.email),
