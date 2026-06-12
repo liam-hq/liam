@@ -2,7 +2,17 @@
 title: SQLite
 ---
 
-Currently, SQLite is supported through the tbls integration. While direct SQLite support is not yet implemented, you can use tbls as a workaround to generate schema documentation for your SQLite database.
+If your SQLite schema is defined with [Drizzle ORM](https://orm.drizzle.team/), you can generate an ER diagram directly from your schema files using the `drizzle` format. For SQLite databases themselves, you can use tbls as a workaround to generate schema documentation.
+
+## Using Drizzle ORM with SQLite
+
+If your schema files use `drizzle-orm/sqlite-core` (e.g., `sqliteTable`), specify `--format drizzle` as follows:
+
+```bash
+npx @liam-hq/cli erd build --format drizzle --input src/db/schema.ts
+```
+
+For more details, see the [Drizzle documentation](/docs/parser/supported-formats/drizzle).
 
 ## Using tbls with SQLite
 
@@ -26,4 +36,4 @@ For more details about using tbls format, see the [tbls documentation](/docs/par
 
 ## Direct SQLite Support
 
-Direct SQLite support is planned but not yet implemented. If you're interested in this feature, please follow or contribute to the discussion on [GitHub](https://github.com/liam-hq/liam/discussions/364).
+Direct parsing of SQLite databases or DDL files is planned but not yet implemented. If you're interested in this feature, please follow or contribute to the discussion on [GitHub](https://github.com/liam-hq/liam/discussions/364).

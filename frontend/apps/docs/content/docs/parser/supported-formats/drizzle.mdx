@@ -32,17 +32,20 @@ This allows you to generate the ER diagram from all schema files in the specifie
 
 ## Database Type Support
 
-Drizzle support in Liam ERD automatically detects whether you're using PostgreSQL or MySQL based on your imports:
+Drizzle support in Liam ERD automatically detects whether you're using PostgreSQL, MySQL, or SQLite based on your imports:
 
 - **PostgreSQL**: Uses imports from `drizzle-orm/pg-core` (e.g., `pgTable`, `pgEnum`)
 - **MySQL**: Uses imports from `drizzle-orm/mysql-core` (e.g., `mysqlTable`, `mysqlEnum`)
+- **SQLite**: Uses imports from `drizzle-orm/sqlite-core` (e.g., `sqliteTable`)
 
 The parser supports common Drizzle features including tables, columns, relationships, indexes, and constraints. However, some advanced features like multiple database schemas may not be fully supported yet.
+
+Note: SQLite has no native enum type, so columns defined with `text('status', { enum: [...] })` are parsed as `text`.
 
 ## Under the Hood
 
 Liam CLI analyzes your TypeScript schema files using a custom parser that:
-- Automatically detects the database type (PostgreSQL or MySQL) from your imports
+- Automatically detects the database type (PostgreSQL, MySQL, or SQLite) from your imports
 - Extracts table definitions, column types, and relationships
 - Supports Drizzle-specific features like enums, indexes, and constraints
 - Handles complex type definitions and default values
