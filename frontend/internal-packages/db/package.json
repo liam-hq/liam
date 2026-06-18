@@ -10,7 +10,7 @@
     "@supabase/ssr": "0.7.0",
     "@supabase/supabase-js": "2.75.0",
     "neverthrow": "8.2.0",
-    "valibot": "1.1.0"
+    "valibot": "1.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
