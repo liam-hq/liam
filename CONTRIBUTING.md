@@ -1,8 +1,23 @@
 # Contributing
 
-Thank you for your interest in this project! Please contribute according to the following guidelines:
+Thank you for your interest in Liam ERD! This document explains how you can engage with the project.
 
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
+
+## Our contribution policy
+
+Liam ERD is developed by the core team, and **we do not accept unsolicited external Pull Requests.** Pull requests opened without a prior invitation from the team will be closed without review.
+
+This is not a judgment on the value of your work. Writing code has become inexpensive, but reviewing it carefully still depends on limited maintainer attention, and every external change widens the project's supply-chain surface. To keep Liam ERD secure and maintainable, code changes are merged by the core team.
+
+This does **not** mean we don't want to hear from you — quite the opposite. There are many valuable ways to get involved, listed below.
+
+## How you can contribute
+
+- **Report a bug** — [open a bug report](https://github.com/liam-hq/liam/issues/new) with clear steps to reproduce.
+- **Share an idea or ask a question** — start a thread on [GitHub Discussions](https://github.com/liam-hq/liam/discussions).
+- **Report a security issue** — please follow our [Security Policy](SECURITY.md) rather than opening a public issue.
+- **Spread the word** — star the repo and tell others who might find Liam ERD useful.
 
 ## Development environment setup
 
@@ -123,15 +138,3 @@ Please try to create bug reports that are:
 - _Unique._ Do not duplicate existing opened issues.
 - _Scoped to a Single Bug._ One bug per report.
 
-**Even better: Submit a pull request with a fix or new feature!**
-
-### How to submit a Pull Request
-
-1. Search our repository for open or closed [Pull Requests](https://github.com/liam-hq/liam/pulls) that relate to your submission. You don't want to duplicate effort.
-2. Fork the project
-3. Create your feature branch (`git switch -c feat/amazing_feature`)
-4. See our [Changeset Creation Guide](./docs/changeset-guide.md)
-5. Format your changes (`pnpm run fmt`)
-6. Commit your changes (`git commit -m 'feat: add amazing_feature'`)
-7. Push to the branch (`git push origin feat/amazing_feature`)
-8. [Open a Pull Request](https://github.com/liam-hq/liam/compare?expand=1)
