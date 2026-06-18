@@ -9,3 +9,5 @@ minimumReleaseAgeExclude:
   - "@modelcontextprotocol/sdk@1.26.0"
   # Renovate security update: storybook@9.1.19
   - storybook@9.1.19
+  # Renovate security update: @sentry/node@10.27.0
+  - "@sentry/node@10.27.0"
