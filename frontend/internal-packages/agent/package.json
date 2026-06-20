@@ -35,7 +35,7 @@
     "eslint": "9.38.0",
     "msw": "2.11.6",
     "typescript": "5.9.3",
-    "vitest": "3.2.4",
+    "vitest": "3.2.6",
     "yoctocolors": "2.1.2"
   },
   "scripts": {
