@@ -16,7 +16,7 @@
     "stylelint-config-recess-order": "7.4.0",
     "stylelint-value-no-unknown-custom-properties": "6.0.1",
     "syncpack": "13.0.4",
-    "turbo": "2.5.8",
+    "turbo": "2.9.14",
     "typescript": "5.9.3",
     "vercel": "41.7.8",
     "vitest": "3.2.4"
