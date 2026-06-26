@@ -38,19 +38,19 @@
     "vaul": "1.1.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.6",
+    "@biomejs/biome": "2.5.0",
     "@liam-hq/configs": "workspace:*",
     "@storybook/nextjs": "9.1.15",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
-    "@types/react": "19.2.2",
+    "@types/react": "19.2.17",
     "@vitejs/plugin-react": "4.6.0",
-    "eslint": "9.38.0",
+    "eslint": "9.39.4",
     "happy-dom": "20.0.0",
     "typed-css-modules": "0.9.1",
     "typescript": "5.9.3",
-    "vitest": "3.2.4"
+    "vitest": "3.2.6"
   },
   "scripts": {
     "dev": "concurrently \"pnpm:dev:*\"",
