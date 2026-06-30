@@ -27,15 +27,15 @@
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.6",
+    "@biomejs/biome": "2.5.0",
     "@langchain/langgraph-checkpoint-validation": "0.1.1",
     "@liam-hq/configs": "workspace:*",
-    "@types/node": "22.18.11",
+    "@types/node": "22.19.21",
     "@types/uuid": "10.0.0",
-    "eslint": "9.38.0",
+    "eslint": "9.39.4",
     "msw": "2.11.6",
     "typescript": "5.9.3",
-    "vitest": "3.2.4",
+    "vitest": "3.2.6",
     "yoctocolors": "2.1.2"
   },
   "scripts": {
