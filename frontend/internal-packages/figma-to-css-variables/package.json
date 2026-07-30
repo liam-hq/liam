@@ -5,7 +5,7 @@
   "main": "bin/index.mjs",
   "dependencies": {
     "dotenv": "16.5.0",
-    "style-dictionary": "4.4.0"
+    "style-dictionary": "5.4.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
