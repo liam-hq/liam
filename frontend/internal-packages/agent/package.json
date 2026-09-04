@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@langchain/community": "0.3.57",
-    "@langchain/core": "0.3.78",
+    "@langchain/core": "0.3.80",
     "@langchain/langgraph": "0.4.9",
     "@langchain/langgraph-checkpoint": "0.1.1",
     "@langchain/openai": "0.6.9",
