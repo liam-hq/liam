@@ -19,3 +19,5 @@ minimumReleaseAgeExclude:
   - turbo@2.9.14
   # Renovate security update: style-dictionary@5.4.4
   - style-dictionary@5.4.4
+  # Renovate security update: undici@7.29.0
+  - undici@7.29.0
