@@ -10,7 +10,6 @@
     // - config files
     "frontend/turbo/generators/config.ts",
     "frontend/apps/docs/source.config.ts",
-    // - Generated files may contain unused exports
     // - Script for workaround
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
     // - Next.js special files
