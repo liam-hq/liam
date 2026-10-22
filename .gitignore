@@ -4,11 +4,8 @@ node_modules
 .vercel
 .env*.local
 prism.wasm
-pglite.data
-pglite.wasm
 .cursor/mcp.json
 dist/
-benchmark-workspace/
 coverage/
 .serena/
 

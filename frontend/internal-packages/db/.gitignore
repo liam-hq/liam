@@ -1,6 +1,0 @@
-# env
-.env
-.env.local
-
-# build
-dist

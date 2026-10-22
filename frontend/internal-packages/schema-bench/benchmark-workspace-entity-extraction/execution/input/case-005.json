@@ -1,1 +1,0 @@
-"Design a database for a task management application. The tasks table should include task_id, task_title, description, priority, due_date, and assigned_to. Define a projects table with project_id, project_name, start_date, and end_date columns. Additionally, create a task_comments table with comment_content and created_by columns."

@@ -1,1 +1,0 @@
-"Design a database for a user management system. The users table should have columns for user_id, username, email, password_hash, created_at, and updated_at. Also create a user_roles table with role_id, role_name, and permissions columns."

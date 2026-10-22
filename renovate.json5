@@ -71,12 +71,6 @@
         "devDependencies"
       ],
       "automerge": true
-    },
-    {
-      // Restrict updates for @huggingface/transformers due to https://github.com/huggingface/transformers.js/issues/1228
-      "description": "Allow updates for @huggingface/transformers up to version 3.3.3 due to transformers.js compatibility issues",
-      "matchPackageNames": ["@huggingface/transformers"],
-      "allowedVersions": "<=3.3.3"
     }
   ]
 }

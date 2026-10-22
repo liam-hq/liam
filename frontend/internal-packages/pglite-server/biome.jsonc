@@ -1,7 +1,0 @@
-{
-  "extends": "//",
-  "root": false,
-  "files": {
-    "includes": ["**", "!**/dist"]
-  }
-}

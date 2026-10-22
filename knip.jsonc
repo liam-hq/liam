@@ -11,16 +11,12 @@
     "frontend/turbo/generators/config.ts",
     "frontend/apps/docs/source.config.ts",
     // - Generated files may contain unused exports
-    "frontend/internal-packages/db/supabase/database.types.ts",
-    "frontend/packages/db-structure/src/parser/tbls/schema.generated.ts",
     // - Script for workaround
     "frontend/apps/app/scripts/install-prisma-internals.mjs",
     // - Next.js special files
     "frontend/apps/docs/app/docs/sitemap.ts",
     "frontend/apps/app/next.config.ts",
     "frontend/apps/docs/next.config.mjs",
-    "frontend/internal-packages/agent/src/vectorstore/supabaseVectorStore.ts",
-    "frontend/internal-packages/agent/src/vectorstore/syncSchemaVectorStore.ts",
     // - Newly added enum schema definitions (will be used in future implementations)
     "frontend/packages/schema/src/schema/schema.ts",
     "frontend/packages/schema/src/schema/index.ts",
@@ -40,11 +36,9 @@
     "@liam-hq/cli", // Used by erd-sample build script
     "@liam-hq/configs", // Used by tsconfig and biome configuration files
     "@turbo/gen", // Required for `turbo gen` command in npm scripts
-    "@langchain/community", // Temporarily unused due to disabled vectorstore functionality
     "@biomejs/biome", // Referenced in settings.json to enable Biome's "format on save" in VSCode
     "@swc/core", // Required for Vercel deployment to prevent native binding errors
-    "@swc/wasm", // Required for Vercel deployment to prevent native binding errors
-    "langsmith" // Automatically used by LangChain when environment variables are set
+    "@swc/wasm" // Required for Vercel deployment to prevent native binding errors
   ],
 
   // TODO: Review ignoreBinaries configuration later

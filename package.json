@@ -48,9 +48,6 @@
   },
   "packageManager": "pnpm@10.18.3",
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "supabase"
-    ],
     "overrides": {
       "@radix-ui/react-dialog": "1.1.15",
       "cookie": "^0.7.0",

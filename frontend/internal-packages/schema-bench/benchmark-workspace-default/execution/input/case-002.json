@@ -1,3 +1,0 @@
-{
-  "input": "The telecommunications service company has multiple customers, and each customer can subscribe to multiple service plans. Each service plan has a unique plan number, name, price, and included services. The company needs to record customers' personal information, including customer number, name, phone number, address, and email. Each time a customer subscribes to or unsubscribes from a service plan, the subscription time, cancellation time, and operating personnel need to be recorded."
-}
