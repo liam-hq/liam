@@ -22,7 +22,7 @@
     "@biomejs/biome": "2.2.6",
     "@liam-hq/configs": "workspace:*",
     "@types/node": "22.18.11",
-    "concurrently": "9.2.1",
+    "concurrently": "9.2.5",
     "eslint": "9.38.0",
     "typescript": "5.9.3"
   },
