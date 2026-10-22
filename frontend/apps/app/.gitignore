@@ -40,10 +40,6 @@ next-env.d.ts
 # prism
 prism.wasm
 
-# pglite
-pglite.data
-pglite.wasm
-
 # Sentry Config File
 .env.sentry-build-plugin
 
