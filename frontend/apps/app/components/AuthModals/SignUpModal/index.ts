@@ -1,1 +1,0 @@
-export { SignUpModal } from './SignUpModal'

@@ -26,11 +26,7 @@
     "frontend/packages/schema/src/schema/index.ts",
     // - Temporarily unused CommandPalette components (will be used in the future release)
     "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/CommandPalette/CommandPaletteOptions/CommandOptions.tsx",
-    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/CommandPalette/CommandPaletteOptions/index.ts",
-    // - Foundation code for Public Share feature (createPublicServerClient will be used in future phases)
-    "frontend/apps/app/libs/db/server.ts",
-    // - Server Actions are not detected by knip due to 'use server' directive
-    "frontend/apps/app/features/public-share/actions.ts"
+    "frontend/packages/erd-core/src/features/erd/components/ERDRenderer/CommandPalette/CommandPaletteOptions/index.ts"
   ],
 
 
@@ -48,8 +44,7 @@
     "@biomejs/biome", // Referenced in settings.json to enable Biome's "format on save" in VSCode
     "@swc/core", // Required for Vercel deployment to prevent native binding errors
     "@swc/wasm", // Required for Vercel deployment to prevent native binding errors
-    "langsmith", // Automatically used by LangChain when environment variables are set
-    "@electric-sql/pglite" // Used by pglite-server package and app package
+    "langsmith" // Automatically used by LangChain when environment variables are set
   ],
 
   // TODO: Review ignoreBinaries configuration later

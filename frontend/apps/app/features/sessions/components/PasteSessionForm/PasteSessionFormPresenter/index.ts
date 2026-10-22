@@ -1,1 +1,0 @@
-export { PasteSessionFormPresenter } from './PasteSessionFormPresenter'

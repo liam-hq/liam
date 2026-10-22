@@ -12,11 +12,6 @@ const config: StorybookConfig = {
       titlePrefix: 'app/components',
     },
     {
-      directory: '../../../apps/app/features',
-      files: '**/*.stories.@(jsx|tsx|mdx)',
-      titlePrefix: 'app/features',
-    },
-    {
       directory: '../../../packages/ui/src',
       files: '**/*.stories.@(jsx|tsx|mdx)',
       titlePrefix: 'ui',

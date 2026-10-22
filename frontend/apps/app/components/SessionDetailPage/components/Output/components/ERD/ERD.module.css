@@ -1,8 +1,0 @@
-.wrapper {
-  height: 100%;
-  /* Add extra padding for design_sessions context: base spacing + AppBar height */
-  --tables-menu-padding-bottom: calc(
-    var(--spacing-4) +
-    var(--layout-app-bar-height)
-  );
-}
