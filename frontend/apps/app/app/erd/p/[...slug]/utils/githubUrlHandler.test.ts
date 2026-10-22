@@ -1,7 +1,7 @@
-import type { GitHubContentItem } from '@liam-hq/github'
 import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import type { GitHubContentItem } from './githubApi'
 import {
   fetchSchemaFromGitHubFolder,
   isGitHubFolderUrl,

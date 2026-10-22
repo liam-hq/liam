@@ -1,12 +1,12 @@
+import { fromThrowable } from '@liam-hq/neverthrow'
+import { detectFormat } from '@liam-hq/schema/parser'
+import { err, ok, type Result } from 'neverthrow'
 import {
   downloadFileContent,
   type GitHubContentItem,
   type GitHubRepoInfo,
   getFolderContents,
-} from '@liam-hq/github'
-import { fromThrowable } from '@liam-hq/neverthrow'
-import { detectFormat } from '@liam-hq/schema/parser'
-import { err, ok, type Result } from 'neverthrow'
+} from './githubApi'
 
 const SECURITY_LIMITS = {
   MAX_RECURSION_DEPTH: 5,
