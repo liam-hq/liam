@@ -16,15 +16,15 @@
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "neverthrow": "8.2.0",
-    "next": "15.4.8",
+    "next": "15.5.27",
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "valibot": "1.1.0"
+    "valibot": "1.4.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
     "@liam-hq/configs": "workspace:*",
-    "@storybook/nextjs": "9.1.15",
+    "@storybook/nextjs": "9.1.21",
     "@types/node": "22.18.11",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
