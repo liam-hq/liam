@@ -6,7 +6,7 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.31.0",
+    "@modelcontextprotocol/sdk": "1.32.0",
     "zod": "4.0.0"
   },
   "devDependencies": {
