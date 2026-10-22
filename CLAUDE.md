@@ -18,10 +18,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pnpm --filter @liam-hq/app dev
 
 # Format code
-pnpm --filter @liam-hq/agent fmt
+pnpm --filter @liam-hq/schema fmt
 
 # Test
-pnpm --filter @liam-hq/agent test
+pnpm --filter @liam-hq/schema test
 ```
 
 ## Architecture
@@ -39,8 +39,6 @@ pnpm --filter @liam-hq/agent test
 - **frontend/packages/ui** - UI component library (`@liam-hq/ui`)
 
 #### Internal Packages
-- **frontend/internal-packages/agent** - AI agent system using LangGraph (`@liam-hq/agent`)
-- **frontend/internal-packages/db** - Database utilities (`@liam-hq/db`)
 - **frontend/internal-packages/mcp-server** - MCP server implementation (`@liam-hq/mcp-server`)
 
 
