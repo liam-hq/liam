@@ -32,7 +32,7 @@
     "typescript": "5.9.3"
   },
   "scripts": {
-    "build": "next build",
+    "build": "node -v && next build",
     "dev": "next dev --port 3002",
     "fmt": "concurrently \"pnpm:fmt:*\"",
     "fmt:biome": "biome check --write --unsafe .",
