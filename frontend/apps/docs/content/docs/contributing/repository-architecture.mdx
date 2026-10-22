@@ -69,12 +69,6 @@ Our project uses a monorepo structure managed with pnpm workspaces, allowing us 
 │       │   │   ├── parser/
 │       │   │   └── utils/
 │       │   └── package.json
-│       ├── github/          # GitHub API integration (@liam-hq/github)
-│       │   ├── src/
-│       │   │   ├── api.browser.ts   # Browser-side GitHub API
-│       │   │   ├── api.server.ts    # Server-side GitHub API
-│       │   │   └── types.ts         # GitHub related types
-│       │   └── package.json
 │       ├── erd-core/         # Core ERD functionality (@liam-hq/erd-core)
 │       │   ├── src/
 │       │   │   ├── components/
@@ -121,26 +115,6 @@ Database schema parser supporting multiple formats. see: [/docs/parser/supported
 - Multiple format parser implementations
 - Automatic format detection
 - Type-safe schema validation
-
-### GitHub Package (`@liam-hq/github`)
-
-GitHub API integration package primarily designed to support the main web application (`@liam-hq/app`). This package centralizes all GitHub-related operations required for the app's pull request review features.
-
-**Key Responsibilities:**
-
-- GitHub App authentication
-- Pull Request operations
-- Repository management
-- Webhook handling
-
-**Tech Stack:**
-
-- Octokit
-- GitHub Apps API
-- GitHub REST API
-
-**Current Usage:**
-- Exclusively used by `@liam-hq/app` for handling GitHub integrations
 
 ### ERD Core Package (`@liam-hq/erd-core`)
 
