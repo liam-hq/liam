@@ -1,7 +1,6 @@
 import { execSync } from 'node:child_process'
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
-import { ROUTE_PREFIXES } from './libs/routes/constants'
 
 const gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim()
 const releaseDate = new Date().toISOString().split('T')[0]
@@ -19,27 +18,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins:
-        process.env.VERCEL_ENV === 'production'
-          ? ['liambx.com', 'app.liambx.com']
-          : undefined,
-    },
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'app.liambx.com',
-      },
-    ],
-  },
-  serverExternalPackages: ['@electric-sql/pglite'],
   webpack: (config) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (Array.isArray(config.externals)) {
@@ -88,16 +66,6 @@ const nextConfig: NextConfig = {
       config.externals['@swc/wasm'] = '@swc/wasm'
     }
 
-    // Handle .tar.gz files for PGlite extensions
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    config.module.rules.push({
-      test: /\.tar\.gz$/,
-      type: 'asset/resource',
-      generator: {
-        filename: 'static/extensions/[name][ext]',
-      },
-    })
-
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     config.plugins.push({
       // biome-ignore lint/suspicious/noExplicitAny: webpack types are incomplete so we need to use any here
@@ -130,20 +98,6 @@ const nextConfig: NextConfig = {
     process.env.NEXT_PUBLIC_ENV_NAME === 'production'
       ? process.env.ASSET_PREFIX
       : undefined,
-  async headers() {
-    return [
-      {
-        source: `${ROUTE_PREFIXES.PUBLIC}/:path*`,
-        headers: [
-          {
-            key: 'Cache-Control',
-            value:
-              'public, max-age=0, s-maxage=60, stale-while-revalidate=86400',
-          },
-        ],
-      },
-    ]
-  },
 }
 
 export default withSentryConfig(nextConfig, {
