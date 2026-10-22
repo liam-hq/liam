@@ -1,9 +1,0 @@
-.breadcrumbs {
-  display: flex;
-  gap: var(--spacing-2);
-  align-items: center;
-}
-
-.chevronRight {
-  flex-shrink: 0;
-}
