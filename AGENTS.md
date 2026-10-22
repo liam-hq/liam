@@ -3,7 +3,7 @@
 ## Project Structure & Modules
 - frontend/apps/*: Next.js apps (e.g., `@liam-hq/app`, `@liam-hq/docs`).
 - frontend/packages/*: Shared libraries and tools (e.g., `schema`, `erd-core`, `cli`, `ui`).
-- frontend/internal-packages/*: Infra and tooling (`e2e`, `configs`, `storybook`, `agent`).
+- frontend/internal-packages/*: Infra and tooling (`e2e`, `configs`, `storybook`).
 - assets/: Images and media. docs/: Documentation. scripts/: Repo utilities.
 
 ## Build, Test, and Development

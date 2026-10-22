@@ -1,1 +1,0 @@
-"Design a database for a blog system. The posts table needs post_id, title, content, author_id, published_date, and status. The comments table should include comment_id, comment_text, and commenter_name. Also create a categories table with category_name and description columns."

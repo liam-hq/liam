@@ -13,14 +13,9 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@liam-hq/agent",
     "@liam-hq/app",
     "@liam-hq/docs",
     "@liam-hq/figma-to-css-variables",
-    "@liam-hq/db",
-    "@liam-hq/storybook",
-    "@liam-hq/schema-bench",
-    "@liam-hq/github",
-    "@liam-hq/pglite-server"
+    "@liam-hq/storybook"
   ]
 }

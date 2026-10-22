@@ -45,7 +45,7 @@ jobs:
       - name: "check @liam-hq/cli exit code 2: --format postgres check"
         run: |
           version="${{ github.event.inputs.version }}"
-          npx --yes @liam-hq/cli@${version} erd build --input https://github.com/liam-hq/liam/blob/main/frontend/internal-packages/db/supabase/schemas/schema.sql --format postgres
+          npx --yes @liam-hq/cli@${version} erd build --input https://github.com/liam-hq/liam/blob/f089d8bbe63ac00d3cb72ac8b40dad65547c4fa1/frontend/internal-packages/db/supabase/schemas/schema.sql --format postgres
 
       - name: "check @liam-hq/cli exit code 3: --format schemarb check"
         run: |

@@ -40,9 +40,7 @@ To set up a development environment, please follow these steps:
    This script will:
    - Install dependencies with pnpm
    - Create .env file from template
-   - Start Supabase database
-   - Configure Supabase authentication keys
-   - Display next steps and test credentials
+   - Display next steps
 
    Alternatively, you can run the setup steps manually:
 
@@ -60,9 +58,6 @@ To set up a development environment, please follow these steps:
    cp .env.template .env
    ```
 
-   **Required for basic local development:**
-   - Supabase keys will be automatically configured when you start the database (see step 4)
-
    **For maintainers (Vercel team members only):**
 
    Link your local project to the Vercel project and pull environment variables:
@@ -71,12 +66,6 @@ To set up a development environment, please follow these steps:
    pnpm vercel:link
    pnpm vercel:env-pull
    ```
-
-
-
-   Next, create a `.env.local` file at the root directory and set values for the following keys:
-
-   - `OPENAI_API_KEY`
 
 4. Start the development server
 
@@ -93,11 +82,6 @@ To set up a development environment, please follow these steps:
    | @liam-hq/docs      | http://localhost:3002 |
    | @liam-hq/storybook | http://localhost:6006 |
 
-   **Test login credentials:**
-   - Login path: http://localhost:3001/app/login
-   - Email: `test@example.com`
-   - Password: `liampassword1234`
-
 ## Issues and feature requests
 
 You've found a bug in the source code, a mistake in the documentation or maybe you'd like a new feature? Take a look at [GitHub Discussions](https://github.com/liam-hq/liam/discussions) to see if it's already being discussed. You can help us by [submitting an issue on GitHub](https://github.com/liam-hq/liam/issues). Before you create an issue, make sure to search the issue archive -- your issue may have already been addressed!
@@ -105,25 +89,6 @@ You've found a bug in the source code, a mistake in the documentation or maybe y
 ## Troubleshooting
 
 ### Common Setup Issues
-
-**GitHub API Errors in Console**
-If you see errors like `[@octokit/auth-app] appId option is required`, this is expected when GitHub environment variables are not configured. These errors don't affect core functionality - you can still use authentication, view projects, and access ER diagrams.
-
-**Login Page Redirects**
-If `/app/login` redirects unexpectedly:
-1. Ensure Supabase is running: `pnpm --filter @liam-hq/db supabase:status`
-2. Check that Supabase keys are configured in `.env`
-3. Restart the development server: `pnpm dev`
-
-**Database Connection Issues**
-If you encounter database connection problems:
-1. Stop Supabase: `pnpm --filter @liam-hq/db supabase:stop`
-2. Start Supabase: `pnpm --filter @liam-hq/db supabase:start`
-3. Re-run key extraction scripts:
-   ```sh
-   ./scripts/extract-supabase-anon-key.sh
-   ./scripts/extract-supabase-service-key.sh
-   ```
 
 **Missing Dependencies**
 If you encounter missing dependency errors:

@@ -1,1 +1,0 @@
-"Build an inventory management system for an e-commerce site. Define a products table with product_id, product_name, price, and category_id. The inventory table should have stock_quantity, warehouse_id, and last_updated columns."

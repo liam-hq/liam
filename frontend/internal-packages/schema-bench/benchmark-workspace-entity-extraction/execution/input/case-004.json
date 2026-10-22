@@ -1,1 +1,0 @@
-"Create an order management system. Set up an orders table with order_id, customer_id, order_date, total_amount, and shipping_address. The order_items table should contain item_id, quantity, and unit_price columns."
