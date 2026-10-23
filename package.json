@@ -6,10 +6,10 @@
     "@changesets/cli": "2.29.7",
     "@changesets/get-github-info": "0.6.0",
     "@changesets/types": "6.1.0",
-    "@turbo/gen": "2.5.8",
+    "@turbo/gen": "2.9.14",
     "@types/node": "22.18.11",
     "@vitest/coverage-v8": "3.2.4",
-    "concurrently": "9.2.1",
+    "concurrently": "9.2.5",
     "knip": "5.66.0",
     "lefthook": "1.13.6",
     "stylelint": "16.25.0",
@@ -50,11 +50,15 @@
   "pnpm": {
     "overrides": {
       "@radix-ui/react-dialog": "1.1.15",
+      "@vercel/fun>tar": "7.5.22",
       "cookie": "^0.7.0",
       "esbuild": "0.25.11",
+      "next>postcss": "8.5.23",
+      "next>sharp": "0.35.5",
       "path-to-regexp": "8.3.0",
       "prismjs": "1.30.0",
-      "undici": "7.16.0"
+      "syncpack>minimatch": "9.0.9",
+      "undici": "7.29.1"
     }
   }
 }

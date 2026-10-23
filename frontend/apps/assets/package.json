@@ -8,7 +8,7 @@
     "@liam-hq/configs": "workspace:*",
     "@types/fs-extra": "11.0.4",
     "@types/node": "22.18.11",
-    "concurrently": "9.2.1",
+    "concurrently": "9.2.5",
     "eslint": "9.38.0",
     "fs-extra": "11.3.2"
   },
