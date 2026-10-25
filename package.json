@@ -19,7 +19,7 @@
     "turbo": "2.9.14",
     "typescript": "5.9.3",
     "vercel": "41.7.8",
-    "vitest": "3.2.6"
+    "vitest": "4.1.11"
   },
   "scripts": {
     "build": "turbo build",
