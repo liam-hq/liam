@@ -17,3 +17,5 @@ minimumReleaseAgeExclude:
   - turbo@2.9.14
   # Renovate security update: style-dictionary@5.4.4
   - style-dictionary@5.4.4
+  # Renovate security update: happy-dom@21.0.4
+  - happy-dom@21.0.4

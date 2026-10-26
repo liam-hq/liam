@@ -70,7 +70,7 @@ importers:
         version: 41.7.8(@swc/core@1.12.11)(@swc/wasm@1.12.11)(rollup@4.59.0)
       vitest:
         specifier: 4.1.12
-        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
   frontend/apps/app:
     dependencies:
@@ -158,7 +158,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.1.12
-        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
   frontend/apps/assets:
     devDependencies:
@@ -521,7 +521,7 @@ importers:
         version: 5.1.4(typescript@5.9.3)(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: 4.1.12
-        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
   frontend/packages/erd-core:
     dependencies:
@@ -602,8 +602,8 @@ importers:
         specifier: 9.38.0
         version: 9.38.0(jiti@2.6.1)
       happy-dom:
-        specifier: 20.8.9
-        version: 20.8.9
+        specifier: 21.0.4
+        version: 21.0.4
       typed-css-modules:
         specifier: 0.9.1
         version: 0.9.1
@@ -612,7 +612,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.1.12
-        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
   frontend/packages/schema:
     dependencies:
@@ -676,7 +676,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.1.12
-        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
   frontend/packages/ui:
     dependencies:
@@ -769,8 +769,8 @@ importers:
         specifier: 9.38.0
         version: 9.38.0(jiti@2.6.1)
       happy-dom:
-        specifier: 20.8.9
-        version: 20.8.9
+        specifier: 21.0.4
+        version: 21.0.4
       typed-css-modules:
         specifier: 0.9.1
         version: 0.9.1
@@ -779,7 +779,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.1.12
-        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
 packages:
 
@@ -2768,6 +2768,7 @@ packages:
   '@opentelemetry/sdk-trace-base@1.30.1':
     resolution: {integrity: sha512-jVPgBbH1gCy2Lb7X0AVQ8XAfgg0pJ4nvl8/IiQA6nxOsPvS+0zMJaFSs2ltXe0J6C8dqjcnpyqINDJmU30+uOg==}
     engines: {node: '>=14'}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
@@ -4988,6 +4989,10 @@ packages:
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
+  buffer-image-size@0.6.4:
+    resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
+    engines: {node: '>=4.0'}
+
   buffer-xor@1.0.3:
     resolution: {integrity: sha512-571s0T7nZWK6vB67HI5dyUF7wXiNcfaPPPTl6zYCNApANjIvYJTg7hlud/+cJpdAhS7dVzqMLmfhfHR3rAcOjQ==}
 
@@ -6268,8 +6273,8 @@ packages:
     resolution: {integrity: sha512-mS1lbMsxgQj6hge1XZ6p7GPhbrtFwUFYi3wRzXAC/FmYnyXMTvvI3td3rjmQ2u8ewXueaSvRPWaEcgVVOT9Jnw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
-  happy-dom@20.8.9:
-    resolution: {integrity: sha512-Tz23LR9T9jOGVZm2x1EPdXqwA37G/owYMxRwU0E4miurAtFsPMQ1d2Jc2okUaSjZqAFz2oEn3FLXC5a0a+siyA==}
+  happy-dom@21.0.4:
+    resolution: {integrity: sha512-tFm+GaLBgo6o0awHnvHaNoraVo27qJ+2tZEtZ+cIa08hXbeitrxAJajLI05hsUy/2/YTKcUjQYzHe5mCcraLBw==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -13842,7 +13847,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      vitest: 4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -14369,6 +14374,10 @@ snapshots:
   buffer-crc32@0.2.13: {}
 
   buffer-from@1.1.2: {}
+
+  buffer-image-size@0.6.4:
+    dependencies:
+      '@types/node': 22.18.11
 
   buffer-xor@1.0.3: {}
 
@@ -15821,11 +15830,12 @@ snapshots:
 
   graphql@16.11.0: {}
 
-  happy-dom@20.8.9:
+  happy-dom@21.0.4:
     dependencies:
       '@types/node': 22.18.11
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.2
+      buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
       ws: 8.22.0
@@ -19277,7 +19287,7 @@ snapshots:
       tsx: 4.20.6
       yaml: 2.8.1
 
-  vitest@4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@20.8.9)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+  vitest@4.1.12(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.0)(@types/node@22.18.11)(@vitest/coverage-v8@4.1.12)(happy-dom@21.0.4)(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       '@vitest/expect': 4.1.12
       '@vitest/mocker': 4.1.12(msw@2.11.6(@types/node@22.18.11)(typescript@5.9.3))(vite@6.4.4(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
@@ -19304,7 +19314,7 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/node': 22.18.11
       '@vitest/coverage-v8': 4.1.12(vitest@4.1.12)
-      happy-dom: 20.8.9
+      happy-dom: 21.0.4
     transitivePeerDependencies:
       - msw
 
