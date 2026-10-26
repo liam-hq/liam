@@ -53,12 +53,13 @@
       "@vercel/fun>tar": "7.5.22",
       "cookie": "^0.7.0",
       "esbuild": "0.25.11",
+      "express>body-parser": "2.4.0",
       "next>postcss": "8.5.23",
       "next>sharp": "0.35.5",
       "path-to-regexp": "8.3.0",
       "prismjs": "1.30.0",
       "syncpack>minimatch": "9.0.9",
-      "undici": "7.29.1"
+      "undici": "7.30.1"
     }
   }
 }

@@ -6,7 +6,7 @@
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.5",
     "@rive-app/react-canvas": "4.23.4",
-    "@sentry/nextjs": "9",
+    "@sentry/nextjs": "9.47.2",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "fumadocs-core": "15.6.1",

@@ -9,7 +9,7 @@
     "@liam-hq/ui": "workspace:*",
     "@next/third-parties": "15.3.5",
     "@octokit/rest": "21.1.1",
-    "@sentry/nextjs": "9",
+    "@sentry/nextjs": "9.47.2",
     "@swc/core": "1.12.11",
     "@swc/wasm": "1.12.11",
     "cheerio": "1.0.0",
