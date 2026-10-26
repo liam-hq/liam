@@ -7,7 +7,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.0",
-    "zod": "4.0.0"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
