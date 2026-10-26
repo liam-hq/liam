@@ -9,7 +9,7 @@ vi.mock('glob')
 
 describe('getInputContent', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.resetAllMocks()
   })
 
   it('should read local file content when given a valid file path', async () => {
