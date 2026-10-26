@@ -58,7 +58,7 @@
       "path-to-regexp": "8.3.0",
       "prismjs": "1.30.0",
       "syncpack>minimatch": "9.0.9",
-      "undici": "7.29.1"
+      "undici": "7.30.1"
     }
   }
 }
