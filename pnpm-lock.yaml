@@ -424,8 +424,8 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
 
   frontend/packages/cli:
     dependencies:
