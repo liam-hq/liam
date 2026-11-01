@@ -13,7 +13,7 @@
     "@css-modules-kit/eslint-plugin": "0.3.0",
     "@eslint/compat": "1.4.0",
     "@eslint/css": "0.13.0",
-    "@tsconfig/strictest": "2.0.6",
+    "@tsconfig/strictest": "2.0.8",
     "@typescript-eslint/eslint-plugin": "8.46.1",
     "@typescript-eslint/parser": "8.46.1",
     "eslint": "9.38.0",
