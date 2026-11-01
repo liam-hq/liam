@@ -655,8 +655,8 @@ importers:
         specifier: workspace:*
         version: link:../../internal-packages/configs
       '@pgsql/types':
-        specifier: 15.1.1
-        version: 15.1.1
+        specifier: 15.1.2
+        version: 15.1.2
       '@prisma/generator-helper':
         specifier: 6.8.2
         version: 6.8.2
@@ -2908,8 +2908,8 @@ packages:
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
 
-  '@pgsql/types@15.1.1':
-    resolution: {integrity: sha512-sPoz8XEeeh6lDoEmsKexak+ijGSm+ioLgQ1HmIXzIh/0QbNIp0Cy8M+d9jUjlIMNnFQCn6tPHzlzvmDL2vOcgw==}
+  '@pgsql/types@15.1.2':
+    resolution: {integrity: sha512-53cGyW69nlKYQuEeP1B14iG9MJyYta3E3+wWfdHj5GKdfHWVJKh0pXOIvLRjPOcZrYaJ3GT5hdlX2V6nxb4XIQ==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -11861,7 +11861,7 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
-  '@pgsql/types@15.1.1': {}
+  '@pgsql/types@15.1.2': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
