@@ -11,8 +11,8 @@ minimumReleaseAgeExclude:
   - storybook@9.1.19
   # Renovate security update: postcss@8.5.23
   - postcss@8.5.23
-  # Renovate security update: vite@6.4.3
-  - vite@6.4.3
+  # Renovate security update: vite@6.4.3 || 6.4.5
+  - vite@6.4.3 || 6.4.5
   # Renovate security update: turbo@2.9.14
   - turbo@2.9.14
   # Renovate security update: style-dictionary@5.4.4
