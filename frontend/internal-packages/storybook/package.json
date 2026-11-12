@@ -10,8 +10,8 @@
     "@storybook/addon-docs": "9.1.21",
     "@storybook/addon-links": "9.1.21",
     "@storybook/nextjs": "9.1.21",
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "storybook": "9.1.21",
     "typescript": "5.9.3",
     "zod": "3.25.76"
