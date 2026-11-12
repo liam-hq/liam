@@ -31,6 +31,7 @@ jobs:
               - './frontend/**'
               - '.syncpackrc'
               - 'biome.jsonc'
+              - '.node-version'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'

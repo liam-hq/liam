@@ -7,7 +7,7 @@ jobs:
   _e2e-tests:
     # WARNING: Do not set 'environment' here to avoid infinite loop with Vercel deployment_status webhooks
     # Vercel sends deployment_status events that could trigger this workflow repeatedly
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
       matrix:
