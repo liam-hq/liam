@@ -58,7 +58,7 @@
       "next>sharp": "0.35.5",
       "path-to-regexp": "8.3.0",
       "prismjs": "1.30.0",
-      "syncpack>minimatch": "9.0.9",
+      "syncpack>minimatch": "11.0.1",
       "undici": "7.30.1"
     }
   }
